@@ -1,0 +1,326 @@
+[
+  {
+    "input": [
+      "1",
+      6484880,
+      6484880,
+      "G"
+    ],
+    "result": [
+      {
+        "_filters": {
+          "gnomad_popmax_af": 0.7255797610681658,
+          "severity": 0,
+          "gnomad_af_pb": null,
+          "gnomad_db_genomes_af": 0.3431647940074906,
+          "has_variant": [
+          ],
+          "gnomad_db_exomes_af": null,
+          "min_gq": null,
+          "gnomad_popmax_an": 8538,
+          "dist_from_exon": 0,
+          "proband_gq": null,
+          "gnomad_popmax": "AFR",
+          "gnomad_af_fam": 0.3431647940074906
+        },
+        "data": {
+          "total_exon_intron_canonical": null,
+          "assembly_name": "GRCh37",
+          "end": 6484880,
+          "regulatory_feature_consequences": [
+            {
+              "impact": "MODIFIER",
+              "consequence_terms": [
+                "regulatory_region_variant"
+              ],
+              "variant_allele": "G",
+              "regulatory_feature_id": "ENSR00000919793",
+              "biotype": "promoter"
+            }
+          ],
+          "hgmd_pmids": null,
+          "start": 6484880,
+          "variant_exon_intron_worst": null,
+          "variant_exon_intron_canonical": null,
+          "id": "1_6484880_A/G",
+          "allele_string": "A/G",
+          "seq_region_name": "1",
+          "total_exon_intron_worst": null,
+          "beacon_url": [
+            "https://beacon-network.org/#/search?pos=6484880&chrom=1&allele=G&ref=A&rs=GRCh37"
+          ],
+          "colocated_variants": [
+            {
+              "end": "6484880",
+              "start": "6484880",
+              "minor_allele": "G",
+              "allele_string": "A/C/G",
+              "seq_region_name": "1",
+              "frequencies": {
+                "G": {
+                  "sas": "0.2577",
+                  "eas": "0.1548",
+                  "amr": "0.1974",
+                  "afr": "0.8071",
+                  "eur": "0.1859"
+                }
+              },
+              "id": "rs188079860",
+              "strand": "1",
+              "minor_allele_freq": "0.3592"
+            }
+          ],
+          "input": "1 6484880 6484880 A/G 1",
+          "label": "[HES2,ESPN] 1:6484880 None",
+          "transcript_consequences": [
+            {
+              "impact": "MODIFIER",
+              "cdna_start": 33,
+              "cdna_end": 33,
+              "hgnc_id": 13281,
+              "gene_id": "ENSG00000187017",
+              "gene_symbol_source": "HGNC",
+              "gene_symbol": "ESPN",
+              "transcript_id": "ENST00000377828",
+              "biotype": "protein_coding",
+              "consequence_terms": [
+                "5_prime_UTR_variant"
+              ],
+              "variant_allele": "G",
+              "strand": 1
+            },
+            {
+              "impact": "MODIFIER",
+              "distance": 4901,
+              "hgnc_id": 16005,
+              "gene_id": "ENSG00000069812",
+              "gene_symbol_source": "HGNC",
+              "gene_symbol": "HES2",
+              "transcript_id": "ENST00000377834",
+              "biotype": "protein_coding",
+              "consequence_terms": [
+                "upstream_gene_variant"
+              ],
+              "variant_allele": "G",
+              "strand": -1
+            },
+            {
+              "impact": "MODIFIER",
+              "distance": 4917,
+              "hgnc_id": 16005,
+              "gene_id": "ENSG00000069812",
+              "gene_symbol_source": "HGNC",
+              "gene_symbol": "HES2",
+              "transcript_id": "ENST00000377836",
+              "biotype": "protein_coding",
+              "consequence_terms": [
+                "upstream_gene_variant"
+              ],
+              "variant_allele": "G",
+              "strand": -1
+            },
+            {
+              "impact": "MODIFIER",
+              "distance": 150,
+              "hgnc_id": 16005,
+              "gene_id": "ENSG00000069812",
+              "gene_symbol_source": "HGNC",
+              "gene_symbol": "HES2",
+              "transcript_id": "ENST00000377837",
+              "biotype": "protein_coding",
+              "consequence_terms": [
+                "upstream_gene_variant"
+              ],
+              "variant_allele": "G",
+              "strand": -1
+            },
+            {
+              "impact": "MODIFIER",
+              "distance": 4913,
+              "hgnc_id": 16005,
+              "gene_id": "ENSG00000069812",
+              "gene_symbol_source": "HGNC",
+              "gene_symbol": "HES2",
+              "transcript_id": "ENST00000487437",
+              "biotype": "protein_coding",
+              "consequence_terms": [
+                "upstream_gene_variant"
+              ],
+              "variant_allele": "G",
+              "strand": -1
+            },
+            {
+              "impact": "MODIFIER",
+              "distance": 4903,
+              "hgnc_id": 16005,
+              "gene_id": "ENSG00000069812",
+              "gene_symbol_source": "HGNC",
+              "gene_symbol": "HES2",
+              "transcript_id": "ENST00000489730",
+              "biotype": "protein_coding",
+              "consequence_terms": [
+                "upstream_gene_variant"
+              ],
+              "variant_allele": "G",
+              "strand": -1
+            }
+          ],
+          "most_severe_consequence": "5_prime_UTR_variant",
+          "strand": 1,
+          "color_code": null
+        },
+        "view": {
+          "inheritance": {
+          },
+          "databases": {
+            "hgmd_pmids": null,
+            "beacons": null,
+            "pubmed_search": [
+              "https://www.tenwiseapps.nl/publicdl/variant_report/HGNC_13281_variant_report.html",
+              "https://www.tenwiseapps.nl/publicdl/variant_report/HGNC_16005_variant_report.html"
+            ],
+            "clinVar_variants": null,
+            "clinVar_phenotypes": null,
+            "hgmd": "Not Present",
+            "omim": [
+              "https://omim.org/search/?search=approved_gene_symbol:HES2&retrieve=geneMap",
+              "https://omim.org/search/?search=approved_gene_symbol:ESPN&retrieve=geneMap"
+            ],
+            "beacon_url": [
+              "https://beacon-network.org/#/search?pos=6484880&chrom=1&allele=G&ref=A&rs=GRCh37"
+            ],
+            "hgmd_tags": null,
+            "gene_dx_significance": null,
+            "hgmd_phenotypes": null,
+            "clinVar_submitters": null,
+            "lmm_significance": null,
+            "gene_cards": [
+              "https://www.genecards.org/cgi-bin/carddisp.pl?gene=HES2",
+              "https://www.genecards.org/cgi-bin/carddisp.pl?gene=ESPN"
+            ],
+            "clinVar_significance": null
+          },
+          "predictions": {
+            "polyphen2_hdiv_score": [
+            ],
+            "mutation_assessor": [
+            ],
+            "fathmm": [
+            ],
+            "polyphen2_hdiv": [
+            ],
+            "polyphen2_hvar": [
+            ],
+            "max_ent_scan": null,
+            "sift": [
+            ],
+            "polyphen": [
+            ],
+            "revel": [
+            ],
+            "polyphen2_hvar_score": [
+            ],
+            "sift_score": [
+            ],
+            "cadd_phred": [
+            ],
+            "lof_score_canonical": [
+            ],
+            "cadd_raw": [
+            ],
+            "mutation_taster": [
+            ],
+            "lof_score": [
+            ]
+          },
+          "gnomAD": [
+            {
+              "exome_an": null,
+              "af": 0.3431647940074906,
+              "url": [
+                "http://gnomad.broadinstitute.org/variant/1-6484880-A-G"
+              ],
+              "exome_af": null,
+              "proband": "No",
+              "genome_an": 29904,
+              "genome_af": 0.3431647940074906,
+              "allele": "G",
+              "pli": null,
+              "pop_max": "AFR: 0.725579761068 [8538]"
+            }
+          ],
+          "general": {
+            "proband_genotype": null,
+            "canonical_annotation": null,
+            "ensembl_transcripts_canonical": [
+            ],
+            "alt": "G",
+            "ppos_canonical": [
+            ],
+            "cpos_worst": [
+            ],
+            "variant_intron_canonical": [
+            ],
+            "cpos_other": [
+            ],
+            "splice_region": [
+            ],
+            "maternal_genotype": null,
+            "variant_intron_worst": [
+            ],
+            "paternal_genotype": null,
+            "ref": "A",
+            "genes": [
+              "HES2",
+              "ESPN"
+            ],
+            "variant_exon_worst": [
+            ],
+            "igv": null,
+            "worst_annotation": "5_prime_UTR_variant",
+            "cpos_canonical": [
+            ],
+            "variant_exon_canonical": [
+            ],
+            "refseq_transcript_worst": [
+            ],
+            "refseq_transcript_canonical": [
+            ],
+            "gene_splicer": [
+            ],
+            "ppos_worst": [
+            ],
+            "ppos_other": [
+            ],
+            "hg38": "1:6424820",
+            "hg19": "1:6484880 None",
+            "ensembl_transcripts_worst": [
+            ]
+          },
+          "bioinformatics": {
+            "human_splicing_finder": "",
+            "zygosity": null,
+            "dist_from_exon_worst": [
+            ],
+            "called_by": null,
+            "max_ent_scan": null,
+            "dist_from_exon_canonical": [
+            ],
+            "conservation": [
+            ],
+            "caller_data": {
+            },
+            "nn_splice": "",
+            "species_with_variant": "",
+            "other_genes": [
+            ],
+            "species_with_others": "",
+            "inherited_from": null
+          },
+          "quality_samples": [
+          ]
+        }
+      }
+    ]
+  }
+]
