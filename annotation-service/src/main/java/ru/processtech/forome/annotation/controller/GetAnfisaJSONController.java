@@ -168,6 +168,9 @@ public class GetAnfisaJSONController {
 			if (Strings.isNullOrEmpty(alternative)) {
 				throw ExceptionBuilder.buildInvalidValueException("alternative", alternative);
 			}
+			if (alternative.contains(">")) {//TODO Добавить полноценную валидацию на входной параметр
+				throw ExceptionBuilder.buildInvalidValueException("alternative", alternative);
+			}
 
 			requestItems.add(new RequestItem(
 					chromosome,
