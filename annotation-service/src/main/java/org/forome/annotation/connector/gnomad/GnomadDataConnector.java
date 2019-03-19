@@ -3,11 +3,10 @@ package org.forome.annotation.connector.gnomad;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.primitives.Chars;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;
@@ -273,9 +272,13 @@ public class GnomadDataConnector {
         if (s1.length() + d.length() != s2.length()) {
             return false;
         }
-//        for (int i=0; i<s1.length(); i++) {
-//
-//        }
-        throw new RuntimeException("Not implemented");
+        for (int i=0; i<s1.length(); i++) {
+            String x = s1.substring(0, i);
+            String y = s1.substring(i);
+            if ((x + d + y).equals(s2)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

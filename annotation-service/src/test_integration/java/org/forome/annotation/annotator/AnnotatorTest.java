@@ -10,7 +10,6 @@ import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.utils.JSONEquals;
 import org.junit.Assert;
 import org.junit.Test;
-import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,7 @@ public class AnnotatorTest extends AnfisaBaseTest {
     @Test
     public void test() throws Exception {
         Annotator annotator = new Annotator(anfisaConnector);
-        int start = 19;
+        int start = 1;//23
 
         Path fileExpected = Paths.get("/home/kris/processtech/tmp/bgm9001/output_file");
         List<JSONObject> expecteds =

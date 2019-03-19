@@ -15,6 +15,10 @@ public class JSONEquals {
             "^\\[(.*)\\](.*)$"
     );
 
+    private static Pattern PATTERN_MAX_ENT_SCAN = Pattern.compile(
+            "^(.*)=(.*)-(.*)$"
+    );
+
     public static void equals(JSONObject value1, JSONObject value2) throws Exception {
         if (value1.size() != value2.size()) {
             Set<String> diff;
@@ -129,6 +133,25 @@ public class JSONEquals {
                         if (value2s.isEmpty()) {
                             return;
                         }
+                    }
+                } else if (PATTERN_MAX_ENT_SCAN.matcher((String) value1).matches() && PATTERN_MAX_ENT_SCAN.matcher((String) value2).matches()) {
+                    Matcher matcher1 = PATTERN_MAX_ENT_SCAN.matcher((String) value1);
+                    matcher1.matches();
+                    double v11 = Double.parseDouble(matcher1.group(1));
+                    double v12 = Double.parseDouble(matcher1.group(2));
+                    double v13 = Double.parseDouble(matcher1.group(3));
+
+                    Matcher matcher2 = PATTERN_MAX_ENT_SCAN.matcher((String) value2);
+                    matcher2.matches();
+                    double v21 = Double.parseDouble(matcher2.group(1));
+                    double v22 = Double.parseDouble(matcher2.group(2));
+                    double v23 = Double.parseDouble(matcher2.group(3));
+
+                    if (Math.abs(v11 - v21) < 0.000001D &&
+                            Math.abs(v12 - v22) < 0.000001D &&
+                            Math.abs(v13 - v23) < 0.000001D
+                    ) {
+                        return;
                     }
                 }
                 throw new Exception("Not equals: " + value1.toString() + " and " + value2.toString());
