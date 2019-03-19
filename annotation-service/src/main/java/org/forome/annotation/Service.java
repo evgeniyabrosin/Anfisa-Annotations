@@ -84,7 +84,7 @@ public class Service {
 		this.clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
 		this.liftoverConnector = new LiftoverConnector();
 		this.gtfConnector = new GTFConnector(serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
-		this.anfisaConnector = new AnfisaConnector(gnomadConnector, hgmdConnector, clinvarConnector, liftoverConnector);
+		this.anfisaConnector = new AnfisaConnector(gnomadConnector, hgmdConnector, clinvarConnector, liftoverConnector, gtfConnector);
 
 		executionQueue.execute(this, new Execution<Void>() {
 

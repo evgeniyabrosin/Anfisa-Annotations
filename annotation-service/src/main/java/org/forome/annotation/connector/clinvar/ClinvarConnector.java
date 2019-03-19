@@ -46,7 +46,7 @@ public class ClinvarConnector {
 
 	private static final String QUERY_0 = QUERY_BASE + " AND Stop = %s ";
 	private static final String QUERY = QUERY_0 + "AND (AlternateAllele = %s OR AlternateAllele = 'na')";
-	private static final String QUERY_EXACT = QUERY_0 + " AND AlternateAllele = %s";
+	private static final String QUERY_EXACT = QUERY_0 + " AND AlternateAllele = '%s'";
 	private static final String QUERY_NA = QUERY_0 + " AND AlternateAllele = 'na'";
 
 	private final DatabaseConnector databaseConnector;
@@ -97,23 +97,7 @@ public class ClinvarConnector {
 			try (Statement statement = connection.createStatement()) {
 				try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_BASE, chromosome, qStart))) {
 					while (resultSet.next()) {
-						long start = resultSet.getLong("Start");
-						long end = resultSet.getLong("Stop");
-						String referenceAllele = resultSet.getString("ReferenceAllele");
-						String alternateAllele = resultSet.getString("AlternateAllele");
-						String rcvAccession = resultSet.getString("RCVaccession");
-						String variationID = resultSet.getString("VariationID");
-						String clinicalSignificance = resultSet.getString("ClinicalSignificance");
-						String phenotypeIDs = resultSet.getString("PhenotypeIDS");
-						String otherIDs = resultSet.getString("OtherIDs");
-						String phenotypeList = resultSet.getString("PhenotypeList");
-						rows.add(new Row(
-								start, end,
-								referenceAllele, alternateAllele,
-								rcvAccession, variationID, clinicalSignificance,
-								phenotypeIDs, otherIDs,
-								phenotypeList
-						));
+						rows.add(_build(resultSet));
 					}
 				}
 			}
@@ -122,4 +106,50 @@ public class ClinvarConnector {
 		}
 		return addSubmittersToRows(rows);
 	}
+
+	public List<ClinvarResult> getData(String chromosome, long qStart, long qEnd, List<String> alts) {
+        List<Row> rows = new ArrayList<>();
+	    try (Connection connection = databaseConnector.createConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                for (String alt: alts) {
+                    try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_EXACT, chromosome, qStart, qEnd, alt))) {
+                        while (resultSet.next()) {
+                            rows.add(_build(resultSet));
+                        }
+                    }
+                }
+
+                if (rows.isEmpty()) {
+                    try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_NA, chromosome, qStart, qEnd))) {
+                        while (resultSet.next()) {
+                            rows.add(_build(resultSet));
+                        }
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            throw ExceptionBuilder.buildExternalDatabaseException(ex);
+        }
+        return addSubmittersToRows(rows);
+	}
+
+	private static Row _build(ResultSet resultSet) throws SQLException {
+        long start = resultSet.getLong("Start");
+        long end = resultSet.getLong("Stop");
+        String referenceAllele = resultSet.getString("ReferenceAllele");
+        String alternateAllele = resultSet.getString("AlternateAllele");
+        String rcvAccession = resultSet.getString("RCVaccession");
+        String variationID = resultSet.getString("VariationID");
+        String clinicalSignificance = resultSet.getString("ClinicalSignificance");
+        String phenotypeIDs = resultSet.getString("PhenotypeIDS");
+        String otherIDs = resultSet.getString("OtherIDs");
+        String phenotypeList = resultSet.getString("PhenotypeList");
+        return new Row(
+                start, end,
+                referenceAllele, alternateAllele,
+                rcvAccession, variationID, clinicalSignificance,
+                phenotypeIDs, otherIDs,
+                phenotypeList
+        );
+    }
 }

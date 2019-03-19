@@ -9,6 +9,7 @@ public class GnomadSimpleTest extends GnomadBaseTest {
 //		gnomadConnector.request("1", 103471457, "CCATCAT", "CCAT");
 //		gnomadConnector.request("1", 6484880, "A", "G");
 //		gnomadConnector.request("4", 88536520, "T", "C");
-		gnomadConnector.request("1", 24646091, "A", "G").get();
+//		gnomadConnector.request("1", 24646091, "A", "G").get();
+		gnomadConnector.request("1", 6505823, "CACCA", "C").get();
 	}
 }

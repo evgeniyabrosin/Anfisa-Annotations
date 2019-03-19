@@ -43,4 +43,13 @@ public class Variant {
 			CSQ_DAMAGING, CSQ_MISSENSE, CSQ_BENIGN1, CSQ_BENIGN2
 	);
 
+	public static final ImmutableList<String> CONSEQUENCES = ImmutableList.copyOf(
+			SEVERITY.stream().flatMap(strings -> strings.stream()).iterator()
+	);
+
+	public static final ImmutableList<String> CALLERS = ImmutableList.of(
+			"BGM_AUTO_DOM", "BGM_DE_NOVO", "BGM_HOM_REC", "BGM_CMPD_HET",
+			"BGM_BAYES_DE_NOVO", "BGM_BAYES_CMPD_HET", "BGM_BAYES_HOM_REC",
+			"BGM_PIPELINE_A", "BGM_PIPELINE", "LMM", "SANGER"
+	);
 }

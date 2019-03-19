@@ -68,7 +68,9 @@ public class GnomadSampleTest extends GnomadBaseTest {
 			exomes = new GnomadResult.Sum(
 					jExomes.getAsNumber("AN").longValue(),
 					jExomes.getAsNumber("AC").longValue(),
-					jExomes.getAsNumber("AF").doubleValue()
+					jExomes.getAsNumber("AF").doubleValue(),
+					0,
+					null
 			);
 		}
 
@@ -78,7 +80,9 @@ public class GnomadSampleTest extends GnomadBaseTest {
 			genomes = new GnomadResult.Sum(
 					jGenomes.getAsNumber("AN").longValue(),
 					jGenomes.getAsNumber("AC").longValue(),
-					jGenomes.getAsNumber("AF").doubleValue()
+					jGenomes.getAsNumber("AF").doubleValue(),
+					0,
+					null
 			);
 		}
 
@@ -86,7 +90,9 @@ public class GnomadSampleTest extends GnomadBaseTest {
 		GnomadResult.Sum overall = new GnomadResult.Sum(
 				jOverall.getAsNumber("AN").longValue(),
 				jOverall.getAsNumber("AC").longValue(),
-				jOverall.getAsNumber("AF").doubleValue()
+				jOverall.getAsNumber("AF").doubleValue(),
+				0,
+				null
 		);
 
 		String popmax = value.getAsString("popmax");

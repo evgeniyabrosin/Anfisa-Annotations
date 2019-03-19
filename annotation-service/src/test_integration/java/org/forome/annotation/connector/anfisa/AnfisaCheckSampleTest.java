@@ -3,6 +3,7 @@ package org.forome.annotation.connector.anfisa;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
+import org.forome.annotation.AnfisaBaseTest;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.utils.JSONEquals;

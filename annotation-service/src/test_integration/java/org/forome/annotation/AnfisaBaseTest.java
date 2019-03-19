@@ -1,8 +1,10 @@
-package org.forome.annotation.connector.anfisa;
+package org.forome.annotation;
 
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
+import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.junit.Assert;
@@ -18,6 +20,7 @@ public class AnfisaBaseTest {
 	protected HgmdConnector hgmdConnector;
 	protected ClinvarConnector clinvarConnector;
 	protected LiftoverConnector liftoverConnector;
+	protected GTFConnector gtfConnector;
 	protected AnfisaConnector anfisaConnector;
 
 	@Before
@@ -30,6 +33,16 @@ public class AnfisaBaseTest {
 		hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
 		clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
 		liftoverConnector = new LiftoverConnector();
-		anfisaConnector = new AnfisaConnector(gnomadConnector, hgmdConnector, clinvarConnector, liftoverConnector);
+		gtfConnector = new GTFConnector(serviceConfig.gtfConfigConnector, (t, e) -> {
+			log.error("Fail", e);
+			Assert.fail();
+		});
+		anfisaConnector = new AnfisaConnector(
+				gnomadConnector,
+				hgmdConnector,
+				clinvarConnector,
+				liftoverConnector,
+				gtfConnector
+		);
 	}
 }

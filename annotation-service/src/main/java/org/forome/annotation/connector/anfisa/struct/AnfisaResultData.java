@@ -2,24 +2,27 @@ package org.forome.annotation.connector.anfisa.struct;
 
 import net.minidev.json.JSONArray;
 
+import java.util.List;
 import java.util.Map;
 
 public class AnfisaResultData {
 
-	public Object totalExonIntronCanonical;
+	public String totalExonIntronCanonical;
 	public String assemblyName;
 	public Long end;
+	public Long start;
+	public String alt;
+	public String ref;
 	public JSONArray regulatoryFeatureConsequences;
 	public JSONArray motifFeatureConsequences;
 	public JSONArray intergenicConsequences;
 	public String[] hgmdPmids;
-	public Long start;
-	public Object variantExonIntronWorst;
-	public Object variantExonIntronCanonical;
+	public String variantExonIntronWorst;
+	public String variantExonIntronCanonical;
 	public String mostSevereConsequence;
 	public String alleleString;
 	public String seqRegionName;
-	public Object totalExonIntronWorst;
+	public String totalExonIntronWorst;
 	public String[] beaconUrls;
 	public String input;
 	public String label;
@@ -41,6 +44,17 @@ public class AnfisaResultData {
 	public String[] clinvarSignificance;
 
 	public Map<String, String> clinvarSubmitters;
+
+	public String variantClass;
+
+    public List<Object[]> distFromBoundaryCanonical;
+    public String regionCanonical;
+    public List<Object[]> distFromBoundaryWorst;
+    public String regionWorst;
+
+    public Map<String, Integer> zygosity;
+
+	public String version;
 
 	public void setField(String name, String value) {
 		switch (name) {

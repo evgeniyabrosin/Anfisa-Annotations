@@ -1,5 +1,6 @@
 package org.forome.annotation.connector.anfisa;
 
+import org.forome.annotation.AnfisaBaseTest;
 import org.junit.Test;
 
 public class AnfisaSimpleTest extends AnfisaBaseTest {

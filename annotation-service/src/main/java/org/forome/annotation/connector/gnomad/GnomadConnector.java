@@ -80,7 +80,8 @@ public class GnomadConnector implements Closeable {
 			long an = countAN(exomes, null);
 			long ac = countAC(exomes, null);
 			double af = countAF(an, ac);
-			sumExomes = new GnomadResult.Sum(an, ac, af);
+			long hom = countHom(exomes);
+			sumExomes = new GnomadResult.Sum(an, ac, af, hom, null);
 		}
 
 		GnomadResult.Sum sumGenomes = null;
@@ -88,7 +89,8 @@ public class GnomadConnector implements Closeable {
 			long an = countAN(genomes, null);
 			long ac = countAC(genomes, null);
 			double af = countAF(an, ac);
-			sumGenomes = new GnomadResult.Sum(an, ac, af);
+			long hom = countHom(genomes);
+			sumGenomes = new GnomadResult.Sum(an, ac, af, hom, null);
 		}
 
 		GnomadResult.Sum sumOverall = null;
@@ -96,7 +98,8 @@ public class GnomadConnector implements Closeable {
 			long an = countAN(overall, null);
 			long ac = countAC(overall, null);
 			double af = countAF(an, ac);
-			sumOverall = new GnomadResult.Sum(an, ac, af);
+			long hom = countHom(overall);
+			sumOverall = new GnomadResult.Sum(an, ac, af, hom, null);
 		}
 
 		Object[] popmaxFromRows = countPopmaxFromRows(overall);
@@ -210,5 +213,14 @@ public class GnomadConnector implements Closeable {
 		return new Object[]{
 				popmax, (popmaxAF == null) ? 0 : popmaxAF, popmaxAN
 		};
+	}
+
+	private static long countHom(List<GnomadDataConnector.Result> items) {
+		long hom = 0;
+		String column = "Hom";
+		for (GnomadDataConnector.Result item: items) {
+			hom += ((Number)item.columns.get(column)).longValue();
+		}
+		return hom;
 	}
 }

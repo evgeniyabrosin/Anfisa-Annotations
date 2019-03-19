@@ -3,8 +3,10 @@ package org.forome.annotation.connector.anfisa.struct;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class AnfisaResultView {
 
@@ -43,22 +45,22 @@ public class AnfisaResultView {
 	}
 
 	public class Predictions {
-		public JSONArray polyphen2HdivScore = new JSONArray();
-		public JSONArray mutationAssessor = new JSONArray();
-		public JSONArray fathmm = new JSONArray();
-		public JSONArray polyphen2Hdiv = new JSONArray();
-		public JSONArray polyphen2Hvar = new JSONArray();
-		public Object maxEntScan;
+		public List<String> polyphen2Hvar;
+		public List<String> polyphen2Hdiv;
+		public List<String> polyphen2HvarScore;
+		public List<String> polyphen2HdivScore;
+		public List<String> maxEntScan;
 		public String[] sift;
 		public String[] polyphen;
-		public JSONArray revel = new JSONArray();
-		public JSONArray polyphen2HvarScore = new JSONArray();
-		public Double[] siftScore;
-		public JSONArray caddPhred = new JSONArray();
-		public JSONArray lofScoreCanonical = new JSONArray();
-		public JSONArray caddRaw = new JSONArray();
-		public JSONArray mutationTaster = new JSONArray();
-		public JSONArray lofScore = new JSONArray();
+		public List<Double> revel;
+		public String[] siftScore;
+		public String[] mutationTaster;
+		public String[] fathmm;
+		public List<Double> lofScore = new ArrayList<>();
+		public List<Double> lofScoreCanonical = new ArrayList<>();
+		public List<Double> caddPhred;
+		public List<Double> caddRaw;
+		public String[] mutationAssessor;
 	}
 
 	public static class GnomAD {
@@ -70,54 +72,56 @@ public class AnfisaResultView {
 		public Double af;
 		public String[] url;
 		public String proband;
-		public Object pli;
+		public List<Double> pli;
 		public String popMax;
+		public Long hom;
+		public String hem;
 	}
 
 	public class General {
-		public Object probandGenotype;
-		public Object canonicalAnnotation;
-		public JSONArray ensemblTranscriptsCanonical = new JSONArray();
+		public String probandGenotype;
+        public String maternalGenotype;
+        public String paternalGenotype;
+		public String canonicalAnnotation;
 		public String alt;
-		public JSONArray pposCanonical = new JSONArray();
-		public JSONArray cposWorst = new JSONArray();
-		public JSONArray variantIntronCanonical = new JSONArray();
-		public JSONArray cposOther = new JSONArray();
-		public JSONArray spliceRegion = new JSONArray();
-		public Object maternalGenotype;
-		public JSONArray variantIntronWorst = new JSONArray();
-		public Object paternalGenotype;
 		public String ref;
+		public List<String> cposWorst = new ArrayList<>();
+		public List<String> cposCanonical = new ArrayList<>();
+		public List<String> cposOther = new ArrayList<>();
+		public List<String> spliceRegion;
 		public String[] genes;
-		public JSONArray variantExonWorst = new JSONArray();
-		public Object igv;
+		public String igv;
 		public String worstAnnotation;
-		public JSONArray cposCanonical = new JSONArray();
-		public JSONArray variantExonCanonical = new JSONArray();
-		public JSONArray refseqTranscriptWorst = new JSONArray();
-		public JSONArray refseqTranscriptCanonical = new JSONArray();
-		public JSONArray geneSplicer = new JSONArray();
-		public JSONArray pposWorst = new JSONArray();
-		public JSONArray pposOther = new JSONArray();
+		public List<String> refseqTranscriptWorst = new ArrayList<>();
+		public List<String> ensemblTranscriptsWorst = new ArrayList<>();
+		public List<String> refseqTranscriptCanonical = new ArrayList<>();
+		public List<String> ensemblTranscriptsCanonical = new ArrayList<>();
+		public List<String> geneSplicer;
+		public List<String> pposWorst = new ArrayList<>();
+        public List<String> pposCanonical = new ArrayList<>();
+		public List<String> pposOther = new ArrayList<>();
 		public String hg38;
 		public String hg19;
-		public JSONArray ensemblTranscriptsWorst = new JSONArray();
+		public List<String> variantExonWorst = new ArrayList<>();
+		public List<String> variantIntronWorst = new ArrayList<>();
+		public List<String> variantExonCanonical = new ArrayList<>();
+		public List<String> variantIntronCanonical = new ArrayList<>();
 	}
 
 	public class Bioinformatics {
-		public String humanSplicingFinder;
-		public Object zygosity;
-		public JSONArray distFromExonWorst = new JSONArray();
-		public Object calledBy;
-		public Object maxEntScan;
-		public JSONArray distFromExonCanonical = new JSONArray();
-		public JSONArray conservation = new JSONArray();
-		public JSONObject callerData = new JSONObject();
-		public String nnSplice;
+		public String zygosity;
+		public String inheritedFrom;
+		public List<Long> distFromExonWorst = new ArrayList<>();
+		public List<Long> distFromExonCanonical = new ArrayList<>();
+		public List<Double> conservation = new ArrayList<>();
 		public String speciesWithVariant;
-		public String[] otherGenes;
 		public String speciesWithOthers;
-		public Object inheritedFrom;
+		public List<String> maxEntScan;
+		public String nnSplice;
+		public String humanSplicingFinder;
+		public String[] otherGenes;
+		public String[] calledBy;
+		public Map<String, Serializable> callerData;
 	}
 
 	public final JSONObject inheritance;
@@ -126,7 +130,7 @@ public class AnfisaResultView {
 	public final List<GnomAD> gnomAD;
 	public final General general;
 	public final Bioinformatics bioinformatics;
-	public final JSONArray qualitSamples;
+	public final JSONArray qualitySamples;
 
 	public AnfisaResultView() {
 		this.inheritance = new JSONObject();
@@ -135,7 +139,7 @@ public class AnfisaResultView {
 		this.gnomAD = new ArrayList<>();
 		this.general = new General();
 		this.bioinformatics = new Bioinformatics();
-		this.qualitSamples = new JSONArray();
+		this.qualitySamples = new JSONArray();
 	}
 }
 
