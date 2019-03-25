@@ -16,7 +16,10 @@ public class JSONEquals {
     );
 
     private static Pattern PATTERN_MAX_ENT_SCAN = Pattern.compile(
-            "^(.*)=(.*)-(.*)$"
+            "^(.*)=(.*[^\\-])-(.*)$"
+    );
+    private static Pattern PATTERN_CANONICAL_ANNOTATION = Pattern.compile(
+            "^(.*)\\[(.*)\\]$"
     );
 
     public static void equals(JSONObject value1, JSONObject value2) throws Exception {
@@ -49,7 +52,7 @@ public class JSONEquals {
 
         List<Object> sortValue1;
         List<Object> sortValue2;
-        if (value1.get(0) instanceof Number) {
+        if (isNumberValues(value1) && isNumberValues(value2)) {
             sortValue1 = value1.stream().map(it -> ((Number) it).doubleValue()).sorted().collect(Collectors.toList());
             sortValue2 = value2.stream().map(it -> {
                 if (it instanceof String) {
@@ -61,7 +64,7 @@ public class JSONEquals {
         } else if (value1.get(0) instanceof JSONObject) {
             sortValue1 = value1.stream().collect(Collectors.toList());
             sortValue2 = value2.stream().collect(Collectors.toList());
-        } else if (value1.get(0) instanceof String) {
+        } else if (value1.get(0) instanceof String || value2.get(0) instanceof String) {
             sortValue1 = value1.stream().map(o -> String.valueOf(o)).sorted().collect(Collectors.toList());
             sortValue2 = value2.stream().map(o -> String.valueOf(o)).sorted().collect(Collectors.toList());
         } else {
@@ -71,6 +74,13 @@ public class JSONEquals {
         for (int i = 0; i < sortValue1.size(); i++) {
             equals(null, sortValue1.get(i), sortValue2.get(i));
         }
+    }
+
+    private static boolean isNumberValues(JSONArray value) {
+        for (Object item : value) {
+            if (!(item instanceof Number)) return false;
+        }
+        return true;
     }
 
     private static void equals(String key, Object value1, Object value2) throws Exception {
@@ -152,6 +162,25 @@ public class JSONEquals {
                             Math.abs(v13 - v23) < 0.000001D
                     ) {
                         return;
+                    }
+                } else if ("canonical_annotation".equals(key)) {
+                    Matcher matcher1 = PATTERN_CANONICAL_ANNOTATION.matcher((String) value1);
+                    matcher1.matches();
+                    String v1m = matcher1.group(1);
+                    List<String> v1v = Arrays.stream(matcher1.group(2).split(",")).map(s -> s.trim()).collect(Collectors.toList());
+
+                    Matcher matcher2 = PATTERN_CANONICAL_ANNOTATION.matcher((String) value2);
+                    matcher2.matches();
+                    String v2m = matcher2.group(1);
+                    List<String> v2v = Arrays.stream(matcher2.group(2).split(",")).map(s -> s.trim()).collect(Collectors.toList());
+
+                    if (v1m.equals(v2m) && v1v.size() == v2v.size()) {
+                        Set<String> v1vs = new HashSet<>(v1v);
+                        Set<String> v2vs = new HashSet<>(v2v);
+                        if (v1vs.size() == v2vs.size()) {
+                            v1vs.removeAll(v2vs);
+                            if (v1vs.isEmpty()) return;
+                        }
                     }
                 }
                 throw new Exception("Not equals: " + value1.toString() + " and " + value2.toString());

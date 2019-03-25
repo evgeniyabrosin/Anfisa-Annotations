@@ -362,7 +362,7 @@ public class AnfisaConnector implements Closeable {
                 .map(alt ->
                         BeaconConnector.getUrl(
                                 RequestParser.toChromosome(getChromosome(json)),
-                                Math.min(json.getAsNumber("start").longValue(), json.getAsNumber("end").longValue()),
+                                json.getAsNumber("start").longValue(),
                                 getRef(dataLine, json), alt
                         )
                 )
@@ -444,9 +444,6 @@ public class AnfisaConnector implements Closeable {
         filters.minGq = getMinGQ(dataLine, samples);
         filters.probandGq = getProbandGQ(dataLine, samples);
         if (dataLine != null && !dataLine.getVariants().isEmpty()) {
-            if (dataLine.getVariants().size() > 1) {
-                throw new RuntimeException("Not support many variant");
-            }
             pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
 
             filters.qd = (Double) variant.getInfo().get("QD").get(0);
@@ -646,9 +643,6 @@ public class AnfisaConnector implements Closeable {
 
     private void createQualityTab(AnfisaResultFilters filters, AnfisaResultView view, DataLine dataLine, Map<String, Sample> samples) {
         if (dataLine == null || dataLine.getVariants().isEmpty()) return;
-        if (dataLine.getVariants().size() > 1) {
-            throw new RuntimeException("Not support many variant");
-        }
         pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
 
         JSONObject q_all = new JSONObject();
@@ -946,15 +940,22 @@ public class AnfisaConnector implements Closeable {
 
     private static List<String> alt_list(DataLine dataLine, Map<String, Sample> samples, JSONObject response) {
         if (dataLine != null && !dataLine.getVariants().isEmpty()) {
-            if (dataLine.getVariants().size() > 1) {
-                throw new RuntimeException("Not support many variant");
+            List<String> alleles = new ArrayList<>();
+            List<String> alt_allels = new ArrayList<>();
+            for (pro.parseq.vcf.types.Variant variant : dataLine.getVariants()) {
+                if (!alleles.contains(variant.getRef())) {
+                    alleles.add(variant.getRef());
+                }
+                if (!alleles.contains(variant.getAlt())) {
+                    alleles.add(variant.getAlt());
+                }
+                if (!alt_allels.contains(variant.getAlt())) {
+                    alt_allels.add(variant.getAlt());
+                }
             }
-            pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
-
-            List<String> alleles = Lists.newArrayList(variant.getRef(), variant.getAlt());
-            List<String> alt_allels = Lists.newArrayList(variant.getAlt());
             if (samples != null) {
                 Map<String, Long> counts = new HashMap<>();
+                pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
                 for (Map.Entry<String, Map<String, List<? extends Serializable>>> entry : variant.getFormats().entrySet()) {
                     List<Number> ad = (List<Number>) entry.getValue().get("AD");
                     if (ad == null || ad.isEmpty()) {
@@ -990,9 +991,6 @@ public class AnfisaConnector implements Closeable {
 
     private static String getRef(DataLine dataLine, JSONObject response) {
         if (dataLine != null && !dataLine.getVariants().isEmpty()) {
-            if (dataLine.getVariants().size() > 1) {
-                throw new RuntimeException("Not support many variant");
-            }
             pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
             return variant.getRef();
         } else {
@@ -1024,15 +1022,11 @@ public class AnfisaConnector implements Closeable {
         if (samples == null || dataLine == null || dataLine.getVariants().isEmpty()) {
             return null;
         }
-        if (dataLine.getVariants().size() > 1) {
-            throw new RuntimeException("Not support many variant");
-        }
-
         pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
         Integer GQ = null;
         for (Sample s : samples.values()) {
             Integer gq = (Integer) variant.getFormats().get(s.name).get("GQ").get(0);
-            if (gq != null) {
+            if (gq != null && gq != 0) {
                 if (GQ == null || gq < GQ) {
                     GQ = gq;
                 }
@@ -1045,10 +1039,6 @@ public class AnfisaConnector implements Closeable {
         if (samples == null || dataLine == null || dataLine.getVariants().isEmpty()) {
             return null;
         }
-        if (dataLine.getVariants().size() > 1) {
-            throw new RuntimeException("Not support many variant");
-        }
-
         pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
         return (Integer) variant.getFormats().get(getProband(samples)).get("GQ").get(0);
     }
@@ -1073,11 +1063,76 @@ public class AnfisaConnector implements Closeable {
         } else {
             throw new RuntimeException("Unknown kind: " + kind);
         }
-        if (distFromBoundary == null) return Collections.emptyList();
+        if (distFromBoundary != null) {
+            return unique(
+                    distFromBoundary.stream().map(objects -> (Long) objects[0]).collect(Collectors.toList())
+            );
+        }
 
         return unique(
-                distFromBoundary.stream().map(objects -> (Long) objects[0]).collect(Collectors.toList())
+                getHgvsList(json, "c", kind).stream()
+                        .map(hgvcs -> getDistanceHgvsc(hgvcs))
+                        .filter(aLong -> aLong != null)
+                        .collect(Collectors.toList())
         );
+    }
+
+    private static List<Character> hgvs_signs = Lists.newArrayList('-', '+', '*');
+
+    private static Long getDistanceHgvsc(String hgvcs) {
+        String[] sChunks = hgvcs.split(":");
+        String coord = null;
+        for (int i = 1; i < sChunks.length; i++) {
+            String chunk = sChunks[i];
+            char ch = chunk.charAt(0);
+            if (ch == 'c' || ch == 'p') {
+                coord = chunk;
+                break;
+            }
+        }
+        if (coord == null) {
+            return null;
+        }
+        String[] xx = coord.split("\\.");
+        Integer d = null;
+        try {
+            for (String x : xx[1].split("_")) {
+                Integer sign = null;
+                Integer p1 = null;
+                Integer p2 = null;
+                while (!Character.isDigit(x.charAt(0)) && !hgvs_signs.contains(x.charAt(0))) {
+                    x = x.substring(1);
+                }
+                int end = x.length();
+                for (int i = 0; i < end; i++) {
+                    char c = x.charAt(i);
+                    if (Character.isDigit(c)) {
+                        continue;
+                    }
+                    if (hgvs_signs.contains(c)) {
+                        int p0 = (sign == null) ? 0 : sign + 1;
+                        p1 = (i > p0) ? Integer.parseInt(x.substring(p0, i)) : 0;
+                        sign = i;
+                    }
+                    if (Character.isAlphabetic(c)) {
+                        end = i;
+                        break;
+                    }
+                }
+                if (p1 != null && sign != null) {
+                    p2 = Integer.parseInt(x.substring(sign + 1, end));
+                }
+                if (p2 != null) {
+                    if (d == null || d > p2) {
+                        d = p2;
+                    }
+                }
+            }
+            return (long) d;
+        } catch (Exception e) {
+            log.error("Exception ", e);
+            return null;
+        }
     }
 
     private static String getIgvUrl(long start, long end, JSONObject json, String caseSequence, Map<String, Sample> samples) {
@@ -1345,7 +1400,7 @@ public class AnfisaConnector implements Closeable {
     public String str(DataLine dataLine, Map<String, Sample> samples, JSONObject json) {
         String str = getHg19Coordinates(json);
         if (isSnv(json)) {
-            return String.format("%s  %s>%s", str, ref(json), altString(dataLine, samples, json));
+            return String.format("%s  %s>%s", str, ref(json, dataLine), altString(dataLine, samples, json));
         } else {
             String variantClass = getVariantClass(json);
             return String.format("%s %s", str, (variantClass != null) ? variantClass : "None");
@@ -1397,15 +1452,12 @@ public class AnfisaConnector implements Closeable {
         }
     }
 
-    private static String ref(JSONObject json) {
-        /**
-         def ref(self):
-         if (self.vcf_record):
-         return self.vcf_record.REF
-         else:
-         return self.ref1()
-         */
-        return ref1(json);
+    private static String ref(JSONObject json, DataLine dataLine) {
+        if (dataLine != null && !dataLine.getVariants().isEmpty()) {
+            return dataLine.getVariants().get(0).getRef();
+        } else {
+            return ref1(json);
+        }
     }
 
     private static String ref1(JSONObject json) {
@@ -1448,9 +1500,6 @@ public class AnfisaConnector implements Closeable {
         if (dataLine == null || dataLine.getVariants().isEmpty()) {
             return null;
         }
-        if (dataLine.getVariants().size() > 1) {
-            throw new RuntimeException("Not support many variant");
-        }
         pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
 
         List<String> alleles = Lists.newArrayList(variant.getRef(), variant.getAlt());
@@ -1482,7 +1531,9 @@ public class AnfisaConnector implements Closeable {
         for (String caller : Variant.CALLERS) {
             for (pro.parseq.vcf.types.Variant variant : dataLine.getVariants()) {
                 if (variant.getInfo().containsKey(caller)) {
-                    callers.add(caller);
+                    if (!callers.contains(caller)) {
+                        callers.add(caller);
+                    }
                 }
             }
         }
@@ -1504,7 +1555,7 @@ public class AnfisaConnector implements Closeable {
             return callers;
         }
 
-        String ref = ref(json);
+        String ref = ref(json, dataLine);
         List<String> alt_set = alt_list(dataLine, samples, json);
         Set<String> p_set = Arrays.stream(probandGenotype.split("/")).collect(Collectors.toSet());
         Set<String> m_set = Arrays.stream(maternalGenotype.split("/")).collect(Collectors.toSet());
@@ -1543,11 +1594,8 @@ public class AnfisaConnector implements Closeable {
     }
 
     private static Map<String, Serializable> getCallersData(DataLine dataLine) {
-        if (dataLine == null) {
+        if (dataLine == null || dataLine.getVariants().isEmpty()) {
             return Collections.emptyMap();
-        }
-        if (dataLine.getVariants().size() != 1) {
-            throw new RuntimeException("not support many variant");
         }
         pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
 
