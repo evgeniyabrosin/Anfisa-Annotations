@@ -18,12 +18,12 @@ public class RequestParser {
 			throw ExceptionBuilder.buildInvalidValueException("chromosome", value);
 		}
 
-		if (CHROMOSOME_VALIDE_CHARS.contains(value)) {
-			return value;
-		}
-
 		if (value.startsWith("chr")) {
 			value = value.substring("chr".length());
+		}
+
+		if (CHROMOSOME_VALIDE_CHARS.contains(value)) {
+			return value;
 		}
 
 		try {

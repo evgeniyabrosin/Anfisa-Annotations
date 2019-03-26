@@ -1,5 +1,6 @@
 package org.forome.annotation.connector.gnomad.struct;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -8,7 +9,7 @@ public class GnomadResult {
     public static final GnomadResult EMPTY = new GnomadResult(
             null, null, null,
             null, 0, 0,
-            null
+            Collections.emptySet()
     );
     public final Sum exomes;
     public final Sum genomes;

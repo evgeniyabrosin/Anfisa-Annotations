@@ -1,10 +1,10 @@
 package org.forome.annotation.annotator;
 
 import io.reactivex.Observable;
-import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
+import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.annotator.utils.CaseUtils;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
@@ -13,10 +13,12 @@ import org.forome.annotation.struct.Sample;
 import pro.parseq.vcf.VcfExplorer;
 import pro.parseq.vcf.exceptions.InvalidVcfFileException;
 import pro.parseq.vcf.types.DataLine;
-import pro.parseq.vcf.types.VcfLine;
 import pro.parseq.vcf.utils.*;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,7 +33,7 @@ public class Annotator {
         this.anfisaConnector = anfisaConnector;
     }
 
-    public Observable<AnfisaResult> exec(
+    public AnnotatorResult exec(
             String caseName,
             Path pathFam,
             Path pathVepFilteredVcf,
@@ -63,7 +65,7 @@ public class Annotator {
         }
     }
 
-    public Observable<AnfisaResult> exec(
+    public AnnotatorResult exec(
             String caseName,
             InputStream isFam,
             InputStream isVepFilteredVcf,
@@ -103,35 +105,38 @@ public class Annotator {
         );
     }
 
-    private Observable<AnfisaResult> annotateJson(
+    private AnnotatorResult annotateJson(
             String caseSequence,
             List<JSONObject> vepFilteredVepJsons,
             VcfExplorer vcfExplorer, Map<String, Sample> samples,
             int startPosition
     ) {
-        return Observable.create(o -> {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        for (int i = startPosition; i < vepFilteredVepJsons.size(); i++) {
-                            JSONObject json = vepFilteredVepJsons.get(i);
-                            String chromosome = RequestParser.toChromosome(json.getAsString("seq_region_name"));
-                            long start = json.getAsNumber("start").longValue();
-                            long end = json.getAsNumber("end").longValue();
+        return new AnnotatorResult(
+                AnnotatorResult.Metadata.build(caseSequence, vcfExplorer, samples),
+                Observable.create(o -> {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                for (int i = startPosition; i < vepFilteredVepJsons.size(); i++) {
+                                    JSONObject json = vepFilteredVepJsons.get(i);
+                                    String chromosome = RequestParser.toChromosome(json.getAsString("seq_region_name"));
+                                    long start = json.getAsNumber("start").longValue();
+                                    long end = json.getAsNumber("end").longValue();
 
-                            DataLine dataLine = (DataLine) vcfExplorer.getVcfData().getDataLines().get(i);
+                                    DataLine dataLine = (DataLine) vcfExplorer.getVcfData().getDataLines().get(i);
 
-                            AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, start, end, json, dataLine, samples);
-                            o.onNext(anfisaResult);
+                                    AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, start, end, json, dataLine, samples);
+                                    o.onNext(anfisaResult);
+                                }
+                                o.onComplete();
+                            } catch (Throwable t) {
+                                o.tryOnError(t);
+                            }
                         }
-                        o.onComplete();
-                    } catch (Throwable t) {
-                        o.tryOnError(t);
-                    }
-                }
-            }).start();
-        });
+                    }).start();
+                })
+        );
     }
 
 }

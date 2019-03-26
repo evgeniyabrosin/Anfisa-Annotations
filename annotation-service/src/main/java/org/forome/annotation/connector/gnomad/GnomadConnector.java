@@ -1,13 +1,13 @@
 package org.forome.annotation.connector.gnomad;
 
 import com.google.common.collect.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.forome.annotation.config.connector.GnomadConfigConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
-import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.forome.annotation.matcher.SequenceMatcher;
+import org.forome.annotation.utils.DefaultThreadPoolExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -81,7 +81,8 @@ public class GnomadConnector implements Closeable {
 			long ac = countAC(exomes, null);
 			double af = countAF(an, ac);
 			long hom = countHom(exomes);
-			sumExomes = new GnomadResult.Sum(an, ac, af, hom, null);
+			Long hem = countHem(chromosome, exomes);
+			sumExomes = new GnomadResult.Sum(an, ac, af, hom, hem);
 		}
 
 		GnomadResult.Sum sumGenomes = null;
@@ -90,7 +91,8 @@ public class GnomadConnector implements Closeable {
 			long ac = countAC(genomes, null);
 			double af = countAF(an, ac);
 			long hom = countHom(genomes);
-			sumGenomes = new GnomadResult.Sum(an, ac, af, hom, null);
+			Long hem = countHem(chromosome, genomes);
+			sumGenomes = new GnomadResult.Sum(an, ac, af, hom, hem);
 		}
 
 		GnomadResult.Sum sumOverall = null;
@@ -99,7 +101,8 @@ public class GnomadConnector implements Closeable {
 			long ac = countAC(overall, null);
 			double af = countAF(an, ac);
 			long hom = countHom(overall);
-			sumOverall = new GnomadResult.Sum(an, ac, af, hom, null);
+			Long hem = countHem(chromosome, overall);
+			sumOverall = new GnomadResult.Sum(an, ac, af, hom, hem);
 		}
 
 		Object[] popmaxFromRows = countPopmaxFromRows(overall);
@@ -222,5 +225,12 @@ public class GnomadConnector implements Closeable {
 			hom += ((Number)item.columns.get(column)).longValue();
 		}
 		return hom;
+	}
+
+	private static Long countHem(String chromosome, List<GnomadDataConnector.Result> items) {
+		if ("X".equals(chromosome.toUpperCase())) {
+			return countAC(items, "Male");
+		}
+		return null;
 	}
 }

@@ -245,7 +245,7 @@ public class GnomadDataConnector {
             List<Character> y = new ArrayList<>();
             for (int i = 0; i < s2.length(); i++) {
                 int j = x.size();
-                if (s1.charAt(j) == s2.charAt(i)) {
+                if (j < s1.length() && s1.charAt(j) == s2.charAt(i)) {
                     x.add(s2.charAt(i));
                 } else {
                     y.add(s2.charAt(i));

@@ -75,7 +75,7 @@ public class AnfisaResultView {
 		public List<Double> pli;
 		public String popMax;
 		public Long hom;
-		public String hem;
+		public Long hem;
 	}
 
 	public class General {
@@ -111,8 +111,8 @@ public class AnfisaResultView {
 	public class Bioinformatics {
 		public String zygosity;
 		public String inheritedFrom;
-		public List<Long> distFromExonWorst = new ArrayList<>();
-		public List<Long> distFromExonCanonical = new ArrayList<>();
+		public List<Object> distFromExonWorst = new ArrayList<>();
+		public List<Object> distFromExonCanonical = new ArrayList<>();
 		public List<Double> conservation = new ArrayList<>();
 		public String speciesWithVariant;
 		public String speciesWithOthers;
@@ -142,38 +142,3 @@ public class AnfisaResultView {
 		this.qualitySamples = new JSONArray();
 	}
 }
-
-
-/**
- * {
- * "bioinformatics": {
- * "human_splicing_finder": "",
- * "zygosity": null,
- * "dist_from_exon_worst": [
- * <p>
- * ],
- * "called_by": null,
- * "max_ent_scan": null,
- * "dist_from_exon_canonical": [
- * <p>
- * ],
- * "conservation": [
- * <p>
- * ],
- * "caller_data": {
- * <p>
- * },
- * "nn_splice": "",
- * "species_with_variant": "",
- * "other_genes": [
- * <p>
- * ],
- * "species_with_others": "",
- * "inherited_from": null
- * },
- * "quality_samples": [
- * <p>
- * ]
- * }
- * }
- */

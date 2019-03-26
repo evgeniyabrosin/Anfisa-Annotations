@@ -185,10 +185,13 @@ public class AnfisaConnector implements Closeable {
             }
         }
 
-        List<Long> d = getDistanceFromExon(gtfAnfisaResult, json, "worst");
-        filters.distFromExon = (d.isEmpty()) ? 0L : Collections.min(d);
+        List<Object> d = getDistanceFromExon(gtfAnfisaResult, json, "worst");
+        filters.distFromExon = d.stream()
+                .filter(o -> (o instanceof Number))
+                .map(o -> ((Number)o).longValue())
+                .min(Long::compareTo).orElse(0L);
 
-        filters.chromosome = (chromosome.length() < 2) ? String.format("chr%s", chromosome) : chromosome;
+        filters.chromosome = (chromosome.length() < 2) ? String.format("chr%s", chromosome) : getChromosome(json);
 
         data.assemblyName = json.getAsString("assembly_name");
         data.end = json.getAsNumber("end").longValue();
@@ -701,9 +704,12 @@ public class AnfisaConnector implements Closeable {
                 }
 
                 gnomAD.proband = (isProbandHasAllele(dataLine, samples, allele)) ? "Yes" : "No";
-                gnomAD.af = gnomadResult.overall.af;
+                if (gnomadResult.overall != null) {
+                    gnomAD.af = gnomadResult.overall.af;
+                    gnomAD.hom = gnomadResult.overall.hom;
+                    gnomAD.hem = gnomadResult.overall.hem;
+                }
                 gnomAD.popMax = String.format("%s: %s [%s]", gnomadResult.popmax, gnomadResult.popmaxAf, gnomadResult.popmaxAn);
-                gnomAD.hom = gnomadResult.overall.hom;
                 gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);
 
                 view.gnomAD.add(gnomAD);
@@ -1054,7 +1060,7 @@ public class AnfisaConnector implements Closeable {
         return null;
     }
 
-    private static List<Long> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, JSONObject json, String kind) {
+    private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, JSONObject json, String kind) {
         List<Object[]> distFromBoundary;
         if ("canonical".equals(kind)) {
             distFromBoundary = gtfAnfisaResult.distFromBoundaryCanonical;
@@ -1072,8 +1078,8 @@ public class AnfisaConnector implements Closeable {
         return unique(
                 getHgvsList(json, "c", kind).stream()
                         .map(hgvcs -> getDistanceHgvsc(hgvcs))
-                        .filter(aLong -> aLong != null)
-                        .collect(Collectors.toList())
+                        .collect(Collectors.toList()),
+                "Exonic"
         );
     }
 
@@ -1128,7 +1134,7 @@ public class AnfisaConnector implements Closeable {
                     }
                 }
             }
-            return (long) d;
+            return (d != null) ? d.longValue() : null;
         } catch (Exception e) {
             log.error("Exception ", e);
             return null;
@@ -1500,11 +1506,18 @@ public class AnfisaConnector implements Closeable {
         if (dataLine == null || dataLine.getVariants().isEmpty()) {
             return null;
         }
-        pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
 
-        List<String> alleles = Lists.newArrayList(variant.getRef(), variant.getAlt());
+        List<String> alleles = new ArrayList<>();
+        for (pro.parseq.vcf.types.Variant variant : dataLine.getVariants()) {
+            if (!alleles.contains(variant.getRef())) {
+                alleles.add(variant.getRef());
+            }
+            if (!alleles.contains(variant.getAlt())) {
+                alleles.add(variant.getAlt());
+            }
+        }
 
-        List<String> gt_alleles_list = (List<String>) variant.getFormats().get(genotype).get("GT");
+        List<String> gt_alleles_list = (List<String>) dataLine.getVariants().get(0).getFormats().get(genotype).get("GT");
         if (gt_alleles_list.size() != 1) {
             throw new RuntimeException("Not support");
         }
@@ -1684,6 +1697,9 @@ public class AnfisaConnector implements Closeable {
         return samples.get(proband).sex;
     }
 
+    private static <T> List<T> unique(List<T> lst) {
+        return unique(lst, null);
+    }
 
     /**
      * TODO Ulitin V. Необходимо выяснить, нужна ли такая особенность пострения уникального списка
@@ -1694,8 +1710,8 @@ public class AnfisaConnector implements Closeable {
      * @param lst
      * @return
      */
-    private static <T> List<T> unique(List<T> lst) {
-        if (lst == null || lst.isEmpty() || lst.size() == 1) {
+    private static <T> List<T> unique(List<T> lst, T replace_None) {
+        if (lst == null) {
             return lst;
         }
         List<T> result = new ArrayList<>();
@@ -1705,6 +1721,14 @@ public class AnfisaConnector implements Closeable {
             } else {
                 result.remove(item);
                 result.add(0, item);
+            }
+        }
+        if (replace_None != null) {
+             if (result.contains(null)) {
+                result.remove(null);
+                if (!result.contains(replace_None)) {
+                    result.add(replace_None);
+                }
             }
         }
         return result;

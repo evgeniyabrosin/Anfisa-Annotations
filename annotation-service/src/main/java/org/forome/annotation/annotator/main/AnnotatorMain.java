@@ -1,11 +1,10 @@
 package org.forome.annotation.annotator.main;
 
-import io.reactivex.Observable;
 import org.forome.annotation.Main;
 import org.forome.annotation.annotator.Annotator;
+import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
@@ -19,6 +18,7 @@ import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AnnotatorMain {
 
@@ -54,7 +54,7 @@ public class AnnotatorMain {
             );
 
             Annotator annotator = new Annotator(anfisaConnector);
-            Observable<AnfisaResult> result = annotator.exec(
+            AnnotatorResult annotatorResult = annotator.exec(
                     arguments.caseName,
                     arguments.pathFam,
                     arguments.pathVepFilteredVcf,
@@ -63,13 +63,22 @@ public class AnnotatorMain {
             );
             Files.deleteIfExists(arguments.pathOutput);
             Files.createFile(arguments.pathOutput);
+            AtomicInteger count = new AtomicInteger();
             try (OutputStream os = Files.newOutputStream(arguments.pathOutput)) {
                 try (BufferedOutputStream bos = new BufferedOutputStream(os)) {
-                    result.blockingSubscribe(
+                    String outMetadata = GetAnfisaJSONController.build(annotatorResult.metadata).toJSONString();
+                    bos.write(outMetadata.getBytes(StandardCharsets.UTF_8));
+                    bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+
+                    annotatorResult.observableAnfisaResult.blockingSubscribe(
                             anfisaResult -> {
                                 String out = GetAnfisaJSONController.build(anfisaResult).toJSONString();
                                 bos.write(out.getBytes(StandardCharsets.UTF_8));
                                 bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+
+                                if (count.getAndIncrement() % 100 == 0) {
+                                    log.debug("progress (count): {}", count.get());
+                                }
                             },
                             e -> {
                                 Main.crash(e);
@@ -77,6 +86,7 @@ public class AnnotatorMain {
                     );
                 }
             }
+            System.exit(0);
         } catch (Throwable e) {
             log.error("Exception arguments parser", e);
             System.exit(2);

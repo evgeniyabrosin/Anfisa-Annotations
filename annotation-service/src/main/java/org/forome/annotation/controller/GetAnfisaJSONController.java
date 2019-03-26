@@ -5,21 +5,23 @@ import com.google.common.base.Strings;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
+import org.forome.annotation.Service;
+import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultData;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultFilters;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultView;
+import org.forome.annotation.controller.utils.RequestParser;
+import org.forome.annotation.controller.utils.ResponseBuilder;
+import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.struct.Sample;
+import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.forome.annotation.Service;
-import org.forome.annotation.controller.utils.RequestParser;
-import org.forome.annotation.controller.utils.ResponseBuilder;
-import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.utils.ExecutorServiceUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -465,6 +467,41 @@ public class GetAnfisaJSONController {
         out.put("other_genes", bioinformatics.otherGenes);
         out.put("species_with_others", bioinformatics.speciesWithOthers);
         out.put("inherited_from", bioinformatics.inheritedFrom);
+        return out;
+    }
+
+    public static JSONObject build(AnnotatorResult.Metadata metadata) {
+        JSONObject out = new JSONObject();
+        out.put("case", metadata.caseSequence);
+        out.put("record_type", metadata.recordType);
+        out.put("versions", metadata.versions);
+        out.put("samples", new JSONObject(){{
+            for(Sample sample: metadata.samples.values()) {
+                put(sample.name, build(sample));
+            }
+        }});
+        return out;
+    }
+
+    public static JSONObject build(AnnotatorResult.Metadata.Versions versions) {
+        JSONObject out = new JSONObject();
+        out.put("pipeline_date", versions.pipelineDate);
+        out.put("annotations_date", versions.annotationsDate);
+        out.put("pipeline", versions.pipeline);
+        out.put("annotations", versions.annotations);
+        out.put("reference", versions.reference);
+        return out;
+    }
+
+    public static JSONObject build(Sample sample) {
+        JSONObject out = new JSONObject();
+        out.put("affected", sample.affected);
+        out.put("name", sample.name);
+        out.put("family", sample.family);
+        out.put("father", sample.father);
+        out.put("sex", sample.sex);
+        out.put("mother", sample.mother);
+        out.put("id", sample.id);
         return out;
     }
 }
