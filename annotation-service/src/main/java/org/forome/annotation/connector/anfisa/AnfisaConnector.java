@@ -188,7 +188,7 @@ public class AnfisaConnector implements Closeable {
         List<Object> d = getDistanceFromExon(gtfAnfisaResult, json, "worst");
         filters.distFromExon = d.stream()
                 .filter(o -> (o instanceof Number))
-                .map(o -> ((Number)o).longValue())
+                .map(o -> ((Number) o).longValue())
                 .min(Long::compareTo).orElse(0L);
 
         filters.chromosome = (chromosome.length() < 2) ? String.format("chr%s", chromosome) : getChromosome(json);
@@ -219,7 +219,7 @@ public class AnfisaConnector implements Closeable {
 
         createGeneralTab(data, view, start, end, json, caseSequence, dataLine, samples);
         createQualityTab(filters, view, dataLine, samples);
-        createGnomadTab(dataLine, samples, json, filters, data, view);
+        createGnomadTab(chromosome, dataLine, samples, json, filters, data, view);
         createDatabasesTab(json, record, data, view);
         createPredictionsTab(json, view);
         createBioinformaticsTab(gtfAnfisaResult, json, data, view, dataLine, samples);
@@ -684,7 +684,7 @@ public class AnfisaConnector implements Closeable {
         }
     }
 
-    private void createGnomadTab(DataLine dataLine, Map<String, Sample> samples, JSONObject json, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view) {
+    private void createGnomadTab(String chromosome, DataLine dataLine, Map<String, Sample> samples, JSONObject json, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view) {
         Double gnomadAf = getGnomadAf(filters);
         if (gnomadAf != null && Math.abs(gnomadAf) > 0.000001D) {
             for (String allele : alt_list(dataLine, samples, json)) {
@@ -714,7 +714,32 @@ public class AnfisaConnector implements Closeable {
 
                 view.gnomAD.add(gnomAD);
             }
+        } else {
+            int p1 = lowest_coord(json) - 2;
+            int p2 = highest_coord(json) + 1;
+
+            AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
+            gnomAD.url = new String[]{
+                String.format("https://gnomad.broadinstitute.org/region/%s-%s-%s", chromosome, p1, p2)
+            };
+            view.gnomAD.add(gnomAD);
         }
+    }
+
+    private static int lowest_coord(JSONObject json) {
+        return Math.min(start(json), end(json));
+    }
+
+    private static int highest_coord(JSONObject json) {
+        return Math.max(start(json), end(json));
+    }
+
+    private static int start(JSONObject json) {
+        return json.getAsNumber("start").intValue();
+    }
+
+    private static int end(JSONObject json) {
+        return json.getAsNumber("end").intValue();
     }
 
     private static List<Double> getPLIByAllele(JSONObject json, String allele) {
@@ -973,7 +998,14 @@ public class AnfisaConnector implements Closeable {
                         counts.put(al, counts.getOrDefault(al, 0L) + n);
                     }
                 }
-                return alt_allels.stream().filter(s -> counts.containsKey(s) && counts.get(s) > 0).collect(Collectors.toList());
+                List<String> tmp_alt_allels = alt_allels.stream()
+                        .filter(s -> counts.containsKey(s) && counts.get(s) > 0)
+                        .collect(Collectors.toList());
+                if (!tmp_alt_allels.isEmpty()) {
+                    return tmp_alt_allels;
+                } else {
+                    return alt_allels;
+                }
             } else {
                 return alt_allels;
             }
@@ -1724,7 +1756,7 @@ public class AnfisaConnector implements Closeable {
             }
         }
         if (replace_None != null) {
-             if (result.contains(null)) {
+            if (result.contains(null)) {
                 result.remove(null);
                 if (!result.contains(replace_None)) {
                     result.add(replace_None);

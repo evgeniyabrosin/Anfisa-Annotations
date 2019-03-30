@@ -401,18 +401,22 @@ public class GetAnfisaJSONController {
 
     private static JSONObject build(AnfisaResultView.GnomAD gnomAD) {
         JSONObject out = new JSONObject();
-        out.put("exome_an", gnomAD.exomeAn);
-        out.put("af", gnomAD.af);
-        out.put("url", gnomAD.url);
-        out.put("exome_af", gnomAD.exomeAf);
-        out.put("proband", gnomAD.proband);
-        out.put("genome_an", gnomAD.genomeAn);
-        out.put("genome_af", gnomAD.genomeAf);
-        out.put("allele", gnomAD.allele);
-        out.put("pli", gnomAD.pli);
-        out.put("pop_max", gnomAD.popMax);
-        out.put("hom", gnomAD.hom);
-        out.put("hem", gnomAD.hem);
+        if (gnomAD.allele != null) {
+            out.put("exome_an", gnomAD.exomeAn);
+            out.put("af", gnomAD.af);
+            out.put("url", gnomAD.url);
+            out.put("exome_af", gnomAD.exomeAf);
+            out.put("proband", gnomAD.proband);
+            out.put("genome_an", gnomAD.genomeAn);
+            out.put("genome_af", gnomAD.genomeAf);
+            out.put("allele", gnomAD.allele);
+            out.put("pli", gnomAD.pli);
+            out.put("pop_max", gnomAD.popMax);
+            out.put("hom", gnomAD.hom);
+            out.put("hem", gnomAD.hem);
+        } else {
+            out.put("url", gnomAD.url);
+        }
         return out;
     }
 
