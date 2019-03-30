@@ -24,7 +24,12 @@ public class ServiceConfig {
 
 	public ServiceConfig() throws Exception {
 
-		Path configFile = Paths.get("config.json").toAbsolutePath();
+		dataPath = Paths.get("data");
+		if (!Files.exists(dataPath)) {
+			Files.createDirectory(dataPath);
+		}
+
+		Path configFile = dataPath.resolve("config.json").toAbsolutePath();
 		if (!Files.exists(configFile)) {
 			throw new RuntimeException("File: " + configFile.toString() + " not found");
 		}
@@ -39,10 +44,6 @@ public class ServiceConfig {
 		hgmdConfigConnector = new HgmdConfigConfigConnector((JSONObject) jConnectors.get("hgmd"));
 		gtfConfigConnector = new GTFConfigConfigConnector((JSONObject) jConnectors.get("gtf"));
 
-		dataPath = Paths.get("data");
-		if (!Files.exists(dataPath)) {
-			Files.createDirectory(dataPath);
-		}
 	}
 
 }
