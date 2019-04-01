@@ -183,7 +183,7 @@ public class JSONEquals {
                         }
                     }
                 }
-                throw new Exception("Not equals: " + value1.toString() + " and " + value2.toString());
+                throw new Exception("Not equals: '" + value1.toString() + "' and '" + value2.toString() + "'");
             }
         } else {
             throw new Exception("Not support type1: " + value1.getClass() + ", type2: " + value2.getClass());

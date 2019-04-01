@@ -375,6 +375,10 @@ public class AnfisaConnector implements Closeable {
     private GtfAnfisaResult callGtf(long start, long end, JSONObject json) {
         GtfAnfisaResult gtfAnfisaResult = new GtfAnfisaResult();
 
+        //TODO Ulitin V. Отличие от python-реализации
+        //Дело в том, что в оригинальной версии используется set для позиции, но в коде ниже используется итерация этому
+        //списку и в конечном итоге это вляет на значение поля region - судя по всему это потенциальный баг и
+        //необходима консультация с Михаилом
         List<Long> pos = new ArrayList<>();
         pos.add(start);
         if (start != end) {
@@ -1504,11 +1508,15 @@ public class AnfisaConnector implements Closeable {
     }
 
     private static Object[] getGenotypes(DataLine dataLine, Map<String, Sample> samples) {
+        String empty = "Can not be determined";
         String proband = getProband(samples);
         if (proband == null) {
             return new Object[]{null, null, null, null};
         }
         String probandGenotype = getGtBasesGenotype(dataLine, proband);
+        if (probandGenotype==null) {
+            probandGenotype = empty;
+        }
 
         String mother = samples.get(proband).mother;
         if ("0".equals(mother)) {
@@ -1522,10 +1530,11 @@ public class AnfisaConnector implements Closeable {
         }
         String paternalGenotype = (father != null) ? getGtBasesGenotype(dataLine, father) : null;
 
+        String finalProbandGenotype = probandGenotype;
         List<String> otherGenotypes = samples.keySet().stream()
                 .map(genotype -> getGtBasesGenotype(dataLine, genotype))
                 .filter(gtBases -> gtBases != null)
-                .filter(gtBases -> !gtBases.equals(probandGenotype))
+                .filter(gtBases -> !gtBases.equals(finalProbandGenotype))
                 .filter(gtBases -> !gtBases.equals(maternalGenotype))
                 .filter(gtBases -> !gtBases.equals(paternalGenotype))
                 .distinct()
