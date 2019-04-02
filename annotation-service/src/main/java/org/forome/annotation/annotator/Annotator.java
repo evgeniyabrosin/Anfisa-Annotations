@@ -10,6 +10,7 @@ import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.struct.Sample;
+import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import pro.parseq.vcf.VcfExplorer;
 import pro.parseq.vcf.exceptions.InvalidVcfFileException;
 import pro.parseq.vcf.types.DataLine;
@@ -24,8 +25,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class Annotator {
+
+    private static final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
     private final AnfisaConnector anfisaConnector;
 
@@ -114,27 +121,58 @@ public class Annotator {
         return new AnnotatorResult(
                 AnnotatorResult.Metadata.build(caseSequence, vcfExplorer, samples),
                 Observable.create(o -> {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                for (int i = startPosition; i < vepFilteredVepJsons.size(); i++) {
-                                    JSONObject json = vepFilteredVepJsons.get(i);
+                    try {
+                        ExecutorService threadPool = new DefaultThreadPoolExecutor(
+                                MAX_THREAD_COUNT,
+                                MAX_THREAD_COUNT,
+                                0L,
+                                TimeUnit.MILLISECONDS,
+                                new LinkedBlockingQueue<>(),
+                                "AnnotatorExecutorQueue",
+                                (t, e) -> {
+                                    o.tryOnError(e);
+                                }
+                        );
+
+                        List<CompletableFuture<AnfisaResult>> futures = new ArrayList<>();
+                        for (int i = startPosition; i < vepFilteredVepJsons.size(); i++) {
+                            CompletableFuture<AnfisaResult> future = new CompletableFuture();
+                            int finalI = i;
+                            threadPool.submit(() -> {
+                                try {
+                                    JSONObject json = vepFilteredVepJsons.get(finalI);
                                     String chromosome = RequestParser.toChromosome(json.getAsString("seq_region_name"));
                                     long start = json.getAsNumber("start").longValue();
                                     long end = json.getAsNumber("end").longValue();
 
-                                    DataLine dataLine = (DataLine) vcfExplorer.getVcfData().getDataLines().get(i);
+                                    DataLine dataLine = (DataLine) vcfExplorer.getVcfData().getDataLines().get(finalI);
 
                                     AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, start, end, json, dataLine, samples);
-                                    o.onNext(anfisaResult);
+                                    future.complete(anfisaResult);
+                                } catch (Throwable e) {
+                                    future.completeExceptionally(e);
                                 }
-                                o.onComplete();
-                            } catch (Throwable t) {
-                                o.tryOnError(t);
-                            }
+                            });
+                            futures.add(future);
                         }
-                    }).start();
+
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    for (CompletableFuture<AnfisaResult> future : futures) {
+                                        o.onNext(future.get());
+                                    }
+                                    o.onComplete();
+                                } catch (Throwable t) {
+                                    o.tryOnError(t);
+                                }
+                            }
+                        }).start();
+
+                    } catch (Throwable t) {
+                        o.tryOnError(t);
+                    }
                 })
         );
     }
