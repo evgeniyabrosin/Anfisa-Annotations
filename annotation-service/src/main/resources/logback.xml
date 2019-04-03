@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="30 seconds">
 
-    <conversionRule conversionWord="tid" converterClass="ru.processtech.utils.LogbackThreadId"/>
+    <conversionRule conversionWord="tid" converterClass="org.forome.utils.LogbackThreadId"/>
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -28,7 +28,7 @@
         </encoder>
     </appender>
 
-    <logger name="ru.processtech" level="trace" additivity="false">
+    <logger name="org.forome" level="trace" additivity="false">
         <appender-ref ref="console"/>
         <appender-ref ref="logfile"/>
     </logger>
