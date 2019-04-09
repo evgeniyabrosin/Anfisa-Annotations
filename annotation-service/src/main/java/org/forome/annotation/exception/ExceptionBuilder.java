@@ -2,7 +2,9 @@ package org.forome.annotation.exception;
 
 
 import com.infomaximum.database.exception.DatabaseException;
+import pro.parseq.vcf.exceptions.InvalidVcfFileException;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -22,12 +24,28 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("external_service_error", cause);
 	}
 
+	public static ServiceException buildNotMultipartRequestException() {
+		return EXCEPTION_FACTORY.build("not_multipart_request");
+	}
+
+	public static ServiceException buildFileNotUploadException() {
+		return EXCEPTION_FACTORY.build("file_not_upload");
+	}
+
+	public static ServiceException buildIOErrorException(IOException e) {
+		return EXCEPTION_FACTORY.build("io_error", e);
+	}
+
 	public static ServiceException buildOperationException(Throwable cause) {
 		return EXCEPTION_FACTORY.build("operation_error", cause);
 	}
 
 	public static ServiceException buildInvalidCredentialsException() {
 		return EXCEPTION_FACTORY.build("invalid_credentials");
+	}
+
+	public static ServiceException buildInvalidVcfFileException(InvalidVcfFileException cause) {
+		return EXCEPTION_FACTORY.build("invalid_vcf_file", cause);
 	}
 
 	public static ServiceException buildNotUniqueValueException(String fieldName, Object fieldValue) {

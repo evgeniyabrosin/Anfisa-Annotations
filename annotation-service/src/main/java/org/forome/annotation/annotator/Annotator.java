@@ -11,9 +11,12 @@ import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pro.parseq.vcf.VcfExplorer;
 import pro.parseq.vcf.exceptions.InvalidVcfFileException;
 import pro.parseq.vcf.types.DataLine;
+import pro.parseq.vcf.types.Variant;
 import pro.parseq.vcf.types.VcfLine;
 import pro.parseq.vcf.utils.*;
 
@@ -32,6 +35,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class Annotator {
+
+    private final static Logger log = LoggerFactory.getLogger(Annotator.class);
 
     private static final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
@@ -117,7 +122,7 @@ public class Annotator {
             String caseName,
             InputStream isVcf,
             int startPosition
-    ) throws IOException, InvalidVcfFileException {
+    ) throws InvalidVcfFileException {
 
         VcfReader reader = new InputStreamVcfReader(isVcf);
         VcfParser parser = new VcfParserImpl();
@@ -163,15 +168,33 @@ public class Annotator {
                             int finalI = i;
                             threadPool.submit(() -> {
                                 try {
-                                    JSONObject json = vepFilteredVepJsons.get(finalI);
-                                    String chromosome = RequestParser.toChromosome(json.getAsString("seq_region_name"));
-                                    long start = json.getAsNumber("start").longValue();
-                                    long end = json.getAsNumber("end").longValue();
-
                                     DataLine dataLine = (DataLine) vcfLines.get(finalI);
+                                    log.debug("dataLine: " + dataLine);
 
-                                    AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, start, end, json, dataLine, samples);
-                                    future.complete(anfisaResult);
+                                    if (vepFilteredVepJsons != null) {
+                                        JSONObject json = vepFilteredVepJsons.get(finalI);
+                                        String chromosome = RequestParser.toChromosome(json.getAsString("seq_region_name"));
+                                        long start = json.getAsNumber("start").longValue();
+                                        long end = json.getAsNumber("end").longValue();
+
+                                        AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, start, end, json, dataLine, samples);
+                                        future.complete(anfisaResult);
+                                    } else {
+                                        Variant variant = dataLine.getVariants().stream().findFirst().orElse(null);
+                                        if (variant == null) {
+                                            future.completeExceptionally(new RuntimeException("Variant is empty"));
+                                        }
+                                        String chromosome = RequestParser.toChromosome(variant.getChrom());
+                                        long start = variant.getPos();
+                                        long end = variant.getPos();
+                                        String alternative = variant.getAlt();
+
+                                        anfisaConnector.request(chromosome, start, end, alternative)
+                                                .thenApply(anfisaResults -> {
+                                                    future.complete(anfisaResults.get(0));
+                                                    return null;
+                                                });
+                                        }
                                 } catch (Throwable e) {
                                     future.completeExceptionally(e);
                                 }

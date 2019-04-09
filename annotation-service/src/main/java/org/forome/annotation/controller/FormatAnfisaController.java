@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -136,6 +137,9 @@ public class FormatAnfisaController {
                             Throwable throwable = ex;
                             if (ex instanceof CompletionException) {
                                 throwable = ex.getCause();
+                            }
+                            if (throwable instanceof IOException) {
+                                throwable = ExceptionBuilder.buildExternalServiceException(throwable);
                             }
                             log.error("Exception execute request", throwable);
                             future.completeExceptionally(throwable);
