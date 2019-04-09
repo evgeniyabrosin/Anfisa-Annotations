@@ -31,7 +31,7 @@ public class FormatAnfisaHttpClient {
 
     private final static Logger log = LoggerFactory.getLogger(FormatAnfisaHttpClient.class);
 
-    private static String HOST = "anfisa.forome.org";
+    private static String HOST = "anfisa.forome.dev";
 
     private final RequestConfig requestConfig;
     private final PoolingNHttpClientConnectionManager connectionManager;
@@ -50,7 +50,7 @@ public class FormatAnfisaHttpClient {
         connectionManager.setMaxTotal(100);
         connectionManager.setDefaultMaxPerRoute(100);
 
-        httpHost = new HttpHost(HOST);
+        httpHost = new HttpHost(HOST, 443, "https");
 
         //TODO Ulitin V. Необходимо решить проблему с авторизацией, ее поидее быть недолжно, необходимо общее размещение в защищенном контуре
         credentialsProvider = new BasicCredentialsProvider();
@@ -73,7 +73,7 @@ public class FormatAnfisaHttpClient {
             httpclient.start();
 
 
-            HttpPost httpPostRequest = new HttpPost(new URI("http://" + HOST + "/anfisa-anno/app/single_cnt"));
+            HttpPost httpPostRequest = new HttpPost(new URI("https://" + HOST + "/anfisa-anno/app/single_cnt"));
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(6);
             nameValuePairs.add(new BasicNameValuePair("record", anfisaResult));
             httpPostRequest.setEntity(new UrlEncodedFormEntity(nameValuePairs));

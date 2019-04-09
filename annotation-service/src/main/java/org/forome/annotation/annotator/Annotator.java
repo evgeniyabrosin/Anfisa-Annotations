@@ -14,6 +14,7 @@ import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import pro.parseq.vcf.VcfExplorer;
 import pro.parseq.vcf.exceptions.InvalidVcfFileException;
 import pro.parseq.vcf.types.DataLine;
+import pro.parseq.vcf.types.VcfLine;
 import pro.parseq.vcf.utils.*;
 
 import java.io.BufferedReader;
@@ -112,6 +113,27 @@ public class Annotator {
         );
     }
 
+    public AnnotatorResult exec(
+            String caseName,
+            InputStream isVcf,
+            int startPosition
+    ) throws IOException, InvalidVcfFileException {
+
+        VcfReader reader = new InputStreamVcfReader(isVcf);
+        VcfParser parser = new VcfParserImpl();
+        VcfExplorer vcfExplorer = new VcfExplorer(reader, parser);
+        vcfExplorer.parse(FaultTolerance.FAIL_FAST);
+
+        Map<String, Sample> samples = null; //CaseUtils.parseFamFile(isFam);
+
+        return annotateJson(
+                String.format("%s_wgs", caseName),
+                null,
+                vcfExplorer, samples,
+                startPosition
+        );
+    }
+
     private AnnotatorResult annotateJson(
             String caseSequence,
             List<JSONObject> vepFilteredVepJsons,
@@ -135,7 +157,8 @@ public class Annotator {
                         );
 
                         List<CompletableFuture<AnfisaResult>> futures = new ArrayList<>();
-                        for (int i = startPosition; i < vepFilteredVepJsons.size(); i++) {
+                        List<VcfLine> vcfLines = vcfExplorer.getVcfData().getDataLines();
+                        for (int i = startPosition; i < vcfLines.size(); i++) {
                             CompletableFuture<AnfisaResult> future = new CompletableFuture();
                             int finalI = i;
                             threadPool.submit(() -> {
@@ -145,7 +168,7 @@ public class Annotator {
                                     long start = json.getAsNumber("start").longValue();
                                     long end = json.getAsNumber("end").longValue();
 
-                                    DataLine dataLine = (DataLine) vcfExplorer.getVcfData().getDataLines().get(finalI);
+                                    DataLine dataLine = (DataLine) vcfLines.get(finalI);
 
                                     AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, start, end, json, dataLine, samples);
                                     future.complete(anfisaResult);
