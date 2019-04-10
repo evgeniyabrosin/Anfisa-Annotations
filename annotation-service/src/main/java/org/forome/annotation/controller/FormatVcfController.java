@@ -91,9 +91,9 @@ public class FormatVcfController {
         CompletableFuture<ResponseEntity> completableFuture = new CompletableFuture<>();
         List<JSONObject> ourResults = Collections.synchronizedList(new ArrayList<JSONObject>());
         annotatorResult.observableAnfisaResult
-                .map(anfisaResult -> new Object[]{anfisaResult, GetAnfisaJSONController.build(anfisaResult)} )
+                .map(anfisaResult -> new Object[]{anfisaResult, GetAnfisaJSONController.build(anfisaResult)})
                 .flatMap(result ->
-                        Observable.fromFuture(formatAnfisaHttpClient.request(((JSONObject)result[1]).toJSONString())
+                        Observable.fromFuture(formatAnfisaHttpClient.request(((JSONObject) result[1]).toJSONString())
                                 .thenApply(body -> {
                                     Object rawResponse;
                                     try {
@@ -121,7 +121,9 @@ public class FormatVcfController {
                         add(anfisaResult.data.end);
                         add(anfisaResult.data.alt);
                     }});
-                    out.put("result", results);
+                    out.put("result", new JSONArray() {{
+                        add(results);
+                    }});
                     return out;
                 })
                 .subscribe(jsonArray -> {
@@ -129,16 +131,18 @@ public class FormatVcfController {
                 }, throwable -> {
                     try {
                         inputStream.close();
-                    } catch (Throwable e) {}
+                    } catch (Throwable e) {
+                    }
                     log.error("Exception execute request", throwable);
                     completableFuture.completeExceptionally(throwable);
                 }, () -> {
                     try {
                         inputStream.close();
-                    } catch (Throwable e) {}
+                    } catch (Throwable e) {
+                    }
 
                     JSONArray out = new JSONArray();
-                    for (JSONObject jsonObject: ourResults) {
+                    for (JSONObject jsonObject : ourResults) {
                         out.add(jsonObject);
                     }
                     completableFuture.complete(ResponseBuilder.build(out));
