@@ -1,21 +1,22 @@
 package org.forome.annotation;
 
+import org.forome.annotation.config.Config;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
+import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.database.DatabaseService;
+import org.forome.annotation.database.entityobject.user.UserReadable;
 import org.forome.annotation.exception.ServiceException;
 import org.forome.annotation.executionqueue.*;
 import org.forome.annotation.network.NetworkService;
 import org.forome.annotation.network.component.UserEditableComponent;
+import org.forome.annotation.utils.ArgumentParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.forome.annotation.connector.gtf.GTFConnector;
-import org.forome.annotation.database.DatabaseService;
-import org.forome.annotation.database.entityobject.user.UserReadable;
-import org.forome.annotation.utils.ArgumentParser;
 
 import java.io.IOException;
 
@@ -58,6 +59,7 @@ public class Service {
 	private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
 	private final ExecutionQueue executionQueue;
 
+	private final Config config;
 	private final ServiceConfig serviceConfig;
 	private final DatabaseService databaseService;
 	private final NetworkService networkService;
@@ -75,6 +77,7 @@ public class Service {
 		this.uncaughtExceptionHandler = uncaughtExceptionHandler;
 		this.executionQueue = new ExecutionQueue(uncaughtExceptionHandler);
 
+		this.config = new Config();
 		this.serviceConfig = new ServiceConfig();
 		this.databaseService = new DatabaseService(this);
 		this.networkService = new NetworkService(arguments.port, uncaughtExceptionHandler);
@@ -113,6 +116,10 @@ public class Service {
 
 	public Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
 		return uncaughtExceptionHandler;
+	}
+
+	public Config getConfig() {
+		return config;
 	}
 
 	public ServiceConfig getServiceConfig() {

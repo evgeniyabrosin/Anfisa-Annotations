@@ -53,20 +53,33 @@ public class Annotator {
             Path pathVepFilteredVepJson,
             int startPosition
     ) throws IOException, ParseException, InvalidVcfFileException {
+        if (!Files.exists(pathFam)) {
+            throw new RuntimeException("Fam file is not exists: " + pathFam.toAbsolutePath());
+        }
         if (!pathFam.getFileName().toString().endsWith(".fam")) {
             throw new IllegalArgumentException("Bad name fam file: " + pathFam.toAbsolutePath());
         }
-        if (!pathVepFilteredVcf.getFileName().toString().endsWith(".vep.filtered.vcf")) {
-            throw new IllegalArgumentException("Bad name VepFilteredVcf file: " + pathVepFilteredVcf.toAbsolutePath());
+
+        if (!Files.exists(pathVepFilteredVcf)) {
+            throw new RuntimeException("Vcf file is not exists: " + pathVepFilteredVcf.toAbsolutePath());
         }
-        if (!pathVepFilteredVepJson.getFileName().toString().endsWith(".vep.filtered.vep.json")) {
-            throw new IllegalArgumentException("Bad name pathVepFilteredVepJson file: " + pathVepFilteredVepJson.toAbsolutePath());
+        if (!pathVepFilteredVcf.getFileName().toString().endsWith(".vcf")) {
+            throw new IllegalArgumentException("Bad name vcf file (Need *.vcf): " + pathVepFilteredVcf.toAbsolutePath());
+        }
+
+        if (pathVepFilteredVepJson != null) {
+            if (!Files.exists(pathVepFilteredVepJson)) {
+                throw new RuntimeException("VepJson file is not exists: " + pathVepFilteredVepJson.toAbsolutePath());
+            }
+            if (!pathVepFilteredVepJson.getFileName().toString().endsWith(".vep.json")) {
+                throw new IllegalArgumentException("Bad name pathVepFilteredVepJson file (Need *.vep.json): " + pathVepFilteredVepJson.toAbsolutePath());
+            }
         }
 
         try (
                 InputStream isFam = Files.newInputStream(pathFam);
                 InputStream isVepFilteredVcf = Files.newInputStream(pathVepFilteredVcf);
-                InputStream isVepFilteredVepJson = Files.newInputStream(pathVepFilteredVepJson);
+                InputStream isVepFilteredVepJson = (pathVepFilteredVepJson != null) ? Files.newInputStream(pathVepFilteredVepJson): null
         ) {
             return exec(
                     caseName,
@@ -86,21 +99,24 @@ public class Annotator {
             int startPosition
     ) throws IOException, ParseException, InvalidVcfFileException {
 
-        List<JSONObject> vepFilteredVepJsons = new ArrayList<>();
-        try (BufferedReader isBVepJson = new BufferedReader(new InputStreamReader(isVepFilteredVepJson))) {
-            String line;
-            while ((line = isBVepJson.readLine()) != null) {
-                JSONObject json = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(line);
-                vepFilteredVepJsons.add(json);
+        List<JSONObject> vepFilteredVepJsons = null;
+        if (isVepFilteredVepJson != null) {
+            vepFilteredVepJsons = new ArrayList<>();
+            try (BufferedReader isBVepJson = new BufferedReader(new InputStreamReader(isVepFilteredVepJson))) {
+                String line;
+                while ((line = isBVepJson.readLine()) != null) {
+                    JSONObject json = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(line);
+                    vepFilteredVepJsons.add(json);
+                }
             }
         }
 
         VcfReader reader = new InputStreamVcfReader(isVepFilteredVcf);
         VcfParser parser = new VcfParserImpl();
         VcfExplorer vcfExplorer = new VcfExplorer(reader, parser);
-        vcfExplorer.parse(FaultTolerance.FAIL_FAST);
+        vcfExplorer.parse(FaultTolerance.FAIL_SAFE);
 
-        if (vepFilteredVepJsons.size() != vcfExplorer.getVcfData().getDataLines().size()) {
+        if (vepFilteredVepJsons != null && vepFilteredVepJsons.size() != vcfExplorer.getVcfData().getDataLines().size()) {
             throw new RuntimeException(
                     String.format("Not equal record size VepJsons(%s) and Vcf file(%s)",
                             vepFilteredVepJsons.size(), vcfExplorer.getVcfData().getDataLines().size()
@@ -169,7 +185,6 @@ public class Annotator {
                             threadPool.submit(() -> {
                                 try {
                                     DataLine dataLine = (DataLine) vcfLines.get(finalI);
-                                    log.debug("dataLine: " + dataLine);
 
                                     if (vepFilteredVepJsons != null) {
                                         JSONObject json = vepFilteredVepJsons.get(finalI);
@@ -194,7 +209,7 @@ public class Annotator {
                                                     future.complete(anfisaResults.get(0));
                                                     return null;
                                                 });
-                                        }
+                                    }
                                 } catch (Throwable e) {
                                     future.completeExceptionally(e);
                                 }

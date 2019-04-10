@@ -12,11 +12,12 @@ public class AnnotatorArgumentParser {
 
     private final static Logger log = LoggerFactory.getLogger(Main.class);
 
-    private static final String OPTION_CASE_NAME = "case";
-    private static final String OPTION_FILE_FAM = "fam";
+    private static final String OPTION_FILE_CONFIG = "config";
     private static final String OPTION_FILE_VCF = "vcf";
     private static final String OPTION_FILE_VEP_JSON = "vepjson";
     private static final String OPTION_FILE_OUTPUT = "output";
+
+    public final Path config;
 
     public final String caseName;
     public final Path pathFam;
@@ -27,27 +28,21 @@ public class AnnotatorArgumentParser {
     public AnnotatorArgumentParser(String[] args) throws InterruptedException {
         Options options = new Options()
                 .addOption(Option.builder()
-                        .longOpt(OPTION_CASE_NAME)
+                        .longOpt(OPTION_FILE_CONFIG)
                         .hasArg(true)
                         .optionalArg(false)
-                        .desc("Case name")
-                        .build())
-                .addOption(Option.builder()
-                        .longOpt(OPTION_FILE_FAM)
-                        .hasArg(true)
-                        .optionalArg(false)
-                        .desc("Absolute path to fam file")
+                        .desc("Absolute path to config file")
                         .build())
                 .addOption(Option.builder()
                         .longOpt(OPTION_FILE_VCF)
                         .hasArg(true)
-                        .optionalArg(false)
+                        .optionalArg(true)
                         .desc("Absolute path to vcf file")
                         .build())
                 .addOption(Option.builder()
                         .longOpt(OPTION_FILE_VEP_JSON)
                         .hasArg(true)
-                        .optionalArg(false)
+                        .optionalArg(true)
                         .desc("Absolute path to vep.json file")
                         .build())
                 .addOption(Option.builder()
@@ -60,14 +55,36 @@ public class AnnotatorArgumentParser {
         try {
             CommandLine cmd = new DefaultParser().parse(options, args);
 
-            this.caseName = cmd.getOptionValue(OPTION_CASE_NAME);
-            this.pathFam = Paths.get(cmd.getOptionValue(OPTION_FILE_FAM));
-            this.pathVepFilteredVcf = Paths.get(cmd.getOptionValue(OPTION_FILE_VCF));
-            this.pathVepFilteredVepJson = Paths.get(cmd.getOptionValue(OPTION_FILE_VEP_JSON));
+            config = Paths.get(cmd.getOptionValue(OPTION_FILE_CONFIG));
+
+            Path dir = Paths.get("").toAbsolutePath();
+
+            caseName = dir.getFileName().toString();
+
+            pathFam = dir.resolve(String.format("%s.fam", caseName)).toAbsolutePath();
+
+            String strPathVepFilteredVepJson = cmd.getOptionValue(OPTION_FILE_VEP_JSON);
+            if (strPathVepFilteredVepJson != null) {
+                this.pathVepFilteredVepJson = Paths.get(strPathVepFilteredVepJson);
+            } else {
+                this.pathVepFilteredVepJson = null;
+            }
+
+            String strPathVepFilteredVcf = cmd.getOptionValue(OPTION_FILE_VCF);
+            if (strPathVepFilteredVcf != null) {
+                this.pathVepFilteredVcf = Paths.get(strPathVepFilteredVcf);
+            } else {
+                if (this.pathVepFilteredVepJson == null) {
+                    throw new IllegalArgumentException("Missing vcf file");
+                }
+                strPathVepFilteredVcf = this.pathVepFilteredVepJson.getFileName().toString().split("\\.")[0] + ".vcf";
+                this.pathVepFilteredVcf = Paths.get(strPathVepFilteredVcf);;
+            }
+
             this.pathOutput = Paths.get(cmd.getOptionValue(OPTION_FILE_OUTPUT));
 
         } catch (Throwable ex) {
-            System.out.println(ex.getMessage());
+            log.error("Exception: ", ex);
             new HelpFormatter().printHelp("", options);
 
             throw new InterruptedException();

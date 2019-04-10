@@ -683,7 +683,7 @@ public class AnfisaConnector implements Closeable {
             }
             q_s.put("allelic_depth", variant.getFormats().get(sample.name).get("AD"));
             q_s.put("read_depth", variant.getFormats().get(sample.name).get("DP").get(0));
-            q_s.put("genotype_quality", variant.getFormats().get(sample.name).get("GQ").get(0));
+            q_s.put("genotype_quality", getVariantGQ(variant, sample));
             view.qualitySamples.add(q_s);
         }
     }
@@ -724,7 +724,7 @@ public class AnfisaConnector implements Closeable {
 
             AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
             gnomAD.url = new String[]{
-                String.format("https://gnomad.broadinstitute.org/region/%s-%s-%s", chromosome, p1, p2)
+                    String.format("https://gnomad.broadinstitute.org/region/%s-%s-%s", chromosome, p1, p2)
             };
             view.gnomAD.add(gnomAD);
         }
@@ -1067,7 +1067,7 @@ public class AnfisaConnector implements Closeable {
         pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
         Integer GQ = null;
         for (Sample s : samples.values()) {
-            Integer gq = (Integer) variant.getFormats().get(s.name).get("GQ").get(0);
+            Integer gq = getVariantGQ(variant, s);
             if (gq != null && gq != 0) {
                 if (GQ == null || gq < GQ) {
                     GQ = gq;
@@ -1082,7 +1082,16 @@ public class AnfisaConnector implements Closeable {
             return null;
         }
         pro.parseq.vcf.types.Variant variant = dataLine.getVariants().get(0);
-        return (Integer) variant.getFormats().get(getProband(samples)).get("GQ").get(0);
+        return getVariantGQ(variant, samples.get(getProband(samples)));
+    }
+
+    private static Integer getVariantGQ(pro.parseq.vcf.types.Variant variant, Sample s) {
+        List<? extends Serializable> gqs = variant.getFormats().get(s.name).get("GQ");
+        if (gqs != null && !gqs.isEmpty()) {
+            return (Integer) gqs.get(0);
+        } else {
+            return null;
+        }
     }
 
     private Long getSeverity(JSONObject response) {
@@ -1514,7 +1523,7 @@ public class AnfisaConnector implements Closeable {
             return new Object[]{null, null, null, null};
         }
         String probandGenotype = getGtBasesGenotype(dataLine, proband);
-        if (probandGenotype==null) {
+        if (probandGenotype == null) {
             probandGenotype = empty;
         }
 
@@ -1565,10 +1574,16 @@ public class AnfisaConnector implements Closeable {
         String gt_alleles = gt_alleles_list.get(0);
         String[] sGtAlleles = gt_alleles.split("/");
 
-        return String.join("/",
-                alleles.get(Integer.parseInt(sGtAlleles[0])),
-                alleles.get(Integer.parseInt(sGtAlleles[1]))
-        );
+        try {
+            return String.join("/",
+                    alleles.get(Integer.parseInt(sGtAlleles[0])),
+                    alleles.get(Integer.parseInt(sGtAlleles[1]))
+            );
+        } catch (Throwable r) {
+            //log.warn("Bad format");
+            //TODO Ulitin V. Необходимо как то более красиво это обрабатывать
+            return null;
+        }
     }
 
     private static String getMostSevere(List<String> consequenceTerms) {

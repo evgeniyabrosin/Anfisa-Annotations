@@ -35,7 +35,7 @@ public class AnnotatorMain {
         }
 
         try {
-            ServiceConfig serviceConfig = new ServiceConfig();
+            ServiceConfig serviceConfig = new ServiceConfig(arguments.config);
             GnomadConnector gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, (t, e) -> {
                 Main.crash(e);
             });

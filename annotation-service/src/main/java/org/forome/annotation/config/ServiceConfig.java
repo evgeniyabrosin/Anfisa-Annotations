@@ -15,16 +15,16 @@ import java.nio.file.StandardOpenOption;
 
 public class ServiceConfig {
 
-	public final Path dataPath;
-
 	public final GnomadConfigConfigConnector gnomadConfigConnector;
 	public final ClinVarConfigConfigConnector clinVarConfigConnector;
 	public final HgmdConfigConfigConnector hgmdConfigConnector;
 	public final GTFConfigConfigConnector gtfConfigConnector;
 
 	public ServiceConfig() throws Exception {
+		this(Paths.get("config.json").toAbsolutePath());
+	}
 
-		Path configFile = Paths.get("config.json").toAbsolutePath();
+	public ServiceConfig(Path configFile) throws Exception {
 		if (!Files.exists(configFile)) {
 			throw new RuntimeException("File: " + configFile.toString() + " not found");
 		}
@@ -38,12 +38,6 @@ public class ServiceConfig {
 		clinVarConfigConnector = new ClinVarConfigConfigConnector((JSONObject) jConnectors.get("clinvar"));
 		hgmdConfigConnector = new HgmdConfigConfigConnector((JSONObject) jConnectors.get("hgmd"));
 		gtfConfigConnector = new GTFConfigConfigConnector((JSONObject) jConnectors.get("gtf"));
-
-
-		dataPath = Paths.get("data");
-		if (!Files.exists(dataPath)) {
-			Files.createDirectory(dataPath);
-		}
 	}
 
 }
