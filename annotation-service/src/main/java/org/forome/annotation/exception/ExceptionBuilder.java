@@ -24,6 +24,10 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("external_service_error", cause);
 	}
 
+	public static ServiceException buildExternalServiceException(Throwable cause, String comment) {
+		return EXCEPTION_FACTORY.build("external_service_error", comment, null, cause);
+	}
+
 	public static ServiceException buildNotMultipartRequestException() {
 		return EXCEPTION_FACTORY.build("not_multipart_request");
 	}

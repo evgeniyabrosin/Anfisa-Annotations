@@ -139,7 +139,7 @@ public class FormatAnfisaController {
                                 throwable = ex.getCause();
                             }
                             if (throwable instanceof IOException) {
-                                throwable = ExceptionBuilder.buildExternalServiceException(throwable);
+                                throwable = ExceptionBuilder.buildExternalServiceException(throwable, throwable.getMessage());
                             }
                             log.error("Exception execute request", throwable);
                             future.completeExceptionally(throwable);

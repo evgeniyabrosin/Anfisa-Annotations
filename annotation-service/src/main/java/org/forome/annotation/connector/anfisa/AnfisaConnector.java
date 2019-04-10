@@ -30,6 +30,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -124,7 +125,7 @@ public class AnfisaConnector implements Closeable {
                 log.error("Exception", ExceptionBuilder.buildExternalServiceException(new RuntimeException(error)));
                 return Collections.emptyList();
             } else {
-                throw new RuntimeException("Unknown response, endpoint: " + endpoint + " response: '" + body + "'");
+                throw new CompletionException("Exception", new IOException("Unknown response, endpoint: " + endpoint + " response: '" + body + "'"));
             }
         });
     }
