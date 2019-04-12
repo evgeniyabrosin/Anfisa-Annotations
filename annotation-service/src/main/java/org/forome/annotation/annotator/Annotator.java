@@ -29,10 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class Annotator {
 
@@ -79,7 +76,7 @@ public class Annotator {
         try (
                 InputStream isFam = Files.newInputStream(pathFam);
                 InputStream isVepFilteredVcf = Files.newInputStream(pathVepFilteredVcf);
-                InputStream isVepFilteredVepJson = (pathVepFilteredVepJson != null) ? Files.newInputStream(pathVepFilteredVepJson): null
+                InputStream isVepFilteredVepJson = (pathVepFilteredVepJson != null) ? Files.newInputStream(pathVepFilteredVepJson) : null
         ) {
             return exec(
                     caseName,
@@ -155,7 +152,7 @@ public class Annotator {
         );
     }
 
-    private AnnotatorResult annotateJson(
+    public AnnotatorResult annotateJson(
             String caseSequence,
             List<JSONObject> vepFilteredVepJsons,
             VcfExplorer vcfExplorer, Map<String, Sample> samples,
@@ -180,6 +177,12 @@ public class Annotator {
                         List<CompletableFuture<AnfisaResult>> futures = new ArrayList<>();
                         List<VcfLine> vcfLines = vcfExplorer.getVcfData().getDataLines();
                         for (int i = startPosition; i < vcfLines.size(); i++) {
+
+                            if (vepFilteredVepJsons == null) {
+                                //TODO https://rm.processtech.ru/issues/1046
+                                Thread.sleep(100L);
+                            }
+
                             CompletableFuture<AnfisaResult> future = new CompletableFuture();
                             int finalI = i;
                             threadPool.submit(() -> {
@@ -203,14 +206,21 @@ public class Annotator {
                                         long start = variant.getPos();
                                         long end = variant.getPos();
                                         String alternative = variant.getAlt();
+                                        log.debug("annotate ({}) 1: {}-{}", finalI, chromosome, start);
 
                                         anfisaConnector.request(chromosome, start, end, alternative)
                                                 .thenApply(anfisaResults -> {
+                                                    log.debug("annotate ({}) 2: {}-{}", finalI, chromosome, start);
                                                     future.complete(anfisaResults.get(0));
+                                                    return null;
+                                                })
+                                                .exceptionally(throwable -> {
+                                                    future.completeExceptionally(throwable);
                                                     return null;
                                                 });
                                     }
                                 } catch (Throwable e) {
+                                    log.error("annotate exception", e);
                                     future.completeExceptionally(e);
                                 }
                             });
@@ -221,17 +231,27 @@ public class Annotator {
                             @Override
                             public void run() {
                                 try {
-                                    for (CompletableFuture<AnfisaResult> future : futures) {
-                                        o.onNext(future.get());
+                                    for (int i = 0; i < futures.size(); i++) {
+                                        CompletableFuture<AnfisaResult> future = futures.get(i);
+                                        try {
+                                            AnfisaResult anfisaResult = future.join();
+                                            o.onNext(anfisaResult);
+                                            log.debug("annotate onNext() {}", i);
+                                        } catch (CompletionException e) {
+                                            //TODO https://rm.processtech.ru/issues/1048
+                                            log.error("Exception processing", e);
+                                        }
                                     }
+                                    log.debug("annotate Complete");
                                     o.onComplete();
                                 } catch (Throwable t) {
+                                    log.debug("annotate Throwable", t);
                                     o.tryOnError(t);
                                 }
                             }
                         }).start();
-
                     } catch (Throwable t) {
+                        log.debug("annotate Throwable", t);
                         o.tryOnError(t);
                     }
                 })

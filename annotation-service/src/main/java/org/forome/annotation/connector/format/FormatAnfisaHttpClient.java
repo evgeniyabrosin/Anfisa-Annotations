@@ -1,5 +1,7 @@
 package org.forome.annotation.connector.format;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.parser.JSONParser;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -18,6 +20,7 @@ import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.forome.annotation.exception.ExceptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +34,7 @@ public class FormatAnfisaHttpClient {
 
     private final static Logger log = LoggerFactory.getLogger(FormatAnfisaHttpClient.class);
 
-    private static String HOST = "anfisa.forome.dev";
+    public static String HOST = "anfisa.forome.dev";
 
     private final RequestConfig requestConfig;
     private final PoolingNHttpClientConnectionManager connectionManager;
@@ -42,8 +45,8 @@ public class FormatAnfisaHttpClient {
     public FormatAnfisaHttpClient() throws IOException {
         requestConfig = RequestConfig.custom()
                 .setConnectTimeout(2000)//Таймаут на подключение
-                .setSocketTimeout(1 * 60 * 1000)//Таймаут между пакетами
-                .setConnectionRequestTimeout(1 * 60 * 1000)//Таймаут на ответ
+                .setSocketTimeout(1 * 15 * 1000)//Таймаут между пакетами
+                .setConnectionRequestTimeout(1 * 15 * 1000)//Таймаут на ответ
                 .build();
 
         connectionManager = new PoolingNHttpClientConnectionManager(new DefaultConnectingIOReactor());
@@ -60,8 +63,8 @@ public class FormatAnfisaHttpClient {
         );
     }
 
-    public CompletableFuture<String> request(String anfisaResult) {
-        CompletableFuture<String> future = new CompletableFuture<>();
+    public CompletableFuture<JSONArray> request(String anfisaResult) {
+        CompletableFuture<JSONArray> future = new CompletableFuture<>();
 
         try {
             CloseableHttpAsyncClient httpclient = HttpAsyncClients.custom()
@@ -84,7 +87,18 @@ public class FormatAnfisaHttpClient {
                     try {
                         HttpEntity entity = response.getEntity();
                         String entityBody = EntityUtils.toString(entity);
-                        future.complete(entityBody);
+
+                        Object rawResponse;
+                        try {
+                            rawResponse = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(entityBody);
+                        } catch (Exception e) {
+                            throw ExceptionBuilder.buildExternalServiceException(new RuntimeException("Exception parse response external service, response: " + entityBody));
+                        }
+                        if (rawResponse instanceof JSONArray) {
+                            future.complete((JSONArray)rawResponse);
+                        } else {
+                            throw ExceptionBuilder.buildExternalServiceException(new RuntimeException("Exception external service, response: " + entityBody));
+                        }
                     } catch (Throwable ex) {
                         future.completeExceptionally(ex);
                     }

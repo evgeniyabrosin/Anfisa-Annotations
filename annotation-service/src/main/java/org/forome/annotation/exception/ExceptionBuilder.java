@@ -48,6 +48,13 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("invalid_credentials");
 	}
 
+	public static ServiceException buildLargeVcfFile(int size, int maxSize) {
+		return EXCEPTION_FACTORY.build("large_vcf_file", new HashMap<String, Object>() {{
+			put("size", size);
+			put("max_size", maxSize);
+		}});
+	}
+
 	public static ServiceException buildInvalidVcfFileException(InvalidVcfFileException cause) {
 		return EXCEPTION_FACTORY.build("invalid_vcf_file", cause);
 	}

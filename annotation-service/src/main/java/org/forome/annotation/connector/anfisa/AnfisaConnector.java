@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.connector.anfisa.struct.*;
 import org.forome.annotation.connector.beacon.BeaconConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
@@ -15,7 +14,6 @@ import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.controller.utils.RequestParser;
-import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.exception.ServiceException;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.struct.Variant;
@@ -30,7 +28,6 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -105,28 +102,12 @@ public class AnfisaConnector implements Closeable {
         String region = String.format("%s:%s:%s", chromosome, start, end);
         String endpoint = String.format("/vep/human/region/%s/%s?hgvs=true&canonical=true&merged=true&protein=true&variant_class=true", region, alternative);
 
-        return anfisaHttpClient.request(endpoint).thenApply(body -> {
-            Object rawResponse;
-            try {
-                rawResponse = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(body);
-            } catch (Exception e) {
-                throw new RuntimeException("Error parse response, endpoint: " + endpoint + " response: '" + body + "'", e);
+        return anfisaHttpClient.request(endpoint).thenApply(jsonArray -> {
+            List<AnfisaResult> result = new ArrayList<>();
+            for (Object item : jsonArray) {
+                result.add(build(null, chromosome, start, end, (JSONObject) item, null, null));
             }
-
-            if (rawResponse instanceof JSONArray) {
-                JSONArray response = (JSONArray) rawResponse;
-                List<AnfisaResult> result = new ArrayList<>();
-                for (Object item : response) {
-                    result.add(build(null, chromosome, start, end, (JSONObject) item, null, null));
-                }
-                return result;
-            } else if (rawResponse instanceof JSONObject && ((JSONObject) rawResponse).containsKey("error")) {
-                String error = ((JSONObject) rawResponse).getAsString("error");
-                log.error("Exception", ExceptionBuilder.buildExternalServiceException(new RuntimeException(error)));
-                return Collections.emptyList();
-            } else {
-                throw new CompletionException("Exception", new IOException("Unknown response, endpoint: " + endpoint + " response: '" + body + "'"));
-            }
+            return result;
         });
     }
 

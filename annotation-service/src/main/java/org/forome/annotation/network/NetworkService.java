@@ -19,7 +19,7 @@ public class NetworkService {
 	public NetworkService(int port, Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
 		this.sessionService = new SessionService();
 
-		SpringConfigurationMvc.init(Duration.ofMinutes(10), null, uncaughtExceptionHandler);
+		SpringConfigurationMvc.init(Duration.ofMinutes(30), null, uncaughtExceptionHandler);
 		try {
 			httpTransport = new HttpTransport(
 					new HttpBuilderTransport(SpringConfigurationMvc.class)

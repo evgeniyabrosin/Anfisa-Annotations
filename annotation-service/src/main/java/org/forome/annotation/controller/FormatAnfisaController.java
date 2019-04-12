@@ -3,7 +3,7 @@ package org.forome.annotation.controller;
 import com.google.common.base.Strings;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
+import org.forome.annotation.Main;
 import org.forome.annotation.Service;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
@@ -81,18 +81,9 @@ public class FormatAnfisaController {
                                         for (AnfisaResult anfisaResult : anfisaResults) {
                                             JSONObject result = GetAnfisaJSONController.build(anfisaResult);
                                             CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
-                                                    .thenApply(body -> {
-                                                        Object rawResponse;
-                                                        try {
-                                                            rawResponse = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(body);
-                                                        } catch (Exception e) {
-                                                            throw new RuntimeException("Error parse response, body='" + body + "'", e);
-                                                        }
-                                                        if (rawResponse instanceof JSONArray) {
-                                                            return (JSONArray) rawResponse;
-                                                        } else {
-                                                            throw ExceptionBuilder.buildExternalServiceException(new RuntimeException("Exception external service, body: " + body));
-                                                        }
+                                                    .exceptionally(throwable -> {
+                                                        Main.crash(throwable);
+                                                        return null;
                                                     });
                                             futureItems.add(futureItem);
                                         }
@@ -139,6 +130,8 @@ public class FormatAnfisaController {
                                 throwable = ex.getCause();
                             }
                             if (throwable instanceof IOException) {
+                                //TODO Ulitin V. Через пару дней необходимо удалить
+                                log.error("TODO! Этого сообщения быть не должно", throwable);
                                 throwable = ExceptionBuilder.buildExternalServiceException(throwable, throwable.getMessage());
                             }
                             log.error("Exception execute request", throwable);

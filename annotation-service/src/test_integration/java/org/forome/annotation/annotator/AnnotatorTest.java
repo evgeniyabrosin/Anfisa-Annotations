@@ -26,7 +26,7 @@ public class AnnotatorTest extends AnfisaBaseTest {
     @Test
     public void test() throws Exception {
         Annotator annotator = new Annotator(anfisaConnector);
-        int start = 2511;//543
+        int start = 65;//673
 
         Path fileExpected = Paths.get("/home/kris/processtech/tmp/bgm9001/output_file");
         List<JSONObject> expecteds =
@@ -76,7 +76,7 @@ public class AnnotatorTest extends AnfisaBaseTest {
                     if ("chr3".equals(anfisaResult.data.seqRegionName) && anfisaResult.data.start == 37067102) {
                         return;
                     }
-                    if ("chr4".equals(anfisaResult.data.seqRegionName) && anfisaResult.data.start == 88536886) {
+                    if ("chr4".equals(anfisaResult.data.seqRegionName) && anfisaResult.data.start == 88536887) {//88536886
                         return;
                     }
                     if ("chr4".equals(anfisaResult.data.seqRegionName) && anfisaResult.data.start == 88537063) {
