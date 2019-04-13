@@ -1,5 +1,6 @@
 package org.forome.annotation.controller;
 
+import com.google.common.base.Strings;
 import io.reactivex.Observable;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -24,8 +25,10 @@ import pro.parseq.vcf.exceptions.InvalidVcfFileException;
 import pro.parseq.vcf.utils.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -47,6 +50,13 @@ public class FormatVcfController {
         }
         Annotator annotator = new Annotator(anfisaConnector);
 
+        FormatAnfisaHttpClient formatAnfisaHttpClient;
+        try {
+            formatAnfisaHttpClient = new FormatAnfisaHttpClient();
+        } catch (IOException e) {
+            throw ExceptionBuilder.buildIOErrorException(e);
+        }
+
         String sessionId = request.getParameter("session");
         if (sessionId == null) {
             throw ExceptionBuilder.buildInvalidCredentialsException();
@@ -56,44 +66,13 @@ public class FormatVcfController {
             throw ExceptionBuilder.buildInvalidCredentialsException();
         }
 
-        if (!(request instanceof MultipartHttpServletRequest)) {
-            throw ExceptionBuilder.buildNotMultipartRequestException();
-        }
-        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-
-        Map.Entry<String, List<MultipartFile>> entry = multipartRequest.getMultiFileMap().entrySet().stream().findFirst().orElse(null);
-        if (entry == null) {
-            throw ExceptionBuilder.buildFileNotUploadException();
-        }
-        MultipartFile multipartFile = entry.getValue().stream().findFirst().orElse(null);
-        if (multipartFile == null) {
-            throw ExceptionBuilder.buildFileNotUploadException();
-        }
-
-        FormatAnfisaHttpClient formatAnfisaHttpClient;
-        try {
-            formatAnfisaHttpClient = new FormatAnfisaHttpClient();
-        } catch (IOException e) {
-            throw ExceptionBuilder.buildIOErrorException(e);
-        }
-
-        VcfExplorer vcfExplorer;
-        try (InputStream is = multipartFile.getInputStream()) {
-            VcfReader reader = new InputStreamVcfReader(is);
-            VcfParser parser = new VcfParserImpl();
-            vcfExplorer = new VcfExplorer(reader, parser);
-            vcfExplorer.parse(FaultTolerance.FAIL_FAST);
-        } catch (IOException e) {
-            throw ExceptionBuilder.buildIOErrorException(e);
-        } catch (InvalidVcfFileException e) {
-            throw ExceptionBuilder.buildInvalidVcfFileException(e);
-        }
-        if (vcfExplorer.getVcfData().getDataLines().size()>100){
+        VcfExplorer vcfExplorer = buildVcfExplorer(request);
+        if (vcfExplorer.getVcfData().getDataLines().size() > 100) {
             throw ExceptionBuilder.buildLargeVcfFile(vcfExplorer.getVcfData().getDataLines().size(), 100);
         }
 
         AnnotatorResult annotatorResult = annotator.annotateJson(
-                String.format("%s_wgs", entry.getKey()),
+                String.format("%s_wgs", "noname"),
                 null,
                 vcfExplorer, null,
                 0
@@ -112,8 +91,8 @@ public class FormatVcfController {
                                     log.debug("FormatVcfController requestId: {}, 2: {}", requestId, jsonArray);
                                     return new Object[]{result[0], jsonArray};
                                 }).exceptionally(throwable -> {
-                                        Main.crash(throwable);
-                                        return null;
+                                    Main.crash(throwable);
+                                    return null;
                                 })
                         )
                 )
@@ -150,5 +129,47 @@ public class FormatVcfController {
                     log.debug("FormatVcfController build response, time: {}", System.currentTimeMillis());
                 });
         return completableFuture;
+    }
+
+    private static VcfExplorer buildVcfExplorer(HttpServletRequest request) {
+        VcfExplorer vcfExplorer;
+        VcfParser parser = new VcfParserImpl();
+
+        String pData = request.getParameter("data");
+        if (!Strings.isNullOrEmpty(pData)) {
+            VcfReader reader = new InputStreamVcfReader(new ByteArrayInputStream(pData.getBytes(StandardCharsets.UTF_8)));
+            vcfExplorer = new VcfExplorer(reader, parser);
+            try {
+                vcfExplorer.parse(FaultTolerance.FAIL_SAFE);
+                return vcfExplorer;
+            } catch (InvalidVcfFileException e) {
+                throw ExceptionBuilder.buildInvalidVcfFileException(e);
+            }
+        }
+
+        if (!(request instanceof MultipartHttpServletRequest)) {
+            throw ExceptionBuilder.buildNotMultipartRequestException();
+        }
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+
+        Map.Entry<String, List<MultipartFile>> entry = multipartRequest.getMultiFileMap().entrySet().stream().findFirst().orElse(null);
+        if (entry == null) {
+            throw ExceptionBuilder.buildFileNotUploadException();
+        }
+        MultipartFile multipartFile = entry.getValue().stream().findFirst().orElse(null);
+        if (multipartFile == null) {
+            throw ExceptionBuilder.buildFileNotUploadException();
+        }
+
+        try (InputStream is = multipartFile.getInputStream()) {
+            VcfReader reader = new InputStreamVcfReader(is);
+            vcfExplorer = new VcfExplorer(reader, parser);
+            vcfExplorer.parse(FaultTolerance.FAIL_FAST);
+        } catch (IOException e) {
+            throw ExceptionBuilder.buildIOErrorException(e);
+        } catch (InvalidVcfFileException e) {
+            throw ExceptionBuilder.buildInvalidVcfFileException(e);
+        }
+        return vcfExplorer;
     }
 }
