@@ -7,6 +7,7 @@ import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ public class AnfisaBaseTest {
 	private final static Logger log = LoggerFactory.getLogger(AnfisaBaseTest.class);
 
 	protected GnomadConnector gnomadConnector;
+	protected SpliceAIConnector spliceAIConnector;
 	protected HgmdConnector hgmdConnector;
 	protected ClinvarConnector clinvarConnector;
 	protected LiftoverConnector liftoverConnector;
@@ -30,6 +32,10 @@ public class AnfisaBaseTest {
 			log.error("Fail", e);
 			Assert.fail();
 		});
+		spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, (t, e) -> {
+			log.error("Fail", e);
+			Assert.fail();
+		});
 		hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
 		clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
 		liftoverConnector = new LiftoverConnector();
@@ -39,6 +45,7 @@ public class AnfisaBaseTest {
 		});
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
+				spliceAIConnector,
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,

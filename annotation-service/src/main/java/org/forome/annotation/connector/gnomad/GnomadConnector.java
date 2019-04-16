@@ -1,7 +1,7 @@
 package org.forome.annotation.connector.gnomad;
 
 import com.google.common.collect.ImmutableList;
-import org.forome.annotation.config.connector.GnomadConfigConfigConnector;
+import org.forome.annotation.config.connector.GnomadConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 import org.forome.annotation.matcher.SequenceMatcher;
@@ -33,7 +33,7 @@ public class GnomadConnector implements Closeable {
 	private final ExecutorService threadPoolGnomadExecutor;
 
 	public GnomadConnector(
-			GnomadConfigConfigConnector gnomadConfigConnector,
+			GnomadConfigConnector gnomadConfigConnector,
 			Thread.UncaughtExceptionHandler uncaughtExceptionHandler
 	) throws Exception {
 		databaseConnector = new DatabaseConnector(gnomadConfigConnector);

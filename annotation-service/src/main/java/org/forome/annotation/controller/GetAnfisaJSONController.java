@@ -12,6 +12,7 @@ import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultData;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultFilters;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultView;
+import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -197,7 +199,7 @@ public class GetAnfisaJSONController {
 
     private static JSONObject build(AnfisaResultFilters anfisaResultFilters) {
         JSONObject out = new JSONObject();
-        if (anfisaResultFilters.chromosome !=null) {
+        if (anfisaResultFilters.chromosome != null) {
             out.put("chromosome", anfisaResultFilters.chromosome);
         }
         out.put("gnomad_popmax_af", anfisaResultFilters.gnomadPopmaxAf);
@@ -240,6 +242,9 @@ public class GetAnfisaJSONController {
         if (anfisaResultFilters.altZygosity != null) {
             out.put("alt_zygosity", anfisaResultFilters.altZygosity);
         }
+
+        out.put("splice_altering", anfisaResultFilters.spliceAltering);
+        out.put("splice_ai_dsmax", anfisaResultFilters.spliceAiDsmax);
 
         return out;
     }
@@ -312,24 +317,43 @@ public class GetAnfisaJSONController {
         if (anfisaResultData.geneDx != null) {
             out.put("gene_dx", anfisaResultData.geneDx);
         }
-        if (anfisaResultData.variantClass !=null) {
+        if (anfisaResultData.variantClass != null) {
             out.put("variant_class", anfisaResultData.variantClass);
         }
-        if (anfisaResultData.distFromBoundaryCanonical !=null) {
+        if (anfisaResultData.distFromBoundaryCanonical != null) {
             out.put("dist_from_boundary_canonical", anfisaResultData.distFromBoundaryCanonical);
         }
-        if (anfisaResultData.regionCanonical !=null) {
+        if (anfisaResultData.regionCanonical != null) {
             out.put("region_canonical", anfisaResultData.regionCanonical);
         }
-        if (anfisaResultData.distFromBoundaryWorst !=null) {
+        if (anfisaResultData.distFromBoundaryWorst != null) {
             out.put("dist_from_boundary_worst", anfisaResultData.distFromBoundaryWorst);
         }
-        if (anfisaResultData.regionWorst !=null) {
+        if (anfisaResultData.regionWorst != null) {
             out.put("region_worst", anfisaResultData.regionWorst);
         }
-        if (anfisaResultData.zygosity !=null) {
+        if (anfisaResultData.zygosity != null) {
             out.put("zygosity", anfisaResultData.zygosity);
         }
+        out.put("spliceAI", new JSONArray() {{
+            for (Map.Entry<String, SpliceAIResult.DictSql> entry : anfisaResultData.spliceAI.entrySet()) {
+                add(new JSONObject() {{
+                    put(
+                            entry.getKey(),
+                            new JSONObject() {{
+                                put("DP_AG", entry.getValue().dp_ag);
+                                put("DP_AL", entry.getValue().dp_al);
+                                put("DP_DG", entry.getValue().dp_dg);
+                                put("DP_DL", entry.getValue().dp_dl);
+                                put("DS_AG", entry.getValue().ds_ag);
+                                put("DS_AL", entry.getValue().ds_al);
+                                put("DS_DG", entry.getValue().ds_dg);
+                                put("DS_DL", entry.getValue().ds_dl);
+                            }}
+                    );
+                }});
+            }
+        }});
         out.put("version", anfisaResultData.version);
         return out;
     }
@@ -453,6 +477,7 @@ public class GetAnfisaJSONController {
         out.put("hg38", general.hg38);
         out.put("hg19", general.hg19);
         out.put("ensembl_transcripts_worst", general.ensemblTranscriptsWorst);
+        out.put("splice_altering", general.spliceAltering);
         return out;
     }
 
@@ -471,6 +496,7 @@ public class GetAnfisaJSONController {
         out.put("other_genes", bioinformatics.otherGenes);
         out.put("species_with_others", bioinformatics.speciesWithOthers);
         out.put("inherited_from", bioinformatics.inheritedFrom);
+        out.put("splice_ai", bioinformatics.spliceAi);
         return out;
     }
 
@@ -479,8 +505,8 @@ public class GetAnfisaJSONController {
         out.put("case", metadata.caseSequence);
         out.put("record_type", metadata.recordType);
         out.put("versions", metadata.versions);
-        out.put("samples", new JSONObject(){{
-            for(Sample sample: metadata.samples.values()) {
+        out.put("samples", new JSONObject() {{
+            for (Sample sample : metadata.samples.values()) {
                 put(sample.name, build(sample));
             }
         }});

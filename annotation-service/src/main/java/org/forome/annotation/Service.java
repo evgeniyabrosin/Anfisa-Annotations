@@ -8,6 +8,7 @@ import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.database.DatabaseService;
 import org.forome.annotation.database.entityobject.user.UserReadable;
 import org.forome.annotation.exception.ServiceException;
@@ -65,6 +66,7 @@ public class Service {
 	private final NetworkService networkService;
 
 	private final GnomadConnector gnomadConnector;
+	private final SpliceAIConnector spliceAIConnector;
 	private final HgmdConnector hgmdConnector;
 	private final ClinvarConnector clinvarConnector;
 	private final LiftoverConnector liftoverConnector;
@@ -83,11 +85,12 @@ public class Service {
 		this.networkService = new NetworkService(arguments.port, uncaughtExceptionHandler);
 
 		this.gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
+		this.spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, uncaughtExceptionHandler);
 		this.hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
 		this.clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
 		this.liftoverConnector = new LiftoverConnector();
 		this.gtfConnector = new GTFConnector(serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
-		this.anfisaConnector = new AnfisaConnector(gnomadConnector, hgmdConnector, clinvarConnector, liftoverConnector, gtfConnector);
+		this.anfisaConnector = new AnfisaConnector(gnomadConnector, spliceAIConnector, hgmdConnector, clinvarConnector, liftoverConnector, gtfConnector);
 
 		executionQueue.execute(this, new Execution<Void>() {
 

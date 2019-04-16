@@ -10,6 +10,7 @@ import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,9 @@ public class AnnotatorMain {
             GnomadConnector gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, (t, e) -> {
                 Main.crash(e);
             });
+            SpliceAIConnector spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, (t, e) -> {
+                Main.crash(e);
+            });
             HgmdConnector hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
             ClinvarConnector clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
             LiftoverConnector liftoverConnector = new LiftoverConnector();
@@ -47,6 +51,7 @@ public class AnnotatorMain {
             });
             AnfisaConnector anfisaConnector = new AnfisaConnector(
                     gnomadConnector,
+                    spliceAIConnector,
                     hgmdConnector,
                     clinvarConnector,
                     liftoverConnector,

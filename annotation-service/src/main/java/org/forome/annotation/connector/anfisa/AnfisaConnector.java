@@ -13,6 +13,8 @@ import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.exception.ServiceException;
 import org.forome.annotation.struct.Sample;
@@ -76,6 +78,7 @@ public class AnfisaConnector implements Closeable {
     private final ImmutableList<String> csq_missense = ImmutableList.of("missense_variant");
 
     private final GnomadConnector gnomadConnector;
+    private final SpliceAIConnector spliceAIConnector;
     private final HgmdConnector hgmdConnector;
     private final ClinvarConnector clinvarConnector;
     private final LiftoverConnector liftoverConnector;
@@ -85,12 +88,14 @@ public class AnfisaConnector implements Closeable {
 
     public AnfisaConnector(
             GnomadConnector gnomadConnector,
+            SpliceAIConnector spliceAIConnector,
             HgmdConnector hgmdConnector,
             ClinvarConnector clinvarConnector,
             LiftoverConnector liftoverConnector,
             GTFConnector gtfConnector
     ) throws IOException {
         this.gnomadConnector = gnomadConnector;
+        this.spliceAIConnector = spliceAIConnector;
         this.hgmdConnector = hgmdConnector;
         this.clinvarConnector = clinvarConnector;
         this.liftoverConnector = liftoverConnector;
@@ -129,6 +134,7 @@ public class AnfisaConnector implements Closeable {
         data.version = getVersion();
 
         callGnomAD(dataLine, samples, json, filters);
+        callSpliceai(data, filters, dataLine, samples, json);
         callHgmd(record, chromosome, start, end, filters, data);
         callClinvar(record, chromosome, start, end, dataLine, samples, filters, data, view, json);
         callBeacon(dataLine, samples, json, data);
@@ -199,7 +205,7 @@ public class AnfisaConnector implements Closeable {
         data.distFromBoundaryWorst = gtfAnfisaResult.distFromBoundaryWorst;
         data.regionWorst = gtfAnfisaResult.regionWorst;
 
-        createGeneralTab(data, view, start, end, json, caseSequence, dataLine, samples);
+        createGeneralTab(data, filters, view, start, end, json, caseSequence, dataLine, samples);
         createQualityTab(filters, view, dataLine, samples);
         createGnomadTab(chromosome, dataLine, samples, json, filters, data, view);
         createDatabasesTab(json, record, data, view);
@@ -536,8 +542,19 @@ public class AnfisaConnector implements Closeable {
         }
     }
 
+    private void callSpliceai(AnfisaResultData data, AnfisaResultFilters filters, DataLine dataLine, Map<String, Sample> samples, JSONObject json) {
+        SpliceAIResult spliceAIResult = spliceAIConnector.getAll(
+                RequestParser.toChromosome(getChromosome(json)),
+                lowest_coord(json),
+                ref(json, dataLine),
+                alt_list(dataLine, samples, json)
+        );
+        data.spliceAI = spliceAIResult.dict_sql;
+        filters.spliceAltering = spliceAIResult.cases;
+        filters.spliceAiDsmax = spliceAIResult.max_ds;
+    }
 
-    private void createGeneralTab(AnfisaResultData data, AnfisaResultView view, long start, long end, JSONObject json, String caseSequence, DataLine dataLine, Map<String, Sample> samples) {
+    private void createGeneralTab(AnfisaResultData data, AnfisaResultFilters filters, AnfisaResultView view, long start, long end, JSONObject json, String caseSequence, DataLine dataLine, Map<String, Sample> samples) {
         view.general.genes = getGenes(json).stream().toArray(String[]::new);
         view.general.hg19 = str(dataLine, samples, json);
         view.general.hg38 = getHg38Coordinates(json);
@@ -602,6 +619,16 @@ public class AnfisaConnector implements Closeable {
         data.totalExonIntronWorst = intronOrExonWorst[1];
 
         view.general.igv = getIgvUrl(start, end, json, caseSequence, samples);
+
+        if (filters.spliceAiDsmax!=null && filters.spliceAiDsmax>=SpliceAIConnector.MAX_DS_UNLIKELY) {
+            view.general.spliceAltering = getSpliceAltering(filters);
+        } else {
+            view.general.spliceAltering = null;
+        }
+    }
+
+    private static String getSpliceAltering(AnfisaResultFilters filters){
+        return filters.spliceAltering;
     }
 
     private static String[] getIntronOrExon(JSONObject json, String kind) {
@@ -852,6 +879,31 @@ public class AnfisaConnector implements Closeable {
         view.bioinformatics.otherGenes = getOtherGenes(json);
         view.bioinformatics.calledBy = getCallers(json, dataLine, samples).stream().toArray(String[]::new);
         view.bioinformatics.callerData = getCallersData(dataLine);
+        view.bioinformatics.spliceAi = list_dsmax(data);
+    }
+
+    private static Map<String, Float> list_dsmax(AnfisaResultData data) {
+        Map<String, Float> result = new HashMap<>();
+        if (data.spliceAI.isEmpty()) {
+            return result;
+        }
+        result.put(
+                "DS_AG",
+                data.spliceAI.values().stream().map(dictSql -> dictSql.ds_ag).max(Float::compareTo).get()
+        );
+        result.put(
+                "DS_AL",
+                data.spliceAI.values().stream().map(dictSql -> dictSql.ds_al).max(Float::compareTo).get()
+        );
+        result.put(
+                "DS_DG",
+                data.spliceAI.values().stream().map(dictSql -> dictSql.ds_dg).max(Float::compareTo).get()
+        );
+        result.put(
+                "DS_DL",
+                data.spliceAI.values().stream().map(dictSql -> dictSql.ds_dl).max(Float::compareTo).get()
+        );
+        return result;
     }
 
     private static String[] getOtherGenes(JSONObject response) {

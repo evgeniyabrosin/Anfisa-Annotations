@@ -1,6 +1,7 @@
 package org.forome.annotation.connector.anfisa.struct;
 
 import net.minidev.json.JSONArray;
+import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,8 @@ public class AnfisaResultData {
     public String regionWorst;
 
     public Map<String, Integer> zygosity;
+
+    public Map<String, SpliceAIResult.DictSql> spliceAI;
 
 	public String version;
 

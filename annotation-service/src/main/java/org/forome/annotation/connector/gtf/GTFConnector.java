@@ -1,14 +1,13 @@
 package org.forome.annotation.connector.gtf;
 
+import org.forome.annotation.config.connector.GTFConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
-import org.forome.annotation.config.connector.GTFConfigConfigConnector;
 import org.forome.annotation.connector.gtf.struct.GTFResult;
 import org.forome.annotation.connector.gtf.struct.GTFTranscriptRow;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -24,7 +23,7 @@ public class GTFConnector {
     private final ExecutorService threadPoolGTFExecutor;
 
     public GTFConnector(
-            GTFConfigConfigConnector gtfConfigConnector,
+            GTFConfigConnector gtfConfigConnector,
             Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) throws Exception {
         this.databaseConnector = new DatabaseConnector(gtfConfigConnector);

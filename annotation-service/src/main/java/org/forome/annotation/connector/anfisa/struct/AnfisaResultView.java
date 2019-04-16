@@ -106,6 +106,7 @@ public class AnfisaResultView {
 		public List<String> variantIntronWorst = new ArrayList<>();
 		public List<String> variantExonCanonical = new ArrayList<>();
 		public List<String> variantIntronCanonical = new ArrayList<>();
+		public String spliceAltering;
 	}
 
 	public class Bioinformatics {
@@ -122,6 +123,7 @@ public class AnfisaResultView {
 		public String[] otherGenes;
 		public String[] calledBy;
 		public Map<String, Serializable> callerData;
+		public Map<String, Float> spliceAi;
 	}
 
 	public final JSONObject inheritance;

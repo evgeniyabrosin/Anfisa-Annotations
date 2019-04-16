@@ -33,6 +33,9 @@ public class AnfisaResultFilters {
 	public Optional<Boolean> clinvarTrustedBenign;
 	public HashMap<String, Integer> altZygosity;
 
+	public String spliceAltering;
+	public Float spliceAiDsmax;
+
 	public AnfisaResultFilters() {
 	}
 }

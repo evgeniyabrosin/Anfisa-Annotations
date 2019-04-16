@@ -1,6 +1,6 @@
 package org.forome.annotation.connector.hgmd;
 
-import org.forome.annotation.config.connector.HgmdConfigConfigConnector;
+import org.forome.annotation.config.connector.HgmdConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.hgmd.struct.HgmdPmidRow;
 import org.forome.annotation.exception.ExceptionBuilder;
@@ -33,7 +33,7 @@ public class HgmdConnector {
 
 	private final DatabaseConnector databaseConnector;
 
-	public HgmdConnector(HgmdConfigConfigConnector hgmdConfigConnector) throws Exception {
+	public HgmdConnector(HgmdConfigConnector hgmdConfigConnector) throws Exception {
 		this.databaseConnector = new DatabaseConnector(hgmdConfigConnector);
 	}
 
