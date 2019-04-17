@@ -620,10 +620,12 @@ public class AnfisaConnector implements Closeable {
 
         view.general.igv = getIgvUrl(start, end, json, caseSequence, samples);
 
-        if (filters.spliceAiDsmax!=null && filters.spliceAiDsmax>=SpliceAIConnector.MAX_DS_UNLIKELY) {
-            view.general.spliceAltering = getSpliceAltering(filters);
+        if (filters.spliceAiDsmax!=null){
+            if (filters.spliceAiDsmax>=SpliceAIConnector.MAX_DS_UNLIKELY) {
+                view.general.spliceAltering = Optional.ofNullable(getSpliceAltering(filters));
+            }
         } else {
-            view.general.spliceAltering = null;
+            view.general.spliceAltering = Optional.empty();
         }
     }
 

@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class AnfisaResultView {
 
@@ -106,7 +107,7 @@ public class AnfisaResultView {
 		public List<String> variantIntronWorst = new ArrayList<>();
 		public List<String> variantExonCanonical = new ArrayList<>();
 		public List<String> variantIntronCanonical = new ArrayList<>();
-		public String spliceAltering;
+		public Optional<String> spliceAltering;
 	}
 
 	public class Bioinformatics {

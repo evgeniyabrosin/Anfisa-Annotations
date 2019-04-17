@@ -335,9 +335,8 @@ public class GetAnfisaJSONController {
         if (anfisaResultData.zygosity != null) {
             out.put("zygosity", anfisaResultData.zygosity);
         }
-        out.put("spliceAI", new JSONArray() {{
+        out.put("spliceAI", new JSONObject() {{
             for (Map.Entry<String, SpliceAIResult.DictSql> entry : anfisaResultData.spliceAI.entrySet()) {
-                add(new JSONObject() {{
                     put(
                             entry.getKey(),
                             new JSONObject() {{
@@ -351,7 +350,6 @@ public class GetAnfisaJSONController {
                                 put("DS_DL", entry.getValue().ds_dl);
                             }}
                     );
-                }});
             }
         }});
         out.put("version", anfisaResultData.version);
@@ -477,7 +475,9 @@ public class GetAnfisaJSONController {
         out.put("hg38", general.hg38);
         out.put("hg19", general.hg19);
         out.put("ensembl_transcripts_worst", general.ensemblTranscriptsWorst);
-        out.put("splice_altering", general.spliceAltering);
+        if (general.spliceAltering != null) {
+            out.put("splice_altering", general.spliceAltering.orElse(null));
+        }
         return out;
     }
 
