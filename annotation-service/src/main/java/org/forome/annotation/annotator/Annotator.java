@@ -1,5 +1,9 @@
 package org.forome.annotation.annotator;
 
+import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFFileReader;
 import io.reactivex.Observable;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
@@ -13,12 +17,6 @@ import org.forome.annotation.struct.Sample;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pro.parseq.vcf.VcfExplorer;
-import pro.parseq.vcf.exceptions.InvalidVcfFileException;
-import pro.parseq.vcf.types.DataLine;
-import pro.parseq.vcf.types.Variant;
-import pro.parseq.vcf.types.VcfLine;
-import pro.parseq.vcf.utils.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,6 +25,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -49,7 +48,7 @@ public class Annotator {
             Path pathVepFilteredVcf,
             Path pathVepFilteredVepJson,
             int startPosition
-    ) throws IOException, ParseException, InvalidVcfFileException {
+    ) throws IOException, ParseException {
         if (!Files.exists(pathFam)) {
             throw new RuntimeException("Fam file is not exists: " + pathFam.toAbsolutePath());
         }
@@ -75,13 +74,12 @@ public class Annotator {
 
         try (
                 InputStream isFam = Files.newInputStream(pathFam);
-                InputStream isVepFilteredVcf = Files.newInputStream(pathVepFilteredVcf);
                 InputStream isVepFilteredVepJson = (pathVepFilteredVepJson != null) ? Files.newInputStream(pathVepFilteredVepJson) : null
         ) {
             return exec(
                     caseName,
                     isFam,
-                    isVepFilteredVcf,
+                    pathVepFilteredVcf,
                     isVepFilteredVepJson,
                     startPosition
             );
@@ -91,10 +89,10 @@ public class Annotator {
     public AnnotatorResult exec(
             String caseName,
             InputStream isFam,
-            InputStream isVepFilteredVcf,
+            Path pathVepFilteredVcf,
             InputStream isVepFilteredVepJson,
             int startPosition
-    ) throws IOException, ParseException, InvalidVcfFileException {
+    ) throws IOException, ParseException {
 
         List<JSONObject> vepFilteredVepJsons = null;
         if (isVepFilteredVepJson != null) {
@@ -108,46 +106,14 @@ public class Annotator {
             }
         }
 
-        VcfReader reader = new InputStreamVcfReader(isVepFilteredVcf);
-        VcfParser parser = new VcfParserImpl();
-        VcfExplorer vcfExplorer = new VcfExplorer(reader, parser);
-        vcfExplorer.parse(FaultTolerance.FAIL_SAFE);
-
-        if (vepFilteredVepJsons != null && vepFilteredVepJsons.size() != vcfExplorer.getVcfData().getDataLines().size()) {
-            throw new RuntimeException(
-                    String.format("Not equal record size VepJsons(%s) and Vcf file(%s)",
-                            vepFilteredVepJsons.size(), vcfExplorer.getVcfData().getDataLines().size()
-                    )
-            );
-        }
+        VCFFileReader vcfFileReader = new VCFFileReader(pathVepFilteredVcf, false);
 
         Map<String, Sample> samples = CaseUtils.parseFamFile(isFam);
 
         return annotateJson(
                 String.format("%s_wgs", caseName),
                 vepFilteredVepJsons,
-                vcfExplorer, samples,
-                startPosition
-        );
-    }
-
-    public AnnotatorResult exec(
-            String caseName,
-            InputStream isVcf,
-            int startPosition
-    ) throws InvalidVcfFileException {
-
-        VcfReader reader = new InputStreamVcfReader(isVcf);
-        VcfParser parser = new VcfParserImpl();
-        VcfExplorer vcfExplorer = new VcfExplorer(reader, parser);
-        vcfExplorer.parse(FaultTolerance.FAIL_FAST);
-
-        Map<String, Sample> samples = null; //CaseUtils.parseFamFile(isFam);
-
-        return annotateJson(
-                String.format("%s_wgs", caseName),
-                null,
-                vcfExplorer, samples,
+                vcfFileReader, samples,
                 startPosition
         );
     }
@@ -155,16 +121,16 @@ public class Annotator {
     public AnnotatorResult annotateJson(
             String caseSequence,
             List<JSONObject> vepFilteredVepJsons,
-            VcfExplorer vcfExplorer, Map<String, Sample> samples,
+            VCFFileReader vcfFileReader, Map<String, Sample> samples,
             int startPosition
     ) {
         return new AnnotatorResult(
-                AnnotatorResult.Metadata.build(caseSequence, vcfExplorer, samples),
+                AnnotatorResult.Metadata.build(caseSequence, vcfFileReader, samples),
                 Observable.create(o -> {
                     try {
                         ExecutorService threadPool = new DefaultThreadPoolExecutor(
-                                MAX_THREAD_COUNT,
-                                MAX_THREAD_COUNT,
+                                1,//MAX_THREAD_COUNT,
+                                1,//MAX_THREAD_COUNT,
                                 0L,
                                 TimeUnit.MILLISECONDS,
                                 new LinkedBlockingQueue<>(),
@@ -175,56 +141,70 @@ public class Annotator {
                         );
 
                         List<CompletableFuture<AnfisaResult>> futures = new ArrayList<>();
-                        List<VcfLine> vcfLines = vcfExplorer.getVcfData().getDataLines();
-                        for (int i = startPosition; i < vcfLines.size(); i++) {
-
-                            if (vepFilteredVepJsons == null) {
-                                //TODO https://rm.processtech.ru/issues/1046
-                                Thread.sleep(100L);
+                        try (CloseableIterator<VariantContext> iterator = vcfFileReader.iterator()) {
+                            int i = 0;
+                            while (i + 1 < startPosition) {
+                                i++;
+                                iterator.next();
                             }
 
-                            CompletableFuture<AnfisaResult> future = new CompletableFuture();
-                            int finalI = i;
-                            threadPool.submit(() -> {
-                                try {
-                                    DataLine dataLine = (DataLine) vcfLines.get(finalI);
+                            while (iterator.hasNext()) {
+                                VariantContext variantContext = iterator.next();
 
-                                    if (vepFilteredVepJsons != null) {
-                                        JSONObject json = vepFilteredVepJsons.get(finalI);
-                                        String chromosome = RequestParser.toChromosome(json.getAsString("seq_region_name"));
-                                        long start = json.getAsNumber("start").longValue();
-                                        long end = json.getAsNumber("end").longValue();
-
-                                        AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, start, end, json, dataLine, samples);
-                                        future.complete(anfisaResult);
-                                    } else {
-                                        Variant variant = dataLine.getVariants().stream().findFirst().orElse(null);
-                                        if (variant == null) {
-                                            future.completeExceptionally(new RuntimeException("Variant is empty"));
-                                        }
-                                        String chromosome = RequestParser.toChromosome(variant.getChrom());
-                                        long start = variant.getPos();
-                                        long end = variant.getPos();
-                                        String alternative = variant.getAlt();
-                                        log.debug("annotate ({}) 1: {}-{}", finalI, chromosome, start);
-
-                                        anfisaConnector.request(chromosome, start, end, alternative)
-                                                .thenApply(anfisaResults -> {
-                                                    log.debug("annotate ({}) 2: {}-{}", finalI, chromosome, start);
-                                                    future.complete(anfisaResults.get(0));
-                                                    return null;
-                                                })
-                                                .exceptionally(throwable -> {
-                                                    future.completeExceptionally(throwable);
-                                                    return null;
-                                                });
-                                    }
-                                } catch (Throwable e) {
-                                    log.error("annotate exception", e);
-                                    future.completeExceptionally(e);
+                                if (vepFilteredVepJsons == null) {
+                                    //TODO https://rm.processtech.ru/issues/1046
+                                    Thread.sleep(100L);
                                 }
-                            });
-                            futures.add(future);
+
+                                CompletableFuture<AnfisaResult> future = new CompletableFuture();
+                                int finalI = i;
+                                threadPool.submit(() -> {
+                                    try {
+                                        if (vepFilteredVepJsons != null) {
+                                            JSONObject json = vepFilteredVepJsons.get(finalI);
+                                            String chromosome = RequestParser.toChromosome(json.getAsString("seq_region_name"));
+                                            long start = json.getAsNumber("start").longValue();
+                                            long end = json.getAsNumber("end").longValue();
+
+                                            AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, start, end, json, variantContext, samples);
+                                            future.complete(anfisaResult);
+                                        } else {
+                                            String chromosome = RequestParser.toChromosome(variantContext.getContig());
+                                            long start = variantContext.getStart();
+                                            long end = variantContext.getEnd();
+
+                                            //variantContext.getAltAlleleWithHighestAlleleCount();
+                                            Allele allele = variantContext.getAlternateAlleles().stream()
+                                                    .filter(iAllele -> !iAllele.getDisplayString().equals("*"))
+                                                    .max(Comparator.comparing(variantContext::getCalledChrCount))
+                                                    .orElse(null);
+                                            if (allele == null) {
+                                                future.completeExceptionally(new RuntimeException());
+                                            }
+                                            String alternative = allele.getDisplayString();
+
+                                            log.debug("annotate ({}) 1: {}-{}", finalI, chromosome, start);
+
+                                            anfisaConnector.request(chromosome, start, end, alternative)
+                                                    .thenApply(anfisaResults -> {
+                                                        log.debug("annotate ({}) 2: {}-{}", finalI, chromosome, start);
+                                                        future.complete(anfisaResults.get(0));
+                                                        return null;
+                                                    })
+                                                    .exceptionally(throwable -> {
+                                                        future.completeExceptionally(throwable);
+                                                        return null;
+                                                    });
+                                        }
+                                    } catch (Throwable e) {
+                                        log.error("annotate exception", e);
+                                        future.completeExceptionally(e);
+                                    }
+                                });
+                                futures.add(future);
+                                i++;
+                            }
+
                         }
 
                         new Thread(new Runnable() {
@@ -247,6 +227,13 @@ public class Annotator {
                                 } catch (Throwable t) {
                                     log.debug("annotate Throwable", t);
                                     o.tryOnError(t);
+                                }
+                                if (vcfFileReader != null) {
+                                    try {
+                                        vcfFileReader.close();
+                                    } catch (Throwable t) {
+                                        log.debug("Exception close vcfFileReader", t);
+                                    }
                                 }
                             }
                         }).start();

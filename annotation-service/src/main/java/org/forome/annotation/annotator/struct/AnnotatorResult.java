@@ -1,18 +1,21 @@
 package org.forome.annotation.annotator.struct;
 
+import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 import io.reactivex.Observable;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.struct.Sample;
-import pro.parseq.vcf.VcfExplorer;
-import pro.parseq.vcf.types.VcfFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class AnnotatorResult {
+
+    private final static Logger log = LoggerFactory.getLogger(AnnotatorResult.class);
 
     public static class Metadata {
 
@@ -23,13 +26,11 @@ public class AnnotatorResult {
             public final String annotations = AnfisaConnector.VERSION;
             public final String reference;
 
-            public Versions(VcfExplorer vcfExplorer) {
-                if (vcfExplorer!=null) {
-                    VcfFile vcfFile = vcfExplorer.getVcfData();
-                    pipeline = vcfFile.getOtherMetadata().get("source")
-                            .stream().map(metadata -> metadata.getValue()).collect(Collectors.joining(", "));
-                    reference = vcfFile.getOtherMetadata().get("reference")
-                            .stream().map(metadata -> metadata.getValue()).findFirst().get();
+            public Versions(VCFFileReader vcfFileReader) {
+                if (vcfFileReader!=null) {
+                    VCFHeader vcfHeader = vcfFileReader.getFileHeader();
+                    pipeline = vcfHeader.getOtherHeaderLine("source").getValue();
+                    reference = vcfHeader.getOtherHeaderLine("reference").getValue();
                 } else {
                     pipeline = null;
                     reference = null;
@@ -42,14 +43,14 @@ public class AnnotatorResult {
         public final Map<String, Sample> samples;
         public final Versions versions;
 
-        public Metadata(String caseSequence, VcfExplorer vcfExplorer, Map<String, Sample> samples) {
+        public Metadata(String caseSequence, VCFFileReader vcfFileReader, Map<String, Sample> samples) {
             this.caseSequence = caseSequence;
             this.samples = samples;
-            this.versions = new Versions(vcfExplorer);
+            this.versions = new Versions(vcfFileReader);
         }
 
-        public static Metadata build(String caseSequence, VcfExplorer vcfExplorer, Map<String, Sample> samples) {
-            return new Metadata(caseSequence, vcfExplorer, samples);
+        public static Metadata build(String caseSequence, VCFFileReader vcfFileReader, Map<String, Sample> samples) {
+            return new Metadata(caseSequence, vcfFileReader, samples);
         }
 
     }

@@ -1,6 +1,7 @@
 package org.forome.annotation.controller;
 
 import com.google.common.base.Strings;
+import htsjdk.variant.vcf.VCFFileReader;
 import io.reactivex.Observable;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -20,15 +21,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import pro.parseq.vcf.VcfExplorer;
-import pro.parseq.vcf.exceptions.InvalidVcfFileException;
-import pro.parseq.vcf.utils.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -66,15 +64,13 @@ public class FormatVcfController {
             throw ExceptionBuilder.buildInvalidCredentialsException();
         }
 
-        VcfExplorer vcfExplorer = buildVcfExplorer(request);
-        if (vcfExplorer.getVcfData().getDataLines().size() > 100) {
-            throw ExceptionBuilder.buildLargeVcfFile(vcfExplorer.getVcfData().getDataLines().size(), 100);
-        }
+        TempVCFFile tempVCFFile = buildTempVCFFile(request);
+        VCFFileReader vcfFileReader = tempVCFFile.vcfFileReader;
 
         AnnotatorResult annotatorResult = annotator.annotateJson(
                 String.format("%s_wgs", "noname"),
                 null,
-                vcfExplorer, null,
+                vcfFileReader, null,
                 0
         );
 
@@ -119,6 +115,7 @@ public class FormatVcfController {
                 }, throwable -> {
                     log.error("Exception execute request", throwable);
                     completableFuture.completeExceptionally(throwable);
+                    tempVCFFile.close();
                 }, () -> {
                     log.debug("FormatVcfController requestId: {}, 5", requestId);
                     JSONArray out = new JSONArray();
@@ -127,49 +124,71 @@ public class FormatVcfController {
                     }
                     completableFuture.complete(ResponseBuilder.build(out));
                     log.debug("FormatVcfController build response, time: {}", System.currentTimeMillis());
+                    tempVCFFile.close();
                 });
         return completableFuture;
     }
 
-    private static VcfExplorer buildVcfExplorer(HttpServletRequest request) {
-        VcfExplorer vcfExplorer;
-        VcfParser parser = new VcfParserImpl();
+    private static class TempVCFFile implements AutoCloseable {
 
-        String pData = request.getParameter("data");
-        if (!Strings.isNullOrEmpty(pData)) {
-            VcfReader reader = new InputStreamVcfReader(new ByteArrayInputStream(pData.getBytes(StandardCharsets.UTF_8)));
-            vcfExplorer = new VcfExplorer(reader, parser);
+        public final VCFFileReader vcfFileReader;
+        public final Path path;
+
+        public TempVCFFile(VCFFileReader vcfFileReader, Path path) {
+            this.vcfFileReader = vcfFileReader;
+            this.path = path;
+        }
+
+        @Override
+        public void close() {
+            vcfFileReader.close();
             try {
-                vcfExplorer.parse(FaultTolerance.FAIL_SAFE);
-                return vcfExplorer;
-            } catch (InvalidVcfFileException e) {
-                throw ExceptionBuilder.buildInvalidVcfFileException(e);
+                Files.deleteIfExists(path);
+            } catch (IOException ignore) {
             }
         }
+    }
 
-        if (!(request instanceof MultipartHttpServletRequest)) {
-            throw ExceptionBuilder.buildNotMultipartRequestException();
-        }
-        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+    private static TempVCFFile buildTempVCFFile(HttpServletRequest request) {
+        Path vcfFile = null;
+        try {
+            vcfFile = Files.createTempFile("temp_", ".vcf");
 
-        Map.Entry<String, List<MultipartFile>> entry = multipartRequest.getMultiFileMap().entrySet().stream().findFirst().orElse(null);
-        if (entry == null) {
-            throw ExceptionBuilder.buildFileNotUploadException();
-        }
-        MultipartFile multipartFile = entry.getValue().stream().findFirst().orElse(null);
-        if (multipartFile == null) {
-            throw ExceptionBuilder.buildFileNotUploadException();
-        }
+            String pData = request.getParameter("data");
+            if (!Strings.isNullOrEmpty(pData)) {
+                Files.write(vcfFile, pData.getBytes(StandardCharsets.UTF_8));
+            } else {
+                if (!(request instanceof MultipartHttpServletRequest)) {
+                    throw ExceptionBuilder.buildNotMultipartRequestException();
+                }
+                MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 
-        try (InputStream is = multipartFile.getInputStream()) {
-            VcfReader reader = new InputStreamVcfReader(is);
-            vcfExplorer = new VcfExplorer(reader, parser);
-            vcfExplorer.parse(FaultTolerance.FAIL_FAST);
+                Map.Entry<String, List<MultipartFile>> entry = multipartRequest.getMultiFileMap().entrySet().stream().findFirst().orElse(null);
+                if (entry == null) {
+                    throw ExceptionBuilder.buildFileNotUploadException();
+                }
+                MultipartFile multipartFile = entry.getValue().stream().findFirst().orElse(null);
+                if (multipartFile == null) {
+                    throw ExceptionBuilder.buildFileNotUploadException();
+                }
+
+                multipartFile.transferTo(vcfFile.toFile());
+            }
+
+            return new TempVCFFile(
+                    new VCFFileReader(vcfFile, false),
+                    vcfFile
+            );
         } catch (IOException e) {
             throw ExceptionBuilder.buildIOErrorException(e);
-        } catch (InvalidVcfFileException e) {
-            throw ExceptionBuilder.buildInvalidVcfFileException(e);
+        } catch (Throwable e) {
+            try {
+                if (vcfFile != null) {
+                    Files.deleteIfExists(vcfFile);
+                }
+            } catch (IOException ignore) {
+            }
+            throw e;
         }
-        return vcfExplorer;
     }
 }

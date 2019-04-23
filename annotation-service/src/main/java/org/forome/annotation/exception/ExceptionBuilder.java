@@ -1,8 +1,6 @@
 package org.forome.annotation.exception;
 
-
 import com.infomaximum.database.exception.DatabaseException;
-import pro.parseq.vcf.exceptions.InvalidVcfFileException;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -48,15 +46,10 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("invalid_credentials");
 	}
 
-	public static ServiceException buildLargeVcfFile(int size, int maxSize) {
+	public static ServiceException buildLargeVcfFile(int maxSize) {
 		return EXCEPTION_FACTORY.build("large_vcf_file", new HashMap<String, Object>() {{
-			put("size", size);
 			put("max_size", maxSize);
 		}});
-	}
-
-	public static ServiceException buildInvalidVcfFileException(InvalidVcfFileException cause) {
-		return EXCEPTION_FACTORY.build("invalid_vcf_file", cause);
 	}
 
 	public static ServiceException buildNotUniqueValueException(String fieldName, Object fieldValue) {

@@ -70,8 +70,7 @@ jar {
 
 dependencies {
 
-    compile 'com.github.samtools:htsjdk:2.18.1'
-    compile 'pro.parseq:vcf-explorer:1.1.1-RELEASE'
+    compile 'com.github.samtools:htsjdk:2.19.0'
 
     compile 'mysql:mysql-connector-java:5.1.47'
     compile 'com.mchange:c3p0:0.9.5.2'
