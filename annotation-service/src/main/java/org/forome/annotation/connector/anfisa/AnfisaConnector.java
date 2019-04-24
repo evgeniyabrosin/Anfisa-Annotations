@@ -476,7 +476,7 @@ public class AnfisaConnector implements Closeable {
             }
             if (gnomadResult.exomes != null) {
                 af = gnomadResult.exomes.af;
-                emAf = Math.min((emAf != null) ? emAf : af, af);
+                emAf = Math.min((emAf != null && emAf!=0.0d) ? emAf : af, af);
                 if (isProbandHasAllele(variantContext, samples, alt)) {
                     emAfPb = Math.min((emAfPb != null) ? emAfPb : af, af);
                 }
