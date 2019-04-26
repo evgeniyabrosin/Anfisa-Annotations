@@ -164,7 +164,7 @@ public class Annotator {
 
                                 if (vepFilteredVepJsons == null) {
                                     //TODO https://rm.processtech.ru/issues/1046
-                                    Thread.sleep(100L);
+                                    Thread.sleep(110L);
                                 }
 
                                 CompletableFuture<AnfisaResult> future = new CompletableFuture();

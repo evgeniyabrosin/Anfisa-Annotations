@@ -20,12 +20,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
- * ПОдготовка тестовых данных
+ * Подготовка тестовых данных
  * cd /home/vulitin/tmp/anfisa
  * git pull
  *
  * cd /home/vulitin/tmp/111/bgm9001/
  * PYTHONPATH=/home/vulitin/tmp/anfisa python -m annotations.annotator -i /home/vulitin/tmp/111/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json -o /home/vulitin/tmp/111/bgm9001/output_file
+ *
+ * =================================
+ * cd /home/vulitin/tmp/111/bgm9001/
+ * java -cp /home/vulitin/deploy/annotationservice/exec/annotation.jar org.forome.annotation.annotator.main.AnnotatorMain -config /home/vulitin/deploy/annotationservice/exec/config.json -vcf bgm9001_wgs_xbrowse.vep.filtered.vcf -vepjson bgm9001_wgs_xbrowse.vep.filtered.vep.json -output /tmp/bgm9001_output_java.json
  *
  */
 public class AnnotatorTest extends AnfisaBaseTest {

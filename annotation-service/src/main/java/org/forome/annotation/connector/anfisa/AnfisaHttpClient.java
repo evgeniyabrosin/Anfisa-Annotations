@@ -52,7 +52,6 @@ public class AnfisaHttpClient {
 
 	protected CompletableFuture<JSONArray> request(String endpoint) {
 		CompletableFuture<JSONArray> future = new CompletableFuture<>();
-
 		try {
 
 			HttpRequest httpRequest = new HttpGet(new URI("http://" + HOST + endpoint ));
