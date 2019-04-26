@@ -19,6 +19,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/**
+ * ПОдготовка тестовых данных
+ * cd /home/vulitin/tmp/anfisa
+ * git pull
+ *
+ * cd /home/vulitin/tmp/111/bgm9001/
+ * PYTHONPATH=/home/vulitin/tmp/anfisa python -m annotations.annotator -i /home/vulitin/tmp/111/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json -o /home/vulitin/tmp/111/bgm9001/output_file
+ *
+ */
 public class AnnotatorTest extends AnfisaBaseTest {
 
     private final static Logger log = LoggerFactory.getLogger(AnnotatorTest.class);
@@ -26,8 +35,8 @@ public class AnnotatorTest extends AnfisaBaseTest {
     @Test
     public void test() throws Exception {
         Annotator annotator = new Annotator(anfisaConnector);
-        int start = 656;//
-        //Ошибочные варианты: 543
+        int start = 52;//
+        //Ошибочные варианты: 543, 763
 
         Path fileExpected = Paths.get("/home/kris/processtech/tmp/bgm9001/output_file");
         List<JSONObject> expecteds =

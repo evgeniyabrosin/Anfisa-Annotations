@@ -24,11 +24,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class Annotator {
 
@@ -110,8 +108,21 @@ public class Annotator {
 
         Map<String, Sample> samples = CaseUtils.parseFamFile(isFam);
 
+        String platform;
+        Set<String> x = Arrays.stream(pathVepFilteredVcf.getFileName().toString().toLowerCase().split("_"))
+                .collect(Collectors.toSet());
+        if (x.contains("wgs")) {
+            platform = "wgs";
+        } else if (x.contains("wes")) {
+            platform = "wes";
+        } else {
+            platform = "wgs";
+            log.warn("Could not determine platform (WES or WGS), assuming: " + platform);
+        }
+        String caseId = String.format("%s_%s", caseName, platform);
+
         return annotateJson(
-                String.format("%s_wgs", caseName),
+                caseId,
                 vepFilteredVepJsons,
                 vcfFileReader, samples,
                 startPosition

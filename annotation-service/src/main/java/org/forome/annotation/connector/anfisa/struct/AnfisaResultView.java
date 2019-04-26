@@ -125,6 +125,25 @@ public class AnfisaResultView {
 		public String[] calledBy;
 		public Map<String, Serializable> callerData;
 		public Map<String, Float> spliceAi;
+		public List<String> spliceAiAg = new ArrayList<>();
+		public List<String> spliceAiAl = new ArrayList<>();
+		public List<String> spliceAiDg = new ArrayList<>();
+		public List<String> spliceAiDl = new ArrayList<>();
+
+		public List<String> getSpliceAiValues(String key){
+			switch (key) {
+				case "AG":
+					return spliceAiAg;
+				case "AL":
+					return spliceAiAl;
+				case "DG":
+					return spliceAiDg;
+				case "DL":
+					return spliceAiDl;
+				default:
+					throw new RuntimeException("Unknown key: " + key);
+			}
+		}
 	}
 
 	public final JSONObject inheritance;

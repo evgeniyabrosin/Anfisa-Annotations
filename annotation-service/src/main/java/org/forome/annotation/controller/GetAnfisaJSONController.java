@@ -497,6 +497,10 @@ public class GetAnfisaJSONController {
         out.put("species_with_others", bioinformatics.speciesWithOthers);
         out.put("inherited_from", bioinformatics.inheritedFrom);
         out.put("splice_ai", bioinformatics.spliceAi);
+        out.put("splice_ai_ag", bioinformatics.spliceAiAg);
+        out.put("splice_ai_al", bioinformatics.spliceAiAl);
+        out.put("splice_ai_dg", bioinformatics.spliceAiDg);
+        out.put("splice_ai_dl", bioinformatics.spliceAiDl);
         return out;
     }
 

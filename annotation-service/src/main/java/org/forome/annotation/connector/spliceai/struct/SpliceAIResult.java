@@ -28,6 +28,29 @@ public class SpliceAIResult {
             this.ds_dg = ds_dg;
             this.ds_dl = ds_dl;
         }
+
+        public Number getValue(String key) {
+            switch (key) {
+                case "DP_AG":
+                    return dp_ag;
+                case "DP_AL":
+                    return dp_al;
+                case "DP_DG":
+                    return dp_dg;
+                case "DP_DL":
+                    return dp_dl;
+                case "DS_AG":
+                    return ds_ag;
+                case "DS_AL":
+                    return ds_al;
+                case "DS_DG":
+                    return ds_dg;
+                case "DS_DL":
+                    return ds_dl;
+                default:
+                    throw new RuntimeException("Unknown key");
+            }
+        }
     }
 
     public final String cases;

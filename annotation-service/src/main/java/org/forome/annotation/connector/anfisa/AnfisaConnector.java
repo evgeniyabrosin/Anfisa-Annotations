@@ -39,7 +39,7 @@ public class AnfisaConnector implements Closeable {
 
     private final static Logger log = LoggerFactory.getLogger(AnfisaConnector.class);
 
-    public static String VERSION = "0.3.2";
+    public static String VERSION = "0.3.4";
 
     private static final Map<String, String> trustedSubmitters = new HashMap<String, String>() {{
         put("lmm", "Laboratory for Molecular Medicine,Partners HealthCare Personalized Medicine");
@@ -883,6 +883,27 @@ public class AnfisaConnector implements Closeable {
         view.bioinformatics.calledBy = getCallers(json, variantContext, samples).stream().toArray(String[]::new);
         view.bioinformatics.callerData = getCallersData(variantContext);
         view.bioinformatics.spliceAi = list_dsmax(data);
+
+        String[] splice_ai_keys = new String[]{"AG", "AL", "DG", "DL"};
+        if (!data.spliceAI.isEmpty()) {
+            for (Map.Entry<String, SpliceAIResult.DictSql> entry: data.spliceAI.entrySet()) {
+                for (String s: splice_ai_keys) {
+                    String key = String.format("DS_%s", s);
+                    float score = entry.getValue().getValue(key).floatValue();
+                    if (score > 0.0f){
+                        String key2 = String.format("DP_%s", s);
+                        int position = entry.getValue().getValue(key2).intValue();
+                        String sPosition = String.valueOf(position);
+                        if (position > 0){
+                            sPosition = "+" + sPosition;
+                        }
+                        view.bioinformatics.getSpliceAiValues(s).add(
+                                String.format("%s: %s[%s]", entry.getKey(), String.format(Locale.ENGLISH, "%.4f", score), sPosition)
+                        );
+                    }
+                }
+            }
+        }
     }
 
     private static Map<String, Float> list_dsmax(AnfisaResultData data) {
