@@ -6,8 +6,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import io.reactivex.Observable;
 import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
+import org.forome.annotation.annotator.input.VepJsonIterator;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.annotator.utils.CaseUtils;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
@@ -18,10 +17,8 @@ import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -46,7 +43,7 @@ public class Annotator {
             Path pathVepFilteredVcf,
             Path pathVepFilteredVepJson,
             int startPosition
-    ) throws IOException, ParseException {
+    ) throws IOException {
         if (!Files.exists(pathFam)) {
             throw new RuntimeException("Fam file is not exists: " + pathFam.toAbsolutePath());
         }
@@ -61,24 +58,24 @@ public class Annotator {
             throw new IllegalArgumentException("Bad name vcf file (Need *.vcf): " + pathVepFilteredVcf.toAbsolutePath());
         }
 
+        VepJsonIterator vepJsonIterator = null;
         if (pathVepFilteredVepJson != null) {
             if (!Files.exists(pathVepFilteredVepJson)) {
                 throw new RuntimeException("VepJson file is not exists: " + pathVepFilteredVepJson.toAbsolutePath());
             }
-            if (!pathVepFilteredVepJson.getFileName().toString().endsWith(".vep.json")) {
-                throw new IllegalArgumentException("Bad name pathVepFilteredVepJson file (Need *.vep.json): " + pathVepFilteredVepJson.toAbsolutePath());
+            String vepJsonFIleName = pathVepFilteredVepJson.getFileName().toString();
+            if (!(vepJsonFIleName.endsWith(".json") || vepJsonFIleName.endsWith(".json.gz"))) {
+                throw new IllegalArgumentException("Bad name pathVepFilteredVepJson file (Need *.json vs *.json.gz): " + pathVepFilteredVepJson.toAbsolutePath());
             }
+            vepJsonIterator = new VepJsonIterator(pathVepFilteredVepJson);
         }
 
-        try (
-                InputStream isFam = Files.newInputStream(pathFam);
-                InputStream isVepFilteredVepJson = (pathVepFilteredVepJson != null) ? Files.newInputStream(pathVepFilteredVepJson) : null
-        ) {
+        try (InputStream isFam = Files.newInputStream(pathFam)) {
             return exec(
                     caseName,
                     isFam,
                     pathVepFilteredVcf,
-                    isVepFilteredVepJson,
+                    vepJsonIterator,
                     startPosition
             );
         }
@@ -88,21 +85,9 @@ public class Annotator {
             String caseName,
             InputStream isFam,
             Path pathVepFilteredVcf,
-            InputStream isVepFilteredVepJson,
+            VepJsonIterator vepJsonIterator,
             int startPosition
-    ) throws IOException, ParseException {
-
-        List<JSONObject> vepFilteredVepJsons = null;
-        if (isVepFilteredVepJson != null) {
-            vepFilteredVepJsons = new ArrayList<>();
-            try (BufferedReader isBVepJson = new BufferedReader(new InputStreamReader(isVepFilteredVepJson))) {
-                String line;
-                while ((line = isBVepJson.readLine()) != null) {
-                    JSONObject json = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(line);
-                    vepFilteredVepJsons.add(json);
-                }
-            }
-        }
+    ) throws IOException {
 
         VCFFileReader vcfFileReader = new VCFFileReader(pathVepFilteredVcf, false);
 
@@ -123,7 +108,7 @@ public class Annotator {
 
         return annotateJson(
                 caseId,
-                vepFilteredVepJsons,
+                vepJsonIterator,
                 vcfFileReader, samples,
                 startPosition
         );
@@ -131,7 +116,7 @@ public class Annotator {
 
     public AnnotatorResult annotateJson(
             String caseSequence,
-            List<JSONObject> vepFilteredVepJsons,
+            VepJsonIterator vepJsonIterator,
             VCFFileReader vcfFileReader, Map<String, Sample> samples,
             int startPosition
     ) {
@@ -140,7 +125,7 @@ public class Annotator {
                 Observable.create(o -> {
                     try {
                         ExecutorService threadPool = new DefaultThreadPoolExecutor(
-                                1,//MAX_THREAD_COUNT,
+                                1,//MAX_THREAD_COUNT, TODO - нет поддержки распаралеливания!
                                 1,//MAX_THREAD_COUNT,
                                 0L,
                                 TimeUnit.MILLISECONDS,
@@ -157,27 +142,31 @@ public class Annotator {
                             while (i + 1 < startPosition) {
                                 i++;
                                 iterator.next();
+                                vepJsonIterator.next();
                             }
 
                             while (iterator.hasNext()) {
                                 VariantContext variantContext = iterator.next();
 
-                                if (vepFilteredVepJsons == null) {
+                                JSONObject vepJson = null;
+                                if (vepJsonIterator == null) {
                                     //TODO https://rm.processtech.ru/issues/1046
                                     Thread.sleep(110L);
+                                } else {
+                                    vepJson = vepJsonIterator.next();
                                 }
 
                                 CompletableFuture<AnfisaResult> future = new CompletableFuture();
                                 int finalI = i;
+                                JSONObject finalVepJson = vepJson;
                                 threadPool.submit(() -> {
                                     try {
-                                        if (vepFilteredVepJsons != null) {
-                                            JSONObject json = vepFilteredVepJsons.get(finalI);
-                                            String chromosome = RequestParser.toChromosome(json.getAsString("seq_region_name"));
-                                            long start = json.getAsNumber("start").longValue();
-                                            long end = json.getAsNumber("end").longValue();
+                                        if (vepJsonIterator != null) {
+                                            String chromosome = RequestParser.toChromosome(finalVepJson.getAsString("seq_region_name"));
+                                            long start = finalVepJson.getAsNumber("start").longValue();
+                                            long end = finalVepJson.getAsNumber("end").longValue();
 
-                                            AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, start, end, json, variantContext, samples);
+                                            AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, start, end, finalVepJson, variantContext, samples);
                                             future.complete(anfisaResult);
                                         } else {
                                             String chromosome = RequestParser.toChromosome(variantContext.getContig());
@@ -244,6 +233,13 @@ public class Annotator {
                                         vcfFileReader.close();
                                     } catch (Throwable t) {
                                         log.debug("Exception close vcfFileReader", t);
+                                    }
+                                }
+                                if (vepJsonIterator != null) {
+                                    try {
+                                        vepJsonIterator.close();
+                                    } catch (Throwable t) {
+                                        log.debug("Exception close vepJsonIterator", t);
                                     }
                                 }
                             }

@@ -46,6 +46,10 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("invalid_credentials");
 	}
 
+	public static ServiceException buildInvalidVepJsonException(Throwable cause) {
+		return EXCEPTION_FACTORY.build("operation_error", cause);
+	}
+
 	public static ServiceException buildLargeVcfFile(int maxSize) {
 		return EXCEPTION_FACTORY.build("large_vcf_file", new HashMap<String, Object>() {{
 			put("max_size", maxSize);

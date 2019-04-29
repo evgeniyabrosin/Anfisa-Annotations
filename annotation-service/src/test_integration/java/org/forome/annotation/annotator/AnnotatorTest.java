@@ -23,14 +23,13 @@ import java.util.stream.Collectors;
  * Подготовка тестовых данных
  * cd /home/vulitin/tmp/anfisa
  * git pull
- *
+ * <p>
  * cd /home/vulitin/tmp/111/bgm9001/
  * PYTHONPATH=/home/vulitin/tmp/anfisa python -m annotations.annotator -i /home/vulitin/tmp/111/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json -o /home/vulitin/tmp/111/bgm9001/output_file
- *
+ * <p>
  * =================================
  * cd /home/vulitin/tmp/111/bgm9001/
  * java -cp /home/vulitin/deploy/annotationservice/exec/annotation.jar org.forome.annotation.annotator.main.AnnotatorMain -config /home/vulitin/deploy/annotationservice/exec/config.json -vcf bgm9001_wgs_xbrowse.vep.filtered.vcf -vepjson bgm9001_wgs_xbrowse.vep.filtered.vep.json -output /tmp/bgm9001_output_java.json
- *
  */
 public class AnnotatorTest extends AnfisaBaseTest {
 
@@ -39,7 +38,7 @@ public class AnnotatorTest extends AnfisaBaseTest {
     @Test
     public void test() throws Exception {
         Annotator annotator = new Annotator(anfisaConnector);
-        int start = 52;//
+        int start = 1;//
         //Ошибочные варианты: 543, 763
 
         Path fileExpected = Paths.get("/home/kris/processtech/tmp/bgm9001/output_file");
@@ -60,7 +59,8 @@ public class AnnotatorTest extends AnfisaBaseTest {
                 "bgm9001",
                 Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001.fam"),
                 Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vcf"),
-                Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json"),
+                Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json.gz"),
+//                Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json"),
                 start
         );
 

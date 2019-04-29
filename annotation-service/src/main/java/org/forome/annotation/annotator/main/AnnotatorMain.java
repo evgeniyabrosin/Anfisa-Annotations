@@ -16,10 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.GZIPOutputStream;
 
 public class AnnotatorMain {
 
@@ -69,29 +72,33 @@ public class AnnotatorMain {
             Files.deleteIfExists(arguments.pathOutput);
             Files.createFile(arguments.pathOutput);
             AtomicInteger count = new AtomicInteger();
-            try (OutputStream os = Files.newOutputStream(arguments.pathOutput)) {
-                try (BufferedOutputStream bos = new BufferedOutputStream(os)) {
-                    String outMetadata = GetAnfisaJSONController.build(annotatorResult.metadata).toJSONString();
-                    bos.write(outMetadata.getBytes(StandardCharsets.UTF_8));
-                    bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
-                    annotatorResult.observableAnfisaResult.blockingSubscribe(
-                            anfisaResult -> {
-                                String out = GetAnfisaJSONController.build(anfisaResult).toJSONString();
-                                bos.write(out.getBytes(StandardCharsets.UTF_8));
-                                bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+            OutputStream os = buildOutputStream(arguments.pathOutput);
+            BufferedOutputStream bos = new BufferedOutputStream(os);
 
-                                if (count.getAndIncrement() % 100 == 0) {
-                                    log.debug("progress (count): {}", count.get());
-                                }
-                            },
-                            e -> {
-                                Main.crash(e);
-                            }
-                    );
-                }
-            }
-            System.exit(0);
+            String outMetadata = GetAnfisaJSONController.build(annotatorResult.metadata).toJSONString();
+            bos.write(outMetadata.getBytes(StandardCharsets.UTF_8));
+            bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+
+            annotatorResult.observableAnfisaResult.blockingSubscribe(
+                    anfisaResult -> {
+                        String out = GetAnfisaJSONController.build(anfisaResult).toJSONString();
+                        bos.write(out.getBytes(StandardCharsets.UTF_8));
+                        bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+
+                        if (count.getAndIncrement() % 100 == 0) {
+                            log.debug("progress (count): {}", count.get());
+                        }
+                    },
+                    e -> {
+                        Main.crash(e);
+                    },
+                    () -> {
+                        bos.close();
+                        os.close();
+                        System.exit(0);
+                    }
+            );
         } catch (Throwable e) {
             log.error("Exception arguments parser", e);
             System.exit(2);
@@ -99,5 +106,12 @@ public class AnnotatorMain {
         }
     }
 
+    private static OutputStream buildOutputStream(Path pathOutput) throws IOException {
+        if (pathOutput.getFileName().toString().endsWith(".gz")) {
+            return new GZIPOutputStream(Files.newOutputStream(pathOutput));
+        } else {
+            return Files.newOutputStream(pathOutput);
+        }
+    }
 
 }
