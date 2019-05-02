@@ -1831,6 +1831,6 @@ public class AnfisaConnector implements Closeable {
 
     @Override
     public void close() {
-
+        anfisaHttpClient.close();
     }
 }

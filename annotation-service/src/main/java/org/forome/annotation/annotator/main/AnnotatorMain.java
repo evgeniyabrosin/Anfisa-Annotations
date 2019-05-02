@@ -24,6 +24,10 @@ import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
 
+/**
+ * cd /data/bgm/cases/bgm9001/
+ * java -cp /home/vulitin/deploy/annotationservice/exec/annotation.jar org.forome.annotation.annotator.main.AnnotatorMain -config /home/vulitin/deploy/annotationservice/exec/config.json -vcf bgm9001_wgs_xbrowse.vep.vcf -vepjson bgm9001_wgs_xbrowse.vep.vep.json -output bgm9001_wgs_xbrowse.out.json
+ */
 public class AnnotatorMain {
 
     private final static Logger log = LoggerFactory.getLogger(AnnotatorMain.class);
@@ -37,6 +41,11 @@ public class AnnotatorMain {
             System.exit(2);
             return;
         }
+
+        log.info("Input caseName: {}", arguments.caseName);
+        log.info("Input famFile: {}", arguments.pathFam.toAbsolutePath());
+        log.info("Input vepVcfFile: {}", arguments.pathVepFilteredVcf.toAbsolutePath());
+        log.info("Input vepJsonFile: {}", (arguments.pathVepFilteredVepJson != null) ? arguments.pathVepFilteredVepJson.toAbsolutePath() : null);
 
         try {
             ServiceConfig serviceConfig = new ServiceConfig(arguments.config);
@@ -96,6 +105,7 @@ public class AnnotatorMain {
                     () -> {
                         bos.close();
                         os.close();
+                        anfisaConnector.close();
                         System.exit(0);
                     }
             );

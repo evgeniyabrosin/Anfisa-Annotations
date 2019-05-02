@@ -8,6 +8,7 @@ import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -51,5 +52,10 @@ public class AnfisaBaseTest {
 				liftoverConnector,
 				gtfConnector
 		);
+	}
+
+	@After
+	public void destroy() {
+		anfisaConnector.close();
 	}
 }

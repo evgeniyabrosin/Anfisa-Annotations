@@ -149,10 +149,7 @@ public class Annotator {
                                 VariantContext variantContext = iterator.next();
 
                                 JSONObject vepJson = null;
-                                if (vepJsonIterator == null) {
-                                    //TODO https://rm.processtech.ru/issues/1046
-                                    Thread.sleep(110L);
-                                } else {
+                                if (vepJsonIterator != null) {
                                     vepJson = vepJsonIterator.next();
                                 }
 

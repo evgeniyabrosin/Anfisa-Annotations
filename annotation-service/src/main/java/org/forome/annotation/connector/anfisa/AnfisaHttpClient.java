@@ -21,106 +21,158 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class AnfisaHttpClient {
+public class AnfisaHttpClient implements Closeable {
 
-	private final static Logger log = LoggerFactory.getLogger(AnfisaHttpClient.class);
+    private final static Logger log = LoggerFactory.getLogger(AnfisaHttpClient.class);
 
-	private static String HOST="grch37.rest.ensembl.org";
+    private class QueueRequest {
 
-	private final RequestConfig requestConfig;
-	private final PoolingNHttpClientConnectionManager connectionManager;
+        public final String endpoint;
+        public final CompletableFuture<JSONArray> future;
 
-	private final HttpHost httpHost;
+        public QueueRequest(String endpoint, CompletableFuture<JSONArray> future) {
+            this.endpoint = endpoint;
+            this.future = future;
+        }
+    }
 
-	protected AnfisaHttpClient() throws IOException {
-		requestConfig = RequestConfig.custom()
-				.setConnectTimeout(2000)//Таймаут на подключение
-				.setSocketTimeout(1 * 60 * 1000)//Таймаут между пакетами
-				.setConnectionRequestTimeout(1 * 60 * 1000)//Таймаут на ответ
-				.build();
+    private static String HOST = "grch37.rest.ensembl.org";
 
-		connectionManager = new PoolingNHttpClientConnectionManager(new DefaultConnectingIOReactor());
-		connectionManager.setMaxTotal(100);
-		connectionManager.setDefaultMaxPerRoute(100);
+    private static int MAX_REQUEST_IN_SECOND = 14;
+    private static long REQUEST_PAUSE = 1000L / MAX_REQUEST_IN_SECOND;
 
-		httpHost = new HttpHost(HOST);
-	}
+    private final RequestConfig requestConfig;
+    private final PoolingNHttpClientConnectionManager connectionManager;
 
-	protected CompletableFuture<JSONArray> request(String endpoint) {
-		CompletableFuture<JSONArray> future = new CompletableFuture<>();
-		try {
+    private final HttpHost httpHost;
 
-			HttpRequest httpRequest = new HttpGet(new URI("http://" + HOST + endpoint ));
-			httpRequest.addHeader(new BasicHeader("Content-Type","application/json"));
+    private final Queue<QueueRequest> queueRequests;
 
-			CloseableHttpAsyncClient httpclient = HttpAsyncClients.custom()
-					.setDefaultRequestConfig(requestConfig)
+    private boolean active = true;
+
+    protected AnfisaHttpClient() throws IOException {
+        requestConfig = RequestConfig.custom()
+                .setConnectTimeout(2000)//Таймаут на подключение
+                .setSocketTimeout(1 * 60 * 1000)//Таймаут между пакетами
+                .setConnectionRequestTimeout(1 * 60 * 1000)//Таймаут на ответ
+                .build();
+
+        connectionManager = new PoolingNHttpClientConnectionManager(new DefaultConnectingIOReactor());
+        connectionManager.setMaxTotal(100);
+        connectionManager.setDefaultMaxPerRoute(100);
+
+        httpHost = new HttpHost(HOST);
+
+        queueRequests = new ConcurrentLinkedQueue<>();
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (active) {
+                    execute();
+                    try {
+                        Thread.sleep(REQUEST_PAUSE);
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    protected CompletableFuture<JSONArray> request(String endpoint) {
+        CompletableFuture<JSONArray> future = new CompletableFuture<>();
+        queueRequests.add(new QueueRequest(endpoint, future));
+        return future;
+    }
+
+    private void execute() {
+        QueueRequest queueRequest = queueRequests.poll();
+        if (queueRequest == null) return;
+
+        String endpoint = queueRequest.endpoint;
+        CompletableFuture<JSONArray> future = queueRequest.future;
+
+        try {
+
+            HttpRequest httpRequest = new HttpGet(new URI("http://" + HOST + endpoint));
+            httpRequest.addHeader(new BasicHeader("Content-Type", "application/json"));
+
+            CloseableHttpAsyncClient httpclient = HttpAsyncClients.custom()
+                    .setDefaultRequestConfig(requestConfig)
 //					.setConnectionManager(connectionManager)
 //					.setConnectionManagerShared(true)
-					.build();
-			httpclient.start();
+                    .build();
+            httpclient.start();
 
-			httpclient.execute(httpHost, httpRequest, new FutureCallback<HttpResponse>() {
-				@Override
-				public void completed(HttpResponse response) {
-					try {
-						HttpEntity entity = response.getEntity();
-						String entityBody = EntityUtils.toString(entity);
+            httpclient.execute(httpHost, httpRequest, new FutureCallback<HttpResponse>() {
+                @Override
+                public void completed(HttpResponse response) {
+                    try {
+                        HttpEntity entity = response.getEntity();
+                        String entityBody = EntityUtils.toString(entity);
 
-						Object rawResponse;
-						try {
-							rawResponse = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(entityBody);
-						} catch (Exception e) {
-							throw ExceptionBuilder.buildExternalServiceException(e, "Error parse response, endpoint: " + endpoint + " response: '" + entityBody + "'");
-						}
+                        Object rawResponse;
+                        try {
+                            rawResponse = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(entityBody);
+                        } catch (Exception e) {
+                            throw ExceptionBuilder.buildExternalServiceException(e, "Error parse response, endpoint: " + endpoint + " response: '" + entityBody + "'");
+                        }
 
-						if (rawResponse instanceof JSONArray) {
-							future.complete((JSONArray) rawResponse);
-						} else if (rawResponse instanceof JSONObject && ((JSONObject) rawResponse).containsKey("error")) {
-							throw ExceptionBuilder.buildExternalServiceException(new RuntimeException(), "Error parse response, endpoint: " + endpoint + " response: '" + entityBody + "'");
-						} else {
-							Main.crash(new IOException("Unknown response, endpoint: " + endpoint + " response: '" + entityBody + "'"));
-						}
-					} catch (Throwable ex) {
-						future.completeExceptionally(ex);
-					}
+                        if (rawResponse instanceof JSONArray) {
+                            future.complete((JSONArray) rawResponse);
+                        } else if (rawResponse instanceof JSONObject && ((JSONObject) rawResponse).containsKey("error")) {
+                            throw ExceptionBuilder.buildExternalServiceException(new RuntimeException(), "Error parse response, endpoint: " + endpoint + " response: '" + entityBody + "'");
+                        } else {
+                            Main.crash(new IOException("Unknown response, endpoint: " + endpoint + " response: '" + entityBody + "'"));
+                        }
+                    } catch (Throwable ex) {
+                        future.completeExceptionally(ex);
+                    }
 
-					try {
-						httpclient.close();
-					} catch (IOException ignore) {
-						log.error("Exception close connect");
-					}
-				}
+                    try {
+                        httpclient.close();
+                    } catch (IOException ignore) {
+                        log.error("Exception close connect");
+                    }
+                }
 
-				@Override
-				public void failed(Exception ex) {
-					future.completeExceptionally(ex);
-					try {
-						httpclient.close();
-					} catch (IOException ignore) {
-						log.error("Exception close connect");
-					}
-				}
+                @Override
+                public void failed(Exception ex) {
+                    future.completeExceptionally(ex);
+                    try {
+                        httpclient.close();
+                    } catch (IOException ignore) {
+                        log.error("Exception close connect");
+                    }
+                }
 
-				@Override
-				public void cancelled() {
-					future.cancel(true);
-					try {
-						httpclient.close();
-					} catch (IOException ignore) {
-						log.error("Exception close connect");
-					}
-				}
-			});
-		} catch (Throwable ex) {
-			log.error("Exception close connect", ex);
-			future.completeExceptionally(ex);
-		}
+                @Override
+                public void cancelled() {
+                    future.cancel(true);
+                    try {
+                        httpclient.close();
+                    } catch (IOException ignore) {
+                        log.error("Exception close connect");
+                    }
+                }
+            });
+        } catch (Throwable ex) {
+            log.error("Exception close connect", ex);
+            future.completeExceptionally(ex);
+        }
+    }
 
-		return future;
-	}
+    @Override
+    public void close() {
+        active = false;
+    }
 }
