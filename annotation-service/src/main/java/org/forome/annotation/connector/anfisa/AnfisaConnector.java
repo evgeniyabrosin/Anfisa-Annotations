@@ -440,9 +440,10 @@ public class AnfisaConnector implements Closeable {
         filters.minGq = getMinGQ(variantContext, samples);
         filters.probandGq = getProbandGQ(variantContext, samples);
         if (variantContext != null) {
-            filters.qd = toDouble(variantContext.getCommonInfo().getAttribute("QD"));
-            filters.fs = toDouble(variantContext.getCommonInfo().getAttribute("FS"));
-            filters.mq = toDouble(variantContext.getCommonInfo().getAttribute("MQ"));
+            CommonInfo commonInfo = variantContext.getCommonInfo();
+            filters.qd = toPrimitiveDouble(commonInfo.getAttribute("QD"));
+            filters.fs = toPrimitiveDouble(commonInfo.getAttribute("FS"));
+            filters.mq = toDouble(commonInfo.getAttribute("MQ"));
 
             if (variantContext.isFiltered()) {
                 filters.filters = new ArrayList<>(variantContext.getFilters());
@@ -476,7 +477,7 @@ public class AnfisaConnector implements Closeable {
             }
             if (gnomadResult.exomes != null) {
                 af = gnomadResult.exomes.af;
-                emAf = Math.min((emAf != null && emAf!=0.0d) ? emAf : af, af);
+                emAf = Math.min((emAf != null && emAf != 0.0d) ? emAf : af, af);
                 if (isProbandHasAllele(variantContext, samples, alt)) {
                     emAfPb = Math.min((emAfPb != null) ? emAfPb : af, af);
                 }
@@ -660,6 +661,7 @@ public class AnfisaConnector implements Closeable {
     private void createQualityTab(AnfisaResultFilters filters, AnfisaResultView view, VariantContext variantContext, Map<String, Sample> samples) {
         if (variantContext == null) return;
         CommonInfo commonInfo = variantContext.getCommonInfo();
+        if (commonInfo == null) return;
 
         JSONObject q_all = new JSONObject();
         q_all.put("title", "All");
@@ -886,15 +888,15 @@ public class AnfisaConnector implements Closeable {
 
         String[] splice_ai_keys = new String[]{"AG", "AL", "DG", "DL"};
         if (!data.spliceAI.isEmpty()) {
-            for (Map.Entry<String, SpliceAIResult.DictSql> entry: data.spliceAI.entrySet()) {
-                for (String s: splice_ai_keys) {
+            for (Map.Entry<String, SpliceAIResult.DictSql> entry : data.spliceAI.entrySet()) {
+                for (String s : splice_ai_keys) {
                     String key = String.format("DS_%s", s);
                     float score = entry.getValue().getValue(key).floatValue();
-                    if (score > 0.0f){
+                    if (score > 0.0f) {
                         String key2 = String.format("DP_%s", s);
                         int position = entry.getValue().getValue(key2).intValue();
                         String sPosition = String.valueOf(position);
-                        if (position > 0){
+                        if (position > 0) {
                             sPosition = "+" + sPosition;
                         }
                         view.bioinformatics.getSpliceAiValues(s).add(
@@ -1041,7 +1043,7 @@ public class AnfisaConnector implements Closeable {
                 Map<String, Long> counts = new HashMap<>();
                 for (Genotype genotype : variantContext.getGenotypes()) {
                     int[] ad = genotype.getAD();
-                    if (ad == null || ad.length==0) {
+                    if (ad == null || ad.length == 0) {
                         return alt_allels;
                     }
                     for (int i = 0; i < alleles.size(); i++) {
@@ -1132,7 +1134,7 @@ public class AnfisaConnector implements Closeable {
 
     private static Integer getVariantGQ(VariantContext variantContext, Sample s) {
         int valie = variantContext.getGenotype(s.name).getGQ();
-        return (valie!=-1)?valie:null;
+        return (valie != -1) ? valie : null;
     }
 
     private Long getSeverity(JSONObject response) {
@@ -1702,7 +1704,7 @@ public class AnfisaConnector implements Closeable {
                 Object value = commonInfo.getAttribute(c);
                 if (value instanceof Boolean) {
                     result.put(c, (Boolean) value);
-                } else if (value instanceof String){
+                } else if (value instanceof String) {
                     result.put(c, Long.parseLong((String) value));
                 } else {
                     throw new RuntimeException("Not support!");
@@ -1819,13 +1821,22 @@ public class AnfisaConnector implements Closeable {
     }
 
     private static Double toDouble(Object value) {
-        if (value==null) return null;
+        if (value == null) return null;
         if (value instanceof Number) {
-            return ((Number)value).doubleValue();
+            return ((Number) value).doubleValue();
         } else if (value instanceof String) {
-            return Double.parseDouble((String)value);
+            return Double.parseDouble((String) value);
         } else {
             throw new RuntimeException("Not support type");
+        }
+    }
+
+    private static double toPrimitiveDouble(Object value) {
+        Double p = toDouble(value);
+        if (p == null) {
+            return 0;
+        } else {
+            return p;
         }
     }
 
