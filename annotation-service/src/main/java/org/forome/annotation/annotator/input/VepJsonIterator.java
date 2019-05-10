@@ -1,8 +1,5 @@
 package org.forome.annotation.annotator.input;
 
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
 import org.forome.annotation.exception.ExceptionBuilder;
 
 import java.io.BufferedReader;
@@ -15,12 +12,12 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.zip.GZIPInputStream;
 
-public class VepJsonIterator implements Iterator<JSONObject>, AutoCloseable {
+public class VepJsonIterator implements Iterator<String>, AutoCloseable {
 
     private final InputStream inputStream;
     private final BufferedReader bufferedReader;
 
-    private JSONObject nextValue;
+    private String nextValue;
 
     public VepJsonIterator(Path pathVepJson) {
         this(getInputStream(pathVepJson), pathVepJson.getFileName().toString().endsWith(".gz"));
@@ -45,16 +42,9 @@ public class VepJsonIterator implements Iterator<JSONObject>, AutoCloseable {
         nextValue = readNextValue();
     }
 
-    private JSONObject readNextValue() {
+    private String readNextValue() {
         try {
-            String line = bufferedReader.readLine();
-            if (line != null) {
-                return (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(line);
-            } else {
-                return null;
-            }
-        } catch (ParseException e) {
-            throw ExceptionBuilder.buildInvalidVepJsonException(e);
+            return bufferedReader.readLine();
         } catch (IOException e) {
             throw ExceptionBuilder.buildIOErrorException(e);
         }
@@ -66,12 +56,12 @@ public class VepJsonIterator implements Iterator<JSONObject>, AutoCloseable {
     }
 
     @Override
-    public JSONObject next() {
+    public String next() {
         if (nextValue == null) {
             throw new NoSuchElementException();
         }
 
-        JSONObject value = nextValue;
+        String value = nextValue;
         nextValue = readNextValue();
 
         return value;

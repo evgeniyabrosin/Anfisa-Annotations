@@ -65,12 +65,11 @@ public class FormatVcfController {
         }
 
         TempVCFFile tempVCFFile = buildTempVCFFile(request);
-        VCFFileReader vcfFileReader = tempVCFFile.vcfFileReader;
 
         AnnotatorResult annotatorResult = annotator.annotateJson(
                 String.format("%s_wgs", "noname"),
                 null,
-                vcfFileReader, null,
+                tempVCFFile.path, null,
                 0
         );
 

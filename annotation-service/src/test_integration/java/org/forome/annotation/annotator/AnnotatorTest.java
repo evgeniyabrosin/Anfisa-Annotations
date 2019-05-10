@@ -61,7 +61,7 @@ public class AnnotatorTest extends AnfisaBaseTest {
                 Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vcf"),
                 Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json.gz"),
 //                Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json"),
-                start
+                start-1
         );
 
 //        VCFFileReader vcfFileReader = new VCFFileReader(

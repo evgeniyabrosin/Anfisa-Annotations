@@ -9,6 +9,7 @@ import org.forome.annotation.struct.Sample;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -26,8 +27,9 @@ public class AnnotatorResult {
             public final String annotations = AnfisaConnector.VERSION;
             public final String reference;
 
-            public Versions(VCFFileReader vcfFileReader) {
-                if (vcfFileReader!=null) {
+            public Versions(Path pathVepVcf) {
+                if (pathVepVcf != null) {
+                    VCFFileReader vcfFileReader = new VCFFileReader(pathVepVcf, false);
                     VCFHeader vcfHeader = vcfFileReader.getFileHeader();
                     pipeline = vcfHeader.getOtherHeaderLine("source").getValue();
                     reference = vcfHeader.getOtherHeaderLine("reference").getValue();
@@ -43,14 +45,14 @@ public class AnnotatorResult {
         public final Map<String, Sample> samples;
         public final Versions versions;
 
-        public Metadata(String caseSequence, VCFFileReader vcfFileReader, Map<String, Sample> samples) {
+        public Metadata(String caseSequence, Path pathVepVcf, Map<String, Sample> samples) {
             this.caseSequence = caseSequence;
             this.samples = samples;
-            this.versions = new Versions(vcfFileReader);
+            this.versions = new Versions(pathVepVcf);
         }
 
-        public static Metadata build(String caseSequence, VCFFileReader vcfFileReader, Map<String, Sample> samples) {
-            return new Metadata(caseSequence, vcfFileReader, samples);
+        public static Metadata build(String caseSequence, Path pathVepVcf, Map<String, Sample> samples) {
+            return new Metadata(caseSequence, pathVepVcf, samples);
         }
 
     }
