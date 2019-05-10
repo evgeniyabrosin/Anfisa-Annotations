@@ -1415,15 +1415,21 @@ public class AnfisaConnector implements Closeable {
         if (!str.contains(str)) {
             return null;
         }
-        String x = str.split(pattern)[1];
-        if ("p".equals(type)) {
-            x = convert_p(x);
-        }
+        try {
+            String x = str.split(pattern)[1];
+            if ("p".equals(type)) {
+                x = convert_p(x);
+            }
 
-        if (withPattern) {
-            return String.format("%s%s", pattern.substring(1), x);
-        } else {
-            return x;
+            if (withPattern) {
+                return String.format("%s%s", pattern.substring(1), x);
+            } else {
+                return x;
+            }
+        } catch (Throwable e) {
+            //TODO Ulitin V. Необходимо убрать
+            log.error("Fail count hgvcsPos, str: {}, type: {}, withPattern: {}", str, type, withPattern);
+            return "errot";
         }
     }
 

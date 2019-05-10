@@ -47,7 +47,8 @@ public class ThreadExecutor implements AutoCloseable {
             AnfisaConnector anfisaConnector,
             String caseSequence, Map<String, Sample> samples,
             Path pathVepVcf, Path pathVepJson,
-            int start, int step
+            int start, int step,
+            Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) {
         this.anfisaConnector = anfisaConnector;
 
@@ -76,7 +77,7 @@ public class ThreadExecutor implements AutoCloseable {
         nextPosition = start + step;
 
         //Исполнитель
-        new Thread(() -> {
+        Thread executor = new Thread(() -> {
             //Прокручиваем до начала итерации
             Source source;
             if (start > 0) {
@@ -135,7 +136,9 @@ public class ThreadExecutor implements AutoCloseable {
 
                 source = nextSource(step);
             }
-        }).start();
+        });
+        executor.setUncaughtExceptionHandler(uncaughtExceptionHandler);
+        executor.start();
     }
 
     private Source nextSource(int step) {

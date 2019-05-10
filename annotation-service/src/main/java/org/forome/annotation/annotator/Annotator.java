@@ -119,7 +119,10 @@ public class Annotator {
                                     anfisaConnector,
                                     caseSequence, samples,
                                     pathVepVcf, pathVepJson,
-                                    startPosition, MAX_THREAD_COUNT)
+                                    startPosition, MAX_THREAD_COUNT,
+                                    (t, e) -> {
+                                        o.tryOnError(e);
+                                    })
                             ) {
                                 boolean run = true;
                                 while (run) {

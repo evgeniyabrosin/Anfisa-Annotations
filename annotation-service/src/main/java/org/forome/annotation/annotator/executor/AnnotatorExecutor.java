@@ -17,7 +17,8 @@ public class AnnotatorExecutor implements AutoCloseable {
             AnfisaConnector anfisaConnector,
             String caseSequence, Map<String, Sample> samples,
             Path pathVepVcf, Path pathVepJson,
-            int start, int thread
+            int start, int thread,
+            Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) {
         if (thread < 1) throw new IllegalArgumentException();
 
@@ -27,7 +28,8 @@ public class AnnotatorExecutor implements AutoCloseable {
                     anfisaConnector,
                     caseSequence, samples,
                     pathVepVcf, pathVepJson,
-                    start + i, thread
+                    start + i, thread,
+                    uncaughtExceptionHandler
             );
         }
 
