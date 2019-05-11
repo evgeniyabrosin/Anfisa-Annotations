@@ -1711,7 +1711,9 @@ public class AnfisaConnector implements Closeable {
                 if (value instanceof Boolean) {
                     result.put(c, (Boolean) value);
                 } else if (value instanceof String) {
-                    result.put(c, Long.parseLong((String) value));
+                    //В первой реализации было приведение к Long, но как оказалось,
+                    //в файле bgm9001_wgs_xbrowse.vep.vep.json есть значения вещественного типа
+                    result.put(c, Double.parseDouble((String) value));
                 } else {
                     throw new RuntimeException("Not support!");
                 }

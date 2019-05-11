@@ -27,6 +27,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * cd /data/bgm/cases/bgm9001/
  * java -cp /home/vulitin/deploy/annotationservice/exec/annotation.jar org.forome.annotation.annotator.main.AnnotatorMain -config /home/vulitin/deploy/annotationservice/exec/config.json -vcf bgm9001_wgs_xbrowse.vep.vcf -vepjson bgm9001_wgs_xbrowse.vep.vep.json -output bgm9001_wgs_xbrowse.out.json
+ * Для 6 милионов 37:09:11.460
  */
 public class AnnotatorMain {
 
