@@ -180,6 +180,7 @@ public class GnomadConnector implements Closeable {
         }
         for (GnomadDataConnector.Result item : items) {
             Number value = (Number) item.columns.get(acColumn);
+            if (value == null) continue;
             ac += value.longValue();
         }
         return ac;
@@ -223,7 +224,8 @@ public class GnomadConnector implements Closeable {
         long hom = 0;
         String column = "Hom";
         for (GnomadDataConnector.Result item : items) {
-            hom += ((Number) item.columns.get(column)).longValue();
+            Number value = (Number) item.columns.get(column);
+            hom += value.longValue();
         }
         return hom;
     }
