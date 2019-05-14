@@ -46,6 +46,7 @@ public class AnnotatorMain {
         log.info("Input caseName: {}", arguments.caseName);
         log.info("Input famFile: {}", arguments.pathFam.toAbsolutePath());
         log.info("Input vepVcfFile: {}", arguments.pathVepFilteredVcf.toAbsolutePath());
+        log.info("Input start position: {}", arguments.start);
         log.info("Input vepJsonFile: {}", (arguments.pathVepFilteredVepJson != null) ? arguments.pathVepFilteredVepJson.toAbsolutePath() : null);
 
         try {
@@ -77,7 +78,7 @@ public class AnnotatorMain {
                     arguments.pathFam,
                     arguments.pathVepFilteredVcf,
                     arguments.pathVepFilteredVepJson,
-                    0
+                    arguments.start
             );
             Files.deleteIfExists(arguments.pathOutput);
             Files.createFile(arguments.pathOutput);
@@ -104,6 +105,7 @@ public class AnnotatorMain {
                         Main.crash(e);
                     },
                     () -> {
+                        log.debug("progress completed");
                         bos.close();
                         os.close();
                         anfisaConnector.close();

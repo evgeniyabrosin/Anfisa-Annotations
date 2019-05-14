@@ -225,6 +225,7 @@ public class GnomadConnector implements Closeable {
         String column = "Hom";
         for (GnomadDataConnector.Result item : items) {
             Number value = (Number) item.columns.get(column);
+            if (value == null) continue;
             hom += value.longValue();
         }
         return hom;

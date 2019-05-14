@@ -15,6 +15,7 @@ public class AnnotatorArgumentParser {
     private static final String OPTION_FILE_CONFIG = "config";
     private static final String OPTION_FILE_VCF = "vcf";
     private static final String OPTION_FILE_VEP_JSON = "vepjson";
+    private static final String OPTION_START_POSITION = "start";
     private static final String OPTION_FILE_OUTPUT = "output";
 
     public final Path config;
@@ -24,6 +25,8 @@ public class AnnotatorArgumentParser {
     public final Path pathVepFilteredVcf;
     public final Path pathVepFilteredVepJson;
     public final Path pathOutput;
+
+    public final int start;
 
     public AnnotatorArgumentParser(String[] args) throws InterruptedException {
         Options options = new Options()
@@ -44,6 +47,13 @@ public class AnnotatorArgumentParser {
                         .hasArg(true)
                         .optionalArg(true)
                         .desc("Absolute path to vep.json file")
+                        .build())
+                .addOption(Option.builder()
+                        .longOpt(OPTION_START_POSITION)
+                        .hasArg(true)
+                        .optionalArg(true)
+                        .desc("Start position")
+                        .type(Integer.class)
                         .build())
                 .addOption(Option.builder()
                         .longOpt(OPTION_FILE_OUTPUT)
@@ -80,6 +90,8 @@ public class AnnotatorArgumentParser {
                 strPathVepFilteredVcf = this.pathVepFilteredVepJson.getFileName().toString().split("\\.")[0] + ".vcf";
                 this.pathVepFilteredVcf = Paths.get(strPathVepFilteredVcf);;
             }
+
+            this.start = Integer.parseInt(cmd.getOptionValue(OPTION_START_POSITION, "0"));
 
             this.pathOutput = Paths.get(cmd.getOptionValue(OPTION_FILE_OUTPUT));
 

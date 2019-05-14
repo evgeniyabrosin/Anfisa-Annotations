@@ -10,16 +10,21 @@ import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.struct.Sample;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class ThreadExecutor implements AutoCloseable {
+
+    private final static Logger log = LoggerFactory.getLogger(ThreadExecutor.class);
 
     private final AnfisaConnector anfisaConnector;
 
@@ -82,6 +87,7 @@ public class ThreadExecutor implements AutoCloseable {
             Source source;
             if (start > 0) {
                 nextSource(start);
+                log.debug("skipped : {}", start);
             }
             source = nextSource(1);
 
@@ -134,7 +140,12 @@ public class ThreadExecutor implements AutoCloseable {
                             });
                 }
 
-                source = nextSource(step);
+                try {
+                    source = nextSource(step);
+                } catch (NoSuchElementException e) {
+                    isCompleted = true;
+                    log.debug("isCompleted");
+                }
             }
         });
         executor.setUncaughtExceptionHandler(uncaughtExceptionHandler);

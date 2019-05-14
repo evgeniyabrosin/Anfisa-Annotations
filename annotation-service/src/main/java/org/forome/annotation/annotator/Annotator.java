@@ -130,10 +130,11 @@ public class Annotator {
                                     AnfisaResult anfisaResult;
                                     try {
                                         anfisaResult = result.future.get();
-                                        if (anfisaResult == null) {
+                                        if (anfisaResult != null) {
+                                            o.onNext(anfisaResult);
+                                        } else {
                                             run = false;
                                         }
-                                        o.onNext(anfisaResult);
                                     } catch (Throwable e) {
                                         log.error("throwable", e);
                                     }
