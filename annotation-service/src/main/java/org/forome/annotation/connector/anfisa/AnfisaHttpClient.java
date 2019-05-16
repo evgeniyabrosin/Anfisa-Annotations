@@ -133,7 +133,6 @@ public class AnfisaHttpClient implements Closeable {
 
                         if (rawResponse instanceof JSONArray) {
                             future.complete((JSONArray) rawResponse);
-                            log.warn("External service response: complete, {}", endpoint);
                         } else if (rawResponse instanceof JSONObject && ((JSONObject) rawResponse).containsKey("error")) {
                             throw ExceptionBuilder.buildExternalServiceException(new RuntimeException(), "Error parse response, endpoint: " + endpoint + " response: '" + entityBody + "'");
                         } else if (response.getStatusLine().getStatusCode() == 429) {

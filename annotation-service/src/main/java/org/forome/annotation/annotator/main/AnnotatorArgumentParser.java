@@ -13,6 +13,8 @@ public class AnnotatorArgumentParser {
     private final static Logger log = LoggerFactory.getLogger(Main.class);
 
     private static final String OPTION_FILE_CONFIG = "config";
+    private static final String OPTION_CASE_NAME = "name";
+    private static final String OPTION_FILE_FAM = "fam";
     private static final String OPTION_FILE_VCF = "vcf";
     private static final String OPTION_FILE_VEP_JSON = "vepjson";
     private static final String OPTION_START_POSITION = "start";
@@ -35,6 +37,18 @@ public class AnnotatorArgumentParser {
                         .hasArg(true)
                         .optionalArg(false)
                         .desc("Absolute path to config file")
+                        .build())
+                .addOption(Option.builder()
+                        .longOpt(OPTION_CASE_NAME)
+                        .hasArg(true)
+                        .optionalArg(true)
+                        .desc("Case name")
+                        .build())
+                .addOption(Option.builder()
+                        .longOpt(OPTION_FILE_FAM)
+                        .hasArg(true)
+                        .optionalArg(true)
+                        .desc("Absolute path to *.fam file")
                         .build())
                 .addOption(Option.builder()
                         .longOpt(OPTION_FILE_VCF)
@@ -69,9 +83,19 @@ public class AnnotatorArgumentParser {
 
             Path dir = Paths.get("").toAbsolutePath();
 
-            caseName = dir.getFileName().toString();
+            String strCaseName = cmd.getOptionValue(OPTION_CASE_NAME);
+            if (strCaseName != null) {
+                caseName = strCaseName;
+            } else {
+                caseName = dir.getFileName().toString();
+            }
 
-            pathFam = dir.resolve(String.format("%s.fam", caseName)).toAbsolutePath();
+            String strPathFamFile = cmd.getOptionValue(OPTION_FILE_FAM);
+            if (strPathFamFile != null) {
+                pathFam = Paths.get(strPathFamFile).toAbsolutePath();
+            } else {
+                pathFam = dir.resolve(String.format("%s.fam", caseName)).toAbsolutePath();
+            }
 
             String strPathVepFilteredVepJson = cmd.getOptionValue(OPTION_FILE_VEP_JSON);
             if (strPathVepFilteredVepJson != null) {
