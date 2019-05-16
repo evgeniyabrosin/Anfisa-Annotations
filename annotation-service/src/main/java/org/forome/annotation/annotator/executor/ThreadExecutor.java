@@ -87,7 +87,6 @@ public class ThreadExecutor implements AutoCloseable {
             Source source;
             if (start > 0) {
                 nextSource(start);
-                log.debug("skipped : {}", start);
             }
             source = nextSource(1);
 
@@ -140,11 +139,17 @@ public class ThreadExecutor implements AutoCloseable {
                             });
                 }
 
+                //Дожидаемся выполнения
+                try {
+                    result.future.join();
+                } catch (Throwable ignore) {
+                }
+
                 try {
                     source = nextSource(step);
                 } catch (NoSuchElementException e) {
                     isCompleted = true;
-                    log.debug("isCompleted");
+                    log.debug("thread completed");
                 }
             }
         });
@@ -157,6 +162,9 @@ public class ThreadExecutor implements AutoCloseable {
         VariantContext variantContext = null;
         String strVepJson = null;
         for (int i = 0; i < step; i++) {
+            if (!vcfFileReaderIterator.hasNext()) {
+                throw new NoSuchElementException();
+            }
             variantContext = vcfFileReaderIterator.next();
             strVepJson = (vepJsonIterator != null) ? vepJsonIterator.next() : null;
         }
