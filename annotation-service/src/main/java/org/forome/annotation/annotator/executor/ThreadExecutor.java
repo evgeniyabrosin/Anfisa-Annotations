@@ -26,6 +26,8 @@ public class ThreadExecutor implements AutoCloseable {
 
     private final static Logger log = LoggerFactory.getLogger(ThreadExecutor.class);
 
+    private final int index;
+
     private final AnfisaConnector anfisaConnector;
 
     private final String caseSequence;
@@ -46,15 +48,18 @@ public class ThreadExecutor implements AutoCloseable {
     private final Deque<Result> waitExecuteVariants;//Варианты ожидающие выполнения
 
     private int nextPosition;
-    private boolean isCompleted = false;
+    private volatile boolean isCompleted = false;
 
     public ThreadExecutor(
+            int index,
             AnfisaConnector anfisaConnector,
             String caseSequence, Map<String, Sample> samples,
             Path pathVepVcf, Path pathVepJson,
             int start, int step,
             Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) {
+        this.index = index;
+
         this.anfisaConnector = anfisaConnector;
 
         this.caseSequence = caseSequence;
@@ -83,14 +88,21 @@ public class ThreadExecutor implements AutoCloseable {
 
         //Исполнитель
         Thread executor = new Thread(() -> {
-            //Прокручиваем до начала итерации
-            Source source;
-            if (start > 0) {
-                nextSource(start);
-            }
-            source = nextSource(1);
+            log.debug("Thread: {} start", index);
 
-            while (!isCompleted) {
+            Source source = null;
+            try {
+                //Прокручиваем до начала итерации
+                if (start > 0) {
+                    nextSource(start);
+                }
+                source = nextSource(1);
+            } catch (NoSuchElementException e) {
+                isCompleted = true;
+                log.debug("Thread: {} completed", index);
+            }
+
+            while (true) {
 
                 //TODO Переписать на засыпание потока
                 while (waitExecuteVariants.isEmpty()) {
@@ -149,7 +161,7 @@ public class ThreadExecutor implements AutoCloseable {
                     source = nextSource(step);
                 } catch (NoSuchElementException e) {
                     isCompleted = true;
-                    log.debug("thread completed");
+                    log.debug("Thread: {} completed", index);
                 }
             }
         });
@@ -178,7 +190,7 @@ public class ThreadExecutor implements AutoCloseable {
 
             nextPosition += step;
             if (isCompleted) {
-                return new Result(nextPosition, CompletableFuture.completedFuture(null));
+                nextResult = new Result(nextPosition, CompletableFuture.completedFuture(null));
             } else {
                 nextResult = new Result(nextPosition, new CompletableFuture<>());
                 this.waitExecuteVariants.add(nextResult);

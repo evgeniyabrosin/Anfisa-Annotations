@@ -16,7 +16,6 @@ import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.forome.annotation.Main;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +23,8 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class AnfisaHttpClient implements Closeable {
 
@@ -45,7 +43,7 @@ public class AnfisaHttpClient implements Closeable {
 
     private static String HOST = "grch37.rest.ensembl.org";
 
-    private static int MAX_REQUEST_IN_SECOND = 10;
+    private static int MAX_REQUEST_IN_SECOND = 15;
     private static long REQUEST_PAUSE = 1000L / MAX_REQUEST_IN_SECOND;
 
     private final RequestConfig requestConfig;
@@ -53,11 +51,15 @@ public class AnfisaHttpClient implements Closeable {
 
     private final HttpHost httpHost;
 
-    private final Queue<QueueRequest> queueRequests;
+    private final ConcurrentLinkedDeque<QueueRequest> qequeRequests;
 
     private boolean active = true;
 
-    protected AnfisaHttpClient() throws IOException {
+    private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
+
+    protected AnfisaHttpClient(
+            Thread.UncaughtExceptionHandler uncaughtExceptionHandler
+    ) throws IOException {
         requestConfig = RequestConfig.custom()
                 .setConnectTimeout(2000)//Таймаут на подключение
                 .setSocketTimeout(1 * 60 * 1000)//Таймаут между пакетами
@@ -70,7 +72,9 @@ public class AnfisaHttpClient implements Closeable {
 
         httpHost = new HttpHost(HOST);
 
-        queueRequests = new ConcurrentLinkedQueue<>();
+        qequeRequests = new ConcurrentLinkedDeque<>();
+
+        this.uncaughtExceptionHandler = uncaughtExceptionHandler;
 
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -90,12 +94,12 @@ public class AnfisaHttpClient implements Closeable {
 
     protected CompletableFuture<JSONArray> request(String endpoint) {
         CompletableFuture<JSONArray> future = new CompletableFuture<>();
-        queueRequests.add(new QueueRequest(endpoint, future));
+        qequeRequests.add(new QueueRequest(endpoint, future));
         return future;
     }
 
     private void execute() {
-        QueueRequest queueRequest = queueRequests.poll();
+        QueueRequest queueRequest = qequeRequests.poll();
         if (queueRequest == null) return;
 
         String endpoint = queueRequest.endpoint;
@@ -129,10 +133,18 @@ public class AnfisaHttpClient implements Closeable {
 
                         if (rawResponse instanceof JSONArray) {
                             future.complete((JSONArray) rawResponse);
+                            log.warn("External service response: complete, {}", endpoint);
                         } else if (rawResponse instanceof JSONObject && ((JSONObject) rawResponse).containsKey("error")) {
                             throw ExceptionBuilder.buildExternalServiceException(new RuntimeException(), "Error parse response, endpoint: " + endpoint + " response: '" + entityBody + "'");
+                        } else if (response.getStatusLine().getStatusCode() == 429) {
+                            //Повторно кладем в очередь на расчет
+                            log.warn("External service response: Too many request - to repeat: {}", endpoint);
+                            qequeRequests.addFirst(queueRequest);
                         } else {
-                            Main.crash(new IOException("Unknown response, endpoint: " + endpoint + " response: '" + entityBody + "'"));
+                            uncaughtExceptionHandler.uncaughtException(
+                                    Thread.currentThread(),
+                                    new IOException("Unknown response, endpoint: " + endpoint + " response: '" + entityBody + "'")
+                            );
                         }
                     } catch (Throwable ex) {
                         future.completeExceptionally(ex);
@@ -147,7 +159,8 @@ public class AnfisaHttpClient implements Closeable {
 
                 @Override
                 public void failed(Exception ex) {
-                    future.completeExceptionally(ex);
+                    log.warn("External service: exception response - to repeat: {}", endpoint, ex);
+                    qequeRequests.addFirst(queueRequest);
                     try {
                         httpclient.close();
                     } catch (IOException ignore) {

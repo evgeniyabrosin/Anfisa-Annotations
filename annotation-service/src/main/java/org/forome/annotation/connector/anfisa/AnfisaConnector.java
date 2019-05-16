@@ -93,14 +93,15 @@ public class AnfisaConnector implements Closeable {
             HgmdConnector hgmdConnector,
             ClinvarConnector clinvarConnector,
             LiftoverConnector liftoverConnector,
-            GTFConnector gtfConnector
+            GTFConnector gtfConnector,
+            Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) throws IOException {
         this.gnomadConnector = gnomadConnector;
         this.spliceAIConnector = spliceAIConnector;
         this.hgmdConnector = hgmdConnector;
         this.clinvarConnector = clinvarConnector;
         this.liftoverConnector = liftoverConnector;
-        this.anfisaHttpClient = new AnfisaHttpClient();
+        this.anfisaHttpClient = new AnfisaHttpClient(uncaughtExceptionHandler);
         this.gtfConnector = gtfConnector;
     }
 

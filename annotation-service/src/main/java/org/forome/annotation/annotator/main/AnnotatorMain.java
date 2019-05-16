@@ -69,7 +69,10 @@ public class AnnotatorMain {
                     hgmdConnector,
                     clinvarConnector,
                     liftoverConnector,
-                    gtfConnector
+                    gtfConnector,
+                    (t, e) -> {
+                        Main.crash(e);
+                    }
             );
 
             Annotator annotator = new Annotator(anfisaConnector);

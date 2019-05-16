@@ -25,6 +25,7 @@ public class AnnotatorExecutor implements AutoCloseable {
         threadExecutors = new ThreadExecutor[thread];
         for (int i = 0; i < thread; i++) {
             threadExecutors[i] = new ThreadExecutor(
+                    i + 1,
                     anfisaConnector,
                     caseSequence, samples,
                     pathVepVcf, pathVepJson,
