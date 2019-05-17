@@ -15,6 +15,7 @@ public class AnnotatorArgumentParser {
     private static final String OPTION_FILE_CONFIG = "config";
     private static final String OPTION_CASE_NAME = "name";
     private static final String OPTION_FILE_FAM = "fam";
+    private static final String OPTION_FILE_FAM_NAME = "famname";
     private static final String OPTION_FILE_VCF = "vcf";
     private static final String OPTION_FILE_VEP_JSON = "vepjson";
     private static final String OPTION_START_POSITION = "start";
@@ -24,6 +25,7 @@ public class AnnotatorArgumentParser {
 
     public final String caseName;
     public final Path pathFam;
+    public final Path pathFamSampleName;
     public final Path pathVepFilteredVcf;
     public final Path pathVepFilteredVepJson;
     public final Path pathOutput;
@@ -49,6 +51,12 @@ public class AnnotatorArgumentParser {
                         .hasArg(true)
                         .optionalArg(true)
                         .desc("Absolute path to *.fam file")
+                        .build())
+                .addOption(Option.builder()
+                        .longOpt(OPTION_FILE_FAM_NAME)
+                        .hasArg(true)
+                        .optionalArg(true)
+                        .desc("Absolute path to fam names file")
                         .build())
                 .addOption(Option.builder()
                         .longOpt(OPTION_FILE_VCF)
@@ -95,6 +103,13 @@ public class AnnotatorArgumentParser {
                 pathFam = Paths.get(strPathFamFile).toAbsolutePath();
             } else {
                 pathFam = dir.resolve(String.format("%s.fam", caseName)).toAbsolutePath();
+            }
+
+            String strPathFamSampleName = cmd.getOptionValue(OPTION_FILE_FAM_NAME);
+            if (strPathFamSampleName != null) {
+                pathFamSampleName = Paths.get(strPathFamSampleName).toAbsolutePath();
+            } else {
+                pathFamSampleName = null;
             }
 
             String strPathVepFilteredVepJson = cmd.getOptionValue(OPTION_FILE_VEP_JSON);

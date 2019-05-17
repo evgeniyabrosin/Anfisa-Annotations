@@ -41,7 +41,8 @@ public class AnnotatorTest extends AnfisaBaseTest {
         int start = 1;//
         //Ошибочные варианты: 543, 763
 
-        Path fileExpected = Paths.get("/home/kris/processtech/tmp/bgm9001/output_file");
+//        Path fileExpected = Paths.get("/home/kris/processtech/tmp/bgm9001/output_file");
+        Path fileExpected = Paths.get("/home/kris/processtech/tmp/bch0051/python_output_file");
         List<JSONObject> expecteds =
                 Files.readAllLines(fileExpected)
                         .stream()
@@ -54,13 +55,23 @@ public class AnnotatorTest extends AnfisaBaseTest {
                         })
                         .collect(Collectors.toList());
 
-
+/**
         AnnotatorResult annotatorResult = annotator.exec(
                 "bgm9001",
                 Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001.fam"),
+                null,
                 Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vcf"),
                 Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json.gz"),
-//                Paths.get("/home/kris/processtech/tmp/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json"),
+                start-1
+        );
+*/
+
+        AnnotatorResult annotatorResult = annotator.exec(
+                "bch0051",
+                Paths.get("/home/kris/processtech/tmp/bch0051/bch0051.fam"),
+                Paths.get("/home/kris/processtech/tmp/bch0051/samples-bch0051.csv"),
+                Paths.get("/home/kris/processtech/tmp/bch0051/bch0051_wgs_run2_seq_a_boo_regions.vcf"),
+                Paths.get("/home/kris/processtech/tmp/bch0051/bch0051_wgs_run2_seq_a_boo_regions.vep.json"),
                 start-1
         );
 

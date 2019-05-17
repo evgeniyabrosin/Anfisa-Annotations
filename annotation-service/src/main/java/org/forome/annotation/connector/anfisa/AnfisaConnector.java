@@ -237,7 +237,7 @@ public class AnfisaConnector implements Closeable {
 
         String genotype;
         if (idx == null) {
-            genotype = getGtBasesGenotype(variantContext, sample.name);
+            genotype = getGtBasesGenotype(variantContext, sample.id);
         } else {
             /**
              genotypes = self.get_genotypes()
@@ -683,19 +683,19 @@ public class AnfisaConnector implements Closeable {
         String father = samples.get(proband).father;
         for (Map.Entry<String, Sample> entry : samples.entrySet()) {
             Sample sample = entry.getValue();
-            String s = sample.name;
+            String s = sample.id;
             JSONObject q_s = new JSONObject();
             if (s.equals(proband)) {
-                q_s.put("title", String.format("Proband: %s", s));
+                q_s.put("title", String.format("Proband: %s", sample.name));
             } else if (s.equals(mother)) {
-                q_s.put("title", String.format("Mother: %s", s));
+                q_s.put("title", String.format("Mother: %s", sample.name));
             } else if (s.equals(father)) {
-                q_s.put("title", String.format("Father: %s", s));
+                q_s.put("title", String.format("Father: %s", sample.name));
             } else {
-                q_s.put("title", s);
+                q_s.put("title", sample.name);
             }
 
-            Genotype oGenotype = variantContext.getGenotype(sample.name);
+            Genotype oGenotype = variantContext.getGenotype(sample.id);
             q_s.put("allelic_depth", oGenotype.getAnyAttribute("AD"));
             q_s.put("read_depth", oGenotype.getAnyAttribute("DP"));
             q_s.put("genotype_quality", getVariantGQ(variantContext, sample));
@@ -1134,7 +1134,7 @@ public class AnfisaConnector implements Closeable {
     }
 
     private static Integer getVariantGQ(VariantContext variantContext, Sample s) {
-        int valie = variantContext.getGenotype(s.name).getGQ();
+        int valie = variantContext.getGenotype(s.id).getGQ();
         return (valie != -1) ? valie : null;
     }
 
@@ -1240,7 +1240,7 @@ public class AnfisaConnector implements Closeable {
         List<String> fileUrls = samples.keySet().stream()
                 .map(sample -> String.format("http://%s%s%s/%s.hg19.bam", host, path, caseSequence, sample))
                 .collect(Collectors.toList());
-        String name = String.join(",", samples.keySet());
+        String name = String.join(",", samples.values().stream().map(sample -> sample.name).collect(Collectors.toList()));
         String args = String.format("file=%s&genome=hg19&merge=false&name=%s&locus=%s:%s-%s",
                 String.join(",", fileUrls), name, getChromosome(json), start - 250, end + 250
         );

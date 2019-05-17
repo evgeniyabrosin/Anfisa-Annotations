@@ -79,6 +79,7 @@ public class AnnotatorMain {
             AnnotatorResult annotatorResult = annotator.exec(
                     arguments.caseName,
                     arguments.pathFam,
+                    arguments.pathFamSampleName,
                     arguments.pathVepFilteredVcf,
                     arguments.pathVepFilteredVepJson,
                     arguments.start

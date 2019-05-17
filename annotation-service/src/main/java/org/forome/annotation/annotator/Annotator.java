@@ -35,6 +35,7 @@ public class Annotator {
     public AnnotatorResult exec(
             String caseName,
             Path pathFam,
+            Path pathFamSampleName,
             Path pathVepVcf,
             Path pathVepJson,
             int startPosition
@@ -63,10 +64,13 @@ public class Annotator {
             }
         }
 
-        try (InputStream isFam = Files.newInputStream(pathFam)) {
+        try (InputStream isFam = Files.newInputStream(pathFam);
+             InputStream isFamSampleName = (pathFamSampleName != null) ? Files.newInputStream(pathFamSampleName) : null
+        ) {
             return exec(
                     caseName,
                     isFam,
+                    isFamSampleName,
                     pathVepVcf,
                     pathVepJson,
                     startPosition
@@ -77,12 +81,13 @@ public class Annotator {
     public AnnotatorResult exec(
             String caseName,
             InputStream isFam,
+            InputStream isFamSampleName,
             Path pathVepVcf,
             Path pathVepJson,
             int startPosition
     ) throws IOException {
 
-        Map<String, Sample> samples = CaseUtils.parseFamFile(isFam);
+        Map<String, Sample> samples = CaseUtils.parseFamFile(isFam, isFamSampleName);
 
         String platform;
         Set<String> x = Arrays.stream(pathVepVcf.getFileName().toString().toLowerCase().split("_"))
