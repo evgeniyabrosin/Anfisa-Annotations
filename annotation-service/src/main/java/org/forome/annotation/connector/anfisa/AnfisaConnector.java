@@ -39,7 +39,7 @@ public class AnfisaConnector implements Closeable {
 
     private final static Logger log = LoggerFactory.getLogger(AnfisaConnector.class);
 
-    public static String VERSION = "0.3.4";
+    public static String VERSION = "0.3.6";
 
     private static final Map<String, String> trustedSubmitters = new HashMap<String, String>() {{
         put("lmm", "Laboratory for Molecular Medicine,Partners HealthCare Personalized Medicine");

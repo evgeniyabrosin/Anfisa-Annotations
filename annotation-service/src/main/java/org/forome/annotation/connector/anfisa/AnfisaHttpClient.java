@@ -158,7 +158,7 @@ public class AnfisaHttpClient implements Closeable {
 
                 @Override
                 public void failed(Exception ex) {
-                    log.warn("External service: exception response - to repeat: {}", endpoint, ex);
+                    log.warn("External service: exception {} - to repeat: {}", ex.getMessage(), endpoint);
                     qequeRequests.addFirst(queueRequest);
                     try {
                         httpclient.close();
