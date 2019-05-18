@@ -12,22 +12,22 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.zip.GZIPInputStream;
 
-public class VepJsonIterator implements Iterator<String>, AutoCloseable {
+public class FileReaderIterator implements Iterator<String>, AutoCloseable {
 
     private final InputStream inputStream;
     private final BufferedReader bufferedReader;
 
     private String nextValue;
 
-    public VepJsonIterator(Path pathVepJson) {
+    public FileReaderIterator(Path pathVepJson) {
         this(getInputStream(pathVepJson), pathVepJson.getFileName().toString().endsWith(".gz"));
     }
 
-    public VepJsonIterator(InputStream inputStream) {
+    public FileReaderIterator(InputStream inputStream) {
         this(inputStream, false);
     }
 
-    public VepJsonIterator(InputStream inputStream, boolean gzip) {
+    public FileReaderIterator(InputStream inputStream, boolean gzip) {
         this.inputStream = inputStream;
         if (gzip) {
             try {

@@ -5,7 +5,7 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.annotator.input.VepJsonIterator;
+import org.forome.annotation.annotator.input.FileReaderIterator;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.utils.RequestParser;
@@ -42,7 +42,7 @@ public class ThreadExecutor implements AutoCloseable {
     private final VCFFileReader vcfFileReader;
     private final CloseableIterator<VariantContext> vcfFileReaderIterator;
 
-    private final VepJsonIterator vepJsonIterator;
+    private final FileReaderIterator vepJsonIterator;
 
     private Result nextResult;
     private final Deque<Result> waitExecuteVariants;//Варианты ожидающие выполнения
@@ -75,7 +75,7 @@ public class ThreadExecutor implements AutoCloseable {
         this.vcfFileReaderIterator = vcfFileReader.iterator();
 
         if (pathVepJson != null) {
-            vepJsonIterator = new VepJsonIterator(pathVepJson);
+            vepJsonIterator = new FileReaderIterator(pathVepJson);
         } else {
             vepJsonIterator = null;
         }
