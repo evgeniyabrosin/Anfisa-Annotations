@@ -1,11 +1,10 @@
 package org.forome.annotation.annotator.executor;
 
-import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFFileReader;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.annotator.input.FileReaderIterator;
+import org.forome.annotation.annotator.input.VCFFileIterator;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.utils.RequestParser;
@@ -33,15 +32,10 @@ public class ThreadExecutor implements AutoCloseable {
     private final String caseSequence;
     private final Map<String, Sample> samples;
 
-    private final Path pathVepVcf;
-    private final Path pathVepJson;
-
     private final int start;
     private final int step;
 
-    private final VCFFileReader vcfFileReader;
-    private final CloseableIterator<VariantContext> vcfFileReaderIterator;
-
+    private final VCFFileIterator vcfFileIterator;
     private final FileReaderIterator vepJsonIterator;
 
     private Result nextResult;
@@ -54,7 +48,7 @@ public class ThreadExecutor implements AutoCloseable {
             int index,
             AnfisaConnector anfisaConnector,
             String caseSequence, Map<String, Sample> samples,
-            Path pathVepVcf, Path pathVepJson,
+            Path pathVcf, Path pathVepJson,
             int start, int step,
             Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) {
@@ -65,14 +59,10 @@ public class ThreadExecutor implements AutoCloseable {
         this.caseSequence = caseSequence;
         this.samples = samples;
 
-        this.pathVepVcf = pathVepVcf;
-        this.pathVepJson = pathVepJson;
-
         this.start = start;
         this.step = step;
 
-        this.vcfFileReader = new VCFFileReader(pathVepVcf, false);
-        this.vcfFileReaderIterator = vcfFileReader.iterator();
+        this.vcfFileIterator = new VCFFileIterator(pathVcf);
 
         if (pathVepJson != null) {
             vepJsonIterator = new FileReaderIterator(pathVepJson);
@@ -174,10 +164,7 @@ public class ThreadExecutor implements AutoCloseable {
         VariantContext variantContext = null;
         String strVepJson = null;
         for (int i = 0; i < step; i++) {
-            if (!vcfFileReaderIterator.hasNext()) {
-                throw new NoSuchElementException();
-            }
-            variantContext = vcfFileReaderIterator.next();
+            variantContext = vcfFileIterator.next();
             strVepJson = (vepJsonIterator != null) ? vepJsonIterator.next() : null;
         }
         return new Source(variantContext, strVepJson);
@@ -202,8 +189,7 @@ public class ThreadExecutor implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        this.vcfFileReaderIterator.close();
-        this.vcfFileReader.close();
+        vcfFileIterator.close();
 
         if (vepJsonIterator != null) {
             vepJsonIterator.close();
