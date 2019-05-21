@@ -1094,7 +1094,7 @@ public class AnfisaConnector implements Closeable {
         return response.getAsString("allele_string").split("/")[0];
     }
 
-    private static String getChromosome(JSONObject response) {
+    public static String getChromosome(JSONObject response) {
         return response.getAsString("seq_region_name");
     }
 

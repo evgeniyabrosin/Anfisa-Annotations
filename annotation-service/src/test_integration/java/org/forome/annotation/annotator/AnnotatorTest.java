@@ -35,7 +35,7 @@ public class AnnotatorTest extends AnfisaBaseTest {
     @Test
     public void test() throws Exception {
         Annotator annotator = new Annotator(anfisaConnector);
-        int start = 1;//
+        int start = 29;//1
         //Ошибочные варианты: 543, 763
 
 //        Path fileExpected = Paths.get("/home/kris/processtech/tmp/bgm9001/output_file");
