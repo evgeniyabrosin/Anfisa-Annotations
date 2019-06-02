@@ -618,8 +618,6 @@ public class AnfisaConnector implements Closeable {
         data.variantExonIntronWorst = intronOrExonWorst[0];
         data.totalExonIntronWorst = intronOrExonWorst[1];
 
-        view.general.igv = getIgvUrl(start, end, json, caseSequence, samples);
-
         if (filters.spliceAiDsmax != null) {
             if (filters.spliceAiDsmax >= SpliceAIConnector.MAX_DS_UNLIKELY) {
                 view.general.spliceAltering = Optional.ofNullable(getSpliceAltering(filters));
@@ -1228,23 +1226,6 @@ public class AnfisaConnector implements Closeable {
             log.error("Exception ", e);
             return null;
         }
-    }
-
-    private static String getIgvUrl(long start, long end, JSONObject json, String caseSequence, Map<String, Sample> samples) {
-        if (caseSequence == null || samples == null) {
-            return null;
-        }
-        String url = "http://localhost:60151/load?";
-        String path = "/anfisa/links/";
-        String host = "anfisa.forome.org";
-        List<String> fileUrls = samples.keySet().stream()
-                .map(sample -> String.format("http://%s%s%s/%s.hg19.bam", host, path, caseSequence, sample))
-                .collect(Collectors.toList());
-        String name = String.join(",", samples.values().stream().map(sample -> sample.name).collect(Collectors.toList()));
-        String args = String.format("file=%s&genome=hg19&merge=false&name=%s&locus=%s:%s-%s",
-                String.join(",", fileUrls), name, getChromosome(json), start - 250, end + 250
-        );
-        return String.format("%s%s", url, args);
     }
 
     public String getLabel(VariantContext variantContext, Map<String, Sample> samples, JSONObject response) {

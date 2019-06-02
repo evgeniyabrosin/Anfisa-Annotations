@@ -91,7 +91,6 @@ public class AnfisaResultView {
 		public List<String> cposOther = new ArrayList<>();
 		public List<String> spliceRegion;
 		public String[] genes;
-		public String igv;
 		public String worstAnnotation;
 		public List<String> refseqTranscriptWorst = new ArrayList<>();
 		public List<String> ensemblTranscriptsWorst = new ArrayList<>();

@@ -463,7 +463,6 @@ public class GetAnfisaJSONController {
         out.put("paternal_genotype", general.paternalGenotype);
         out.put("genes", general.genes);
         out.put("variant_exon_worst", general.variantExonWorst);
-        out.put("igv", general.igv);
         out.put("worst_annotation", general.worstAnnotation);
         out.put("cpos_canonical", general.cposCanonical);
         out.put("variant_exon_canonical", general.variantExonCanonical);
