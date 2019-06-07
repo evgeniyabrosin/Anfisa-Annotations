@@ -6,7 +6,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.Service;
 import org.forome.annotation.connector.gtf.GTFConnector;
-import org.forome.annotation.connector.gtf.struct.GTFResult;
+import org.forome.annotation.connector.gtf.struct.GTFRegion;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
@@ -24,29 +24,29 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 /**
- * http://localhost:8095/GetGTFData?session=...&data=[{"chromosome": "22", "position": 36691607},{"chromosome": "2", "position": 73675228}]
- * https://anfisa.forome.dev/annotationservice/GetGTFData?session=a57ee6662557402e9539373b31093a29&data=[{"chromosome": "22", "position": 36691607},{"chromosome": "2", "position": 73675228}]
+ * http://localhost:8095/GetGTFRegion?session=...&data=[{"transcript": "ENST00000456328", "position": 11870},{"transcript": "ENST00000518655", "position": 12226}]
+ * https://anfisa.forome.dev/annotationservice/GetGTFData?session=...&data=[{"transcript": "ENST00000456328", "position": 11870},{"transcript": "ENST00000518655", "position": 12226}]
  */
 @Controller
-@RequestMapping(value = {"/GetGTFData", "/annotationservice/GetGTFData"})
-public class GetGTFDataController {
+@RequestMapping(value = {"/GetGTFRegion", "/annotationservice/GetGTFRegion"})
+public class GetGTFRegionController {
 
-	private final static Logger log = LoggerFactory.getLogger(GetGTFDataController.class);
+	private final static Logger log = LoggerFactory.getLogger(GetGTFRegionController.class);
 
 	public static class RequestItem {
 
-		public final String chromosome;
+		public final String transcript;
 		public final long position;
 
-		public RequestItem(String chromosome, long position) {
-			this.chromosome = chromosome;
+		public RequestItem(String transcript, long position) {
+			this.transcript = transcript;
 			this.position = position;
 		}
 	}
 
 	@RequestMapping(value = {"", "/"})
 	public CompletableFuture<ResponseEntity> execute(HttpServletRequest request) {
-		log.debug("GetGTFDataController execute, time: {}", System.currentTimeMillis());
+		log.debug("GetGTFRegionController execute, time: {}", System.currentTimeMillis());
 
 		Service service = Service.getInstance();
 
@@ -64,6 +64,11 @@ public class GetGTFDataController {
 			throw ExceptionBuilder.buildInvalidValueException("data");
 		}
 
+		GTFConnector gtfConnector = service.getGtfConnector();
+		if (gtfConnector == null) {
+			throw ExceptionBuilder.buildInvalidOperation("inited");
+		}
+
 		CompletableFuture<JSONArray> future = new CompletableFuture<>();
 		ExecutorServiceUtils.poolExecutor.execute(() -> {
 			try {
@@ -71,33 +76,42 @@ public class GetGTFDataController {
 
 				ArrayList<RequestItem> requestItems = parseRequestData(sRequestData);
 
-				List<CompletableFuture<GTFResult>> futureGTFResults = new ArrayList<>();
-				GTFConnector gtfConnector = service.getGtfConnector();
+				List<CompletableFuture<GTFRegion>> futureGTFRegions = new ArrayList<>();
 				for (RequestItem requestItem : requestItems) {
-					futureGTFResults.add(gtfConnector.request(
-							requestItem.chromosome,
+					futureGTFRegions.add(gtfConnector.getRegion(
+							requestItem.transcript,
 							requestItem.position
 					));
 				}
 
-				CompletableFuture.allOf(futureGTFResults.toArray(new CompletableFuture[futureGTFResults.size()]))
+				CompletableFuture.allOf(futureGTFRegions.toArray(new CompletableFuture[futureGTFRegions.size()]))
 						.thenApply(v -> {
 							JSONArray results = new JSONArray();
 							for (int i = 0; i < requestItems.size(); i++) {
 								RequestItem requestItem = requestItems.get(i);
-								GTFResult gtfResult = futureGTFResults.get(i).join();
+								GTFRegion gtfRegion = futureGTFRegions.get(i).join();
 
 								JSONObject result = new JSONObject();
-								result.put("input", new JSONArray() {{
-									add(requestItem.chromosome);
-									add(requestItem.position);
+
+								result.put("input", new JSONObject(){{
+									put("transcript", requestItem.transcript);
+									put("position", requestItem.position);
 								}});
-								result.put("gene", toJson(gtfResult));
+
+								if (gtfRegion==null) {
+									result.put("result", null);
+								} else {
+									result.put("result", new JSONObject(){{
+										put("type", gtfRegion.typeRegion);
+										put("index", gtfRegion.indexRegion);
+									}});
+								}
+
 								results.add(result);
 							}
 
 							long t2 = System.currentTimeMillis();
-							log.debug("GetGTFDataController execute request, size: {}, time: {} ms", requestItems.size(), t2 - t1);
+							log.debug("GetGTFRegionController execute request, size: {}, time: {} ms", requestItems.size(), t2 - t1);
 
 							future.complete(results);
 							return null;
@@ -141,12 +155,12 @@ public class GetGTFDataController {
 			}
 			JSONObject oItem = (JSONObject) item;
 
-			String chromosome = RequestParser.toChromosome(oItem.getAsString("chromosome"));
+			String transcript = RequestParser.toString("transcript", oItem.getAsString("transcript"));
 
 			long position = RequestParser.toLong("position", oItem.getAsString("position"));
 
 			requestItems.add(new RequestItem(
-					chromosome,
+					transcript,
 					position
 			));
 		}
@@ -154,10 +168,5 @@ public class GetGTFDataController {
 		return requestItems;
 	}
 
-	private static JSONObject toJson(GTFResult gtfResult) {
-		JSONObject out = new JSONObject();
-		out.put("symbol", gtfResult.symbol);
-		return out;
-	}
 
 }

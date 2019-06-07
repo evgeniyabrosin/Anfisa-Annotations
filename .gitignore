@@ -17,3 +17,4 @@
 /annotation-service/data/
 /annotation-service/logs/
 /annotation-service/*.json
+/annotation-service/*.txt

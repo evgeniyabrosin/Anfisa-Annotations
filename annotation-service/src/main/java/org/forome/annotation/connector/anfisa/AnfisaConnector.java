@@ -14,6 +14,7 @@ import org.forome.annotation.connector.clinvar.struct.ClinvarResult;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 import org.forome.annotation.connector.gtf.GTFConnector;
+import org.forome.annotation.connector.gtf.struct.GTFRegion;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
@@ -408,11 +409,14 @@ public class AnfisaConnector implements Closeable {
                         continue;
                     }
                     long d = (long) result[0];
-                    region = (String) result[1];
-                    if (result.length > 3) {
-                        index = (long) result[2];
-                        n = (int) result[3];
+
+                    GTFRegion gtfRegion = (GTFRegion) result[1];
+                    region = gtfRegion.typeRegion;
+                    if (gtfRegion.indexRegion != null) {
+                        index = gtfRegion.indexRegion;
+                        n = (int) result[2];
                     }
+
                     if (dist == null || d < dist) {
                         dist = d;
                     }

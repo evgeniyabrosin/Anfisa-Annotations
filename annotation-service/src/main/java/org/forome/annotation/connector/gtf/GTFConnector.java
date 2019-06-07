@@ -2,6 +2,7 @@ package org.forome.annotation.connector.gtf;
 
 import org.forome.annotation.config.connector.GTFConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
+import org.forome.annotation.connector.gtf.struct.GTFRegion;
 import org.forome.annotation.connector.gtf.struct.GTFResult;
 import org.forome.annotation.connector.gtf.struct.GTFTranscriptRow;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
@@ -52,18 +53,31 @@ public class GTFConnector {
         return future;
     }
 
+    public CompletableFuture<GTFRegion> getRegion(String transcript, long position) {
+        CompletableFuture<GTFRegion> future = new CompletableFuture();
+        threadPoolGTFExecutor.submit(() -> {
+            try {
+                Object[] result = lookup(position, transcript);
+                future.complete((GTFRegion) result[1]);
+            } catch (Throwable e) {
+                future.completeExceptionally(e);
+            }
+        });
+        return future;
+    }
+
     public Object[] lookup(long pos, String transcript) {
         List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
         if (rows.isEmpty()) return null;
 
         long inf = rows.get(0).start;
         if (pos < inf) {
-            return new Object[]{(inf - pos), "upstream"};
+            return new Object[]{(inf - pos), GTFRegion.UPSTREAM};
         }
 
         long sup = rows.get(rows.size() - 1).end;
         if (pos > sup) {
-            return new Object[]{(pos - sup), "downstream"};
+            return new Object[]{(pos - sup), GTFRegion.DOWNSTREAM};
         }
 
         List<Long> a = new ArrayList<>();
@@ -102,7 +116,7 @@ public class GTFConnector {
             region = "intron";
         }
 
-        return new Object[]{d, region, index, rows.size()};
+        return new Object[]{d, new GTFRegion(region, index), rows.size()};
     }
 
 
