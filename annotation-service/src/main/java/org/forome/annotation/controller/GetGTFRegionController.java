@@ -102,7 +102,7 @@ public class GetGTFRegionController {
 									result.put("result", null);
 								} else {
 									result.put("result", new JSONObject(){{
-										put("type", gtfRegion.typeRegion);
+										put("region", gtfRegion.typeRegion);
 										put("index", gtfRegion.indexRegion);
 									}});
 								}
