@@ -25,7 +25,7 @@ import java.util.concurrent.CompletionException;
 
 /**
  * http://localhost:8095/GetGTFRegion?session=...&data=[{"transcript": "ENST00000456328", "position": 11870},{"transcript": "ENST00000518655", "position": 12226}]
- * https://anfisa.forome.dev/annotationservice/GetGTFData?session=...&data=[{"transcript": "ENST00000456328", "position": 11870},{"transcript": "ENST00000518655", "position": 12226}]
+ * https://anfisa.forome.dev/annotationservice/GetGTFRegion?session=...&data=[{"transcript": "ENST00000456328", "position": 11870},{"transcript": "ENST00000518655", "position": 12226}]
  */
 @Controller
 @RequestMapping(value = {"/GetGTFRegion", "/annotationservice/GetGTFRegion"})
