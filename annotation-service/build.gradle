@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.forome'
-version '0.0.2'
+version '0.0.3'
 
 sourceCompatibility = 1.8
 
@@ -52,7 +52,7 @@ configurations {
 }
 
 jar {
-    archiveName = project.hasProperty('filename') ? filename : (rootProject.name + '.jar')
+    archiveName = project.hasProperty('filename') ? filename : (rootProject.name + '_v.' + project.version + '.jar')
     from {
         configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
