@@ -2,7 +2,10 @@ package org.forome.annotation.connector.gtf;
 
 import org.forome.annotation.config.connector.GTFConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
-import org.forome.annotation.connector.gtf.struct.*;
+import org.forome.annotation.connector.gtf.struct.GTFRegion;
+import org.forome.annotation.connector.gtf.struct.GTFResult;
+import org.forome.annotation.connector.gtf.struct.GTFResultLookup;
+import org.forome.annotation.connector.gtf.struct.GTFTranscriptRow;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 
 import java.util.ArrayList;
@@ -11,7 +14,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class GTFConnector {
 
@@ -65,11 +67,11 @@ public class GTFConnector {
         return future;
     }
 
-    public CompletableFuture<List<GTFResultLookup>> getRegionByChromosomeAndPositions(String chromosome, long position1, long position2) {
+    public CompletableFuture<List<GTFResultLookup>> getRegionByChromosomeAndPositions(String chromosome, long[] positions) {
         CompletableFuture<List<GTFResultLookup>> future = new CompletableFuture();
         threadPoolGTFExecutor.submit(() -> {
             try {
-                List<GTFResultLookup> result =lookupByChromosomeAndPositions(chromosome, position1, position2);
+                List<GTFResultLookup> result =lookupByChromosomeAndPositions(chromosome, positions);
                 future.complete(result);
             } catch (Throwable e) {
                 future.completeExceptionally(e);
@@ -85,8 +87,24 @@ public class GTFConnector {
         return lookup(pos, rows);
     }
 
-    public List<GTFResultLookup> lookupByChromosomeAndPositions(String chromosome, long position1, long position2) {
-        List<GTFTranscriptRowExternal> rows = gtfDataConnector.getTranscriptRowsByChromosomeAndPositions(chromosome, position1, position2);
+    public List<GTFResultLookup> lookupByChromosomeAndPositions(String chromosome, long[] positions) {
+        List<GTFResultLookup> result = new ArrayList<>();
+
+        List<String> transcripts = gtfDataConnector.getTranscriptsByChromosomeAndPositions(chromosome, positions);
+        for (String transcript: transcripts) {
+            for (long position: positions) {
+                List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
+                if (rows.isEmpty()) continue;
+
+                Object[] iResult = lookup(position, transcript);
+                GTFRegion region = (GTFRegion)iResult[1];
+                result.add(new GTFResultLookup(transcript, rows.get(0).gene,  position, region.region, region.indexRegion));
+            }
+        }
+
+
+        /*
+        List<GTFTranscriptRowExternal> rows = gtfDataConnector.getTranscriptRowsByChromosomeAndPositions(chromosome, positions);
 
         List<GTFResultLookup> result = new ArrayList<>();
 
@@ -95,14 +113,15 @@ public class GTFConnector {
             List<GTFTranscriptRow> transcriptRows = rows.stream().filter(row -> transcript.equals(row.transcript))
                     .collect(Collectors.toList());
 
-            Object[] iResult1 = lookup(position1, transcriptRows);
-            GTFRegion region1 = (GTFRegion)iResult1[1];
-            result.add(new GTFResultLookup(transcript, position1, region1.region, region1.indexRegion));
+            String gene = ((GTFTranscriptRowExternal)transcriptRows.get(0)).gene;
 
-            Object[] iResult2 = lookup(position2, transcriptRows);
-            GTFRegion region2 = (GTFRegion)iResult2[1];
-            result.add(new GTFResultLookup(transcript, position2, region2.region, region2.indexRegion));
+            for (long position: positions) {
+                Object[] iResult = lookup(position, transcriptRows);
+                GTFRegion region = (GTFRegion)iResult[1];
+                result.add(new GTFResultLookup(transcript, gene,  position, region.region, region.indexRegion));
+            }
         }
+        */
 
         return result;
     }

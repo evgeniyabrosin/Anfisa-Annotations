@@ -11,7 +11,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GTFDataConnector {
 
@@ -48,7 +50,7 @@ public class GTFDataConnector {
 
     public List<GTFTranscriptRow> getTranscriptRows(String transcript) {
         String sql = String.format(
-                "SELECT `start`, `end`, `feature` from ensembl.GTF WHERE transcript = '%s' AND feature = 'exon' ORDER BY `start`, `end`",
+                "SELECT `gene`, `start`, `end`, `feature` from ensembl.GTF WHERE transcript = '%s' AND feature = 'exon' ORDER BY `start`, `end`",
                 transcript
         );
 
@@ -57,10 +59,12 @@ public class GTFDataConnector {
             try (Statement statement = connection.createStatement()) {
                 try (ResultSet resultSet = statement.executeQuery(sql)) {
                     while (resultSet.next()) {
+                        String gene = resultSet.getString("gene");
                         long start = resultSet.getLong("start");
                         long end = resultSet.getLong("end");
                         String feature = resultSet.getString("feature");
                         rows.add(new GTFTranscriptRow(
+                                gene,
                                 start,
                                 end,
                                 feature
@@ -74,10 +78,16 @@ public class GTFDataConnector {
         return rows;
     }
 
-    public List<GTFTranscriptRowExternal> getTranscriptRowsByChromosomeAndPositions(String chromosome, long position1, long position2) {
+    public List<GTFTranscriptRowExternal> getTranscriptRowsByChromosomeAndPositions(String chromosome, long[] positions) {
+
+        String sqlWherePosition = Arrays.stream(positions)
+                .mapToObj(position-> String.format("(`start` < %s and %s < `end`)", position, position))
+                .collect(Collectors.joining(" or ", "(", ")"));
+
         String sql = String.format(
-                "SELECT `transcript`, `gene`, `approved`, `start`, `end`, `feature` from ensembl.GTF WHERE feature IN ('transcript') and chromosome = '%s' and ((`start` < %s and %s < `end`) or (`start` < %s and %s < `end`)) ORDER BY `start`, `end`",
-                chromosome, position1, position1, position2, position2
+                "SELECT `transcript`, `gene`, `approved`, `start`, `end`, `feature` from ensembl.GTF WHERE feature IN ('transcript') and chromosome = '%s' and %s" +
+                        " ORDER BY `start`, `end`",
+                chromosome, sqlWherePosition
         );
 
         List<GTFTranscriptRowExternal> rows = new ArrayList<>();
@@ -105,4 +115,33 @@ public class GTFDataConnector {
     }
 
 
+    public List<String> getTranscriptsByChromosomeAndPositions(String chromosome, long[] positions) {
+        String sqlWherePosition = Arrays.stream(positions)
+                .mapToObj(position-> String.format("(`start` < %s and %s < `end`)", position, position))
+                .collect(Collectors.joining(" or ", "(", ")"));
+
+        String sql = String.format(
+                "SELECT `transcript` from ensembl.GTF WHERE feature IN ('transcript') and chromosome = '%s' and %s" +
+                        " ORDER BY `start`, `end`",
+                chromosome, sqlWherePosition
+        );
+
+        List<String> transcripts = new ArrayList<>();
+        try (Connection connection = databaseConnector.createConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                try (ResultSet resultSet = statement.executeQuery(sql)) {
+                    while (resultSet.next()) {
+                        String transcript = resultSet.getString("transcript");
+
+                        if (!transcripts.contains(transcript)) {
+                            transcripts.add(transcript);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            throw ExceptionBuilder.buildExternalDatabaseException(ex);
+        }
+        return transcripts;
+    }
 }

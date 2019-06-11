@@ -60,4 +60,11 @@ public class RequestParser {
 
         return result;
     }
+
+    public static <T> T toObject(String param, Object value) {
+        if (value == null) {
+            throw ExceptionBuilder.buildInvalidValueException(param, value);
+        }
+        return (T) value;
+    }
 }

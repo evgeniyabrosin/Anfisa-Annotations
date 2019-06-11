@@ -24,8 +24,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 /**
- * http://localhost:8095/GetGTFRegionByChromosomeAndPositions?session=...&data=[{"chromosome": "5", "position1": 478242, "position2": 144310}]
- * https://anfisa.forome.dev/annotationservice/GetGTFRegionByChromosomeAndPositions?session=...&data=[{"chromosome": "5", "position1": 478242, "position2": 144310}]
+ * http://localhost:8095/GetGTFRegionByChromosomeAndPositions?session=...&data=[{"chromosome": "5", "position": [478242, 144310]}]
+ * https://anfisa.forome.dev/annotationservice/GetGTFRegionByChromosomeAndPositions?session=...&data=[{"chromosome": "5", "position": [478242, 144310]}]
  */
 @Controller
 @RequestMapping(value = {"/GetGTFRegionByChromosomeAndPositions", "/annotationservice/GetGTFRegionByChromosomeAndPositions"})
@@ -36,13 +36,11 @@ public class GetGTFRegionByChromosomeAndPositionsController {
 	public static class RequestItem {
 
 		public final String chromosome;
-		public final long position1;
-		public final long position2;
+		public final long[] positions;
 
-		public RequestItem(String chromosome, long position1, long position2) {
+		public RequestItem(String chromosome, long[] positions) {
 			this.chromosome = chromosome;
-			this.position1 = position1;
-			this.position2 = position2;
+			this.positions = positions;
 		}
 	}
 
@@ -82,8 +80,7 @@ public class GetGTFRegionByChromosomeAndPositionsController {
 				for (RequestItem requestItem : requestItems) {
 					futureGTFRegions.add(gtfConnector.getRegionByChromosomeAndPositions(
 							requestItem.chromosome,
-							requestItem.position1,
-							requestItem.position2
+							requestItem.positions
 					));
 				}
 
@@ -98,14 +95,14 @@ public class GetGTFRegionByChromosomeAndPositionsController {
 
 								result.put("input", new JSONObject(){{
 									put("chromosome", requestItem.chromosome);
-									put("position1", requestItem.position1);
-									put("position2", requestItem.position2);
+									put("position", requestItem.positions);
 								}});
 
 								result.put("result", new JSONArray(){{
 									for (GTFResultLookup resultLookup: resultLookups) {
 										add(new JSONObject(){{
 											put("transcript", resultLookup.transcript);
+											put("gene", resultLookup.gene);
 											put("position", resultLookup.position);
 											put("region", resultLookup.region);
 											put("index", resultLookup.index);
@@ -162,13 +159,16 @@ public class GetGTFRegionByChromosomeAndPositionsController {
 			JSONObject oItem = (JSONObject) item;
 
 			String chromosome = RequestParser.toChromosome(oItem.getAsString("chromosome"));
-			long position1 = RequestParser.toLong("position1", oItem.getAsString("position1"));
-			long position2 = RequestParser.toLong("position2", oItem.getAsString("position2"));
-
+			Object oPosition = RequestParser.toObject("position", oItem.get("position"));
+			long[] positions;
+			try {
+				positions = ((JSONArray)oPosition).stream().map(o -> ((Number)o).longValue()).mapToLong(v -> v).toArray();
+			} catch (Throwable e) {
+				throw ExceptionBuilder.buildInvalidValueException("position", oPosition);
+			}
 			requestItems.add(new RequestItem(
 					chromosome,
-					position1,
-					position2
+					positions
 			));
 		}
 
