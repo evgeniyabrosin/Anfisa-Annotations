@@ -6,11 +6,11 @@ public class GTFRegion {
 
     public static GTFRegion DOWNSTREAM = new GTFRegion("downstream", null);
 
-    public final String typeRegion;
+    public final String region;
     public final Long indexRegion;
 
-    public GTFRegion(String typeRegion, Long indexRegion) {
-        this.typeRegion = typeRegion;
+    public GTFRegion(String region, Long indexRegion) {
+        this.region = region;
         this.indexRegion = indexRegion;
     }
 }

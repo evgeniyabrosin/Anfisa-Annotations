@@ -411,7 +411,7 @@ public class AnfisaConnector implements Closeable {
                     long d = (long) result[0];
 
                     GTFRegion gtfRegion = (GTFRegion) result[1];
-                    region = gtfRegion.typeRegion;
+                    region = gtfRegion.region;
                     if (gtfRegion.indexRegion != null) {
                         index = gtfRegion.indexRegion;
                         n = (int) result[2];

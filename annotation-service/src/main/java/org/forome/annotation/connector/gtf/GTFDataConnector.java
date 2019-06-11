@@ -3,6 +3,7 @@ package org.forome.annotation.connector.gtf;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.gtf.struct.GTFResult;
 import org.forome.annotation.connector.gtf.struct.GTFTranscriptRow;
+import org.forome.annotation.connector.gtf.struct.GTFTranscriptRowExternal;
 import org.forome.annotation.exception.ExceptionBuilder;
 
 import java.sql.Connection;
@@ -72,4 +73,36 @@ public class GTFDataConnector {
         }
         return rows;
     }
+
+    public List<GTFTranscriptRowExternal> getTranscriptRowsByChromosomeAndPositions(String chromosome, long position1, long position2) {
+        String sql = String.format(
+                "SELECT `transcript`, `gene`, `approved`, `start`, `end`, `feature` from ensembl.GTF WHERE feature IN ('transcript') and chromosome = '%s' and ((`start` < %s and %s < `end`) or (`start` < %s and %s < `end`)) ORDER BY `start`, `end`",
+                chromosome, position1, position1, position2, position2
+        );
+
+        List<GTFTranscriptRowExternal> rows = new ArrayList<>();
+        try (Connection connection = databaseConnector.createConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                try (ResultSet resultSet = statement.executeQuery(sql)) {
+                    while (resultSet.next()) {
+                        String transcript = resultSet.getString("transcript");
+                        String gene = resultSet.getString("gene");
+                        String approved = resultSet.getString("approved");
+                        long start = resultSet.getLong("start");
+                        long end = resultSet.getLong("end");
+                        String feature = resultSet.getString("feature");
+                        rows.add(new GTFTranscriptRowExternal(
+                                transcript, gene, approved,
+                                start, end, feature
+                        ));
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            throw ExceptionBuilder.buildExternalDatabaseException(ex);
+        }
+        return rows;
+    }
+
+
 }

@@ -6,7 +6,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.Service;
 import org.forome.annotation.connector.gtf.GTFConnector;
-import org.forome.annotation.connector.gtf.struct.GTFRegion;
+import org.forome.annotation.connector.gtf.struct.GTFResultLookup;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
@@ -24,29 +24,31 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 /**
- * http://localhost:8095/GetGTFRegion?session=...&data=[{"transcript": "ENST00000456328", "position": 11870},{"transcript": "ENST00000518655", "position": 12226}]
- * https://anfisa.forome.dev/annotationservice/GetGTFRegion?session=...&data=[{"transcript": "ENST00000456328", "position": 11870},{"transcript": "ENST00000518655", "position": 12226}]
+ * http://localhost:8095/GetGTFRegionByChromosomeAndPositions?session=...&data=[{"chromosome": "5", "position1": 478242, "position2": 144310}]
+ * https://anfisa.forome.dev/annotationservice/GetGTFRegionByChromosomeAndPositions?session=...&data=[{"chromosome": "5", "position1": 478242, "position2": 144310}]
  */
 @Controller
-@RequestMapping(value = {"/GetGTFRegion", "/annotationservice/GetGTFRegion"})
-public class GetGTFRegionController {
+@RequestMapping(value = {"/GetGTFRegionByChromosomeAndPositions", "/annotationservice/GetGTFRegionByChromosomeAndPositions"})
+public class GetGTFRegionByChromosomeAndPositionsController {
 
-	private final static Logger log = LoggerFactory.getLogger(GetGTFRegionController.class);
+	private final static Logger log = LoggerFactory.getLogger(GetGTFRegionByChromosomeAndPositionsController.class);
 
 	public static class RequestItem {
 
-		public final String transcript;
-		public final long position;
+		public final String chromosome;
+		public final long position1;
+		public final long position2;
 
-		public RequestItem(String transcript, long position) {
-			this.transcript = transcript;
-			this.position = position;
+		public RequestItem(String chromosome, long position1, long position2) {
+			this.chromosome = chromosome;
+			this.position1 = position1;
+			this.position2 = position2;
 		}
 	}
 
 	@RequestMapping(value = {"", "/"})
 	public CompletableFuture<ResponseEntity> execute(HttpServletRequest request) {
-		log.debug("GetGTFRegionController execute, time: {}", System.currentTimeMillis());
+		log.debug("GetGTFRegionByChromosomeAndPositionsController execute, time: {}", System.currentTimeMillis());
 
 		Service service = Service.getInstance();
 
@@ -76,11 +78,12 @@ public class GetGTFRegionController {
 
 				ArrayList<RequestItem> requestItems = parseRequestData(sRequestData);
 
-				List<CompletableFuture<GTFRegion>> futureGTFRegions = new ArrayList<>();
+				List<CompletableFuture<List<GTFResultLookup>>> futureGTFRegions = new ArrayList<>();
 				for (RequestItem requestItem : requestItems) {
-					futureGTFRegions.add(gtfConnector.getRegion(
-							requestItem.transcript,
-							requestItem.position
+					futureGTFRegions.add(gtfConnector.getRegionByChromosomeAndPositions(
+							requestItem.chromosome,
+							requestItem.position1,
+							requestItem.position2
 					));
 				}
 
@@ -89,29 +92,32 @@ public class GetGTFRegionController {
 							JSONArray results = new JSONArray();
 							for (int i = 0; i < requestItems.size(); i++) {
 								RequestItem requestItem = requestItems.get(i);
-								GTFRegion gtfRegion = futureGTFRegions.get(i).join();
+								List<GTFResultLookup> resultLookups = futureGTFRegions.get(i).join();
 
 								JSONObject result = new JSONObject();
 
 								result.put("input", new JSONObject(){{
-									put("transcript", requestItem.transcript);
-									put("position", requestItem.position);
+									put("chromosome", requestItem.chromosome);
+									put("position1", requestItem.position1);
+									put("position2", requestItem.position2);
 								}});
 
-								if (gtfRegion==null) {
-									result.put("result", null);
-								} else {
-									result.put("result", new JSONObject(){{
-										put("region", gtfRegion.region);
-										put("index", gtfRegion.indexRegion);
-									}});
-								}
+								result.put("result", new JSONArray(){{
+									for (GTFResultLookup resultLookup: resultLookups) {
+										add(new JSONObject(){{
+											put("transcript", resultLookup.transcript);
+											put("position", resultLookup.position);
+											put("region", resultLookup.region);
+											put("index", resultLookup.index);
+										}});
+									}
+								}});
 
 								results.add(result);
 							}
 
 							long t2 = System.currentTimeMillis();
-							log.debug("GetGTFRegionController execute request, size: {}, time: {} ms", requestItems.size(), t2 - t1);
+							log.debug("GetGTFRegionByChromosomeAndPositionsController execute request, size: {}, time: {} ms", requestItems.size(), t2 - t1);
 
 							future.complete(results);
 							return null;
@@ -134,7 +140,7 @@ public class GetGTFRegionController {
 		return future
 				.thenApply(out -> {
 					ResponseEntity responseEntity = ResponseBuilder.build(out);
-					log.debug("GetGTFDataController build response, time: {}", System.currentTimeMillis());
+					log.debug("GetGTFRegionByChromosomeAndPositionsController build response, time: {}", System.currentTimeMillis());
 					return responseEntity;
 
 				})
@@ -155,13 +161,14 @@ public class GetGTFRegionController {
 			}
 			JSONObject oItem = (JSONObject) item;
 
-			String transcript = RequestParser.toString("transcript", oItem.getAsString("transcript"));
-
-			long position = RequestParser.toLong("position", oItem.getAsString("position"));
+			String chromosome = RequestParser.toChromosome(oItem.getAsString("chromosome"));
+			long position1 = RequestParser.toLong("position1", oItem.getAsString("position1"));
+			long position2 = RequestParser.toLong("position2", oItem.getAsString("position2"));
 
 			requestItems.add(new RequestItem(
-					transcript,
-					position
+					chromosome,
+					position1,
+					position2
 			));
 		}
 
