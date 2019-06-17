@@ -3,9 +3,9 @@ package org.forome.annotation.annotator.struct;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import io.reactivex.Observable;
-import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.struct.Sample;
+import org.forome.annotation.utils.AppVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,10 +24,11 @@ public class AnnotatorResult {
             public final String pipelineDate = null;
             public final String annotationsDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
             public final String pipeline;
-            public final String annotations = AnfisaConnector.VERSION;
+            public final String annotations;
             public final String reference;
 
             public Versions(Path pathVepVcf) {
+                annotations = AppVersion.getVersionFormat();
                 if (pathVepVcf != null) {
                     VCFFileReader vcfFileReader = new VCFFileReader(pathVepVcf, false);
                     VCFHeader vcfHeader = vcfFileReader.getFileHeader();

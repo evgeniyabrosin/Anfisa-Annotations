@@ -2,6 +2,10 @@ package org.forome.annotation.annotator.main;
 
 import org.forome.annotation.Main;
 import org.forome.annotation.annotator.Annotator;
+import org.forome.annotation.annotator.main.argument.Arguments;
+import org.forome.annotation.annotator.main.argument.ArgumentsAnnotation;
+import org.forome.annotation.annotator.main.argument.ArgumentsVersion;
+import org.forome.annotation.annotator.main.argument.ParserArgument;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
@@ -12,6 +16,7 @@ import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.controller.GetAnfisaJSONController;
+import org.forome.annotation.utils.AppVersion;
 import org.forome.annotation.utils.RuntimeExec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +40,25 @@ public class AnnotatorMain {
     private final static Logger log = LoggerFactory.getLogger(AnnotatorMain.class);
 
     public static void main(String[] args) {
-        AnnotatorArgumentParser arguments;
+        Arguments arguments;
         try {
-            arguments = new AnnotatorArgumentParser(args);
+            ParserArgument argumentParser = new ParserArgument(args);
+            arguments = argumentParser.arguments;
         } catch (Throwable e) {
             log.error("Exception arguments parser", e);
             System.exit(2);
             return;
         }
 
+        if (arguments instanceof ArgumentsVersion) {
+            System.out.println("Version: " + AppVersion.getVersion());
+            System.out.println("Version Format: " + AppVersion.getVersionFormat());
+        } else if (arguments instanceof ArgumentsAnnotation) {
+            annotation((ArgumentsAnnotation) arguments);
+        }
+    }
+
+    private static void annotation(ArgumentsAnnotation arguments) {
         log.info("Input caseName: {}", arguments.caseName);
         log.info("Input famFile: {}", arguments.pathFam.toAbsolutePath());
         log.info("Input vepVcfFile: {}", arguments.pathVcf.toAbsolutePath());

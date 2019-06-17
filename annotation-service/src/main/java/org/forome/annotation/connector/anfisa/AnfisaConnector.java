@@ -23,6 +23,7 @@ import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.exception.ServiceException;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.struct.Variant;
+import org.forome.annotation.utils.AppVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +40,6 @@ import java.util.stream.Stream;
 public class AnfisaConnector implements Closeable {
 
     private final static Logger log = LoggerFactory.getLogger(AnfisaConnector.class);
-
-    public static String VERSION = "0.4.2";
 
     private static final Map<String, String> trustedSubmitters = new HashMap<String, String>() {{
         put("lmm", "Laboratory for Molecular Medicine,Partners HealthCare Personalized Medicine");
@@ -134,7 +133,7 @@ public class AnfisaConnector implements Closeable {
         AnfisaResultData data = new AnfisaResultData();
         AnfisaResultView view = new AnfisaResultView();
 
-        data.version = getVersion();
+        data.version = AppVersion.getVersionFormat();
 
         callGnomAD(variantContext, samples, json, filters);
         callSpliceai(data, filters, variantContext, samples, json);
@@ -216,10 +215,6 @@ public class AnfisaConnector implements Closeable {
         createBioinformaticsTab(gtfAnfisaResult, json, data, view, variantContext, samples);
 
         return new AnfisaResult(filters, data, view);
-    }
-
-    private static String getVersion() {
-        return VERSION;
     }
 
     private static Integer sampleHasVariant(JSONObject json, VariantContext variantContext, Map<String, Sample> samples, Sample sample) {
