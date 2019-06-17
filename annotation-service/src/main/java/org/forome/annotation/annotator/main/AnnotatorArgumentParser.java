@@ -26,8 +26,8 @@ public class AnnotatorArgumentParser {
     public final String caseName;
     public final Path pathFam;
     public final Path pathFamSampleName;
-    public final Path pathVepFilteredVcf;
-    public final Path pathVepFilteredVepJson;
+    public final Path pathVcf;
+    public final Path pathVepJson;
     public final Path pathOutput;
 
     public final int start;
@@ -112,22 +112,22 @@ public class AnnotatorArgumentParser {
                 pathFamSampleName = null;
             }
 
-            String strPathVepFilteredVepJson = cmd.getOptionValue(OPTION_FILE_VEP_JSON);
-            if (strPathVepFilteredVepJson != null) {
-                this.pathVepFilteredVepJson = Paths.get(strPathVepFilteredVepJson);
+            String strPathVepJson = cmd.getOptionValue(OPTION_FILE_VEP_JSON);
+            if (strPathVepJson != null) {
+                this.pathVepJson = Paths.get(strPathVepJson);
             } else {
-                this.pathVepFilteredVepJson = null;
+                this.pathVepJson = null;
             }
 
-            String strPathVepFilteredVcf = cmd.getOptionValue(OPTION_FILE_VCF);
-            if (strPathVepFilteredVcf != null) {
-                this.pathVepFilteredVcf = Paths.get(strPathVepFilteredVcf);
+            String strPathVcf = cmd.getOptionValue(OPTION_FILE_VCF);
+            if (strPathVcf != null) {
+                this.pathVcf = Paths.get(strPathVcf);
             } else {
-                if (this.pathVepFilteredVepJson == null) {
+                if (this.pathVepJson == null) {
                     throw new IllegalArgumentException("Missing vcf file");
                 }
-                strPathVepFilteredVcf = this.pathVepFilteredVepJson.getFileName().toString().split("\\.")[0] + ".vcf";
-                this.pathVepFilteredVcf = Paths.get(strPathVepFilteredVcf);;
+                strPathVcf = this.pathVepJson.getFileName().toString().split("\\.")[0] + ".vcf";
+                this.pathVcf = Paths.get(strPathVcf);
             }
 
             this.start = Integer.parseInt(cmd.getOptionValue(OPTION_START_POSITION, "0"));
