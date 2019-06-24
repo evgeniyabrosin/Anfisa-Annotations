@@ -1,6 +1,7 @@
 package org.forome.annotation.controller;
 
 import com.google.common.base.Strings;
+import htsjdk.tribble.TribbleException;
 import htsjdk.variant.vcf.VCFFileReader;
 import io.reactivex.Observable;
 import net.minidev.json.JSONArray;
@@ -180,6 +181,8 @@ public class FormatVcfController {
             );
         } catch (IOException e) {
             throw ExceptionBuilder.buildIOErrorException(e);
+        } catch (TribbleException.MalformedFeatureFile e) {
+            throw ExceptionBuilder.buildInvalidVcfFile(e);
         } catch (Throwable e) {
             try {
                 if (vcfFile != null) {

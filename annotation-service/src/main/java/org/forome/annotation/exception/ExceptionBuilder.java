@@ -22,6 +22,12 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("external_service_error", cause);
 	}
 
+	public static ServiceException buildExternalServiceException(Throwable cause, String serviceName, String comment) {
+		return EXCEPTION_FACTORY.build("external_service_error", comment, new HashMap<String, Object>() {{
+			put("service_name", serviceName);
+		}}, cause);
+	}
+
 	public static ServiceException buildExternalServiceException(Throwable cause, String comment) {
 		return EXCEPTION_FACTORY.build("external_service_error", comment, null, cause);
 	}
@@ -54,6 +60,10 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("large_vcf_file", new HashMap<String, Object>() {{
 			put("max_size", maxSize);
 		}});
+	}
+
+	public static ServiceException buildInvalidVcfFile(Throwable cause) {
+		return EXCEPTION_FACTORY.build("invalid_vcf_file", cause);
 	}
 
 	public static ServiceException buildNotUniqueValueException(String fieldName, Object fieldValue) {
