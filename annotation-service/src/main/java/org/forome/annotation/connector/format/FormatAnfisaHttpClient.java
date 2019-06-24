@@ -97,7 +97,10 @@ public class FormatAnfisaHttpClient {
                         if (rawResponse instanceof JSONArray) {
                             future.complete((JSONArray)rawResponse);
                         } else {
-                            throw ExceptionBuilder.buildExternalServiceException(new RuntimeException("Exception external service, response: " + entityBody));
+                            throw ExceptionBuilder.buildExternalServiceException(
+                                    new RuntimeException("Exception external service(Anfisa), response: " + entityBody),
+                                    "Anfisa", "Response: " + entityBody
+                            );
                         }
                     } catch (Throwable ex) {
                         future.completeExceptionally(ex);
