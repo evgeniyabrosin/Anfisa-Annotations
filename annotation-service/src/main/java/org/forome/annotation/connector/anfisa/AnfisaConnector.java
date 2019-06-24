@@ -319,7 +319,9 @@ public class AnfisaConnector implements Closeable {
                 .toArray(Long[]::new);
         data.clinvarSubmitters = new HashMap<String, String>() {{
             for (ClinvarResult clinvarResult : clinvarResults) {
-                putAll(clinvarResult.submitters);
+                for (Map.Entry<String, String> entry: clinvarResult.submitters.entrySet()) {
+                    put(encodeToAscii(entry.getKey()), entry.getValue());
+                }
             }
         }};
 
