@@ -10,6 +10,7 @@ import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
+import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
@@ -133,6 +134,7 @@ public class AnnotatorMain {
             SpliceAIConnector spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, (t, e) -> {
                 Main.crash(e);
             });
+            ConservationConnector conservationConnector = new ConservationConnector(serviceConfig.conservationConfigConnector);
             HgmdConnector hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
             ClinvarConnector clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
             LiftoverConnector liftoverConnector = new LiftoverConnector();
@@ -142,6 +144,7 @@ public class AnnotatorMain {
             AnfisaConnector anfisaConnector = new AnfisaConnector(
                     gnomadConnector,
                     spliceAIConnector,
+                    conservationConnector,
                     hgmdConnector,
                     clinvarConnector,
                     liftoverConnector,
