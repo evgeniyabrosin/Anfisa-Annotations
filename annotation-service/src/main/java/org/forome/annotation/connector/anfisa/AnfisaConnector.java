@@ -323,7 +323,7 @@ public class AnfisaConnector implements Closeable {
         data.clinvarVariants = variants;
         view.databases.clinVarSubmitters = data.clinvarSubmitters.entrySet().stream().map(entry -> {
             return String.format("%s: %s", encodeToAscii(entry.getKey()), entry.getValue());
-        }).toArray(String[]::new);
+        }).sorted().toArray(String[]::new);
         data.clinvarSignificance = significance.toArray(new String[significance.size()]);
         data.clinvarPhenotypes = clinvarResults.stream()
                 .map(clinvarResult -> clinvarResult.phenotypeList)
