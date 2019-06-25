@@ -47,9 +47,13 @@ public class Variant {
 			SEVERITY.stream().flatMap(strings -> strings.stream()).iterator()
 	);
 
+	public static final String BGM_BAYES_DE_NOVO = "BGM_BAYES_DE_NOVO";
+
+	public static final String BGM_BAYES_DE_NOVO_S1 = "BGM_BAYES_DE_NOVO_S1";
+
 	public static final ImmutableList<String> CALLERS = ImmutableList.of(
 			"BGM_AUTO_DOM", "BGM_DE_NOVO", "BGM_HOM_REC", "BGM_CMPD_HET",
-			"BGM_BAYES_DE_NOVO", "BGM_BAYES_CMPD_HET", "BGM_BAYES_HOM_REC",
+			BGM_BAYES_DE_NOVO, "BGM_BAYES_CMPD_HET", "BGM_BAYES_HOM_REC",
 			"BGM_PIPELINE_A", "BGM_PIPELINE", "LMM", "SANGER"
 	);
 }
