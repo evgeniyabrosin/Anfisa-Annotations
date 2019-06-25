@@ -310,7 +310,7 @@ public class AnfisaConnector implements Closeable {
                 .toArray(Long[]::new);
         data.clinvarSubmitters = new HashMap<String, String>() {{
             for (ClinvarResult clinvarResult : clinvarResults) {
-                for (Map.Entry<String, String> entry: clinvarResult.submitters.entrySet()) {
+                for (Map.Entry<String, String> entry : clinvarResult.submitters.entrySet()) {
                     put(encodeToAscii(entry.getKey()), entry.getValue());
                 }
             }
@@ -1608,25 +1608,30 @@ public class AnfisaConnector implements Closeable {
         return null;
     }
 
-    private static List<String> getRawCallers(VariantContext variantContext) {
-        List<String> callers = new ArrayList<>();
+    private static LinkedHashSet<String> getRawCallers(VariantContext variantContext) {
+        LinkedHashSet<String> callers = new LinkedHashSet<>();
         CommonInfo commonInfo = variantContext.getCommonInfo();
         for (String caller : Variant.CALLERS) {
             if (commonInfo.hasAttribute(caller)) {
-                if (!callers.contains(caller)) {
-                    callers.add(caller);
+                if (Variant.BGM_BAYES_DE_NOVO.equals(caller) &&
+                        Double.parseDouble(commonInfo.getAttribute(caller).toString()) < 0
+                ) {
+                    //Отрицательное число, означает, что при работе коллера произошла ошибка…
+                    callers.add(Variant.BGM_BAYES_DE_NOVO_S1);
+                    continue;
                 }
+                callers.add(caller);
             }
         }
         return callers;
     }
 
 
-    private static List<String> getCallers(JSONObject json, VariantContext variantContext, Map<String, Sample> samples) {
+    private static LinkedHashSet<String> getCallers(JSONObject json, VariantContext variantContext, Map<String, Sample> samples) {
         if (samples == null || variantContext == null) {
-            return Collections.emptyList();
+            return new LinkedHashSet();
         }
-        List<String> callers = getRawCallers(variantContext);
+        LinkedHashSet<String> callers = getRawCallers(variantContext);
 
         Object[] genotypes = getGenotypes(variantContext, samples);
         String probandGenotype = (String) genotypes[0];
@@ -1681,7 +1686,7 @@ public class AnfisaConnector implements Closeable {
         CommonInfo commonInfo = variantContext.getCommonInfo();
 
         Map<String, Serializable> result = new HashMap<>();
-        List<String> callers = getRawCallers(variantContext);
+        LinkedHashSet<String> callers = getRawCallers(variantContext);
         for (String c : callers) {
             if (commonInfo.hasAttribute(c)) {
                 Object value = commonInfo.getAttribute(c);
