@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import htsjdk.variant.variantcontext.CommonInfo;
 import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -172,11 +173,11 @@ public class AnfisaConnector implements Closeable {
                     label = entry.getKey();
                 }
 
-                int zyg = sampleHasVariant(anfisaInput.vepJson, anfisaInput.variantContext, anfisaInput.samples, entry.getValue());
+                Integer zyg = sampleHasVariant(json, variantContext, samples, entry.getValue());
                 data.zygosity.put(entry.getKey(), zyg);
-                int modified_zygosity = (!anfisaInput.chromosome.equals("X") || sex == 2 || zyg == 0) ? zyg : 2;
+                Integer modified_zygosity = (!chromosome.equals("X") || sex == 2 || (zyg != null && zyg == 0)) ? zyg : (Integer)2;
                 filters.altZygosity.put(entry.getKey(), modified_zygosity);
-                if (zyg > 0) {
+                if (zyg != null && zyg > 0) {
                     filters.has_variant.add(label);
                 }
             }
@@ -238,9 +239,9 @@ public class AnfisaConnector implements Closeable {
             idx = 2;
         }
 
-        String genotype;
+        Genotype oGenotype;
         if (idx == null) {
-            genotype = getGtBasesGenotype(variantContext, sample.id);
+            oGenotype = variantContext.getGenotype(sample.id);
         } else {
             /**
              genotypes = self.get_genotypes()
@@ -251,8 +252,17 @@ public class AnfisaConnector implements Closeable {
             throw new RuntimeException("Not implemented");
         }
 
-        if (genotype == null) {
+        String genotype;
+        if (oGenotype.isCalled()) {
+            genotype = oGenotype.getGenotypeString();
+        } else if (oGenotype.getType() == GenotypeType.UNAVAILABLE) {
+            //Не имеет альтернативного аллеля
             return 0;
+        } else if (oGenotype.getType() == GenotypeType.NO_CALL) {
+            //Генотип не может быть определен из-за плохого качества секвенирования
+            return null;
+        } else {
+            throw new RuntimeException("Unknown state");
         }
 
         Set<String> set1 = Arrays.stream(genotype.split("/")).collect(Collectors.toSet());
@@ -272,7 +282,7 @@ public class AnfisaConnector implements Closeable {
 
             data.hgmd = String.join(",", accNums);
             List<Long[]> hg38 = hgmdConnector.getHg38(accNums);
-            ;
+
             data.hgmdHg38 = hg38.stream().map(longs -> String.format("%s-%s", longs[0], longs[1])).collect(Collectors.joining(", "));
             List<String> tags = hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).collect(Collectors.toList());
             filters.hgmdBenign = (tags.size() == 0);
@@ -319,7 +329,7 @@ public class AnfisaConnector implements Closeable {
                 .toArray(Long[]::new);
         data.clinvarSubmitters = new HashMap<String, String>() {{
             for (ClinvarResult clinvarResult : clinvarResults) {
-                for (Map.Entry<String, String> entry: clinvarResult.submitters.entrySet()) {
+                for (Map.Entry<String, String> entry : clinvarResult.submitters.entrySet()) {
                     put(encodeToAscii(entry.getKey()), entry.getValue());
                 }
             }
@@ -332,7 +342,7 @@ public class AnfisaConnector implements Closeable {
         data.clinvarVariants = variants;
         view.databases.clinVarSubmitters = data.clinvarSubmitters.entrySet().stream().map(entry -> {
             return String.format("%s: %s", encodeToAscii(entry.getKey()), entry.getValue());
-        }).toArray(String[]::new);
+        }).sorted().toArray(String[]::new);
         data.clinvarSignificance = significance.toArray(new String[significance.size()]);
         data.clinvarPhenotypes = clinvarResults.stream()
                 .map(clinvarResult -> clinvarResult.phenotypeList)
@@ -1655,25 +1665,30 @@ public class AnfisaConnector implements Closeable {
         return null;
     }
 
-    private static List<String> getRawCallers(VariantContext variantContext) {
-        List<String> callers = new ArrayList<>();
+    private static LinkedHashSet<String> getRawCallers(VariantContext variantContext) {
+        LinkedHashSet<String> callers = new LinkedHashSet<>();
         CommonInfo commonInfo = variantContext.getCommonInfo();
         for (String caller : Variant.CALLERS) {
             if (commonInfo.hasAttribute(caller)) {
-                if (!callers.contains(caller)) {
-                    callers.add(caller);
+                if (Variant.BGM_BAYES_DE_NOVO.equals(caller) &&
+                        Double.parseDouble(commonInfo.getAttribute(caller).toString()) < 0
+                ) {
+                    //Отрицательное число, означает, что при работе коллера произошла ошибка…
+                    callers.add(Variant.BGM_BAYES_DE_NOVO_S1);
+                    continue;
                 }
+                callers.add(caller);
             }
         }
         return callers;
     }
 
 
-    private static List<String> getCallers(JSONObject json, VariantContext variantContext, Map<String, Sample> samples) {
+    private static LinkedHashSet<String> getCallers(JSONObject json, VariantContext variantContext, Map<String, Sample> samples) {
         if (samples == null || variantContext == null) {
-            return Collections.emptyList();
+            return new LinkedHashSet();
         }
-        List<String> callers = getRawCallers(variantContext);
+        LinkedHashSet<String> callers = getRawCallers(variantContext);
 
         Object[] genotypes = getGenotypes(variantContext, samples);
         String probandGenotype = (String) genotypes[0];
@@ -1728,7 +1743,7 @@ public class AnfisaConnector implements Closeable {
         CommonInfo commonInfo = variantContext.getCommonInfo();
 
         Map<String, Serializable> result = new HashMap<>();
-        List<String> callers = getRawCallers(variantContext);
+        LinkedHashSet<String> callers = getRawCallers(variantContext);
         for (String c : callers) {
             if (commonInfo.hasAttribute(c)) {
                 Object value = commonInfo.getAttribute(c);

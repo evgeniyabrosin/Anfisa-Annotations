@@ -129,17 +129,17 @@ public class AnnotatorMain {
         try {
             ServiceConfig serviceConfig = new ServiceConfig(arguments.config);
             GnomadConnector gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, (t, e) -> {
-                Main.crash(e);
+                fail(e, arguments.pathOutput);
             });
             SpliceAIConnector spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, (t, e) -> {
-                Main.crash(e);
+                fail(e, arguments.pathOutput);
             });
             ConservationConnector conservationConnector = new ConservationConnector(serviceConfig.conservationConfigConnector);
             HgmdConnector hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
             ClinvarConnector clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
             LiftoverConnector liftoverConnector = new LiftoverConnector();
             GTFConnector gtfConnector = new GTFConnector(serviceConfig.gtfConfigConnector, (t, e) -> {
-                Main.crash(e);
+                fail(e, arguments.pathOutput);
             });
             AnfisaConnector anfisaConnector = new AnfisaConnector(
                     gnomadConnector,
@@ -150,7 +150,7 @@ public class AnnotatorMain {
                     liftoverConnector,
                     gtfConnector,
                     (t, e) -> {
-                        Main.crash(e);
+                        fail(e, arguments.pathOutput);
                     }
             );
 
@@ -185,7 +185,7 @@ public class AnnotatorMain {
                         }
                     },
                     e -> {
-                        Main.crash(e);
+                        fail(e, arguments.pathOutput);
                     },
                     () -> {
                         log.debug("progress completed");
@@ -200,6 +200,15 @@ public class AnnotatorMain {
             System.exit(2);
             return;
         }
+    }
+
+    private static void fail(Throwable e, Path pathOutput) {
+        try {
+            Files.deleteIfExists(pathOutput);
+        } catch (Throwable e1) {
+            log.error("Exception clear file: " + pathOutput, e);
+        }
+        Main.crash(e);
     }
 
     private static OutputStream buildOutputStream(Path pathOutput) throws IOException {

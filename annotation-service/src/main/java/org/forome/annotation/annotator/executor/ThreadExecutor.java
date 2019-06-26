@@ -170,8 +170,29 @@ public class ThreadExecutor implements AutoCloseable {
         VariantContext variantContext = null;
         String strVepJson = null;
         for (int i = 0; i < step; i++) {
-            variantContext = vcfFileIterator.next();
-            strVepJson = (vepJsonIterator != null) ? vepJsonIterator.next() : null;
+            try {
+                variantContext = vcfFileIterator.next();
+            } catch (NoSuchElementException ne) {
+                //Валидация того, что в vep.json - тоже не осталось записей
+                if (vepJsonIterator != null) {
+                    try {
+                        vepJsonIterator.next();
+                        throw new RuntimeException("Not equals count rows, vcf file and vep.json file");
+                    } catch (NoSuchElementException ignore) {
+                    }
+                }
+                throw ne;
+            }
+            if (vepJsonIterator != null) {
+                try {
+                    strVepJson = vepJsonIterator.next();
+                } catch (NoSuchElementException ne) {
+                    //Валидация того, что в vep.json - остались записи
+                    throw new RuntimeException("Not equals count rows, vcf file and vep.json file");
+                }
+            } else {
+                strVepJson = null;
+            }
         }
         return new Source(variantContext, strVepJson);
     }
