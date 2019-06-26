@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import htsjdk.variant.variantcontext.CommonInfo;
 import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -165,11 +166,11 @@ public class AnfisaConnector implements Closeable {
                     label = entry.getKey();
                 }
 
-                int zyg = sampleHasVariant(json, variantContext, samples, entry.getValue());
+                Integer zyg = sampleHasVariant(json, variantContext, samples, entry.getValue());
                 data.zygosity.put(entry.getKey(), zyg);
-                int modified_zygosity = (!chromosome.equals("X") || sex == 2 || zyg == 0) ? zyg : 2;
+                Integer modified_zygosity = (!chromosome.equals("X") || sex == 2 || (zyg != null && zyg == 0)) ? zyg : (Integer)2;
                 filters.altZygosity.put(entry.getKey(), modified_zygosity);
-                if (zyg > 0) {
+                if (zyg != null && zyg > 0) {
                     filters.has_variant.add(label);
                 }
             }
@@ -231,9 +232,9 @@ public class AnfisaConnector implements Closeable {
             idx = 2;
         }
 
-        String genotype;
+        Genotype oGenotype;
         if (idx == null) {
-            genotype = getGtBasesGenotype(variantContext, sample.id);
+            oGenotype = variantContext.getGenotype(sample.id);
         } else {
             /**
              genotypes = self.get_genotypes()
@@ -244,8 +245,17 @@ public class AnfisaConnector implements Closeable {
             throw new RuntimeException("Not implemented");
         }
 
-        if (genotype == null) {
+        String genotype;
+        if (oGenotype.isCalled()) {
+            genotype = oGenotype.getGenotypeString();
+        } else if (oGenotype.getType() == GenotypeType.UNAVAILABLE) {
+            //Не имеет альтернативного аллеля
             return 0;
+        } else if (oGenotype.getType() == GenotypeType.NO_CALL) {
+            //Генотип не может быть определен из-за плохого качества секвенирования
+            return null;
+        } else {
+            throw new RuntimeException("Unknown state");
         }
 
         Set<String> set1 = Arrays.stream(genotype.split("/")).collect(Collectors.toSet());
