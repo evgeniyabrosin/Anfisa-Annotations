@@ -173,9 +173,9 @@ public class AnfisaConnector implements Closeable {
                     label = entry.getKey();
                 }
 
-                Integer zyg = sampleHasVariant(json, variantContext, samples, entry.getValue());
+                Integer zyg = sampleHasVariant(anfisaInput.vepJson, anfisaInput.variantContext, anfisaInput.samples, entry.getValue());
                 data.zygosity.put(entry.getKey(), zyg);
-                Integer modified_zygosity = (!chromosome.equals("X") || sex == 2 || (zyg != null && zyg == 0)) ? zyg : (Integer)2;
+                Integer modified_zygosity = (!anfisaInput.chromosome.equals("X") || sex == 2 || (zyg != null && zyg == 0)) ? zyg : (Integer)2;
                 filters.altZygosity.put(entry.getKey(), modified_zygosity);
                 if (zyg != null && zyg > 0) {
                     filters.has_variant.add(label);
