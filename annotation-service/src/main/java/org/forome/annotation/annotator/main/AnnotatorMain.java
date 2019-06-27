@@ -51,8 +51,7 @@ public class AnnotatorMain {
         }
 
         if (arguments instanceof ArgumentsVersion) {
-            System.out.println("Version: " + AppVersion.getVersion());
-            System.out.println("Version Format: " + AppVersion.getVersionFormat());
+            System.out.println(AppVersion.getVersion());
         } else if (arguments instanceof ArgumentsAnnotation) {
             annotation((ArgumentsAnnotation) arguments);
         }
