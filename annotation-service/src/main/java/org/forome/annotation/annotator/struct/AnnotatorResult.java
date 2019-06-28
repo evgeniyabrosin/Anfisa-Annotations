@@ -28,7 +28,7 @@ public class AnnotatorResult {
             public final String reference;
 
             public Versions(Path pathVepVcf) {
-                annotations = AppVersion.getVersion();
+                annotations = AppVersion.getVersionFormat();
                 if (pathVepVcf != null) {
                     VCFFileReader vcfFileReader = new VCFFileReader(pathVepVcf, false);
                     VCFHeader vcfHeader = vcfFileReader.getFileHeader();

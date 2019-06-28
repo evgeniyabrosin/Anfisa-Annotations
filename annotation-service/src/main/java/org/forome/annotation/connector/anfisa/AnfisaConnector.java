@@ -134,7 +134,7 @@ public class AnfisaConnector implements Closeable {
         AnfisaResultData data = new AnfisaResultData();
         AnfisaResultView view = new AnfisaResultView();
 
-        data.version = AppVersion.getVersion();
+        data.version = AppVersion.getVersionFormat();
 
         callGnomAD(variantContext, samples, json, filters);
         callSpliceai(data, filters, variantContext, samples, json);

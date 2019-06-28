@@ -40,4 +40,14 @@ public class AppVersion {
         return _hashVersion;
     }
 
+    public static String getVersionFormat() {
+        String version = getVersion();
+        String[] v = version.split("\\.");
+        return new StringBuilder()
+                .append(v[0]).append('.')
+                .append(v[1]).append('.')
+                .append(v[2])
+                .toString();
+    }
+
 }
