@@ -5,6 +5,7 @@ import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.hgmd.struct.HgmdPmidRow;
 import org.forome.annotation.exception.ExceptionBuilder;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,7 +13,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HgmdConnector {
+public class HgmdConnector implements Closeable {
 
 	private static final String SQL_ACC_NUM = "select acc_num from `hgmd_pro`.`hg19_coords` where chromosome = '%s' and coordSTART = %s and coordEND = %s";
 	private static final String SQL_PMID = "SELECT distinct disease, PMID, Tag from `hgmd_pro`.`mutation` where acc_num = '%s'";
@@ -103,5 +104,10 @@ public class HgmdConnector {
 			throw ExceptionBuilder.buildExternalDatabaseException(ex);
 		}
 		return hg38s;
+	}
+
+	@Override
+	public void close() {
+		databaseConnector.close();
 	}
 }

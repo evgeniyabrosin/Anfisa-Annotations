@@ -8,6 +8,7 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class ClinvarConnector {
+public class ClinvarConnector implements Closeable {
 
 	private static final Logger log = LoggerFactory.getLogger(ClinvarConnector.class);
 
@@ -152,4 +153,9 @@ public class ClinvarConnector {
                 phenotypeList
         );
     }
+
+	@Override
+	public void close() {
+		databaseConnector.close();
+	}
 }

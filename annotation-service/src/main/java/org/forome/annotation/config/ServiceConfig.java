@@ -12,11 +12,13 @@ import java.nio.file.StandardOpenOption;
 
 public class ServiceConfig {
 
+	public final EnsemblVepConfigConnector ensemblVepConfigConnector;
 	public final GnomadConfigConnector gnomadConfigConnector;
 	public final ClinVarConfigConnector clinVarConfigConnector;
 	public final HgmdConfigConnector hgmdConfigConnector;
 	public final GTFConfigConnector gtfConfigConnector;
 	public final SpliceAIConfigConnector spliceAIConfigConnector;
+
 
 	public ServiceConfig() throws Exception {
 		this(Paths.get("config.json").toAbsolutePath());
@@ -32,6 +34,7 @@ public class ServiceConfig {
 		}
 
 		JSONObject jConnectors = (JSONObject) configFileJson.get("connectors");
+		ensemblVepConfigConnector = new EnsemblVepConfigConnector((JSONObject) jConnectors.get("ensembl-vep"));
 		gnomadConfigConnector = new GnomadConfigConnector((JSONObject) jConnectors.get("gnomad"));
 		clinVarConfigConnector = new ClinVarConfigConnector((JSONObject) jConnectors.get("clinvar"));
 		hgmdConfigConnector = new HgmdConfigConnector((JSONObject) jConnectors.get("hgmd"));

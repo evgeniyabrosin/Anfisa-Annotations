@@ -8,6 +8,7 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class SpliceAIDataConnector {
+public class SpliceAIDataConnector implements Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(SpliceAIDataConnector.class);
 
@@ -154,5 +155,10 @@ public class SpliceAIDataConnector {
                 ds_ag, ds_al, ds_dg, ds_dl,
                 id, max_ds
         );
+    }
+
+    @Override
+    public void close() {
+        databaseConnector.close();
     }
 }

@@ -6,6 +6,7 @@ import org.forome.annotation.connector.gtf.struct.GTFTranscriptRow;
 import org.forome.annotation.connector.gtf.struct.GTFTranscriptRowExternal;
 import org.forome.annotation.exception.ExceptionBuilder;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GTFDataConnector {
+public class GTFDataConnector implements Closeable {
 
     private static final long GENE_BUCKET_SIZE = 1000000L;
 
@@ -143,5 +144,10 @@ public class GTFDataConnector {
             throw ExceptionBuilder.buildExternalDatabaseException(ex);
         }
         return transcripts;
+    }
+
+    @Override
+    public void close() {
+        databaseConnector.close();
     }
 }

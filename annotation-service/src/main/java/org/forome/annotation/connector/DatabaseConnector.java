@@ -3,7 +3,7 @@ package org.forome.annotation.connector;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import org.forome.annotation.config.connector.database.DatabaseConfigConnector;
+import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.slf4j.Logger;
@@ -124,7 +124,7 @@ public class DatabaseConnector implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         disconnect();
     }
 

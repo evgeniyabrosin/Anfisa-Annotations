@@ -8,11 +8,12 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class GnomadDataConnector {
+public class GnomadDataConnector implements Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(GnomadDataConnector.class);
 
@@ -232,6 +233,12 @@ public class GnomadDataConnector {
             throw ExceptionBuilder.buildExternalDatabaseException(ex);
         }
     }
+
+    @Override
+    public void close()  {
+        databaseConnector.close();
+    }
+
 
     @VisibleForTesting
     public static String diff(String s1, String s2) {
