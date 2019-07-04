@@ -52,6 +52,11 @@ public class Chromosome {
      * @return
      */
     public String getChromosome(){
+        return toString();
+    }
+
+    @Override
+    public String toString() {
         return String.format("chr%s", value.toUpperCase());
     }
 }

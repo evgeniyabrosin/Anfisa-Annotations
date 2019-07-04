@@ -2,21 +2,33 @@ package org.forome.annotation.struct;
 
 public class Position {
 
-    public final Long start;
-    public final Long end;
+    public final long start;
+    public final long end;
 
-    public Position(Long position) {
+    public Position(long position) {
         this.start = this.end = position;
     }
 
-    public Position(Long start, Long end) {
+    public Position(long start, long end) {
         this.start = start;
         this.end = end;
     }
 
-    public Position(Integer start, Integer end) {
-        this.start = (start != null) ? start.longValue() : null;
-        this.end = (end != null) ? end.longValue() : null;
+    public boolean isSingle() {
+        return (start == end);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sBuilder = new StringBuilder()
+                .append("Position(");
+        if (isSingle()) {
+            sBuilder.append(start);
+        } else {
+            sBuilder.append("start: ").append(start);
+            sBuilder.append(", end: ").append(end);
+        }
+        sBuilder.append(')');
+        return sBuilder.toString();
+    }
 }

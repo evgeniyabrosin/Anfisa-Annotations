@@ -5,6 +5,7 @@ import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,35 +28,101 @@ public class ConservationConnector implements Closeable {
         databaseConnector = new DatabaseConnector(conservationConfigConnector);
     }
 
-    public Conservation getConservation(Chromosome chromosome, long hg38) {
-        String sql = String.format("select priPhCons, mamPhCons, verPhCons, priPhyloP, mamPhyloP, verPhyloP, GerpRS, " +
-                "GerpRSpval, GerpN, GerpS from CONSERVATION where Chrom='%s' and Pos = %s", chromosome.getChar(), hg38);
-        return getConservation(sql);
+    public Conservation getConservation(Chromosome chromosome, Position position, Position hg38, String ref, String alt) {
+        if (alt.length() == 1 && ref.length() == 1) {
+            //Однобуквенный вариант
+            long hg38s = hg38.start;
+            if (hg38s != hg38.end) {
+                throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", chromosome.getChar(), position));
+            }
+            return getConservation(chromosome, position, hg38);
+        } else if (alt.length() > 1 && ref.length() == 1) {
+            //Инсерция
+            return getConservation(chromosome, position, hg38);
+        } else {
+            return null;
+        }
     }
 
-    public Conservation getConservation(Chromosome chromosome, long hg38Start, long hg38End) {
-        long pos1 = Math.min(hg38Start, hg38End);
-        long pos2 = Math.max(hg38Start, hg38End);
-        String sql = String.format("select max(priPhCons) as priPhCons, max(mamPhCons) as mamPhCons, max(verPhCons) as verPhCons, " +
-                "max(priPhyloP) as priPhyloP, max(mamPhyloP) as mamPhyloP, max(verPhyloP) as verPhyloP, max(GerpRS) as GerpRS, " +
-                "max(GerpRSpval) as GerpRSpval, max(GerpN) as GerpN, max(GerpS) as GerpS from CONSERVATION " +
-                "where Chrom='%s' and Pos between %s and %s", chromosome.getChar(), pos1, pos2);
-        return getConservation(sql);
+    private Conservation getConservation(Chromosome chromosome, Position position, Position hg38) {
+        String sqlFromGerp;
+        String sqlFromConservation;
+        if (position.isSingle()) {
+            sqlFromGerp = String.format("select GerpN, GerpRS from GERP where Chrom='%s' and Pos = %s", chromosome.getChar(), position.start);
+            sqlFromConservation = String.format("select priPhCons, mamPhCons, verPhCons, priPhyloP, mamPhyloP, verPhyloP, " +
+                    "GerpRSpval, GerpS from CONSERVATION where Chrom='%s' and Pos = %s", chromosome.getChar(), hg38.start);
+        } else {
+            long hg19Pos1;
+            long hg19Pos2;
+            long hg38Pos1;
+            long hg38Pos2;
+            if (position.start > position.end) {
+                hg19Pos1 = position.end - 1;
+                hg19Pos2 = position.start;
+
+                hg38Pos1 = hg38.end - 1;
+                hg38Pos2 = hg38.start;
+                if (hg38.start <= hg38.end) {
+                    throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", chromosome.getChar(), position));
+                }
+            } else {
+                throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", chromosome.getChar(), position));
+            }
+
+            sqlFromGerp = String.format("select max(GerpN) as GerpN, max(GerpRS) as GerpRS from GERP " +
+                    "where Chrom='%s' and Pos between %s and %s", chromosome.getChar(), hg19Pos1, hg19Pos2);
+
+            sqlFromConservation = String.format("select max(priPhCons) as priPhCons, max(mamPhCons) as mamPhCons, max(verPhCons) as verPhCons, " +
+                    "max(priPhyloP) as priPhyloP, max(mamPhyloP) as mamPhyloP, max(verPhyloP) as verPhyloP, " +
+                    "max(GerpRSpval) as GerpRSpval, max(GerpS) as GerpS from CONSERVATION " +
+                    "where Chrom='%s' and Pos between %s and %s", chromosome.getChar(), hg38Pos1, hg38Pos2);
+        }
+        return getConservation(sqlFromGerp, sqlFromConservation);
     }
 
-    private Conservation getConservation(String sql) {
+    private Conservation getConservation(String sqlFromGerp, String sqlFromConservation) {
+        Double priPhCons = null;
+        Double mamPhCons = null;
+        Double verPhCons = null;
+        Double priPhyloP = null;
+        Double mamPhyloP = null;
+        Double verPhyloP = null;
+        Double gerpRS = null;
+        Double gerpRSpval = null;
+        Double gerpN = null;
+        Double gerpS = null;
+
+        boolean success = false;
         try (Connection connection = databaseConnector.createConnection()) {
             try (Statement statement = connection.createStatement()) {
-                try (ResultSet resultSet = statement.executeQuery(sql)) {
+                try (ResultSet resultSet = statement.executeQuery(sqlFromGerp)) {
                     if (resultSet.next()) {
-                        return new Conservation(
-                                (Double) resultSet.getObject("priPhCons"), (Double) resultSet.getObject("mamPhCons"),
-                                (Double) resultSet.getObject("verPhCons"), (Double) resultSet.getObject("priPhyloP"),
-                                (Double) resultSet.getObject("mamPhyloP"), (Double) resultSet.getObject("verPhyloP"),
-                                (Double) resultSet.getObject("GerpRS"), (Double) resultSet.getObject("GerpRSpval"),
-                                (Double) resultSet.getObject("GerpN"), (Double) resultSet.getObject("GerpS")
-                        );
+                        gerpN = (Double) resultSet.getObject("GerpN");
+                        gerpRS = (Double) resultSet.getObject("GerpRS");
+                        success = true;
                     }
+                }
+                try (ResultSet resultSet = statement.executeQuery(sqlFromConservation)) {
+                    if (resultSet.next()) {
+                        priPhCons = (Double) resultSet.getObject("priPhCons");
+                        mamPhCons = (Double) resultSet.getObject("mamPhCons");
+                        verPhCons = (Double) resultSet.getObject("verPhCons");
+                        priPhyloP = (Double) resultSet.getObject("priPhyloP");
+                        mamPhyloP = (Double) resultSet.getObject("mamPhyloP");
+                        verPhyloP = (Double) resultSet.getObject("verPhyloP");
+                        gerpRSpval = (Double) resultSet.getObject("GerpRSpval");
+                        gerpS = (Double) resultSet.getObject("GerpS");
+                        success = true;
+                    }
+                }
+                if (success) {
+                    return new Conservation(
+                            priPhCons, mamPhCons,
+                            verPhCons, priPhyloP,
+                            mamPhyloP, verPhyloP,
+                            gerpRS, gerpRSpval,
+                            gerpN, gerpS
+                    );
                 }
             }
         } catch (SQLException ex) {
