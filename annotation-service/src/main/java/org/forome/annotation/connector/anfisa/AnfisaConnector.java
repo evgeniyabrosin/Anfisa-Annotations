@@ -982,10 +982,10 @@ public class AnfisaConnector implements Closeable {
     private String getStrHg38Coordinates(AnfisaExecuteContext context) {
         JSONObject vepJson = context.anfisaInput.vepJson;
         Chromosome chromosome = new Chromosome(getChromosome(vepJson));
-        Position positionHg38 = getHg38Coordinates(context);
+        Position<Optional<Integer>> positionHg38 = getHg38Coordinates(context);
 
-        Long hg38Start = (positionHg38 != null) ? positionHg38.start : null;
-        Long hg38End = (positionHg38 != null) ? positionHg38.end : null;
+        Integer hg38Start = (positionHg38 != null) ? positionHg38.start.orElse(null) : null;
+        Integer hg38End = (positionHg38 != null) ? positionHg38.end.orElse(null) : null;
         if (Objects.equals(hg38Start, hg38End)) {
             return String.format("%s:%s", chromosome.toString(), (hg38Start != null) ? hg38Start : "None");
         } else {
@@ -996,23 +996,34 @@ public class AnfisaConnector implements Closeable {
         }
     }
 
-    private Position getHg38Coordinates(AnfisaExecuteContext context) {
+    private Position<Optional<Integer>> getHg38Coordinates(AnfisaExecuteContext context) {
         JSONObject vepJson = context.anfisaInput.vepJson;
         Chromosome chromosome = new Chromosome(getChromosome(vepJson));
 
-        long startPos = vepJson.getAsNumber("start").longValue();
-        Integer startHg38 = getHg38Coordinate(chromosome, startPos);
-        if (startHg38 == null) return null;
+        return getHg38Coordinate(chromosome, new Position<Long>(
+                vepJson.getAsNumber("start").longValue(),
+                vepJson.getAsNumber("end").longValue()
+        ));
+    }
 
-        long endPos = vepJson.getAsNumber("end").longValue();
-        int endHg38;
-        if (startPos == endPos) {
+    public Position<Optional<Integer>> getHg38Coordinate(Chromosome chromosome, Position<Long> position) {
+        Integer startHg38 = getHg38Coordinate(chromosome, position.start);
+
+        Integer endHg38;
+        if (position.isSingle()) {
             endHg38 = startHg38;
         } else {
-            endHg38 = getHg38Coordinate(chromosome, endPos);
+            endHg38 = getHg38Coordinate(chromosome, position.end);
         }
 
-        return new Position(startHg38, endHg38);
+        if (startHg38 == null && endHg38 == null) {
+            return null;
+        } else {
+            return new Position(
+                    Optional.ofNullable(startHg38),
+                    Optional.ofNullable(endHg38)
+            );
+        }
     }
 
     public Integer getHg38Coordinate(Chromosome chromosome, long position) {
