@@ -15,6 +15,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
+import java.util.Optional;
 
 public class ConservationConnector implements Closeable {
 
@@ -28,11 +30,15 @@ public class ConservationConnector implements Closeable {
         databaseConnector = new DatabaseConnector(conservationConfigConnector);
     }
 
-    public Conservation getConservation(Chromosome chromosome, Position position, Position hg38, String ref, String alt) {
+    public Conservation getConservation(Chromosome chromosome, Position<Long> position, Position<Optional<Integer>> hg38, String ref, String alt) {
+        if (!hg38.start.isPresent() || !hg38.end.isPresent()) {
+            return null;
+        }
+
         if (alt.length() == 1 && ref.length() == 1) {
             //Однобуквенный вариант
-            long hg38s = hg38.start;
-            if (hg38s != hg38.end) {
+            Integer hg38s = hg38.start.orElse(null);
+            if (!Objects.equals(hg38s, hg38.end.orElse(null))) {
                 throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", chromosome.getChar(), position));
             }
             return getConservation(chromosome, position, hg38);
@@ -44,13 +50,13 @@ public class ConservationConnector implements Closeable {
         }
     }
 
-    private Conservation getConservation(Chromosome chromosome, Position position, Position hg38) {
+    private Conservation getConservation(Chromosome chromosome, Position<Long> position, Position<Optional<Integer>> hg38) {
         String sqlFromGerp;
         String sqlFromConservation;
         if (position.isSingle()) {
             sqlFromGerp = String.format("select GerpN, GerpRS from GERP where Chrom='%s' and Pos = %s", chromosome.getChar(), position.start);
             sqlFromConservation = String.format("select priPhCons, mamPhCons, verPhCons, priPhyloP, mamPhyloP, verPhyloP, " +
-                    "GerpRSpval, GerpS from CONSERVATION where Chrom='%s' and Pos = %s", chromosome.getChar(), hg38.start);
+                    "GerpRSpval, GerpS from CONSERVATION where Chrom='%s' and Pos = %s", chromosome.getChar(), hg38.start.get());
         } else {
             long hg19Pos1;
             long hg19Pos2;
@@ -60,9 +66,9 @@ public class ConservationConnector implements Closeable {
                 hg19Pos1 = position.end - 1;
                 hg19Pos2 = position.start;
 
-                hg38Pos1 = hg38.end - 1;
-                hg38Pos2 = hg38.start;
-                if (hg38.start <= hg38.end) {
+                hg38Pos1 = hg38.end.get() - 1;
+                hg38Pos2 = hg38.start.get();
+                if (hg38.start.get() <= hg38.end.get()) {
                     throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", chromosome.getChar(), position));
                 }
             } else {
