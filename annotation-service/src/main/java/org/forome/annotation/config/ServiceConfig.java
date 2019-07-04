@@ -17,6 +17,7 @@ public class ServiceConfig {
 	public final HgmdConfigConnector hgmdConfigConnector;
 	public final GTFConfigConnector gtfConfigConnector;
 	public final SpliceAIConfigConnector spliceAIConfigConnector;
+	public final ConservationConfigConnector conservationConfigConnector;
 
 	public ServiceConfig() throws Exception {
 		this(Paths.get("config.json").toAbsolutePath());
@@ -37,6 +38,7 @@ public class ServiceConfig {
 		hgmdConfigConnector = new HgmdConfigConnector((JSONObject) jConnectors.get("hgmd"));
 		gtfConfigConnector = new GTFConfigConnector((JSONObject) jConnectors.get("gtf"));
 		spliceAIConfigConnector = new SpliceAIConfigConnector((JSONObject) jConnectors.get("spliceai"));
+		conservationConfigConnector = new ConservationConfigConnector((JSONObject) jConnectors.get("conservation"));
 	}
 
 }

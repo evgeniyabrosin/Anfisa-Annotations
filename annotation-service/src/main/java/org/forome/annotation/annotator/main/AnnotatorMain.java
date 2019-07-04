@@ -10,6 +10,7 @@ import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
+import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
@@ -51,7 +52,8 @@ public class AnnotatorMain {
         }
 
         if (arguments instanceof ArgumentsVersion) {
-            System.out.println(AppVersion.getVersion());
+            System.out.println("Version: " + AppVersion.getVersion());
+            System.out.println("Version Format: " + AppVersion.getVersionFormat());
         } else if (arguments instanceof ArgumentsAnnotation) {
             annotation((ArgumentsAnnotation) arguments);
         }
@@ -132,6 +134,7 @@ public class AnnotatorMain {
             SpliceAIConnector spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, (t, e) -> {
                 fail(e, arguments.pathOutput);
             });
+            ConservationConnector conservationConnector = new ConservationConnector(serviceConfig.conservationConfigConnector);
             HgmdConnector hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
             ClinvarConnector clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
             LiftoverConnector liftoverConnector = new LiftoverConnector();
@@ -141,6 +144,7 @@ public class AnnotatorMain {
             AnfisaConnector anfisaConnector = new AnfisaConnector(
                     gnomadConnector,
                     spliceAIConnector,
+                    conservationConnector,
                     hgmdConnector,
                     clinvarConnector,
                     liftoverConnector,

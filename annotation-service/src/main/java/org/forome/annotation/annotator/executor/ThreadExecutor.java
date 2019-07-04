@@ -6,6 +6,7 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.annotator.input.FileReaderIterator;
 import org.forome.annotation.annotator.input.VCFFileIterator;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
+import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.struct.Sample;
@@ -116,14 +117,19 @@ public class ThreadExecutor implements AutoCloseable {
                     long iStart = vepJson.getAsNumber("start").longValue();
                     long iEnd = vepJson.getAsNumber("end").longValue();
 
-                    AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, chromosome, iStart, iEnd, vepJson, variantContext, samples);
+                    AnfisaInput anfisaInput = new AnfisaInput.Builder(chromosome, iStart, iEnd)
+                            .withVepJson(vepJson)
+                            .withVariantContext(variantContext)
+                            .withSamples(samples)
+                            .build();
+
+                    AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, anfisaInput);
                     result.future.complete(anfisaResult);
                 } else {
                     String chromosome = RequestParser.toChromosome(variantContext.getContig());
                     long iStart = variantContext.getStart();
                     long iEnd = variantContext.getEnd();
 
-                    //variantContext.getAltAlleleWithHighestAlleleCount();
                     Allele allele = variantContext.getAlternateAlleles().stream()
                             .filter(iAllele -> !iAllele.getDisplayString().equals("*"))
                             .max(Comparator.comparing(variantContext::getCalledChrCount))

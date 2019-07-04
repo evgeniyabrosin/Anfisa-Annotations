@@ -84,16 +84,16 @@ public class HgmdConnector {
 		return new Data(hgmdPmidRows, phenotypes);
 	}
 
-	public List<String[]> getHg38(List<String> accNums) {
-		List<String[]> hg38s = new ArrayList<>();
+	public List<Long[]> getHg38(List<String> accNums) {
+		List<Long[]> hg38s = new ArrayList<>();
 		try (Connection connection = databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
 				for (String accNum : accNums) {
 					try (ResultSet resultSet = statement.executeQuery(String.format(SQL_HG38, accNum))) {
 						while (resultSet.next()) {
-							String coordSTART = resultSet.getString("coordSTART");
-							String coordEND = resultSet.getString("coordEND");
-							hg38s.add(new String[]{coordSTART, coordEND});
+							Long coordSTART = resultSet.getLong("coordSTART");
+							Long coordEND = resultSet.getLong("coordEND");
+							hg38s.add(new Long[]{coordSTART, coordEND});
 						}
 					}
 				}

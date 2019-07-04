@@ -12,6 +12,7 @@ import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultData;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultFilters;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultView;
+import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
@@ -488,7 +489,7 @@ public class GetAnfisaJSONController {
         out.put("called_by", bioinformatics.calledBy);
         out.put("max_ent_scan", bioinformatics.maxEntScan);
         out.put("dist_from_exon_canonical", bioinformatics.distFromExonCanonical);
-        out.put("conservation", bioinformatics.conservation);
+        out.put("conservation", build(bioinformatics.conservation));
         out.put("caller_data", bioinformatics.callerData);
         out.put("nn_splice", bioinformatics.nnSplice);
         out.put("species_with_variant", bioinformatics.speciesWithVariant);
@@ -500,6 +501,24 @@ public class GetAnfisaJSONController {
         out.put("splice_ai_al", bioinformatics.spliceAiAl);
         out.put("splice_ai_dg", bioinformatics.spliceAiDg);
         out.put("splice_ai_dl", bioinformatics.spliceAiDl);
+        return out;
+    }
+
+    private static JSONObject build(Conservation conservation) {
+        if (conservation == null) {
+            return null;
+        }
+        JSONObject out = new JSONObject();
+        out.put("pri_ph_cons", conservation.priPhCons);
+        out.put("mam_ph_cons", conservation.mamPhCons);
+        out.put("ver_ph_cons", conservation.verPhCons);
+        out.put("pri_phylo_p", conservation.priPhyloP);
+        out.put("mam_phylo_p", conservation.mamPhyloP);
+        out.put("ver_phylo_p", conservation.verPhyloP);
+        out.put("gerp_r_s", conservation.gerpRS);
+        out.put("gerp_r_spval", conservation.getGerpRSpval());
+        out.put("gerp_n", conservation.gerpN);
+        out.put("gerp_s", conservation.gerpS);
         return out;
     }
 
