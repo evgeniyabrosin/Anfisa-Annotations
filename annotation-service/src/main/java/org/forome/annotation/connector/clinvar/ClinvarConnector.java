@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class ClinvarConnector {
+public class ClinvarConnector implements AutoCloseable {
 
 	private static final Logger log = LoggerFactory.getLogger(ClinvarConnector.class);
 
@@ -152,4 +152,9 @@ public class ClinvarConnector {
                 phenotypeList
         );
     }
+
+	@Override
+	public void close() {
+		databaseConnector.close();
+	}
 }

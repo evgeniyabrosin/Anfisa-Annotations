@@ -8,10 +8,13 @@ public class Position<T> {
     public final T end;
 
     public Position(T position) {
-        this.start = this.end = position;
+        this(position, position);
     }
 
     public Position(T start, T end) {
+        if (start == null) throw new IllegalArgumentException();
+        if (end == null) throw new IllegalArgumentException();
+
         this.start = start;
         this.end = end;
     }

@@ -289,7 +289,7 @@ public class GetAnfisaJSONController {
         }
         out.put("most_severe_consequence", anfisaResultData.mostSevereConsequence);
         out.put("strand", anfisaResultData.strand);
-        out.put("color_code", anfisaResultData.colorCode);
+        out.put("color_code", (anfisaResultData.colorCode != null) ? anfisaResultData.colorCode.code : null);
 
         if (anfisaResultData.lmm != null) {
             out.put("lmm", anfisaResultData.lmm);
@@ -338,19 +338,19 @@ public class GetAnfisaJSONController {
         }
         out.put("spliceAI", new JSONObject() {{
             for (Map.Entry<String, SpliceAIResult.DictSql> entry : anfisaResultData.spliceAI.entrySet()) {
-                    put(
-                            entry.getKey(),
-                            new JSONObject() {{
-                                put("DP_AG", entry.getValue().dp_ag);
-                                put("DP_AL", entry.getValue().dp_al);
-                                put("DP_DG", entry.getValue().dp_dg);
-                                put("DP_DL", entry.getValue().dp_dl);
-                                put("DS_AG", entry.getValue().ds_ag);
-                                put("DS_AL", entry.getValue().ds_al);
-                                put("DS_DG", entry.getValue().ds_dg);
-                                put("DS_DL", entry.getValue().ds_dl);
-                            }}
-                    );
+                put(
+                        entry.getKey(),
+                        new JSONObject() {{
+                            put("DP_AG", entry.getValue().dp_ag);
+                            put("DP_AL", entry.getValue().dp_al);
+                            put("DP_DG", entry.getValue().dp_dg);
+                            put("DP_DL", entry.getValue().dp_dl);
+                            put("DS_AG", entry.getValue().ds_ag);
+                            put("DS_AL", entry.getValue().ds_al);
+                            put("DS_DG", entry.getValue().ds_dg);
+                            put("DS_DL", entry.getValue().ds_dl);
+                        }}
+                );
             }
         }});
         out.put("version", anfisaResultData.version);
