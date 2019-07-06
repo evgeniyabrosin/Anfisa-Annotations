@@ -2,10 +2,7 @@ package org.forome.annotation.config;
 
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
-import org.forome.annotation.config.connector.ClinVarConfigConfigConnector;
-import org.forome.annotation.config.connector.GTFConfigConfigConnector;
-import org.forome.annotation.config.connector.GnomadConfigConfigConnector;
-import org.forome.annotation.config.connector.HgmdConfigConfigConnector;
+import org.forome.annotation.config.connector.*;
 
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -15,21 +12,18 @@ import java.nio.file.StandardOpenOption;
 
 public class ServiceConfig {
 
-	public final Path dataPath;
-
-	public final GnomadConfigConfigConnector gnomadConfigConnector;
-	public final ClinVarConfigConfigConnector clinVarConfigConnector;
-	public final HgmdConfigConfigConnector hgmdConfigConnector;
-	public final GTFConfigConfigConnector gtfConfigConnector;
+	public final GnomadConfigConnector gnomadConfigConnector;
+	public final ClinVarConfigConnector clinVarConfigConnector;
+	public final HgmdConfigConnector hgmdConfigConnector;
+	public final GTFConfigConnector gtfConfigConnector;
+	public final SpliceAIConfigConnector spliceAIConfigConnector;
+	public final ConservationConfigConnector conservationConfigConnector;
 
 	public ServiceConfig() throws Exception {
+		this(Paths.get("config.json").toAbsolutePath());
+	}
 
-		dataPath = Paths.get("data");
-		if (!Files.exists(dataPath)) {
-			Files.createDirectory(dataPath);
-		}
-
-		Path configFile = dataPath.resolve("config.json").toAbsolutePath();
+	public ServiceConfig(Path configFile) throws Exception {
 		if (!Files.exists(configFile)) {
 			throw new RuntimeException("File: " + configFile.toString() + " not found");
 		}
@@ -39,11 +33,12 @@ public class ServiceConfig {
 		}
 
 		JSONObject jConnectors = (JSONObject) configFileJson.get("connectors");
-		gnomadConfigConnector = new GnomadConfigConfigConnector((JSONObject) jConnectors.get("gnomad"));
-		clinVarConfigConnector = new ClinVarConfigConfigConnector((JSONObject) jConnectors.get("clinvar"));
-		hgmdConfigConnector = new HgmdConfigConfigConnector((JSONObject) jConnectors.get("hgmd"));
-		gtfConfigConnector = new GTFConfigConfigConnector((JSONObject) jConnectors.get("gtf"));
-
+		gnomadConfigConnector = new GnomadConfigConnector((JSONObject) jConnectors.get("gnomad"));
+		clinVarConfigConnector = new ClinVarConfigConnector((JSONObject) jConnectors.get("clinvar"));
+		hgmdConfigConnector = new HgmdConfigConnector((JSONObject) jConnectors.get("hgmd"));
+		gtfConfigConnector = new GTFConfigConnector((JSONObject) jConnectors.get("gtf"));
+		spliceAIConfigConnector = new SpliceAIConfigConnector((JSONObject) jConnectors.get("spliceai"));
+		conservationConfigConnector = new ConservationConfigConnector((JSONObject) jConnectors.get("conservation"));
 	}
 
 }

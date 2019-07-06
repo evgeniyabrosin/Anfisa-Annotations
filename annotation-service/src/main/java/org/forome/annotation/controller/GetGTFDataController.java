@@ -4,11 +4,6 @@ import com.google.common.base.Strings;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.forome.annotation.Service;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.gtf.struct.GTFResult;
@@ -16,6 +11,11 @@ import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.utils.ExecutorServiceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.concurrent.CompletionException;
 
 /**
  * http://localhost:8095/GetGTFData?session=...&data=[{"chromosome": "22", "position": 36691607},{"chromosome": "2", "position": 73675228}]
- * http://anfisa.forome.org/annotationservice/GetGTFData?session=a57ee6662557402e9539373b31093a29&data=[{"chromosome": "22", "position": 36691607},{"chromosome": "2", "position": 73675228}]
+ * https://anfisa.forome.dev/annotationservice/GetGTFData?session=a57ee6662557402e9539373b31093a29&data=[{"chromosome": "22", "position": 36691607},{"chromosome": "2", "position": 73675228}]
  */
 @Controller
 @RequestMapping(value = {"/GetGTFData", "/annotationservice/GetGTFData"})

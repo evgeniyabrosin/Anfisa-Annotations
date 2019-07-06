@@ -20,7 +20,7 @@ public class DatabaseService {
 	public DatabaseService(Service service) throws Exception {
 		this.service = service;
 
-		Path dataPath = service.getServiceConfig().dataPath;
+		Path dataPath = service.getConfig().dataPath;
 
 		DBProvider dbProvider = new RocksDataBaseBuilder()
 				.withPath(dataPath.resolve("database"))

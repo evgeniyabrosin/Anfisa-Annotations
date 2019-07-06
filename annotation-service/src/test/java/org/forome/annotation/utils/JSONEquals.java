@@ -93,6 +93,8 @@ public class JSONEquals {
         } else if (value1 instanceof Number && value2 instanceof Number) {
             if (Math.abs(((Number) value1).doubleValue() - ((Number) value2).doubleValue()) < 0.000001D) {
                 return;
+            } else {
+                throw new Exception(String.format("Not equals: %s and %s", value1, value2));
             }
         }
 

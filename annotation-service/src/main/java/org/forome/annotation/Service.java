@@ -1,21 +1,24 @@
 package org.forome.annotation;
 
+import org.forome.annotation.config.Config;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
+import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
+import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.forome.annotation.database.DatabaseService;
+import org.forome.annotation.database.entityobject.user.UserReadable;
 import org.forome.annotation.exception.ServiceException;
 import org.forome.annotation.executionqueue.*;
 import org.forome.annotation.network.NetworkService;
 import org.forome.annotation.network.component.UserEditableComponent;
+import org.forome.annotation.utils.ArgumentParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.forome.annotation.connector.gtf.GTFConnector;
-import org.forome.annotation.database.DatabaseService;
-import org.forome.annotation.database.entityobject.user.UserReadable;
-import org.forome.annotation.utils.ArgumentParser;
 
 import java.io.IOException;
 
@@ -58,11 +61,14 @@ public class Service {
 	private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
 	private final ExecutionQueue executionQueue;
 
+	private final Config config;
 	private final ServiceConfig serviceConfig;
 	private final DatabaseService databaseService;
 	private final NetworkService networkService;
 
 	private final GnomadConnector gnomadConnector;
+	private final SpliceAIConnector spliceAIConnector;
+	private final ConservationConnector conservationConnector;
 	private final HgmdConnector hgmdConnector;
 	private final ClinvarConnector clinvarConnector;
 	private final LiftoverConnector liftoverConnector;
@@ -75,16 +81,28 @@ public class Service {
 		this.uncaughtExceptionHandler = uncaughtExceptionHandler;
 		this.executionQueue = new ExecutionQueue(uncaughtExceptionHandler);
 
+		this.config = new Config();
 		this.serviceConfig = new ServiceConfig();
 		this.databaseService = new DatabaseService(this);
 		this.networkService = new NetworkService(arguments.port, uncaughtExceptionHandler);
 
 		this.gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
+		this.spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, uncaughtExceptionHandler);
+		this.conservationConnector = new ConservationConnector(serviceConfig.conservationConfigConnector);
 		this.hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
 		this.clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
 		this.liftoverConnector = new LiftoverConnector();
 		this.gtfConnector = new GTFConnector(serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
-		this.anfisaConnector = new AnfisaConnector(gnomadConnector, hgmdConnector, clinvarConnector, liftoverConnector, gtfConnector);
+		this.anfisaConnector = new AnfisaConnector(
+				gnomadConnector,
+				spliceAIConnector,
+				conservationConnector,
+				hgmdConnector,
+				clinvarConnector,
+				liftoverConnector,
+				gtfConnector,
+				uncaughtExceptionHandler
+		);
 
 		executionQueue.execute(this, new Execution<Void>() {
 
@@ -113,6 +131,10 @@ public class Service {
 
 	public Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
 		return uncaughtExceptionHandler;
+	}
+
+	public Config getConfig() {
+		return config;
 	}
 
 	public ServiceConfig getServiceConfig() {

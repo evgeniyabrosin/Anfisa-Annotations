@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.forome'
-version '0.0.1'
+version '0.4.4.0'
 
 sourceCompatibility = 1.8
 
@@ -52,7 +52,7 @@ configurations {
 }
 
 jar {
-    archiveName = project.hasProperty('filename') ? filename : (rootProject.name + '.jar')
+    archiveName = project.hasProperty('filename') ? filename : (rootProject.name + '_v.' + project.version + '.jar')
     from {
         configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
@@ -63,15 +63,15 @@ jar {
     }
     manifest {
         attributes(
-                'Main-Class': 'org.forome.annotation.Main'
+                'Main-Class': 'org.forome.annotation.Main',
+                'Implementation-Version': project.version
         )
     }
 }
 
 dependencies {
 
-    compile 'com.github.samtools:htsjdk:2.18.1'
-    compile 'pro.parseq:vcf-explorer:1.1.1-RELEASE'
+    compile 'com.github.samtools:htsjdk:2.19.0'
 
     compile 'mysql:mysql-connector-java:5.1.47'
     compile 'com.mchange:c3p0:0.9.5.2'

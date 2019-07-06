@@ -1,12 +1,12 @@
 package org.forome.annotation.connector.clinvar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.forome.annotation.config.connector.ClinVarConfigConfigConnector;
+import org.forome.annotation.config.connector.ClinVarConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.clinvar.struct.ClinvarResult;
 import org.forome.annotation.connector.clinvar.struct.Row;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -51,7 +51,7 @@ public class ClinvarConnector {
 
 	private final DatabaseConnector databaseConnector;
 
-	public ClinvarConnector(ClinVarConfigConfigConnector clinVarConfigConnector) throws Exception {
+	public ClinvarConnector(ClinVarConfigConnector clinVarConfigConnector) throws Exception {
 		this.databaseConnector = new DatabaseConnector(clinVarConfigConnector);
 	}
 
