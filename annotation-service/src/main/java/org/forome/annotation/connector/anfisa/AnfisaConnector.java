@@ -32,7 +32,6 @@ import org.forome.annotation.utils.AppVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -42,7 +41,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AnfisaConnector implements Closeable {
+public class AnfisaConnector implements AutoCloseable {
 
     private final static Logger log = LoggerFactory.getLogger(AnfisaConnector.class);
 
@@ -982,52 +981,27 @@ public class AnfisaConnector implements Closeable {
     private String getStrHg38Coordinates(AnfisaExecuteContext context) {
         JSONObject vepJson = context.anfisaInput.vepJson;
         Chromosome chromosome = new Chromosome(getChromosome(vepJson));
-        Position<Optional<Integer>> positionHg38 = getHg38Coordinates(context);
+        Position<Integer> positionHg38 = getHg38Coordinates(context);
 
-        Integer hg38Start = (positionHg38 != null) ? positionHg38.start.orElse(null) : null;
-        Integer hg38End = (positionHg38 != null) ? positionHg38.end.orElse(null) : null;
-        if (Objects.equals(hg38Start, hg38End)) {
-            return String.format("%s:%s", chromosome.toString(), (hg38Start != null) ? hg38Start : "None");
+        if (positionHg38 == null) {
+            return String.format("%s:None", chromosome.toString());
+        } else if (positionHg38.isSingle()) {
+            return String.format("%s:%s", chromosome.toString(), positionHg38.start);
         } else {
-            return String.format("%s:%s-%s", chromosome.toString(),
-                    (hg38Start != null) ? hg38Start : "None",
-                    (hg38End != null) ? hg38End : "None"
+            return String.format("%s:%s-%s",
+                    chromosome.toString(), positionHg38.start, positionHg38.end
             );
         }
     }
 
-    private Position<Optional<Integer>> getHg38Coordinates(AnfisaExecuteContext context) {
+    private Position<Integer> getHg38Coordinates(AnfisaExecuteContext context) {
         JSONObject vepJson = context.anfisaInput.vepJson;
         Chromosome chromosome = new Chromosome(getChromosome(vepJson));
 
-        return getHg38Coordinate(chromosome, new Position<Long>(
+        return liftoverConnector.toHG38(chromosome, new Position<Long>(
                 vepJson.getAsNumber("start").longValue(),
                 vepJson.getAsNumber("end").longValue()
         ));
-    }
-
-    public Position<Optional<Integer>> getHg38Coordinate(Chromosome chromosome, Position<Long> position) {
-        Integer startHg38 = getHg38Coordinate(chromosome, position.start);
-
-        Integer endHg38;
-        if (position.isSingle()) {
-            endHg38 = startHg38;
-        } else {
-            endHg38 = getHg38Coordinate(chromosome, position.end);
-        }
-
-        if (startHg38 == null && endHg38 == null) {
-            return null;
-        } else {
-            return new Position(
-                    Optional.ofNullable(startHg38),
-                    Optional.ofNullable(endHg38)
-            );
-        }
-    }
-
-    public Integer getHg38Coordinate(Chromosome chromosome, long position) {
-        return liftoverConnector.hg38(chromosome.getChar(), position);
     }
 
     private static String getProband(Map<String, Sample> samples) {
@@ -1042,9 +1016,9 @@ public class AnfisaConnector implements Closeable {
         return null;
     }
 
-    public String getColorCode(JSONObject response, AnfisaResultData data) {
-        List<String> pp = getFromTranscriptsList(response, "polyphen_prediction");
-        List<String> ss = getFromTranscriptsList(response, "sift_prediction");
+    public ColorCode getColorCode(JSONObject vepJson, AnfisaResultData data) {
+        List<String> pp = getFromTranscriptsList(vepJson, "polyphen_prediction");
+        List<String> ss = getFromTranscriptsList(vepJson, "sift_prediction");
 
         String best = null;
         String worst = null;
@@ -1068,21 +1042,21 @@ public class AnfisaConnector implements Closeable {
             }
         }
 
-        String code = null;
+        ColorCode code = null;
         if (!"B".equals(best) && "D".equals(worst)) {
-            code = "red";
+            code = ColorCode.RED;
         } else if ("B".equals(best) && worst == null) {
-            code = "green";
+            code = ColorCode.GREEN;
         } else if (best != null || worst != null) {
-            code = "yellow";
+            code = ColorCode.YELLOW;
         }
         if (code != null) return code;
 
         String csq = data.mostSevereConsequence;
         if (csq_damaging.contains(csq)) {
-            code = "red-cross";
+            code = ColorCode.RED_CROSS;
         } else if (csq_missense.contains(csq)) {
-            code = "yellow-cross";
+            code = ColorCode.YELLOW_CROSS;
         }
 
         return code;

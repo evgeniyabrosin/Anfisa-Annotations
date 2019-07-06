@@ -9,8 +9,6 @@ import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class GnomadConnector implements Closeable {
+public class GnomadConnector implements AutoCloseable {
 
     private final static Logger log = LoggerFactory.getLogger(GnomadConnector.class);
 
@@ -150,7 +148,7 @@ public class GnomadConnector implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close(){
         databaseConnector.close();
     }
 
