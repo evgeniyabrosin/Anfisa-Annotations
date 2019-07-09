@@ -36,6 +36,8 @@ public class AnfisaResultFilters {
 	public String spliceAltering;
 	public Float spliceAiDsmax;
 
+	public List<String> alts;
+
 	public AnfisaResultFilters() {
 	}
 }

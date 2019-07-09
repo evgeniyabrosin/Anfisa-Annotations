@@ -191,14 +191,17 @@ public class GetAnfisaJSONController {
     @VisibleForTesting
     public static JSONObject build(AnfisaResult anfisaResult) {
         JSONObject out = new JSONObject();
-        out.put("_filters", build(anfisaResult.filters));
-        out.put("data", build(anfisaResult.data));
+        out.put("_filters", buildFilter(anfisaResult.filters, anfisaResult.data, anfisaResult.view.bioinformatics));
+        out.put("data", buildData(anfisaResult.data));
         out.put("view", build(anfisaResult.view));
         out.put("record_type", anfisaResult.recordType);
         return out;
     }
 
-    private static JSONObject build(AnfisaResultFilters anfisaResultFilters) {
+    private static JSONObject buildFilter(AnfisaResultFilters anfisaResultFilters,
+                                          AnfisaResultData anfisaResultData,
+                                          AnfisaResultView.Bioinformatics bioinformatics
+    ) {
         JSONObject out = new JSONObject();
         if (anfisaResultFilters.chromosome != null) {
             out.put("chromosome", anfisaResultFilters.chromosome);
@@ -247,10 +250,15 @@ public class GetAnfisaJSONController {
         out.put("splice_altering", anfisaResultFilters.spliceAltering);
         out.put("splice_ai_dsmax", anfisaResultFilters.spliceAiDsmax);
 
+        out.put("gerp_rs", (bioinformatics.conservation != null) ? bioinformatics.conservation.gerpRS : null);
+
+        out.put("ref", anfisaResultData.ref);
+        out.put("alts", anfisaResultFilters.alts);
+
         return out;
     }
 
-    private static JSONObject build(AnfisaResultData anfisaResultData) {
+    private static JSONObject buildData(AnfisaResultData anfisaResultData) {
         JSONObject out = new JSONObject();
         out.put("total_exon_intron_canonical", anfisaResultData.totalExonIntronCanonical);
         out.put("assembly_name", anfisaResultData.assemblyName);
@@ -501,6 +509,7 @@ public class GetAnfisaJSONController {
         out.put("splice_ai_al", bioinformatics.spliceAiAl);
         out.put("splice_ai_dg", bioinformatics.spliceAiDg);
         out.put("splice_ai_dl", bioinformatics.spliceAiDl);
+        out.put("gerp_rs", (bioinformatics.conservation != null) ? bioinformatics.conservation.gerpRS : null);
         return out;
     }
 
