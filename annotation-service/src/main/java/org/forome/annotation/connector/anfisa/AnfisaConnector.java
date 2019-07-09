@@ -151,6 +151,7 @@ public class AnfisaConnector implements AutoCloseable {
         callQuality(filters, anfisaInput.variantContext, anfisaInput.samples);
 
         filters.severity = getSeverity(anfisaInput.vepJson);
+        filters.alts = alt_list(anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson);
 
         String proband = getProband(anfisaInput.samples);
         if (proband != null) {
@@ -1073,7 +1074,7 @@ public class AnfisaConnector implements AutoCloseable {
         return String.join(",", alt_list(variantContext, samples, response));
     }
 
-    private static List<String> alt_list(VariantContext variantContext, Map<String, Sample> samples, JSONObject response) {
+    private static List<String> alt_list(VariantContext variantContext, Map<String, Sample> samples, JSONObject vepJson) {
         if (variantContext != null) {
             List<String> alleles = variantContext.getAlleles()
                     .stream().map(allele -> allele.getBaseString()).collect(Collectors.toList());
@@ -1104,12 +1105,12 @@ public class AnfisaConnector implements AutoCloseable {
                 return alt_allels;
             }
         } else {
-            return getAlts1(response);
+            return getAlts1(vepJson);
         }
     }
 
-    private static List<String> getAlts1(JSONObject response) {
-        String[] ss = getAllele(response).split("/");
+    private static List<String> getAlts1(JSONObject vepJson) {
+        String[] ss = getAllele(vepJson).split("/");
         List<String> result = new ArrayList<>();
         for (int i = 1; i < ss.length; i++) {
             result.add(ss[i]);

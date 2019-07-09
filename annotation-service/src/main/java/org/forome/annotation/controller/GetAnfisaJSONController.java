@@ -191,14 +191,17 @@ public class GetAnfisaJSONController {
     @VisibleForTesting
     public static JSONObject build(AnfisaResult anfisaResult) {
         JSONObject out = new JSONObject();
-        out.put("_filters", buildFilter(anfisaResult.filters, anfisaResult.view.bioinformatics));
+        out.put("_filters", buildFilter(anfisaResult.filters, anfisaResult.data, anfisaResult.view.bioinformatics));
         out.put("data", buildData(anfisaResult.data));
         out.put("view", build(anfisaResult.view));
         out.put("record_type", anfisaResult.recordType);
         return out;
     }
 
-    private static JSONObject buildFilter(AnfisaResultFilters anfisaResultFilters, AnfisaResultView.Bioinformatics bioinformatics) {
+    private static JSONObject buildFilter(AnfisaResultFilters anfisaResultFilters,
+                                          AnfisaResultData anfisaResultData,
+                                          AnfisaResultView.Bioinformatics bioinformatics
+    ) {
         JSONObject out = new JSONObject();
         if (anfisaResultFilters.chromosome != null) {
             out.put("chromosome", anfisaResultFilters.chromosome);
@@ -248,6 +251,9 @@ public class GetAnfisaJSONController {
         out.put("splice_ai_dsmax", anfisaResultFilters.spliceAiDsmax);
 
         out.put("gerp_rs", (bioinformatics.conservation != null) ? bioinformatics.conservation.gerpRS : null);
+
+        out.put("ref", anfisaResultData.ref);
+        out.put("alts", anfisaResultFilters.alts);
 
         return out;
     }
