@@ -8,7 +8,7 @@ import org.forome.annotation.annotator.input.VCFFileIterator;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
-import org.forome.annotation.controller.utils.RequestParser;
+import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Sample;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,7 +113,7 @@ public class ThreadExecutor implements AutoCloseable {
                 JSONObject vepJson = source.getVepJson();
 
                 if (vepJsonIterator != null) {
-                    String chromosome = RequestParser.toChromosome(vepJson.getAsString("seq_region_name"));
+                    Chromosome chromosome = new Chromosome(vepJson.getAsString("seq_region_name"));
                     long iStart = vepJson.getAsNumber("start").longValue();
                     long iEnd = vepJson.getAsNumber("end").longValue();
 
@@ -126,7 +126,7 @@ public class ThreadExecutor implements AutoCloseable {
                     AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, anfisaInput);
                     result.future.complete(anfisaResult);
                 } else {
-                    String chromosome = RequestParser.toChromosome(variantContext.getContig());
+                    Chromosome chromosome = new Chromosome(variantContext.getContig());
                     long iStart = variantContext.getStart();
                     long iEnd = variantContext.getEnd();
 

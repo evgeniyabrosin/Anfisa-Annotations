@@ -2,13 +2,14 @@ package org.forome.annotation.connector.anfisa.struct;
 
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONObject;
+import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Sample;
 
 import java.util.Map;
 
 public class AnfisaInput {
 
-    public final String chromosome;
+    public final Chromosome chromosome;
     public final long start;
     public final long end;
     public final JSONObject vepJson;
@@ -16,7 +17,7 @@ public class AnfisaInput {
     public final Map<String, Sample> samples;
 
     private AnfisaInput(
-            String chromosome,
+            Chromosome chromosome,
             long start, long end,
             JSONObject vepJson,
             VariantContext variantContext,
@@ -38,7 +39,7 @@ public class AnfisaInput {
 
     public static class Builder {
 
-        public final String chromosome;
+        public final Chromosome chromosome;
         public final long start;
         public final long end;
         private JSONObject vepJson;
@@ -46,7 +47,7 @@ public class AnfisaInput {
         private Map<String, Sample> samples;
 
         public Builder(
-                String chromosome,
+                Chromosome chromosome,
                 long start, long end
         ) {
             this.chromosome = chromosome;

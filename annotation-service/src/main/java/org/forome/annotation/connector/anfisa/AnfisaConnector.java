@@ -112,8 +112,8 @@ public class AnfisaConnector implements AutoCloseable {
         this.gtfConnector = gtfConnector;
     }
 
-    public CompletableFuture<List<AnfisaResult>> request(String chromosome, long start, long end, String alternative) {
-        String region = String.format("%s:%s:%s", chromosome, start, end);
+    public CompletableFuture<List<AnfisaResult>> request(Chromosome chromosome, long start, long end, String alternative) {
+        String region = String.format("%s:%s:%s", chromosome.getChar(), start, end);
         String endpoint = String.format("/vep/human/region/%s/%s?hgvs=true&canonical=true&merged=true&protein=true&variant_class=true", region, alternative);
 
         return anfisaHttpClient.request(endpoint).thenApply(jsonArray -> {
@@ -145,7 +145,7 @@ public class AnfisaConnector implements AutoCloseable {
         callGnomAD(anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson, filters);
         callSpliceai(data, filters, anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson);
         callHgmd(record, context, filters, data);
-        callClinvar(record, anfisaInput.chromosome, anfisaInput.start, anfisaInput.end, anfisaInput.variantContext, anfisaInput.samples, filters, data, view, anfisaInput.vepJson);
+        callClinvar(record, anfisaInput.chromosome.getChar(), anfisaInput.start, anfisaInput.end, anfisaInput.variantContext, anfisaInput.samples, filters, data, view, anfisaInput.vepJson);
         callBeacon(anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson, data);
         GtfAnfisaResult gtfAnfisaResult = callGtf(anfisaInput.start, anfisaInput.end, anfisaInput.vepJson);
         callQuality(filters, anfisaInput.variantContext, anfisaInput.samples);
@@ -175,7 +175,7 @@ public class AnfisaConnector implements AutoCloseable {
 
                 Integer zyg = sampleHasVariant(anfisaInput.vepJson, anfisaInput.variantContext, anfisaInput.samples, entry.getValue());
                 data.zygosity.put(entry.getKey(), zyg);
-                Integer modified_zygosity = (!anfisaInput.chromosome.equals("X") || sex == 2 || (zyg != null && zyg == 0)) ? zyg : (Integer) 2;
+                Integer modified_zygosity = (!anfisaInput.chromosome.getChar().equals("X") || sex == 2 || (zyg != null && zyg == 0)) ? zyg : (Integer) 2;
                 filters.altZygosity.put(entry.getKey(), modified_zygosity);
                 if (zyg != null && zyg > 0) {
                     filters.has_variant.add(label);
@@ -189,7 +189,7 @@ public class AnfisaConnector implements AutoCloseable {
                 .map(o -> ((Number) o).longValue())
                 .min(Long::compareTo).orElse(0L);
 
-        filters.chromosome = (anfisaInput.chromosome.length() < 2) ? String.format("chr%s", anfisaInput.chromosome) : getChromosome(anfisaInput.vepJson);
+        filters.chromosome = anfisaInput.chromosome.getChromosome();
 
         data.assemblyName = anfisaInput.vepJson.getAsString("assembly_name");
         data.end = anfisaInput.vepJson.getAsNumber("end").longValue();
@@ -217,7 +217,7 @@ public class AnfisaConnector implements AutoCloseable {
 
         createGeneralTab(context, data, filters, view, anfisaInput.start, anfisaInput.end, anfisaInput.vepJson, caseSequence, anfisaInput.variantContext, anfisaInput.samples);
         createQualityTab(filters, view, anfisaInput.variantContext, anfisaInput.samples);
-        createGnomadTab(anfisaInput.chromosome, anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson, filters, data, view);
+        createGnomadTab(anfisaInput.chromosome.getChar(), anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson, filters, data, view);
         createDatabasesTab(anfisaInput.vepJson, record, data, view);
         createPredictionsTab(anfisaInput.vepJson, view);
         createBioinformaticsTab(gtfAnfisaResult, context, data, view);
@@ -275,7 +275,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private void callHgmd(Record record, AnfisaExecuteContext anfisaExecuteContext, AnfisaResultFilters filters, AnfisaResultData data) {
         AnfisaInput anfisaInput = anfisaExecuteContext.anfisaInput;
-        List<String> accNums = hgmdConnector.getAccNum(anfisaInput.chromosome, anfisaInput.start, anfisaInput.end);
+        List<String> accNums = hgmdConnector.getAccNum(anfisaInput.chromosome.getChar(), anfisaInput.start, anfisaInput.end);
         if (accNums.size() > 0) {
             HgmdConnector.Data hgmdData = hgmdConnector.getDataForAccessionNumbers(accNums);
             record.hgmdData = hgmdData;

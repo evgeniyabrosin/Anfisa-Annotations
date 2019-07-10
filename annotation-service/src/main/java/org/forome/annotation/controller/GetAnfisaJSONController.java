@@ -17,6 +17,7 @@ import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
@@ -43,12 +44,12 @@ public class GetAnfisaJSONController {
 
     public static class RequestItem {
 
-        public final String chromosome;
+        public final Chromosome chromosome;
         public final long start;
         public final long end;
         public final String alternative;
 
-        public RequestItem(String chromosome, long start, long end, String alternative) {
+        public RequestItem(Chromosome chromosome, long start, long end, String alternative) {
             this.chromosome = chromosome;
             this.start = start;
             this.end = end;
@@ -163,7 +164,7 @@ public class GetAnfisaJSONController {
             }
             JSONObject oItem = (JSONObject) item;
 
-            String chromosome = RequestParser.toChromosome(oItem.getAsString("chromosome"));
+            Chromosome chromosome = new Chromosome(oItem.getAsString("chromosome"));
 
             long start = RequestParser.toLong("start", oItem.getAsString("start"));
 
