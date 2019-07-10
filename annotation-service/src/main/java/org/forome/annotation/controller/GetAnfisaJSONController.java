@@ -418,6 +418,7 @@ public class GetAnfisaJSONController {
         out.put("polyphen2_hvar", predictions.polyphen2Hvar);
         out.put("max_ent_scan", predictions.maxEntScan);
         out.put("sift", predictions.sift);
+        out.put("sift_vep", predictions.siftVEP);
         out.put("polyphen", predictions.polyphen);
         out.put("revel", predictions.revel);
         out.put("polyphen2_hvar_score", predictions.polyphen2HvarScore);
