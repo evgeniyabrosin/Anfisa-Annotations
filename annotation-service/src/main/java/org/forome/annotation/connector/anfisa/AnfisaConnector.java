@@ -857,6 +857,7 @@ public class AnfisaConnector implements AutoCloseable {
         view.predictions.polyphen2HdivScore = getFromTranscriptsList(json, "Polyphen2_HDIV_score".toLowerCase()).stream()
                 .collect(Collectors.toList());
         view.predictions.sift = getFromTranscriptsList(json, "sift_prediction").stream().toArray(String[]::new);
+        view.predictions.siftVEP = getFromTranscriptsList(json, "sift_pred").stream().toArray(String[]::new);
         view.predictions.siftScore = getFromTranscriptsList(json, "sift_score").stream().toArray(String[]::new);
         view.predictions.revel = getFromTranscriptsList(json, "revel_score").stream().map(s -> Double.parseDouble(s))
                 .collect(Collectors.toList());
