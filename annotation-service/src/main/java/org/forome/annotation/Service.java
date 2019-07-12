@@ -20,8 +20,6 @@ import org.forome.annotation.utils.ArgumentParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 //
 //vulitin@ip-172-31-24-96:~$ PYTHONPATH=/data/bgm/versions/master/anfisa python -m annotations.singleton -a gnomad 1:103471457 "CCATCAT>CCAT"
 //		Namespace(annotations='gnomad', input=['1:103471457', 'CCATCAT>CCAT'], test=1)
@@ -166,12 +164,14 @@ public class Service {
 	}
 
 	public void stop() {
-		try {
-			gnomadConnector.close();
-			anfisaConnector.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		anfisaConnector.close();
+		gtfConnector.close();
+		liftoverConnector.close();
+		clinvarConnector.close();
+		hgmdConnector.close();
+		conservationConnector.close();
+		spliceAIConnector.close();
+		gnomadConnector.close();
 
 		instance = null;
 	}

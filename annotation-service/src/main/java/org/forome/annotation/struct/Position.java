@@ -1,21 +1,26 @@
 package org.forome.annotation.struct;
 
-public class Position {
+import java.util.Objects;
 
-    public final long start;
-    public final long end;
+public class Position<T> {
 
-    public Position(long position) {
-        this.start = this.end = position;
+    public final T start;
+    public final T end;
+
+    public Position(T position) {
+        this(position, position);
     }
 
-    public Position(long start, long end) {
+    public Position(T start, T end) {
+        if (start == null) throw new IllegalArgumentException();
+        if (end == null) throw new IllegalArgumentException();
+
         this.start = start;
         this.end = end;
     }
 
     public boolean isSingle() {
-        return (start == end);
+        return Objects.equals(start, end);
     }
 
     @Override

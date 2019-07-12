@@ -30,7 +30,10 @@ public class AnfisaSimpleTest extends AnfisaBaseTest {
 //        anfisaConnector.request("1", 16351275, 16351275, "G").get().forEach(anfisaResult -> {
 //            GetAnfisaJSONController.build(anfisaResult).toJSONString();
 //        });
-        anfisaConnector.request("1", 12040324, 12040324, "G").get().forEach(anfisaResult -> {
+//        anfisaConnector.request("1", 12040324, 12040324, "G").get().forEach(anfisaResult -> {
+//            GetAnfisaJSONController.build(anfisaResult).toJSONString();
+//        });
+        anfisaConnector.request("1", 216062306, 216062306, "G").get().forEach(anfisaResult -> {
             GetAnfisaJSONController.build(anfisaResult).toJSONString();
         });
     }

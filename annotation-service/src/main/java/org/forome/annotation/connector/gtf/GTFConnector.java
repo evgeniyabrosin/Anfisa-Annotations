@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class GTFConnector {
+public class GTFConnector implements AutoCloseable {
 
     private static final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
@@ -174,5 +174,10 @@ public class GTFConnector {
         }
 
         return new Object[]{d, new GTFRegion(region, index), rows.size()};
+    }
+
+    @Override
+    public void close() {
+        databaseConnector.close();
     }
 }
