@@ -31,6 +31,9 @@ public class AnfisaResultView {
         public String geneDxSignificance;
         public String[] geneCards;
         public String[] clinVarSignificance;
+        public Integer numClinvarSubmitters;
+        public String[] clinvarAcmgGuidelines;
+        public String clinvarReviewStatus;
 
         public void setField(String name, String value) {
             switch (name) {
@@ -53,6 +56,7 @@ public class AnfisaResultView {
         public List<String> polyphen2HdivScore;
         public List<String> maxEntScan;
         public String[] sift;
+        public String[] siftVEP;
         public String[] polyphen;
         public List<Double> revel;
         public String[] siftScore;

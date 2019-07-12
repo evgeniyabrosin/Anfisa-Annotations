@@ -103,6 +103,7 @@ public class AnnotatorMain {
                     .append("--plugin LoFtool,/db/data/loftoll/LoFtool_scores.txt ")
                     .append("--plugin dbNSFP,/db/data/dbNSFPa/dbNSFP_hg19.gz,Polyphen2_HDIV_pred,Polyphen2_HVAR_pred,Polyphen2_HDIV_score,Polyphen2_HVAR_score,SIFT_pred,SIFT_score,MutationTaster_pred,MutationTaster_score,FATHMM_pred,FATHMM_score,REVEL_score,CADD_phred,CADD_raw,MutationAssessor_score,MutationAssessor_pred,clinvar_rs,clinvar_clnsig ")
                     .append("--plugin SpliceRegion ")
+                    .append("--everything")
                     .toString();
 
             log.info("run external ensembl-vep, cmd: {}", cmd);
