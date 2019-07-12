@@ -12,6 +12,7 @@ import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultData;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultFilters;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultView;
+import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.controller.utils.RequestParser;
@@ -256,6 +257,19 @@ public class GetAnfisaJSONController {
         out.put("ref", anfisaResultData.ref);
         out.put("alts", anfisaResultFilters.alts);
 
+        out.put("num_clinvar_submitters", anfisaResultFilters.numClinvarSubmitters);
+
+        ClinvarVariantSummary.ReviewStatus clinvarReviewStatus = anfisaResultFilters.clinvarReviewStatus;
+        if (clinvarReviewStatus != null) {
+            out.put("clinvar_review_status", clinvarReviewStatus.text);
+            out.put("clinvar_criteria_provided", (clinvarReviewStatus.getCriteriaProvided() != null) ?
+                    clinvarReviewStatus.getCriteriaProvided() : "Unknown");
+            out.put("clinvar_conflicts", (clinvarReviewStatus.getConflicts() != null) ?
+                    clinvarReviewStatus.getConflicts() : "Unknown");
+            out.put("clinvar_stars", clinvarReviewStatus.getStars());
+            out.put("clinvar_acmg_guidelines", anfisaResultFilters.clinvarAcmgGuidelines);
+        }
+
         return out;
     }
 
@@ -407,6 +421,9 @@ public class GetAnfisaJSONController {
         out.put("lmm_significance", databases.lmmSignificance);
         out.put("gene_cards", databases.geneCards);
         out.put("clinVar_significance", databases.clinVarSignificance);
+        out.put("num_clinvar_submitters", databases.numClinvarSubmitters);
+        out.put("clinvar_acmg_guidelines", databases.clinvarAcmgGuidelines);
+        out.put("clinvar_review_status", databases.clinvarReviewStatus);
         return out;
     }
 

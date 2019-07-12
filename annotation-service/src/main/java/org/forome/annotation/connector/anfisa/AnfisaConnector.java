@@ -12,6 +12,7 @@ import org.forome.annotation.connector.anfisa.struct.*;
 import org.forome.annotation.connector.beacon.BeaconConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.clinvar.struct.ClinvarResult;
+import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
@@ -145,7 +146,7 @@ public class AnfisaConnector implements AutoCloseable {
         callGnomAD(anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson, filters);
         callSpliceai(data, filters, anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson);
         callHgmd(record, context, filters, data);
-        callClinvar(record, anfisaInput.chromosome.getChar(), anfisaInput.start, anfisaInput.end, anfisaInput.variantContext, anfisaInput.samples, filters, data, view, anfisaInput.vepJson);
+        callClinvar(context, record, anfisaInput.chromosome.getChar(), anfisaInput.start, anfisaInput.end, anfisaInput.variantContext, anfisaInput.samples, filters, data, view, anfisaInput.vepJson);
         callBeacon(anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson, data);
         GtfAnfisaResult gtfAnfisaResult = callGtf(anfisaInput.start, anfisaInput.end, anfisaInput.vepJson);
         callQuality(filters, anfisaInput.variantContext, anfisaInput.samples);
@@ -289,81 +290,95 @@ public class AnfisaConnector implements AutoCloseable {
         }
     }
 
-    private void callClinvar(Record record, String chromosome, long start, long end, VariantContext variantContext, Map<String, Sample> samples, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view, JSONObject json) {
+    private void callClinvar(AnfisaExecuteContext context, Record record, String _chromosome, long start, long end, VariantContext variantContext, Map<String, Sample> samples, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view, JSONObject json) {
+        Chromosome chromosome = context.anfisaInput.chromosome;
+
         List<ClinvarResult> clinvarResults;
         if (isSnv(json)) {
-            clinvarResults = clinvarConnector.getData(chromosome, start, end, alt_list(variantContext, samples, json));
+            clinvarResults = clinvarConnector.getData(_chromosome, start, end, alt_list(variantContext, samples, json));
         } else {
-            clinvarResults = clinvarConnector.getExpandedData(chromosome, start);
+            clinvarResults = clinvarConnector.getExpandedData(_chromosome, start);
         }
         record.clinvarResults = clinvarResults;
-        if (clinvarResults.isEmpty()) return;
+        if (!clinvarResults.isEmpty()) {
 
-        String[] variants = clinvarResults.stream().map(clinvarResult -> {
-            return String.format("%s %s>%s",
-                    vstr(getChromosome(json), new Position(clinvarResult.start, clinvarResult.end)),
-                    clinvarResult.referenceAllele, clinvarResult.alternateAllele
-            );
-        }).toArray(String[]::new);
+            String[] variants = clinvarResults.stream().map(clinvarResult -> {
+                return String.format("%s %s>%s",
+                        vstr(getChromosome(json), new Position(clinvarResult.start, clinvarResult.end)),
+                        clinvarResult.referenceAllele, clinvarResult.alternateAllele
+                );
+            }).toArray(String[]::new);
 
-        List<String> significance = new ArrayList<>();
-        Map<String, String> submissions = new HashMap<>();
-        for (ClinvarResult clinvarResult : clinvarResults) {
-            significance.addAll(Arrays.asList(clinvarResult.clinicalSignificance.split("/")));
-            submissions.putAll(clinvarResult.submitters);
-        }
-
-        List<String> idList = clinvarResults.stream().flatMap(it -> {
-            return Lists.newArrayList(it.phenotypeIDs, it.otherIDs).stream();
-        }).collect(Collectors.toList());
-        for (String id : idList) {
-            if (id.indexOf(":") != -1) {
-                continue;
-            }
-            //TODO not implemented
-        }
-
-        data.clinVar = clinvarResults.stream()
-                .map(clinvarResult -> clinvarResult.variationID)
-                .map(it -> Long.parseLong(it))
-                .toArray(Long[]::new);
-        data.clinvarSubmitters = new HashMap<String, String>() {{
+            List<String> significance = new ArrayList<>();
+            Map<String, String> submissions = new HashMap<>();
             for (ClinvarResult clinvarResult : clinvarResults) {
-                for (Map.Entry<String, String> entry : clinvarResult.submitters.entrySet()) {
-                    put(encodeToAscii(entry.getKey()), entry.getValue());
+                significance.addAll(Arrays.asList(clinvarResult.clinicalSignificance.split("/")));
+                submissions.putAll(clinvarResult.submitters);
+            }
+
+            List<String> idList = clinvarResults.stream().flatMap(it -> {
+                return Lists.newArrayList(it.phenotypeIDs, it.otherIDs).stream();
+            }).collect(Collectors.toList());
+            for (String id : idList) {
+                if (id.indexOf(":") != -1) {
+                    continue;
+                }
+                //TODO not implemented
+            }
+
+            data.clinVar = clinvarResults.stream()
+                    .map(clinvarResult -> clinvarResult.variationID)
+                    .map(it -> Long.parseLong(it))
+                    .toArray(Long[]::new);
+            data.clinvarSubmitters = new HashMap<String, String>() {{
+                for (ClinvarResult clinvarResult : clinvarResults) {
+                    for (Map.Entry<String, String> entry : clinvarResult.submitters.entrySet()) {
+                        put(encodeToAscii(entry.getKey()), entry.getValue());
+                    }
+                }
+            }};
+
+            view.databases.clinVar = clinvarResults.stream()
+                    .map(clinvarResult -> clinvarResult.variationID)
+                    .map(it -> String.format("https://www.ncbi.nlm.nih.gov/clinvar/variation/%s/", it))
+                    .toArray(String[]::new);
+            data.clinvarVariants = variants;
+            view.databases.clinVarSubmitters = data.clinvarSubmitters.entrySet().stream().map(entry -> {
+                return String.format("%s: %s", encodeToAscii(entry.getKey()), entry.getValue());
+            }).sorted().toArray(String[]::new);
+            data.clinvarSignificance = significance.toArray(new String[significance.size()]);
+            data.clinvarPhenotypes = clinvarResults.stream()
+                    .map(clinvarResult -> clinvarResult.phenotypeList)
+                    .toArray(String[]::new);
+
+            filters.clinvarBenign = (significance.stream().filter(s -> (s.toLowerCase().indexOf("benign") == -1)).count() == 0);
+
+            Boolean benign = null;
+            for (String submitter : trustedSubmitters.keySet()) {
+                String fullName = trustedSubmitters.get(submitter);
+                if (submissions.containsKey(fullName)) {
+                    String prediction = submissions.get(fullName).toLowerCase();
+                    data.setField(submitter, prediction);
+                    if (!prediction.contains("benign")) {
+                        benign = false;
+                    } else if (benign == null) {
+                        benign = true;
+                    }
                 }
             }
-        }};
-
-        view.databases.clinVar = clinvarResults.stream()
-                .map(clinvarResult -> clinvarResult.variationID)
-                .map(it -> String.format("https://www.ncbi.nlm.nih.gov/clinvar/variation/%s/", it))
-                .toArray(String[]::new);
-        data.clinvarVariants = variants;
-        view.databases.clinVarSubmitters = data.clinvarSubmitters.entrySet().stream().map(entry -> {
-            return String.format("%s: %s", encodeToAscii(entry.getKey()), entry.getValue());
-        }).sorted().toArray(String[]::new);
-        data.clinvarSignificance = significance.toArray(new String[significance.size()]);
-        data.clinvarPhenotypes = clinvarResults.stream()
-                .map(clinvarResult -> clinvarResult.phenotypeList)
-                .toArray(String[]::new);
-
-        filters.clinvarBenign = (significance.stream().filter(s -> (s.toLowerCase().indexOf("benign") == -1)).count() == 0);
-
-        Boolean benign = null;
-        for (String submitter : trustedSubmitters.keySet()) {
-            String fullName = trustedSubmitters.get(submitter);
-            if (submissions.containsKey(fullName)) {
-                String prediction = submissions.get(fullName).toLowerCase();
-                data.setField(submitter, prediction);
-                if (!prediction.contains("benign")) {
-                    benign = false;
-                } else if (benign == null) {
-                    benign = true;
-                }
-            }
+            filters.clinvarTrustedBenign = Optional.ofNullable(benign);
         }
-        filters.clinvarTrustedBenign = Optional.ofNullable(benign);
+
+        ClinvarVariantSummary clinvarVariantSummary = clinvarConnector.getDataVariantSummary(chromosome, start, end);
+        if (clinvarVariantSummary != null) {
+            view.databases.clinvarReviewStatus = clinvarVariantSummary.reviewStatus.text;
+            filters.clinvarReviewStatus = clinvarVariantSummary.reviewStatus;
+            view.databases.numClinvarSubmitters = clinvarVariantSummary.numberSubmitters;
+            filters.numClinvarSubmitters = clinvarVariantSummary.numberSubmitters;
+            view.databases.clinvarAcmgGuidelines = filters.clinvarAcmgGuidelines =
+                    clinvarVariantSummary.guidelineTypes.stream()
+                            .map(guideline -> guideline.getStrValue()).toArray(String[]::new);
+        }
     }
 
     private void callBeacon(VariantContext variantContext, Map<String, Sample> samples, JSONObject json, AnfisaResultData data) {

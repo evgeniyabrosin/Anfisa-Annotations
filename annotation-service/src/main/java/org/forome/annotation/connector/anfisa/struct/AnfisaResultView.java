@@ -31,6 +31,9 @@ public class AnfisaResultView {
         public String geneDxSignificance;
         public String[] geneCards;
         public String[] clinVarSignificance;
+        public Integer numClinvarSubmitters;
+        public String[] clinvarAcmgGuidelines;
+        public String clinvarReviewStatus;
 
         public void setField(String name, String value) {
             switch (name) {
