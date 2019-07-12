@@ -12,10 +12,13 @@ import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultData;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultFilters;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultView;
+import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
+import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
@@ -42,12 +45,12 @@ public class GetAnfisaJSONController {
 
     public static class RequestItem {
 
-        public final String chromosome;
+        public final Chromosome chromosome;
         public final long start;
         public final long end;
         public final String alternative;
 
-        public RequestItem(String chromosome, long start, long end, String alternative) {
+        public RequestItem(Chromosome chromosome, long start, long end, String alternative) {
             this.chromosome = chromosome;
             this.start = start;
             this.end = end;
@@ -162,7 +165,7 @@ public class GetAnfisaJSONController {
             }
             JSONObject oItem = (JSONObject) item;
 
-            String chromosome = RequestParser.toChromosome(oItem.getAsString("chromosome"));
+            Chromosome chromosome = new Chromosome(oItem.getAsString("chromosome"));
 
             long start = RequestParser.toLong("start", oItem.getAsString("start"));
 
@@ -190,14 +193,17 @@ public class GetAnfisaJSONController {
     @VisibleForTesting
     public static JSONObject build(AnfisaResult anfisaResult) {
         JSONObject out = new JSONObject();
-        out.put("_filters", build(anfisaResult.filters));
-        out.put("data", build(anfisaResult.data));
+        out.put("_filters", buildFilter(anfisaResult.filters, anfisaResult.data, anfisaResult.view.bioinformatics));
+        out.put("data", buildData(anfisaResult.data));
         out.put("view", build(anfisaResult.view));
         out.put("record_type", anfisaResult.recordType);
         return out;
     }
 
-    private static JSONObject build(AnfisaResultFilters anfisaResultFilters) {
+    private static JSONObject buildFilter(AnfisaResultFilters anfisaResultFilters,
+                                          AnfisaResultData anfisaResultData,
+                                          AnfisaResultView.Bioinformatics bioinformatics
+    ) {
         JSONObject out = new JSONObject();
         if (anfisaResultFilters.chromosome != null) {
             out.put("chromosome", anfisaResultFilters.chromosome);
@@ -246,10 +252,28 @@ public class GetAnfisaJSONController {
         out.put("splice_altering", anfisaResultFilters.spliceAltering);
         out.put("splice_ai_dsmax", anfisaResultFilters.spliceAiDsmax);
 
+        out.put("gerp_rs", (bioinformatics.conservation != null) ? bioinformatics.conservation.gerpRS : null);
+
+        out.put("ref", anfisaResultData.ref);
+        out.put("alts", anfisaResultFilters.alts);
+
+        out.put("num_clinvar_submitters", anfisaResultFilters.numClinvarSubmitters);
+
+        ClinvarVariantSummary.ReviewStatus clinvarReviewStatus = anfisaResultFilters.clinvarReviewStatus;
+        if (clinvarReviewStatus != null) {
+            out.put("clinvar_review_status", clinvarReviewStatus.text);
+            out.put("clinvar_criteria_provided", (clinvarReviewStatus.getCriteriaProvided() != null) ?
+                    clinvarReviewStatus.getCriteriaProvided() : "Unknown");
+            out.put("clinvar_conflicts", (clinvarReviewStatus.getConflicts() != null) ?
+                    clinvarReviewStatus.getConflicts() : "Unknown");
+            out.put("clinvar_stars", clinvarReviewStatus.getStars());
+            out.put("clinvar_acmg_guidelines", anfisaResultFilters.clinvarAcmgGuidelines);
+        }
+
         return out;
     }
 
-    private static JSONObject build(AnfisaResultData anfisaResultData) {
+    private static JSONObject buildData(AnfisaResultData anfisaResultData) {
         JSONObject out = new JSONObject();
         out.put("total_exon_intron_canonical", anfisaResultData.totalExonIntronCanonical);
         out.put("assembly_name", anfisaResultData.assemblyName);
@@ -288,7 +312,7 @@ public class GetAnfisaJSONController {
         }
         out.put("most_severe_consequence", anfisaResultData.mostSevereConsequence);
         out.put("strand", anfisaResultData.strand);
-        out.put("color_code", anfisaResultData.colorCode);
+        out.put("color_code", (anfisaResultData.colorCode != null) ? anfisaResultData.colorCode.code : null);
 
         if (anfisaResultData.lmm != null) {
             out.put("lmm", anfisaResultData.lmm);
@@ -337,19 +361,19 @@ public class GetAnfisaJSONController {
         }
         out.put("spliceAI", new JSONObject() {{
             for (Map.Entry<String, SpliceAIResult.DictSql> entry : anfisaResultData.spliceAI.entrySet()) {
-                    put(
-                            entry.getKey(),
-                            new JSONObject() {{
-                                put("DP_AG", entry.getValue().dp_ag);
-                                put("DP_AL", entry.getValue().dp_al);
-                                put("DP_DG", entry.getValue().dp_dg);
-                                put("DP_DL", entry.getValue().dp_dl);
-                                put("DS_AG", entry.getValue().ds_ag);
-                                put("DS_AL", entry.getValue().ds_al);
-                                put("DS_DG", entry.getValue().ds_dg);
-                                put("DS_DL", entry.getValue().ds_dl);
-                            }}
-                    );
+                put(
+                        entry.getKey(),
+                        new JSONObject() {{
+                            put("DP_AG", entry.getValue().dp_ag);
+                            put("DP_AL", entry.getValue().dp_al);
+                            put("DP_DG", entry.getValue().dp_dg);
+                            put("DP_DL", entry.getValue().dp_dl);
+                            put("DS_AG", entry.getValue().ds_ag);
+                            put("DS_AL", entry.getValue().ds_al);
+                            put("DS_DG", entry.getValue().ds_dg);
+                            put("DS_DL", entry.getValue().ds_dl);
+                        }}
+                );
             }
         }});
         out.put("version", anfisaResultData.version);
@@ -397,6 +421,9 @@ public class GetAnfisaJSONController {
         out.put("lmm_significance", databases.lmmSignificance);
         out.put("gene_cards", databases.geneCards);
         out.put("clinVar_significance", databases.clinVarSignificance);
+        out.put("num_clinvar_submitters", databases.numClinvarSubmitters);
+        out.put("clinvar_acmg_guidelines", databases.clinvarAcmgGuidelines);
+        out.put("clinvar_review_status", databases.clinvarReviewStatus);
         return out;
     }
 
@@ -409,6 +436,7 @@ public class GetAnfisaJSONController {
         out.put("polyphen2_hvar", predictions.polyphen2Hvar);
         out.put("max_ent_scan", predictions.maxEntScan);
         out.put("sift", predictions.sift);
+        out.put("sift_vep", predictions.siftVEP);
         out.put("polyphen", predictions.polyphen);
         out.put("revel", predictions.revel);
         out.put("polyphen2_hvar_score", predictions.polyphen2HvarScore);
@@ -488,7 +516,7 @@ public class GetAnfisaJSONController {
         out.put("called_by", bioinformatics.calledBy);
         out.put("max_ent_scan", bioinformatics.maxEntScan);
         out.put("dist_from_exon_canonical", bioinformatics.distFromExonCanonical);
-        out.put("conservation", bioinformatics.conservation);
+        out.put("conservation", build(bioinformatics.conservation));
         out.put("caller_data", bioinformatics.callerData);
         out.put("nn_splice", bioinformatics.nnSplice);
         out.put("species_with_variant", bioinformatics.speciesWithVariant);
@@ -500,6 +528,25 @@ public class GetAnfisaJSONController {
         out.put("splice_ai_al", bioinformatics.spliceAiAl);
         out.put("splice_ai_dg", bioinformatics.spliceAiDg);
         out.put("splice_ai_dl", bioinformatics.spliceAiDl);
+        out.put("gerp_rs", (bioinformatics.conservation != null) ? bioinformatics.conservation.gerpRS : null);
+        return out;
+    }
+
+    private static JSONObject build(Conservation conservation) {
+        if (conservation == null) {
+            return null;
+        }
+        JSONObject out = new JSONObject();
+        out.put("pri_ph_cons", conservation.priPhCons);
+        out.put("mam_ph_cons", conservation.mamPhCons);
+        out.put("ver_ph_cons", conservation.verPhCons);
+        out.put("pri_phylo_p", conservation.priPhyloP);
+        out.put("mam_phylo_p", conservation.mamPhyloP);
+        out.put("ver_phylo_p", conservation.verPhyloP);
+        out.put("gerp_r_s", conservation.gerpRS);
+        out.put("gerp_r_spval", conservation.getGerpRSpval());
+        out.put("gerp_n", conservation.gerpN);
+        out.put("gerp_s", conservation.gerpS);
         return out;
     }
 

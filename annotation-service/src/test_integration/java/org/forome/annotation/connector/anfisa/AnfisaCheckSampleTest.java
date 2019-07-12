@@ -6,6 +6,7 @@ import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.AnfisaBaseTest;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.GetAnfisaJSONController;
+import org.forome.annotation.struct.Chromosome;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ public class AnfisaCheckSampleTest extends AnfisaBaseTest {
 			List<AnfisaResult> iResults;
 			try {
 				iResults = anfisaConnector.request(
-						(String) sampleInput.get(0),
+						(Chromosome) sampleInput.get(0),
 						((Number) sampleInput.get(1)).longValue(),
 						((Number) sampleInput.get(2)).longValue(),
 						(String) sampleInput.get(3)

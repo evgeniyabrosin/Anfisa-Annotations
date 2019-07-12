@@ -10,6 +10,7 @@ import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
+import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
@@ -102,6 +103,7 @@ public class AnnotatorMain {
                     .append("--plugin LoFtool,/db/data/loftoll/LoFtool_scores.txt ")
                     .append("--plugin dbNSFP,/db/data/dbNSFPa/dbNSFP_hg19.gz,Polyphen2_HDIV_pred,Polyphen2_HVAR_pred,Polyphen2_HDIV_score,Polyphen2_HVAR_score,SIFT_pred,SIFT_score,MutationTaster_pred,MutationTaster_score,FATHMM_pred,FATHMM_score,REVEL_score,CADD_phred,CADD_raw,MutationAssessor_score,MutationAssessor_pred,clinvar_rs,clinvar_clnsig ")
                     .append("--plugin SpliceRegion ")
+                    .append("--everything")
                     .toString();
 
             log.info("run external ensembl-vep, cmd: {}", cmd);
@@ -133,6 +135,7 @@ public class AnnotatorMain {
             SpliceAIConnector spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, (t, e) -> {
                 fail(e, arguments.pathOutput);
             });
+            ConservationConnector conservationConnector = new ConservationConnector(serviceConfig.conservationConfigConnector);
             HgmdConnector hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
             ClinvarConnector clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
             LiftoverConnector liftoverConnector = new LiftoverConnector();
@@ -142,6 +145,7 @@ public class AnnotatorMain {
             AnfisaConnector anfisaConnector = new AnfisaConnector(
                     gnomadConnector,
                     spliceAIConnector,
+                    conservationConnector,
                     hgmdConnector,
                     clinvarConnector,
                     liftoverConnector,

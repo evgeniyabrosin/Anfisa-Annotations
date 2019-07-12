@@ -15,7 +15,11 @@ public class ExceptionBuilder {
 	}
 
 	public static ServiceException buildExternalDatabaseException(Throwable cause) {
-		return EXCEPTION_FACTORY.build("external_database_error", cause);
+		return buildExternalDatabaseException(cause, null);
+	}
+
+	public static ServiceException buildExternalDatabaseException(Throwable cause, String comment) {
+		return EXCEPTION_FACTORY.build("external_database_error", comment, null, cause);
 	}
 
 	public static ServiceException buildExternalServiceException(Throwable cause) {

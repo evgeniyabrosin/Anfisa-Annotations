@@ -6,11 +6,9 @@ import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.List;
 
-public class SpliceAIConnector implements Closeable {
+public class SpliceAIConnector implements AutoCloseable {
 
     private final static Logger log = LoggerFactory.getLogger(SpliceAIConnector.class);
 
@@ -38,7 +36,7 @@ public class SpliceAIConnector implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         databaseConnector.close();
     }
 

@@ -4,6 +4,7 @@ import org.forome.annotation.config.Config;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
+import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
@@ -18,8 +19,6 @@ import org.forome.annotation.network.component.UserEditableComponent;
 import org.forome.annotation.utils.ArgumentParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 //
 //vulitin@ip-172-31-24-96:~$ PYTHONPATH=/data/bgm/versions/master/anfisa python -m annotations.singleton -a gnomad 1:103471457 "CCATCAT>CCAT"
@@ -67,6 +66,7 @@ public class Service {
 
 	private final GnomadConnector gnomadConnector;
 	private final SpliceAIConnector spliceAIConnector;
+	private final ConservationConnector conservationConnector;
 	private final HgmdConnector hgmdConnector;
 	private final ClinvarConnector clinvarConnector;
 	private final LiftoverConnector liftoverConnector;
@@ -86,6 +86,7 @@ public class Service {
 
 		this.gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
 		this.spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, uncaughtExceptionHandler);
+		this.conservationConnector = new ConservationConnector(serviceConfig.conservationConfigConnector);
 		this.hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
 		this.clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
 		this.liftoverConnector = new LiftoverConnector();
@@ -93,6 +94,7 @@ public class Service {
 		this.anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
 				spliceAIConnector,
+				conservationConnector,
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,
@@ -162,12 +164,14 @@ public class Service {
 	}
 
 	public void stop() {
-		try {
-			gnomadConnector.close();
-			anfisaConnector.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		anfisaConnector.close();
+		gtfConnector.close();
+		liftoverConnector.close();
+		clinvarConnector.close();
+		hgmdConnector.close();
+		conservationConnector.close();
+		spliceAIConnector.close();
+		gnomadConnector.close();
 
 		instance = null;
 	}
