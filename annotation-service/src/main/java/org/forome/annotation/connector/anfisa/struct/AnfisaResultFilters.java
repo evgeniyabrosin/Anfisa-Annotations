@@ -1,5 +1,7 @@
 package org.forome.annotation.connector.anfisa.struct;
 
+import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +39,11 @@ public class AnfisaResultFilters {
 	public Float spliceAiDsmax;
 
 	public List<String> alts;
+
+	public Integer numClinvarSubmitters;
+
+	public ClinvarVariantSummary.ReviewStatus clinvarReviewStatus;
+	public String[] clinvarAcmgGuidelines;
 
 	public AnfisaResultFilters() {
 	}
