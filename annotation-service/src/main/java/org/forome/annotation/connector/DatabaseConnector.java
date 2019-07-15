@@ -13,6 +13,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.*;
 import java.time.Duration;
 
@@ -150,6 +151,10 @@ public class DatabaseConnector implements Closeable {
             return false;
         }
 
-        return true;
+        try (Socket s = new Socket ("localhost", port)) {
+      			return false;
+      		} catch (IOException ignored) {
+      			return true;
+      		}
     }
 }
