@@ -30,7 +30,7 @@ public class AnfisaResultData {
 	public JSONArray transcriptConsequences;
 	public String id;
 	public Long strand;
-	public ColorCode colorCode;
+	public ColorCode.Code colorCode;
 
 	public String lmm;
 	public String geneDx;
