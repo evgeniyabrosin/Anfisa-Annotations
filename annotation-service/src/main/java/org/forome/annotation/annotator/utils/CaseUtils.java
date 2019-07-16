@@ -6,10 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 public class CaseUtils {
 
@@ -24,7 +21,7 @@ public class CaseUtils {
                     line = line.trim();
                     if (line.length() == 0) continue;
 
-                    String[] values = line.split("\t");
+                    String[] values = Arrays.stream(line.split("\t")).filter(s -> !s.trim().isEmpty()).toArray(String[]::new);
                     if (values.length != 4) {
                         throw new RuntimeException("Not support FamSampleName format");
                     }
