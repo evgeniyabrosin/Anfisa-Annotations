@@ -16,6 +16,7 @@ import org.forome.annotation.exception.ServiceException;
 import org.forome.annotation.executionqueue.*;
 import org.forome.annotation.network.NetworkService;
 import org.forome.annotation.network.component.UserEditableComponent;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.utils.ArgumentParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,7 @@ public class Service {
 
 	private final Config config;
 	private final ServiceConfig serviceConfig;
+	private final SSHConnectService sshTunnelService;
 	private final DatabaseService databaseService;
 	private final NetworkService networkService;
 
@@ -81,16 +83,17 @@ public class Service {
 
 		this.config = new Config();
 		this.serviceConfig = new ServiceConfig();
+		this.sshTunnelService = new SSHConnectService();
 		this.databaseService = new DatabaseService(this);
 		this.networkService = new NetworkService(arguments.port, uncaughtExceptionHandler);
 
-		this.gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
-		this.spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, uncaughtExceptionHandler);
-		this.conservationConnector = new ConservationConnector(serviceConfig.conservationConfigConnector);
-		this.hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
-		this.clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
+		this.gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
+		this.spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, uncaughtExceptionHandler);
+		this.conservationConnector = new ConservationConnector(sshTunnelService, serviceConfig.conservationConfigConnector);
+		this.hgmdConnector = new HgmdConnector(sshTunnelService, serviceConfig.hgmdConfigConnector);
+		this.clinvarConnector = new ClinvarConnector(sshTunnelService, serviceConfig.clinVarConfigConnector);
 		this.liftoverConnector = new LiftoverConnector();
-		this.gtfConnector = new GTFConnector(serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
+		this.gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
 		this.anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
 				spliceAIConnector,
@@ -173,6 +176,7 @@ public class Service {
 		spliceAIConnector.close();
 		gnomadConnector.close();
 
+		sshTunnelService.close();
 		instance = null;
 	}
 

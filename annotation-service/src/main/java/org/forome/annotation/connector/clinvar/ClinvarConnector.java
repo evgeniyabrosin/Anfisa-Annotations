@@ -6,6 +6,7 @@ import org.forome.annotation.connector.clinvar.struct.ClinvarResult;
 import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.connector.clinvar.struct.Row;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +57,8 @@ public class ClinvarConnector implements AutoCloseable {
 
     private final DatabaseConnector databaseConnector;
 
-    public ClinvarConnector(ClinVarConfigConnector clinVarConfigConnector) throws Exception {
-        this.databaseConnector = new DatabaseConnector(clinVarConfigConnector);
+    public ClinvarConnector(SSHConnectService sshTunnelService, ClinVarConfigConnector clinVarConfigConnector) throws Exception {
+        this.databaseConnector = new DatabaseConnector(sshTunnelService, clinVarConfigConnector);
     }
 
     private ClinvarResult getSubmitters(Row row) {

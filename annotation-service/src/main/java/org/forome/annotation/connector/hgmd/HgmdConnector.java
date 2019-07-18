@@ -4,6 +4,7 @@ import org.forome.annotation.config.connector.HgmdConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.hgmd.struct.HgmdPmidRow;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.ssh.SSHConnectService;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -33,8 +34,8 @@ public class HgmdConnector implements AutoCloseable {
 
     private final DatabaseConnector databaseConnector;
 
-    public HgmdConnector(HgmdConfigConnector hgmdConfigConnector) throws Exception {
-        this.databaseConnector = new DatabaseConnector(hgmdConfigConnector);
+    public HgmdConnector(SSHConnectService sshTunnelService, HgmdConfigConnector hgmdConfigConnector) throws Exception {
+        this.databaseConnector = new DatabaseConnector(sshTunnelService, hgmdConfigConnector);
     }
 
     public List<String> getAccNum(String chromosome, long start, long end) {

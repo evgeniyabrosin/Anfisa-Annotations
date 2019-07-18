@@ -1,19 +1,15 @@
 package org.forome.annotation.connector;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.forome.annotation.config.connector.database.DatabaseConfigConnector;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.service.ssh.struct.SSHConnect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.net.DatagramSocket;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.sql.*;
 import java.time.Duration;
 
@@ -21,14 +17,14 @@ public class DatabaseConnector implements Closeable {
 
     private final static Logger log = LoggerFactory.getLogger(DatabaseConnector.class);
 
-    private final DatabaseConfigConnector databaseConfigConnector;
+    private final SSHConnectService sshTunnelService;
 
-    private JSch jsch;
-    private Session sshSession;
+    private final DatabaseConfigConnector databaseConfigConnector;
 
     private ComboPooledDataSource pooledDataSource;
 
-    public DatabaseConnector(DatabaseConfigConnector databaseConfigConnector) throws Exception {
+    public DatabaseConnector(SSHConnectService sshTunnelService, DatabaseConfigConnector databaseConfigConnector) throws Exception {
+        this.sshTunnelService = sshTunnelService;
         this.databaseConfigConnector = databaseConfigConnector;
         connect();
     }
@@ -40,22 +36,13 @@ public class DatabaseConnector implements Closeable {
         int mysqlUrlPort;
         SshTunnelConfig sshTunnelConfig = databaseConfigConnector.sshTunnelConfig;
         if (sshTunnelConfig != null) {
-
-            jsch = new JSch();
-            jsch.addIdentity(sshTunnelConfig.key);
-
-            sshSession = jsch.getSession(sshTunnelConfig.user, sshTunnelConfig.host, sshTunnelConfig.port);
-
-            java.util.Properties config = new java.util.Properties();
-            config.put("StrictHostKeyChecking", "no");
-            config.put("Compression", "yes");
-            config.put("ConnectionAttempts", "2");
-            sshSession.setConfig(config);
-
-            sshSession.connect();
-
-            int localPort = findAvailablePort();
-            mysqlUrlPort = sshSession.setPortForwardingL(localPort, "127.0.0.1", databaseConfigConnector.mysqlPort);
+            SSHConnect sshTunnel = sshTunnelService.getSSHTunnel(
+                    sshTunnelConfig.host,
+                    sshTunnelConfig.port,
+                    sshTunnelConfig.user,
+                    sshTunnelConfig.key
+            );
+            mysqlUrlPort = sshTunnel.getTunnel(databaseConfigConnector.mysqlPort);
         } else {
             mysqlUrlPort = databaseConfigConnector.mysqlPort;
         }
@@ -112,11 +99,6 @@ public class DatabaseConnector implements Closeable {
             pooledDataSource.close();
             pooledDataSource = null;
         }
-        if (sshSession != null) {
-            sshSession.disconnect();
-            sshSession = null;
-        }
-        jsch = null;
     }
 
     private synchronized void reconnect() throws Exception {
@@ -127,34 +109,5 @@ public class DatabaseConnector implements Closeable {
     @Override
     public void close() {
         disconnect();
-    }
-
-    private static int findAvailablePort() {
-        for (int port = 3307; port < 4000; ++port) {
-            if (isAvailablePort(port)) {
-                return port;
-            }
-        }
-        throw new RuntimeException("Not found available port");
-    }
-
-    private static boolean isAvailablePort(int port) {
-        try (ServerSocket ss = new ServerSocket(port)) {
-            ss.setReuseAddress(true);
-        } catch (IOException ignored) {
-            return false;
-        }
-
-        try (DatagramSocket ds = new DatagramSocket(port)) {
-            ds.setReuseAddress(true);
-        } catch (IOException ignored) {
-            return false;
-        }
-
-        try (Socket s = new Socket ("localhost", port)) {
-      			return false;
-      		} catch (IOException ignored) {
-      			return true;
-      		}
     }
 }

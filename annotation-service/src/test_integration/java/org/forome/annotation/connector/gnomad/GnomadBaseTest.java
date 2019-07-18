@@ -1,6 +1,7 @@
 package org.forome.annotation.connector.gnomad;
 
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -15,7 +16,8 @@ public class GnomadBaseTest {
 	@Before
 	public void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
-		gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, (t, e) -> {
+		SSHConnectService sshTunnelService = new SSHConnectService();
+		gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});
