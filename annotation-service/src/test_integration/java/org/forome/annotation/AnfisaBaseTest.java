@@ -9,17 +9,18 @@ import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 public class AnfisaBaseTest {
 
 	private final static Logger log = LoggerFactory.getLogger(AnfisaBaseTest.class);
+
+	private static SSHConnectService sshTunnelService;
 
 	protected static GnomadConnector gnomadConnector;
 	protected static SpliceAIConnector spliceAIConnector;
@@ -33,19 +34,20 @@ public class AnfisaBaseTest {
 	@BeforeClass
 	public static void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
-		gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, (t, e) -> {
+		sshTunnelService = new SSHConnectService();
+		gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});
-		spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, (t, e) -> {
+		spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});
-		conservationConnector = new ConservationConnector(serviceConfig.conservationConfigConnector);
-		hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
-		clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
+		conservationConnector = new ConservationConnector(sshTunnelService, serviceConfig.conservationConfigConnector);
+		hgmdConnector = new HgmdConnector(sshTunnelService, serviceConfig.hgmdConfigConnector);
+		clinvarConnector = new ClinvarConnector(sshTunnelService, serviceConfig.clinVarConfigConnector);
 		liftoverConnector = new LiftoverConnector();
-		gtfConnector = new GTFConnector(serviceConfig.gtfConfigConnector, (t, e) -> {
+		gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});
@@ -65,7 +67,7 @@ public class AnfisaBaseTest {
 	}
 
 	@AfterClass
-	public static void destroy() throws IOException {
+	public static void destroy() {
 		anfisaConnector.close();
 		gtfConnector.close();
 		liftoverConnector.close();
@@ -74,5 +76,7 @@ public class AnfisaBaseTest {
 		conservationConnector.close();
 		spliceAIConnector.close();
 		gnomadConnector.close();
+
+		sshTunnelService.close();
 	}
 }

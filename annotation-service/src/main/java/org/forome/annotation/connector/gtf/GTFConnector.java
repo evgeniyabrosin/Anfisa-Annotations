@@ -6,6 +6,7 @@ import org.forome.annotation.connector.gtf.struct.GTFRegion;
 import org.forome.annotation.connector.gtf.struct.GTFResult;
 import org.forome.annotation.connector.gtf.struct.GTFResultLookup;
 import org.forome.annotation.connector.gtf.struct.GTFTranscriptRow;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 
 import java.util.ArrayList;
@@ -25,10 +26,11 @@ public class GTFConnector implements AutoCloseable {
     private final ExecutorService threadPoolGTFExecutor;
 
     public GTFConnector(
+            SSHConnectService sshTunnelService,
             GTFConfigConnector gtfConfigConnector,
             Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) throws Exception {
-        this.databaseConnector = new DatabaseConnector(gtfConfigConnector);
+        this.databaseConnector = new DatabaseConnector(sshTunnelService, gtfConfigConnector);
         this.gtfDataConnector = new GTFDataConnector(databaseConnector);
         threadPoolGTFExecutor = new DefaultThreadPoolExecutor(
                 MAX_THREAD_COUNT,

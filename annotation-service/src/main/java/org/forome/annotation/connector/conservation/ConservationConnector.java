@@ -4,6 +4,7 @@ import org.forome.annotation.config.connector.ConservationConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
 import org.slf4j.Logger;
@@ -21,9 +22,10 @@ public class ConservationConnector implements AutoCloseable {
     private final DatabaseConnector databaseConnector;
 
     public ConservationConnector(
+            SSHConnectService sshTunnelService,
             ConservationConfigConnector conservationConfigConnector
     ) throws Exception {
-        databaseConnector = new DatabaseConnector(conservationConfigConnector);
+        databaseConnector = new DatabaseConnector(sshTunnelService, conservationConfigConnector);
     }
 
     public Conservation getConservation(Chromosome chromosome, Position<Long> position, Position<Integer> hg38, String ref, String alt) {

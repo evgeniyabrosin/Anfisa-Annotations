@@ -17,6 +17,7 @@ import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.controller.GetAnfisaJSONController;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.utils.AppVersion;
 import org.forome.annotation.utils.RuntimeExec;
 import org.slf4j.Logger;
@@ -129,17 +130,18 @@ public class AnnotatorMain {
 
         try {
             ServiceConfig serviceConfig = new ServiceConfig(arguments.config);
-            GnomadConnector gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, (t, e) -> {
+            SSHConnectService sshTunnelService = new SSHConnectService();
+            GnomadConnector gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> {
                 fail(e, arguments.pathOutput);
             });
-            SpliceAIConnector spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, (t, e) -> {
+            SpliceAIConnector spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, (t, e) -> {
                 fail(e, arguments.pathOutput);
             });
-            ConservationConnector conservationConnector = new ConservationConnector(serviceConfig.conservationConfigConnector);
-            HgmdConnector hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
-            ClinvarConnector clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
+            ConservationConnector conservationConnector = new ConservationConnector(sshTunnelService, serviceConfig.conservationConfigConnector);
+            HgmdConnector hgmdConnector = new HgmdConnector(sshTunnelService, serviceConfig.hgmdConfigConnector);
+            ClinvarConnector clinvarConnector = new ClinvarConnector(sshTunnelService, serviceConfig.clinVarConfigConnector);
             LiftoverConnector liftoverConnector = new LiftoverConnector();
-            GTFConnector gtfConnector = new GTFConnector(serviceConfig.gtfConfigConnector, (t, e) -> {
+            GTFConnector gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, (t, e) -> {
                 fail(e, arguments.pathOutput);
             });
             AnfisaConnector anfisaConnector = new AnfisaConnector(
