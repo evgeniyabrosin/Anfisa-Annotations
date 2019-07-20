@@ -27,7 +27,7 @@ public class ClinvarConnector implements AutoCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(ClinvarConnector.class);
 
-    private static final String SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar`.`CV_Submitters_A` NATURAL JOIN `clinvar`.`ClinVar2Sub_Sig_A` WHERE RCVaccession IN (%s)";
+    private static final String SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar_new`.`CV_Submitters` NATURAL JOIN `clinvar_new`.`ClinVar2Sub_Sig` WHERE RCVaccession IN (%s)";
 
     private static final String QUERY_BASE = "SELECT " +
             "`Start`," +
