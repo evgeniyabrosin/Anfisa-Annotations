@@ -41,7 +41,7 @@ public class ClinvarConnector implements AutoCloseable {
             "RCVaccession, " +
             "ReferenceAllele, " +
             "VariationID " +
-            "FROM clinvar.variant_summary AS v " +
+            "FROM clinvar_new.variant_summary AS v " +
             "WHERE " +
             "Assembly = 'GRCh37' AND " +
             "Chromosome='%s' AND " +
