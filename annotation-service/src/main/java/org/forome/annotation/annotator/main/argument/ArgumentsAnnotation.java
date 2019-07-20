@@ -48,25 +48,25 @@ public class ArgumentsAnnotation extends Arguments {
 
         String strPathVepJson = cmd.getOptionValue(ParserArgument.OPTION_FILE_VEP_JSON);
         if (strPathVepJson != null) {
-            this.pathVepJson = Paths.get(strPathVepJson);
+            this.pathVepJson = Paths.get(strPathVepJson).toAbsolutePath();
         } else {
             this.pathVepJson = null;
         }
 
         String strPathVcf = cmd.getOptionValue(ParserArgument.OPTION_FILE_VCF);
         if (strPathVcf != null) {
-            this.pathVcf = Paths.get(strPathVcf);
+            this.pathVcf = Paths.get(strPathVcf).toAbsolutePath();
         } else {
             if (this.pathVepJson == null) {
                 throw new IllegalArgumentException("Missing vcf file");
             }
             strPathVcf = this.pathVepJson.getFileName().toString().split("\\.")[0] + ".vcf";
-            this.pathVcf = Paths.get(strPathVcf);
+            this.pathVcf = Paths.get(strPathVcf).toAbsolutePath();
         }
 
         this.start = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_START_POSITION, "0"));
 
-        this.pathOutput = Paths.get(cmd.getOptionValue(ParserArgument.OPTION_FILE_OUTPUT));
+        this.pathOutput = Paths.get(cmd.getOptionValue(ParserArgument.OPTION_FILE_OUTPUT)).toAbsolutePath();
     }
 
 }
