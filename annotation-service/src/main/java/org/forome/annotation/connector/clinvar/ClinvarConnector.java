@@ -48,7 +48,6 @@ public class ClinvarConnector implements AutoCloseable {
             "Start = %s ";
 
     private static final String QUERY_0 = QUERY_BASE + " AND Stop = %s ";
-    private static final String QUERY = QUERY_0 + "AND (AlternateAllele = %s OR AlternateAllele = 'na')";
     private static final String QUERY_EXACT = QUERY_0 + " AND AlternateAllele = '%s'";
     private static final String QUERY_NA = QUERY_0 + " AND AlternateAllele = 'na'";
 
