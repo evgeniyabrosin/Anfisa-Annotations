@@ -1,7 +1,7 @@
 package org.forome.annotation.network.mvc;
 
 import org.forome.annotation.controller.utils.RequestParser;
-import org.forome.annotation.exception.ServiceException;
+import org.forome.annotation.exception.AnnotatorException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,43 +22,43 @@ public class RequestParserTest {
 		try {
 			RequestParser.toChromosome("");
 			Assert.fail();
-		} catch (ServiceException ignore) {
+		} catch (AnnotatorException ignore) {
 		}
 
 		try {
 			RequestParser.toChromosome("0");
 			Assert.fail();
-		} catch (ServiceException ignore) {
+		} catch (AnnotatorException ignore) {
 		}
 
 		try {
 			RequestParser.toChromosome("24");
 			Assert.fail();
-		} catch (ServiceException ignore) {
+		} catch (AnnotatorException ignore) {
 		}
 
 		try {
 			RequestParser.toChromosome("chr0");
 			Assert.fail();
-		} catch (ServiceException ignore) {
+		} catch (AnnotatorException ignore) {
 		}
 
 		try {
 			RequestParser.toChromosome("chr24");
 			Assert.fail();
-		} catch (ServiceException ignore) {
+		} catch (AnnotatorException ignore) {
 		}
 
 		try {
 			RequestParser.toChromosome("m");
 			Assert.fail();
-		} catch (ServiceException ignore) {
+		} catch (AnnotatorException ignore) {
 		}
 
 		try {
 			RequestParser.toChromosome("A");
 			Assert.fail();
-		} catch (ServiceException ignore) {
+		} catch (AnnotatorException ignore) {
 		}
 	}
 }

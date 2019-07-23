@@ -6,6 +6,7 @@ import org.forome.annotation.AnfisaBaseTest;
 import org.forome.annotation.annotator.input.FileReaderIterator;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.controller.GetAnfisaJSONController;
+import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.utils.JSONEquals;
 import org.junit.Assert;
 import org.junit.Test;
@@ -80,6 +81,7 @@ public class AnnotatorTest extends AnfisaBaseTest {
 
         AnnotatorResult annotatorResult = annotator.exec(
                 "bgm0135",
+                CasePlatform.WES,
                 Paths.get("/home/kris/processtech/tmp/bgm0135/bgm0135.fam"),
                 null,
                 Paths.get("/home/kris/processtech/tmp/bgm0135/bgm0135_wes_run3_xbrowse.vep.vcf"),

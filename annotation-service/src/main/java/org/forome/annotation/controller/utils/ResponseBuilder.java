@@ -2,12 +2,12 @@ package org.forome.annotation.controller.utils;
 
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONObject;
+import org.forome.annotation.Service;
+import org.forome.annotation.exception.AnnotatorException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.forome.annotation.Service;
-import org.forome.annotation.exception.ServiceException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -39,15 +39,15 @@ public class ResponseBuilder {
 			exception = throwable;
 		}
 
-		if (exception instanceof ServiceException) {
-			return build((ServiceException) exception);
+		if (exception instanceof AnnotatorException) {
+			return build((AnnotatorException) exception);
 		} else {
 			Service.getInstance().getUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), throwable);
 			return null;
 		}
 	}
 
-	public static ResponseEntity build(ServiceException e) {
+	public static ResponseEntity build(AnnotatorException e) {
 		JSONObject outError = new JSONObject();
 		outError.put("code", e.getCode());
 		if (e.getParameters() != null && !e.getParameters().isEmpty()) {

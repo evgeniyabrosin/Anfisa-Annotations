@@ -1,9 +1,7 @@
 package org.forome.annotation.annotator.main;
 
-import org.forome.annotation.annotator.main.argument.Arguments;
-import org.forome.annotation.annotator.main.argument.ArgumentsAnnotation;
-import org.forome.annotation.annotator.main.argument.ArgumentsVersion;
-import org.forome.annotation.annotator.main.argument.ParserArgument;
+import org.forome.annotation.annotator.main.argument.*;
+import org.forome.annotation.inventory.Inventory;
 import org.forome.annotation.utils.AppVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +29,33 @@ public class AnnotatorMain {
         if (arguments instanceof ArgumentsVersion) {
             System.out.println("Version: " + AppVersion.getVersion());
             System.out.println("Version Format: " + AppVersion.getVersionFormat());
-        } else if (arguments instanceof ArgumentsAnnotation) {
-            AnnotationConsole annotationConsole = new AnnotationConsole((ArgumentsAnnotation) arguments);
+        } else if (arguments instanceof ArgumentsInventory) {
+            ArgumentsInventory argumentsInventory = (ArgumentsInventory) arguments;
+            Inventory inventory = new Inventory.Builder(argumentsInventory.pathInventory).build();
+            AnnotationConsole annotationConsole = new AnnotationConsole(
+                    argumentsInventory.config,
+                    inventory.caseName, inventory.casePlatform,
+                    inventory.famFile, inventory.patientIdsFile,
+                    inventory.vcfFile, inventory.vepJsonFile,
+                    0,
+                    inventory.outFile
+            );
             annotationConsole.execute();
+        } else if (arguments instanceof ArgumentsAnnotation) {
+            ArgumentsAnnotation argumentsAnnotation = (ArgumentsAnnotation) arguments;
+            AnnotationConsole annotationConsole = new AnnotationConsole(
+                    argumentsAnnotation.config,
+                    argumentsAnnotation.caseName, argumentsAnnotation.casePlatform,
+                    argumentsAnnotation.pathFam, argumentsAnnotation.patientIdsFile,
+                    argumentsAnnotation.pathVcf, argumentsAnnotation.pathVepJson,
+                    argumentsAnnotation.start,
+                    argumentsAnnotation.pathOutput
+            );
+            annotationConsole.execute();
+        } else {
+            log.error("Unknown arguments");
+            System.exit(3);
+            return;
         }
     }
 

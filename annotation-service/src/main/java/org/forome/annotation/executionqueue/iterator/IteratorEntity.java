@@ -2,8 +2,8 @@ package org.forome.annotation.executionqueue.iterator;
 
 import com.infomaximum.database.domainobject.DomainObject;
 import com.infomaximum.database.exception.DatabaseException;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.exception.ServiceException;
 import org.forome.annotation.utils.iterator.AIterator;
 
 public class IteratorEntity<E extends DomainObject> implements AIterator<E> {
@@ -20,7 +20,7 @@ public class IteratorEntity<E extends DomainObject> implements AIterator<E> {
 	}
 
 	@Override
-	public E next() throws ServiceException {
+	public E next() throws AnnotatorException {
 		try {
 			return ie.next();
 		} catch (DatabaseException e) {
@@ -29,7 +29,7 @@ public class IteratorEntity<E extends DomainObject> implements AIterator<E> {
 	}
 
 	@Override
-	public void close() throws ServiceException {
+	public void close() throws AnnotatorException {
 		try {
 			ie.close();
 		} catch (DatabaseException e) {

@@ -6,13 +6,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.StringJoiner;
 
-public class ServiceException extends RuntimeException {
+public class AnnotatorException extends RuntimeException {
 
 	private final String code;
 	private final Map<String, Object> parameters;
 	private final String comment;
 
-	ServiceException(String code, String comment, Map<String, Object> parameters, Throwable cause) {
+	AnnotatorException(String code, String comment, Map<String, Object> parameters, Throwable cause) {
 		super(
 				buildMessage(code, parameters, comment),
 				cause

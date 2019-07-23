@@ -3,8 +3,8 @@ package org.forome.annotation.executionqueue;
 import com.infomaximum.database.domainobject.DomainObjectSource;
 import com.infomaximum.database.domainobject.Transaction;
 import com.infomaximum.database.exception.DatabaseException;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.exception.ServiceException;
 
 public class ExecutionTransaction implements AutoCloseable {
 
@@ -18,7 +18,7 @@ public class ExecutionTransaction implements AutoCloseable {
 		return transaction;
 	}
 
-	void commit() throws ServiceException {
+	void commit() throws AnnotatorException {
 		try {
 			transaction.commit();
 		} catch (DatabaseException e) {
