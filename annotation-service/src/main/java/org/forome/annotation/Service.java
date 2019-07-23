@@ -12,7 +12,7 @@ import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.database.DatabaseService;
 import org.forome.annotation.database.entityobject.user.UserReadable;
-import org.forome.annotation.exception.ServiceException;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.executionqueue.*;
 import org.forome.annotation.network.NetworkService;
 import org.forome.annotation.network.component.UserEditableComponent;
@@ -126,7 +126,7 @@ public class Service {
             }
 
             @Override
-            public Void execute(ExecutionTransaction transaction) throws ServiceException {
+            public Void execute(ExecutionTransaction transaction) throws AnnotatorException {
                 if (!userReadableResource.iterator(transaction).hasNext()) {
                     userEditableComponent.create("admin", "b82nfGl5sdg", transaction);
                 }

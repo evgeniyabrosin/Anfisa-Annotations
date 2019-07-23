@@ -25,7 +25,7 @@ import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.controller.utils.RequestParser;
-import org.forome.annotation.exception.ServiceException;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.Sample;
@@ -570,8 +570,8 @@ public class AnfisaConnector implements AutoCloseable {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
-            if (cause instanceof ServiceException) {
-                throw (ServiceException) cause;
+            if (cause instanceof AnnotatorException) {
+                throw (AnnotatorException) cause;
             } else {
                 throw new RuntimeException(cause);
             }

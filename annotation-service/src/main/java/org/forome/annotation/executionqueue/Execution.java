@@ -1,6 +1,6 @@
 package org.forome.annotation.executionqueue;
 
-import org.forome.annotation.exception.ServiceException;
+import org.forome.annotation.exception.AnnotatorException;
 
 public abstract class Execution<T> {
 
@@ -14,5 +14,5 @@ public abstract class Execution<T> {
 		return null;
 	}
 
-	public abstract T execute(ExecutionTransaction transaction) throws ServiceException;
+	public abstract T execute(ExecutionTransaction transaction) throws AnnotatorException;
 }

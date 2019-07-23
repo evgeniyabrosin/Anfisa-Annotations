@@ -8,8 +8,8 @@ import org.eclipse.jetty.server.Dispatcher;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.forome.annotation.controller.utils.ResponseBuilder;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.exception.ServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -45,7 +45,7 @@ public class ServerErrorHandler extends ErrorHandler {
 				//Способ страшный, но других механизмов гарантирующий отлов всех неизвестных ошибок не нашел.
 				List<Throwable> chainThrowables = ExceptionUtils.getThrowableList(cause);
 				if (chainThrowables.size() >= 3
-						&& chainThrowables.get(2) instanceof ServiceException
+						&& chainThrowables.get(2) instanceof AnnotatorException
 				) {
 					ResponseEntity<byte[]> responseEntity = ResponseBuilder.build(chainThrowables.get(2));
 					rewriteResponseEntity(response, responseEntity);

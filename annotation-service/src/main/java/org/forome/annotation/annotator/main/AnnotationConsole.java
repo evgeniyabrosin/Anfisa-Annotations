@@ -3,7 +3,6 @@ package org.forome.annotation.annotator.main;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.forome.annotation.Main;
 import org.forome.annotation.annotator.Annotator;
-import org.forome.annotation.annotator.main.argument.ArgumentsAnnotation;
 import org.forome.annotation.annotator.main.argument.ParserArgument;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
@@ -18,6 +17,7 @@ import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.service.notification.NotificationService;
 import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.utils.AppVersion;
 import org.forome.annotation.utils.RuntimeExec;
 import org.slf4j.Logger;
@@ -39,7 +39,19 @@ public class AnnotationConsole {
 
     private final static Logger log = LoggerFactory.getLogger(AnnotationConsole.class);
 
-    private final ArgumentsAnnotation arguments;
+    private final String caseName;
+    private final CasePlatform casePlatform;
+
+    private final Path famFile;
+    private final Path patientIdsFile;
+
+    private final Path vcfFile;
+    private final Path vepJsonFile;
+
+    private final int startPosition;
+
+    private final Path outFile;
+
     private final Instant timeStart;
 
     private ServiceConfig serviceConfig;
@@ -55,12 +67,31 @@ public class AnnotationConsole {
     private GTFConnector gtfConnector;
     private AnfisaConnector anfisaConnector;
 
-    public AnnotationConsole(ArgumentsAnnotation arguments) {
-        this.arguments = arguments;
+    public AnnotationConsole(
+            Path configFile,
+            String caseName, CasePlatform casePlatform,
+            Path famFile, Path patientIdsFile,
+            Path vcfFile, Path vepJsonFile,
+            int startPosition,
+            Path outFile
+    ) {
+        this.caseName = caseName;
+        this.casePlatform = casePlatform;
+
+        this.famFile = famFile;
+        this.patientIdsFile = patientIdsFile;
+
+        this.vcfFile = vcfFile;
+        this.vepJsonFile = vepJsonFile;
+
+        this.startPosition = startPosition;
+
+        this.outFile = outFile;
+
         this.timeStart = Instant.now();
 
         try {
-            serviceConfig = new ServiceConfig(arguments.config);
+            serviceConfig = new ServiceConfig(configFile);
 
             if (serviceConfig.notificationSlackConfig != null) {
                 notificationService = new NotificationService(serviceConfig.notificationSlackConfig);
@@ -91,19 +122,19 @@ public class AnnotationConsole {
 
     public void execute() {
         try {
-            log.info("Input caseName: {}", arguments.caseName);
-            log.info("Input famFile: {}", arguments.pathFam.toAbsolutePath());
-            log.info("Input vepVcfFile: {}", arguments.pathVcf.toAbsolutePath());
-            log.info("Input start position: {}", arguments.start);
-            log.info("Input vepJsonFile: {}", (arguments.pathVepJson != null) ? arguments.pathVepJson.toAbsolutePath() : null);
+            log.info("Input caseName: {}", caseName);
+            log.info("Input famFile: {}", famFile);
+            log.info("Input vepVcfFile: {}", vcfFile);
+            log.info("Input start position: {}", startPosition);
+            log.info("Input vepJsonFile: {}", (vepJsonFile != null) ? vepJsonFile : null);
 
             Path pathVepJson;
-            if (arguments.pathVepJson != null) {
-                pathVepJson = arguments.pathVepJson.toAbsolutePath();
+            if (vepJsonFile != null) {
+                pathVepJson = vepJsonFile;
             } else {
-                Path pathDirVepJson = arguments.pathOutput.toAbsolutePath().getParent();
+                Path pathDirVepJson = outFile.getParent();
 
-                String fileNameVcf = arguments.pathVcf.getFileName().toString();
+                String fileNameVcf = vcfFile.getFileName().toString();
                 String fileNameVepJson;
                 if (fileNameVcf.endsWith(".vcf")) {
                     String s = fileNameVcf.substring(0, fileNameVcf.length() - ".vcf".length());
@@ -113,7 +144,7 @@ public class AnnotationConsole {
                         fileNameVepJson = String.format("%s(%s).vep.json", s, ++i);
                     }
                 } else {
-                    throw new IllegalArgumentException("Bad vcf filename (Need *.vcf): " + arguments.pathVcf.toAbsolutePath());
+                    throw new IllegalArgumentException("Bad vcf filename (Need *.vcf): " + vcfFile.toAbsolutePath());
                 }
                 pathVepJson = pathDirVepJson.resolve(fileNameVepJson).toAbsolutePath();
 
@@ -127,7 +158,7 @@ public class AnnotationConsole {
                         .append("--merged ")
                         .append("--json ")
                         .append("--port 3337 ")
-                        .append("--input_file ").append(arguments.pathVcf.toAbsolutePath()).append(' ')
+                        .append("--input_file ").append(vcfFile).append(' ')
                         .append("--output_file ").append(pathVepJson.toAbsolutePath()).append(' ')
                         .append("--plugin ExACpLI,/db/data/misc/ExACpLI_values.txt ")
                         .append("--plugin MaxEntScan,/db/data/MaxEntScan/fordownload ")
@@ -161,18 +192,19 @@ public class AnnotationConsole {
 
             Annotator annotator = new Annotator(anfisaConnector);
             AnnotatorResult annotatorResult = annotator.exec(
-                    arguments.caseName,
-                    arguments.pathFam,
-                    arguments.pathFamSampleName,
-                    arguments.pathVcf,
+                    caseName,
+                    casePlatform,
+                    famFile,
+                    patientIdsFile,
+                    vcfFile,
                     pathVepJson,
-                    arguments.start
+                    startPosition
             );
-            Files.deleteIfExists(arguments.pathOutput);
-            Files.createFile(arguments.pathOutput);
+            Files.deleteIfExists(outFile);
+            Files.createFile(outFile);
             AtomicInteger count = new AtomicInteger();
 
-            OutputStream os = buildOutputStream(arguments.pathOutput);
+            OutputStream os = buildOutputStream(outFile);
             BufferedOutputStream bos = new BufferedOutputStream(os);
 
             String outMetadata = GetAnfisaJSONController.build(annotatorResult.metadata).toJSONString();
@@ -206,9 +238,9 @@ public class AnnotationConsole {
 
     private void fail(Throwable e) {
         try {
-            Files.deleteIfExists(arguments.pathOutput);
+            Files.deleteIfExists(outFile);
         } catch (Throwable e1) {
-            log.error("Exception clear file: " + arguments.pathOutput, e);
+            log.error("Exception clear file: " + outFile, e);
         }
         sendNotification(e);
         Main.crash(e);
@@ -218,10 +250,10 @@ public class AnnotationConsole {
         try {
             StringBuilder messageBuilder = new StringBuilder();
             if (throwable == null) {
-                messageBuilder.append("Success annotation case: ").append(arguments.caseName).append('\n');
-                messageBuilder.append("Result: ").append(arguments.pathOutput).append('\n');
+                messageBuilder.append("Success annotation case: ").append(caseName).append('\n');
+                messageBuilder.append("Result: ").append(outFile).append('\n');
             } else {
-                messageBuilder.append("FAIL!!! annotation case: ").append(arguments.caseName).append('\n');
+                messageBuilder.append("FAIL!!! annotation case: ").append(caseName).append('\n');
             }
             messageBuilder.append('\n');
             messageBuilder.append("User: ").append(System.getProperty("user.name")).append('\n');
@@ -235,16 +267,16 @@ public class AnnotationConsole {
 
             messageBuilder.append('\n');
             messageBuilder.append("Run arguments:").append('\n');
-            messageBuilder.append(" -").append(ParserArgument.OPTION_CASE_NAME).append(' ').append(arguments.caseName).append(" \\\n");
-            messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_FAM).append(' ').append(arguments.pathFam).append(" \\\n");
-            if (arguments.pathFamSampleName != null) {
-                messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_FAM_NAME).append(' ').append(arguments.pathFamSampleName).append(" \\\n");
+            messageBuilder.append(" -").append(ParserArgument.OPTION_CASE_NAME).append(' ').append(caseName).append(" \\\n");
+            messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_FAM).append(' ').append(famFile).append(" \\\n");
+            if (patientIdsFile != null) {
+                messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_FAM_NAME).append(' ').append(patientIdsFile).append(" \\\n");
             }
-            messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_VCF).append(' ').append(arguments.pathVcf).append(" \\\n");
-            if (arguments.pathVepJson != null) {
-                messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_VEP_JSON).append(' ').append(arguments.pathVepJson).append(" \\\n");
+            messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_VCF).append(' ').append(vcfFile).append(" \\\n");
+            if (vepJsonFile != null) {
+                messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_VEP_JSON).append(' ').append(vepJsonFile).append(" \\\n");
             }
-            messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_OUTPUT).append(' ').append(arguments.pathOutput).append('\n');
+            messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_OUTPUT).append(' ').append(outFile).append('\n');
 
             if (throwable != null) {
                 messageBuilder.append('\n');
