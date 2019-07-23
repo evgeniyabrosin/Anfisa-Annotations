@@ -38,7 +38,8 @@ public class AnnotatorMain {
                     inventory.famFile, inventory.patientIdsFile,
                     inventory.vcfFile, inventory.vepJsonFile,
                     0,
-                    inventory.outFile
+                    inventory.outFile,
+                    () -> arguments.getArguments()
             );
             annotationConsole.execute();
         } else if (arguments instanceof ArgumentsAnnotation) {
@@ -49,7 +50,8 @@ public class AnnotatorMain {
                     argumentsAnnotation.pathFam, argumentsAnnotation.patientIdsFile,
                     argumentsAnnotation.pathVcf, argumentsAnnotation.pathVepJson,
                     argumentsAnnotation.start,
-                    argumentsAnnotation.pathOutput
+                    argumentsAnnotation.pathOutput,
+                    () -> arguments.getArguments()
             );
             annotationConsole.execute();
         } else {

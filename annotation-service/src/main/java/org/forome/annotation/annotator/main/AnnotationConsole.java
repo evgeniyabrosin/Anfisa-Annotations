@@ -3,7 +3,6 @@ package org.forome.annotation.annotator.main;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.forome.annotation.Main;
 import org.forome.annotation.annotator.Annotator;
-import org.forome.annotation.annotator.main.argument.ParserArgument;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
@@ -33,6 +32,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.zip.GZIPOutputStream;
 
 public class AnnotationConsole {
@@ -51,6 +51,8 @@ public class AnnotationConsole {
     private final int startPosition;
 
     private final Path outFile;
+
+    private final Supplier<String> arguments;
 
     private final Instant timeStart;
 
@@ -73,7 +75,8 @@ public class AnnotationConsole {
             Path famFile, Path patientIdsFile,
             Path vcfFile, Path vepJsonFile,
             int startPosition,
-            Path outFile
+            Path outFile,
+            Supplier<String> arguments
     ) {
         this.caseName = caseName;
         this.casePlatform = casePlatform;
@@ -88,6 +91,8 @@ public class AnnotationConsole {
 
         this.outFile = outFile;
 
+        this.arguments = arguments;
+
         this.timeStart = Instant.now();
 
         try {
@@ -98,13 +103,13 @@ public class AnnotationConsole {
             }
 
             sshTunnelService = new SSHConnectService();
-            gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e));
-            spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, (t, e) -> fail(e));
+            gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
+            spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, (t, e) -> fail(e, arguments));
             conservationConnector = new ConservationConnector(sshTunnelService, serviceConfig.conservationConfigConnector);
             hgmdConnector = new HgmdConnector(sshTunnelService, serviceConfig.hgmdConfigConnector);
             clinvarConnector = new ClinvarConnector(sshTunnelService, serviceConfig.clinVarConfigConnector);
             liftoverConnector = new LiftoverConnector();
-            gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e));
+            gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, arguments));
             anfisaConnector = new AnfisaConnector(
                     gnomadConnector,
                     spliceAIConnector,
@@ -113,10 +118,10 @@ public class AnnotationConsole {
                     clinvarConnector,
                     liftoverConnector,
                     gtfConnector,
-                    (t, e) -> fail(e)
+                    (t, e) -> fail(e, arguments)
             );
         } catch (Throwable e) {
-            fail(e);
+            fail(e, arguments);
         }
     }
 
@@ -221,32 +226,32 @@ public class AnnotationConsole {
                             log.debug("progress (count): {}", count.get());
                         }
                     },
-                    e -> fail(e),
+                    e -> fail(e, arguments),
                     () -> {
                         log.debug("progress completed");
                         bos.close();
                         os.close();
                         anfisaConnector.close();
-                        sendNotification(null);
+                        sendNotification(null, arguments);
                         System.exit(0);
                     }
             );
         } catch (Throwable e) {
-            fail(e);
+            fail(e, arguments);
         }
     }
 
-    private void fail(Throwable e) {
+    private void fail(Throwable e, Supplier<String> arguments) {
         try {
             Files.deleteIfExists(outFile);
         } catch (Throwable e1) {
             log.error("Exception clear file: " + outFile, e);
         }
-        sendNotification(e);
+        sendNotification(e, arguments);
         Main.crash(e);
     }
 
-    private void sendNotification(Throwable throwable) {
+    private void sendNotification(Throwable throwable, Supplier<String> arguments) {
         try {
             StringBuilder messageBuilder = new StringBuilder();
             if (throwable == null) {
@@ -267,16 +272,7 @@ public class AnnotationConsole {
 
             messageBuilder.append('\n');
             messageBuilder.append("Run arguments:").append('\n');
-            messageBuilder.append(" -").append(ParserArgument.OPTION_CASE_NAME).append(' ').append(caseName).append(" \\\n");
-            messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_FAM).append(' ').append(famFile).append(" \\\n");
-            if (patientIdsFile != null) {
-                messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_FAM_NAME).append(' ').append(patientIdsFile).append(" \\\n");
-            }
-            messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_VCF).append(' ').append(vcfFile).append(" \\\n");
-            if (vepJsonFile != null) {
-                messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_VEP_JSON).append(' ').append(vepJsonFile).append(" \\\n");
-            }
-            messageBuilder.append(" -").append(ParserArgument.OPTION_FILE_OUTPUT).append(' ').append(outFile).append('\n');
+            messageBuilder.append(arguments.get()).append('\n');
 
             if (throwable != null) {
                 messageBuilder.append('\n');
