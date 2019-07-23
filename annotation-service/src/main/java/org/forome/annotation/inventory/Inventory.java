@@ -75,7 +75,7 @@ public class Inventory {
 
             Path dir = file.toAbsolutePath().getParent();
 
-            if (!fileNameWithoutExt.equals(dir.getFileName().toString()) || !"inv".equals(extFileName)) {
+            if (!fileNameWithoutExt.equals(dir.getFileName().toString()) || !"cfg".equals(extFileName)) {
                 log.warn("Improper dataset inventory path: {}", file.toAbsolutePath());
                 System.err.println("Improper dataset inventory path: " + file.toAbsolutePath());
             }
