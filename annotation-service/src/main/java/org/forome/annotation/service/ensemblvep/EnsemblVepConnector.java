@@ -1,8 +1,9 @@
-package org.forome.annotation.connector.ensemblvep;
+package org.forome.annotation.service.ensemblvep;
 
 import com.jcraft.jsch.JSchException;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.config.connector.EnsemblVepConfigConnector;
+import org.forome.annotation.service.ssh.SSHConnectService;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -11,10 +12,13 @@ import java.io.InputStream;
 
 public class EnsemblVepConnector implements Closeable {
 
-    private final VepExecutor vepExecutor;
+    private final EnsemblVepRunner vepExecutor;
 
-    public EnsemblVepConnector(EnsemblVepConfigConnector ensemblVepConfigConnector) throws JSchException {
-        this.vepExecutor = new VepExecutor(ensemblVepConfigConnector);
+    public EnsemblVepConnector(SSHConnectService sshTunnelService, EnsemblVepConfigConnector ensemblVepConfigConnector) throws JSchException {
+        this.vepExecutor = new EnsemblVepRunner(sshTunnelService, ensemblVepConfigConnector);
+
+
+
     }
 
     public JSONObject getVepJson(String chromosome, long sPosition, long ePosition, String alt) throws Exception {
