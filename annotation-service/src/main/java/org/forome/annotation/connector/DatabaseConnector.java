@@ -36,7 +36,7 @@ public class DatabaseConnector implements Closeable {
         int mysqlUrlPort;
         SshTunnelConfig sshTunnelConfig = databaseConfigConnector.sshTunnelConfig;
         if (sshTunnelConfig != null) {
-            SSHConnect sshTunnel = sshTunnelService.getSSHTunnel(
+            SSHConnect sshTunnel = sshTunnelService.getSSHConnect(
                     sshTunnelConfig.host,
                     sshTunnelConfig.port,
                     sshTunnelConfig.user,
