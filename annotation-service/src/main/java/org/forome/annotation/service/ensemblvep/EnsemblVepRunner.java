@@ -1,7 +1,7 @@
 package org.forome.annotation.service.ensemblvep;
 
 import com.jcraft.jsch.JSchException;
-import org.forome.annotation.config.connector.EnsemblVepConfigConnector;
+import org.forome.annotation.config.ensemblvep.EnsemblVepConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.slf4j.Logger;
@@ -14,18 +14,18 @@ public class EnsemblVepRunner implements Closeable {
 
     private final static Logger log = LoggerFactory.getLogger(EnsemblVepRunner.class);
 
-    private final EnsemblVepConfigConnector ensemblVepConfigConnector;
+    private final EnsemblVepConfig ensemblVepConfigConnector;
 
     private final SSHConnectService sshTunnelService;
 
 
-    public EnsemblVepRunner(SSHConnectService sshTunnelService, EnsemblVepConfigConnector ensemblVepConfigConnector) throws JSchException {
+    public EnsemblVepRunner(SSHConnectService sshTunnelService, EnsemblVepConfig ensemblVepConfigConnector) throws JSchException {
         this.sshTunnelService = sshTunnelService;
         this.ensemblVepConfigConnector = ensemblVepConfigConnector;
         connect();
     }
 
-    public synchronized void connect() throws JSchException {
+    public synchronized void connect() {
         SshTunnelConfig sshTunnelConfig = ensemblVepConfigConnector.sshTunnelConfig;
         if (sshTunnelConfig != null) {
 

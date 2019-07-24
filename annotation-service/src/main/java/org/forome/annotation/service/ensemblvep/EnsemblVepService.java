@@ -2,7 +2,7 @@ package org.forome.annotation.service.ensemblvep;
 
 import com.jcraft.jsch.JSchException;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.config.connector.EnsemblVepConfigConnector;
+import org.forome.annotation.config.ensemblvep.EnsemblVepConfig;
 import org.forome.annotation.service.ssh.SSHConnectService;
 
 import java.io.ByteArrayInputStream;
@@ -10,11 +10,11 @@ import java.io.Closeable;
 import java.io.InputStream;
 
 
-public class EnsemblVepConnector implements Closeable {
+public class EnsemblVepService implements Closeable {
 
     private final EnsemblVepRunner vepExecutor;
 
-    public EnsemblVepConnector(SSHConnectService sshTunnelService, EnsemblVepConfigConnector ensemblVepConfigConnector) throws JSchException {
+    public EnsemblVepService(SSHConnectService sshTunnelService, EnsemblVepConfig ensemblVepConfigConnector) throws JSchException {
         this.vepExecutor = new EnsemblVepRunner(sshTunnelService, ensemblVepConfigConnector);
 
 
