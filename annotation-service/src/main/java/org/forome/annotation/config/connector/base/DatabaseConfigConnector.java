@@ -16,7 +16,7 @@ public abstract class DatabaseConfigConnector extends SshTunnelConfigConnector {
 		JSONObject parseMysql = (JSONObject) parse.get("mysql");
 		mysqlHost = parseMysql.getAsString("host");
 		mysqlPort = parseMysql.getAsNumber("port").intValue();
-		mysqlDatabase = parseMysql.getAsString("base");
+		mysqlDatabase = parseMysql.getAsString("database");
 		mysqlUser = parseMysql.getAsString("user");
 		mysqlPassword = parseMysql.getAsString("password");
 	}
