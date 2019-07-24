@@ -1,17 +1,27 @@
 package org.forome.annotation.annotator.main.argument;
 
 import org.apache.commons.cli.CommandLine;
+import org.forome.annotation.struct.CasePlatform;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ArgumentsAnnotation extends Arguments {
+
+    private final static Logger log = LoggerFactory.getLogger(ArgumentsAnnotation.class);
 
     public final Path config;
 
     public final String caseName;
+    public final CasePlatform casePlatform;
+
     public final Path pathFam;
-    public final Path pathFamSampleName;
+    public final Path patientIdsFile;
     public final Path pathVcf;
     public final Path pathVepJson;
     public final Path pathOutput;
@@ -41,32 +51,43 @@ public class ArgumentsAnnotation extends Arguments {
 
         String strPathFamSampleName = cmd.getOptionValue(ParserArgument.OPTION_FILE_FAM_NAME);
         if (strPathFamSampleName != null) {
-            pathFamSampleName = Paths.get(strPathFamSampleName).toAbsolutePath();
+            patientIdsFile = Paths.get(strPathFamSampleName).toAbsolutePath();
         } else {
-            pathFamSampleName = null;
+            patientIdsFile = null;
         }
 
         String strPathVepJson = cmd.getOptionValue(ParserArgument.OPTION_FILE_VEP_JSON);
         if (strPathVepJson != null) {
-            this.pathVepJson = Paths.get(strPathVepJson);
+            this.pathVepJson = Paths.get(strPathVepJson).toAbsolutePath();
         } else {
             this.pathVepJson = null;
         }
 
         String strPathVcf = cmd.getOptionValue(ParserArgument.OPTION_FILE_VCF);
         if (strPathVcf != null) {
-            this.pathVcf = Paths.get(strPathVcf);
+            this.pathVcf = Paths.get(strPathVcf).toAbsolutePath();
         } else {
             if (this.pathVepJson == null) {
                 throw new IllegalArgumentException("Missing vcf file");
             }
             strPathVcf = this.pathVepJson.getFileName().toString().split("\\.")[0] + ".vcf";
-            this.pathVcf = Paths.get(strPathVcf);
+            this.pathVcf = Paths.get(strPathVcf).toAbsolutePath();
         }
 
         this.start = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_START_POSITION, "0"));
 
-        this.pathOutput = Paths.get(cmd.getOptionValue(ParserArgument.OPTION_FILE_OUTPUT));
+        this.pathOutput = Paths.get(cmd.getOptionValue(ParserArgument.OPTION_FILE_OUTPUT)).toAbsolutePath();
+
+        Set<String> x = Arrays.stream(pathVcf.getFileName().toString().toLowerCase().split("_"))
+                .collect(Collectors.toSet());
+        if (x.contains("wgs")) {
+            casePlatform = CasePlatform.WGS;
+        } else if (x.contains("wes")) {
+            casePlatform = CasePlatform.WES;
+        } else {
+            casePlatform = CasePlatform.WGS;
+            log.warn("Could not determine platform (WES or WGS), assuming: " + casePlatform);
+        }
     }
 
 }

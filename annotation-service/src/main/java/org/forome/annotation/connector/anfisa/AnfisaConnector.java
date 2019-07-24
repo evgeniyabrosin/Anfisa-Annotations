@@ -1,6 +1,7 @@
 package org.forome.annotation.connector.anfisa;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import htsjdk.variant.variantcontext.CommonInfo;
 import htsjdk.variant.variantcontext.Genotype;
@@ -24,7 +25,7 @@ import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.controller.utils.RequestParser;
-import org.forome.annotation.exception.ServiceException;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.Sample;
@@ -209,7 +210,7 @@ public class AnfisaConnector implements AutoCloseable {
         data.strand = (anfisaInput.vepJson.containsKey("strand")) ? anfisaInput.vepJson.getAsNumber("strand").longValue() : null;
         data.variantClass = (anfisaInput.vepJson.containsKey("variant_class")) ? anfisaInput.vepJson.getAsString("variant_class") : null;
 
-        data.colorCode = getColorCode(anfisaInput.vepJson, data);
+        data.colorCode = getColorCode(anfisaInput.vepJson, data, record, filters);
 
         data.distFromBoundaryCanonical = gtfAnfisaResult.distFromBoundaryCanonical;
         data.regionCanonical = gtfAnfisaResult.regionCanonical;
@@ -569,8 +570,8 @@ public class AnfisaConnector implements AutoCloseable {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();
-            if (cause instanceof ServiceException) {
-                throw (ServiceException) cause;
+            if (cause instanceof AnnotatorException) {
+                throw (AnnotatorException) cause;
             } else {
                 throw new RuntimeException(cause);
             }
@@ -810,12 +811,19 @@ public class AnfisaConnector implements AutoCloseable {
         return null;
     }
 
+    private static Set<String> getHGMDTags(Record record)
+    {
+        if (record.hgmdData == null)
+            return new HashSet<> ();
+        return record.hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).collect(Collectors.toSet());
+    }
+
     private void createDatabasesTab(JSONObject response, Record record, AnfisaResultData data, AnfisaResultView view) {
         if (data.hgmd != null) {
             view.databases.hgmd = data.hgmd;
             view.databases.hgmdHg38 = data.hgmdHg38;
 
-            view.databases.hgmdTags = record.hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).toArray(String[]::new);
+            view.databases.hgmdTags = getHGMDTags (record).toArray (new String[0]);
             if (view.databases.hgmdTags.length == 0) view.databases.hgmdTags = null;
 
             view.databases.hgmdPhenotypes = record.hgmdData.phenotypes.toArray(new String[record.hgmdData.phenotypes.size()]);
@@ -1033,50 +1041,76 @@ public class AnfisaConnector implements AutoCloseable {
         return null;
     }
 
-    public ColorCode getColorCode(JSONObject vepJson, AnfisaResultData data) {
-        List<String> pp = getFromTranscriptsList(vepJson, "polyphen_prediction");
-        List<String> ss = getFromTranscriptsList(vepJson, "sift_prediction");
-
-        String best = null;
-        String worst = null;
-        for (String p : pp) {
-            if (p.contains("benign")) {
-                best = "B";
-            } else if (p.contains("possibly_damaging")) {
-                if (!"D".equals(worst)) {
-                    worst = "PD";
-                }
-            } else if (p.contains("damaging")) {
-                worst = "D";
-            }
-        }
-        for (String s : ss) {
-            if (s.contains("tolerated")) {
-                best = "B";
-            }
-            if (s.contains("deleterious")) {
-                worst = "D";
-            }
-        }
-
-        ColorCode code = null;
-        if (!"B".equals(best) && "D".equals(worst)) {
-            code = ColorCode.RED;
-        } else if ("B".equals(best) && worst == null) {
-            code = ColorCode.GREEN;
-        } else if (best != null || worst != null) {
-            code = ColorCode.YELLOW;
-        }
-        if (code != null) return code;
-
+    public ColorCode.Code getColorCode (JSONObject vepJson, AnfisaResultData data, Record record, AnfisaResultFilters filters) {
         String csq = data.mostSevereConsequence;
-        if (csq_damaging.contains(csq)) {
-            code = ColorCode.RED_CROSS;
-        } else if (csq_missense.contains(csq)) {
-            code = ColorCode.YELLOW_CROSS;
+        Consequences.Severity msq = Consequences.severity (csq);
+
+        ColorCode.Shape shape;
+        if (msq == Consequences.Severity.DAMAGING)
+            shape = ColorCode.Shape.CROSS;
+        else
+            shape = ColorCode.Shape.CIRCLE;
+
+        Set<String> hgmdTags = getHGMDTags (record);
+        hgmdTags.retainAll (ImmutableSet.of ("DM", "DM?"));
+        boolean hgmdDamaging = !hgmdTags.isEmpty ();
+
+        ColorCode.Color color;
+        if (data.clinvarSignificance != null) {
+            boolean benign = filters.clinvarTrustedBenign.orElse (filters.clinvarBenign);
+            if (benign) {
+                if (shape == ColorCode.Shape.CROSS || hgmdDamaging) {
+                    color = ColorCode.Color.YELLOW;
+                }  else {
+                    color = ColorCode.Color.GREEN;
+                }
+                return ColorCode.code (shape, color);
+            }
+
+            for (String s : data.clinvarSignificance) {
+                s = s.toLowerCase ();
+                if (s.contains ("pathogenic") && !s.contains ("conflict")) {
+                    color = ColorCode.Color.RED;
+                } else if (s.contains ("conflict") || s.contains ("uncertain")) {
+                    color = ColorCode.Color.YELLOW;
+                } else {
+                    continue;
+                }
+
+                return  ColorCode.code (shape, color);
+            }
+        }
+        if (hgmdDamaging) {
+            return ColorCode.code (shape, ColorCode.Color.RED);
         }
 
-        return code;
+        int best = 100;
+        int worst = 0;
+        for (String tool: ColorCode.allInSilicoTools ()) {
+            List<String> rawValues = getFromTranscriptsList(vepJson, tool);
+            for (String rawValue: rawValues) {
+                int value = ColorCode.inSilicoPrediction (tool, rawValue);
+                if (value == 0)
+                    continue;
+                if (value > worst)
+                    worst = value;
+                if (value < best)
+                    best = value;
+            }
+        }
+
+        if (worst >= 30)
+            color = ColorCode.Color.RED;
+        else if (best <= 10)
+            color = ColorCode.Color.GREEN;
+        else if (best < 100)
+            color = ColorCode.Color.YELLOW;
+        else if (shape == ColorCode.Shape.CROSS)
+            return ColorCode.code (shape, ColorCode.Color.YELLOW);
+        else
+            return null;
+        
+        return ColorCode.code (shape, color);
     }
 
     private String[] getTenwiseLink(JSONObject response) {
@@ -1201,7 +1235,7 @@ public class AnfisaConnector implements AutoCloseable {
         int n = Variant.SEVERITY.size();
         for (int s = 0; s < n; s++) {
             if (Variant.SEVERITY.get(s).contains(csq)) {
-                return Long.valueOf(n - s - 1);
+                return Long.valueOf(n - s - 2);
             }
         }
         return null;

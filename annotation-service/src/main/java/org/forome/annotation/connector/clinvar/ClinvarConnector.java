@@ -6,6 +6,7 @@ import org.forome.annotation.connector.clinvar.struct.ClinvarResult;
 import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.connector.clinvar.struct.Row;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class ClinvarConnector implements AutoCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(ClinvarConnector.class);
 
-    private static final String SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar`.`CV_Submitters_A` NATURAL JOIN `clinvar`.`ClinVar2Sub_Sig_A` WHERE RCVaccession IN (%s)";
+    private static final String SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar`.`CV_Submitters` NATURAL JOIN `clinvar`.`ClinVar2Sub_Sig` WHERE RCVaccession IN (%s)";
 
     private static final String QUERY_BASE = "SELECT " +
             "`Start`," +
@@ -47,17 +48,16 @@ public class ClinvarConnector implements AutoCloseable {
             "Start = %s ";
 
     private static final String QUERY_0 = QUERY_BASE + " AND Stop = %s ";
-    private static final String QUERY = QUERY_0 + "AND (AlternateAllele = %s OR AlternateAllele = 'na')";
     private static final String QUERY_EXACT = QUERY_0 + " AND AlternateAllele = '%s'";
     private static final String QUERY_NA = QUERY_0 + " AND AlternateAllele = 'na'";
 
     private static final String QUERY_VARIANT_SUMMARY =
-            "select ReviewStatus, NumberSubmitters, Guidelines from clinvar_new.variant_summary where Chromosome='%s' AND Start = %s and Stop = %s";
+            "select ReviewStatus, NumberSubmitters, Guidelines from clinvar.variant_summary where Chromosome='%s' AND Start = %s and Stop = %s";
 
     private final DatabaseConnector databaseConnector;
 
-    public ClinvarConnector(ClinVarConfigConnector clinVarConfigConnector) throws Exception {
-        this.databaseConnector = new DatabaseConnector(clinVarConfigConnector);
+    public ClinvarConnector(SSHConnectService sshTunnelService, ClinVarConfigConnector clinVarConfigConnector) throws Exception {
+        this.databaseConnector = new DatabaseConnector(sshTunnelService, clinVarConfigConnector);
     }
 
     private ClinvarResult getSubmitters(Row row) {

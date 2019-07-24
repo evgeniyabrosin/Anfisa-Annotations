@@ -1,8 +1,8 @@
 package org.forome.annotation.executionqueue;
 
 import org.forome.annotation.Service;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.exception.ServiceException;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.forome.annotation.utils.LockGuard;
 
@@ -238,11 +238,11 @@ public class ExecutionQueue {
 		return false;
 	}
 
-	private ServiceException createMaintenanceException() {
+	private AnnotatorException createMaintenanceException() {
 		return ExceptionBuilder.buildServerBusyException(maintenanceMarkers.get(maintenanceMarkers.size() - 1));
 	}
 
-	private ServiceException createOverloadedException() {
+	private AnnotatorException createOverloadedException() {
 		if (isMaintenance()) {
 			return createMaintenanceException();
 		}
@@ -301,7 +301,7 @@ public class ExecutionQueue {
 					T result = execution.execute(transaction);
 					transaction.commit();
 					future.complete(result);
-				} catch (ServiceException e) {
+				} catch (AnnotatorException e) {
 					future.completeExceptionally(e);
 				}
 			} catch (Throwable e) {

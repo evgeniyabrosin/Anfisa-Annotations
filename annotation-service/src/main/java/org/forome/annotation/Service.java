@@ -12,10 +12,12 @@ import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.database.DatabaseService;
 import org.forome.annotation.database.entityobject.user.UserReadable;
-import org.forome.annotation.exception.ServiceException;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.executionqueue.*;
 import org.forome.annotation.network.NetworkService;
 import org.forome.annotation.network.component.UserEditableComponent;
+import org.forome.annotation.service.notification.NotificationService;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.utils.ArgumentParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,131 +54,146 @@ import org.slf4j.LoggerFactory;
 
 public class Service {
 
-	private final static Logger log = LoggerFactory.getLogger(Service.class);
+    private final static Logger log = LoggerFactory.getLogger(Service.class);
 
-	private static Service instance = null;
+    private static Service instance = null;
 
-	private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
-	private final ExecutionQueue executionQueue;
+    private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
+    private final ExecutionQueue executionQueue;
 
-	private final Config config;
-	private final ServiceConfig serviceConfig;
-	private final DatabaseService databaseService;
-	private final NetworkService networkService;
+    private final Config config;
+    private final ServiceConfig serviceConfig;
+    private final SSHConnectService sshTunnelService;
+    private final DatabaseService databaseService;
+    private final NetworkService networkService;
 
-	private final GnomadConnector gnomadConnector;
-	private final SpliceAIConnector spliceAIConnector;
-	private final ConservationConnector conservationConnector;
-	private final HgmdConnector hgmdConnector;
-	private final ClinvarConnector clinvarConnector;
-	private final LiftoverConnector liftoverConnector;
-	private final GTFConnector gtfConnector;
-	private final AnfisaConnector anfisaConnector;
+    private final GnomadConnector gnomadConnector;
+    private final SpliceAIConnector spliceAIConnector;
+    private final ConservationConnector conservationConnector;
+    private final HgmdConnector hgmdConnector;
+    private final ClinvarConnector clinvarConnector;
+    private final LiftoverConnector liftoverConnector;
+    private final GTFConnector gtfConnector;
+    private final AnfisaConnector anfisaConnector;
 
-	public Service(ArgumentParser arguments, Thread.UncaughtExceptionHandler uncaughtExceptionHandler) throws Exception {
-		instance = this;
+    private final NotificationService notificationService;
 
-		this.uncaughtExceptionHandler = uncaughtExceptionHandler;
-		this.executionQueue = new ExecutionQueue(uncaughtExceptionHandler);
+    public Service(ArgumentParser arguments, Thread.UncaughtExceptionHandler uncaughtExceptionHandler) throws Exception {
+        instance = this;
 
-		this.config = new Config();
-		this.serviceConfig = new ServiceConfig();
-		this.databaseService = new DatabaseService(this);
-		this.networkService = new NetworkService(arguments.port, uncaughtExceptionHandler);
+        this.uncaughtExceptionHandler = uncaughtExceptionHandler;
+        this.executionQueue = new ExecutionQueue(uncaughtExceptionHandler);
 
-		this.gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
-		this.spliceAIConnector = new SpliceAIConnector(serviceConfig.spliceAIConfigConnector, uncaughtExceptionHandler);
-		this.conservationConnector = new ConservationConnector(serviceConfig.conservationConfigConnector);
-		this.hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
-		this.clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
-		this.liftoverConnector = new LiftoverConnector();
-		this.gtfConnector = new GTFConnector(serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
-		this.anfisaConnector = new AnfisaConnector(
-				gnomadConnector,
-				spliceAIConnector,
-				conservationConnector,
-				hgmdConnector,
-				clinvarConnector,
-				liftoverConnector,
-				gtfConnector,
-				uncaughtExceptionHandler
-		);
+        this.config = new Config();
+        this.serviceConfig = new ServiceConfig();
+        this.sshTunnelService = new SSHConnectService();
+        this.databaseService = new DatabaseService(this);
+        this.networkService = new NetworkService(arguments.port, uncaughtExceptionHandler);
 
-		executionQueue.execute(this, new Execution<Void>() {
+        if (serviceConfig.notificationSlackConfig != null) {
+            this.notificationService = new NotificationService(serviceConfig.notificationSlackConfig);
+        } else {
+            this.notificationService = null;
+        }
 
-			private ReadableResource<UserReadable> userReadableResource;
-			private UserEditableComponent userEditableComponent;
+        this.gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
+        this.spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, uncaughtExceptionHandler);
+        this.conservationConnector = new ConservationConnector(sshTunnelService, serviceConfig.conservationConfigConnector);
+        this.hgmdConnector = new HgmdConnector(sshTunnelService, serviceConfig.hgmdConfigConnector);
+        this.clinvarConnector = new ClinvarConnector(sshTunnelService, serviceConfig.clinVarConfigConnector);
+        this.liftoverConnector = new LiftoverConnector();
+        this.gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
+        this.anfisaConnector = new AnfisaConnector(
+                gnomadConnector,
+                spliceAIConnector,
+                conservationConnector,
+                hgmdConnector,
+                clinvarConnector,
+                liftoverConnector,
+                gtfConnector,
+                uncaughtExceptionHandler
+        );
 
-			@Override
-			public void prepare(ResourceProvider resources) {
-				userReadableResource = resources.getReadableResource(UserReadable.class);
-				userEditableComponent = new UserEditableComponent(resources);
-			}
+        executionQueue.execute(this, new Execution<Void>() {
 
-			@Override
-			public Void execute(ExecutionTransaction transaction) throws ServiceException {
-				if (!userReadableResource.iterator(transaction).hasNext()) {
-					userEditableComponent.create("admin", "b82nfGl5sdg", transaction);
-				}
-				return null;
-			}
-		}).get();
-	}
+            private ReadableResource<UserReadable> userReadableResource;
+            private UserEditableComponent userEditableComponent;
 
-	public ExecutionQueue getExecutionQueue() {
-		return executionQueue;
-	}
+            @Override
+            public void prepare(ResourceProvider resources) {
+                userReadableResource = resources.getReadableResource(UserReadable.class);
+                userEditableComponent = new UserEditableComponent(resources);
+            }
 
-	public Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
-		return uncaughtExceptionHandler;
-	}
+            @Override
+            public Void execute(ExecutionTransaction transaction) throws AnnotatorException {
+                if (!userReadableResource.iterator(transaction).hasNext()) {
+                    userEditableComponent.create("admin", "b82nfGl5sdg", transaction);
+                }
+                return null;
+            }
+        }).get();
+    }
 
-	public Config getConfig() {
-		return config;
-	}
+    public ExecutionQueue getExecutionQueue() {
+        return executionQueue;
+    }
 
-	public ServiceConfig getServiceConfig() {
-		return serviceConfig;
-	}
+    public Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
+        return uncaughtExceptionHandler;
+    }
 
-	public DatabaseService getDatabaseService() {
-		return databaseService;
-	}
+    public Config getConfig() {
+        return config;
+    }
 
-	public NetworkService getNetworkService() {
-		return networkService;
-	}
+    public ServiceConfig getServiceConfig() {
+        return serviceConfig;
+    }
 
-	public GnomadConnector getGnomadConnector() {
-		return gnomadConnector;
-	}
+    public DatabaseService getDatabaseService() {
+        return databaseService;
+    }
 
-	public LiftoverConnector getLiftoverConnector() {
-		return liftoverConnector;
-	}
+    public NetworkService getNetworkService() {
+        return networkService;
+    }
 
-	public GTFConnector getGtfConnector() {
-		return gtfConnector;
-	}
+    public GnomadConnector getGnomadConnector() {
+        return gnomadConnector;
+    }
 
-	public AnfisaConnector getAnfisaConnector() {
-		return anfisaConnector;
-	}
+    public LiftoverConnector getLiftoverConnector() {
+        return liftoverConnector;
+    }
 
-	public void stop() {
-		anfisaConnector.close();
-		gtfConnector.close();
-		liftoverConnector.close();
-		clinvarConnector.close();
-		hgmdConnector.close();
-		conservationConnector.close();
-		spliceAIConnector.close();
-		gnomadConnector.close();
+    public GTFConnector getGtfConnector() {
+        return gtfConnector;
+    }
 
-		instance = null;
-	}
+    public AnfisaConnector getAnfisaConnector() {
+        return anfisaConnector;
+    }
 
-	public static Service getInstance() {
-		return instance;
-	}
+    public NotificationService getNotificationService() {
+        return notificationService;
+    }
+
+    public void stop() {
+        anfisaConnector.close();
+        gtfConnector.close();
+        liftoverConnector.close();
+        clinvarConnector.close();
+        hgmdConnector.close();
+        conservationConnector.close();
+        spliceAIConnector.close();
+        gnomadConnector.close();
+
+        sshTunnelService.close();
+        instance = null;
+    }
+
+    public static Service getInstance() {
+        return instance;
+    }
 }

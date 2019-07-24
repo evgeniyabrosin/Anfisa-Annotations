@@ -9,8 +9,8 @@ import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.format.FormatAnfisaHttpClient;
 import org.forome.annotation.controller.utils.ResponseBuilder;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.exception.ServiceException;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,8 +83,8 @@ public class FormatAnfisaController {
                                             JSONObject result = GetAnfisaJSONController.build(anfisaResult);
                                             CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
                                                     .exceptionally(throwable -> {
-                                                        if (throwable instanceof ServiceException) {
-                                                            throw (ServiceException)throwable;
+                                                        if (throwable instanceof AnnotatorException) {
+                                                            throw (AnnotatorException)throwable;
                                                         } else {
                                                             Main.crash(throwable);
                                                             return null;

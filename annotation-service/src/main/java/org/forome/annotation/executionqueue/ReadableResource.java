@@ -4,8 +4,8 @@ import com.infomaximum.database.domainobject.DomainObject;
 import com.infomaximum.database.domainobject.filter.EmptyFilter;
 import com.infomaximum.database.domainobject.filter.Filter;
 import com.infomaximum.database.exception.DatabaseException;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.exception.ServiceException;
 import org.forome.annotation.executionqueue.iterator.IteratorEntity;
 
 public class ReadableResource<T extends DomainObject> {
@@ -20,7 +20,7 @@ public class ReadableResource<T extends DomainObject> {
 		return tClass;
 	}
 
-	public T get(long id, ExecutionTransaction transaction) throws ServiceException {
+	public T get(long id, ExecutionTransaction transaction) throws AnnotatorException {
 		try {
 			return transaction.getDBTransaction().get(tClass, id, null);
 		} catch (DatabaseException e) {
@@ -28,7 +28,7 @@ public class ReadableResource<T extends DomainObject> {
 		}
 	}
 
-	public T find(final Filter filter, ExecutionTransaction transaction) throws ServiceException {
+	public T find(final Filter filter, ExecutionTransaction transaction) throws AnnotatorException {
 		try (com.infomaximum.database.domainobject.iterator.IteratorEntity<T> iter = transaction.getDBTransaction().find(tClass, filter, null)) {
 			return iter.hasNext() ? iter.next() : null;
 		} catch (DatabaseException e) {
@@ -36,7 +36,7 @@ public class ReadableResource<T extends DomainObject> {
 		}
 	}
 
-	public IteratorEntity<T> iterator(ExecutionTransaction transaction) throws ServiceException {
+	public IteratorEntity<T> iterator(ExecutionTransaction transaction) throws AnnotatorException {
 		try {
 			return new IteratorEntity<>(transaction.getDBTransaction().find(tClass, EmptyFilter.INSTANCE, null));
 		} catch (DatabaseException e) {
@@ -44,7 +44,7 @@ public class ReadableResource<T extends DomainObject> {
 		}
 	}
 
-	public IteratorEntity<T> findAll(final Filter filter, ExecutionTransaction transaction) throws ServiceException {
+	public IteratorEntity<T> findAll(final Filter filter, ExecutionTransaction transaction) throws AnnotatorException {
 		try {
 			return new IteratorEntity<>(transaction.getDBTransaction().find(tClass, filter, null));
 		} catch (DatabaseException e) {

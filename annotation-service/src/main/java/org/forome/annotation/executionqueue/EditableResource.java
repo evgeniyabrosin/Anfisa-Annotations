@@ -3,8 +3,8 @@ package org.forome.annotation.executionqueue;
 import com.infomaximum.database.domainobject.DomainObject;
 import com.infomaximum.database.domainobject.DomainObjectEditable;
 import com.infomaximum.database.exception.DatabaseException;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.exception.ServiceException;
 
 public class EditableResource<T extends DomainObject & DomainObjectEditable> extends ReadableResource<T> {
 
@@ -12,7 +12,7 @@ public class EditableResource<T extends DomainObject & DomainObjectEditable> ext
 		super(tClass);
 	}
 
-	public T create(ExecutionTransaction transaction) throws ServiceException {
+	public T create(ExecutionTransaction transaction) throws AnnotatorException {
 		try {
 			return transaction.getDBTransaction().create(tClass);
 		} catch (DatabaseException e) {
@@ -20,7 +20,7 @@ public class EditableResource<T extends DomainObject & DomainObjectEditable> ext
 		}
 	}
 
-	public void save(T newObj, ExecutionTransaction transaction) throws ServiceException {
+	public void save(T newObj, ExecutionTransaction transaction) throws AnnotatorException {
 		try {
 			transaction.getDBTransaction().save(newObj);
 		} catch (DatabaseException e) {
@@ -28,7 +28,7 @@ public class EditableResource<T extends DomainObject & DomainObjectEditable> ext
 		}
 	}
 
-	public void remove(T obj, ExecutionTransaction transaction) throws ServiceException {
+	public void remove(T obj, ExecutionTransaction transaction) throws AnnotatorException {
 		try {
 			transaction.getDBTransaction().remove(obj);
 		} catch (DatabaseException e) {

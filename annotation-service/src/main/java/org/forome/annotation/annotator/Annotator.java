@@ -7,6 +7,7 @@ import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.annotator.utils.CaseUtils;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
+import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.struct.Sample;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class Annotator {
 
@@ -34,6 +32,7 @@ public class Annotator {
 
     public AnnotatorResult exec(
             String caseName,
+            CasePlatform casePlatform,
             Path pathFam,
             Path pathFamSampleName,
             Path pathVepVcf,
@@ -69,6 +68,7 @@ public class Annotator {
         ) {
             return exec(
                     caseName,
+                    casePlatform,
                     isFam,
                     isFamSampleName,
                     pathVepVcf,
@@ -80,6 +80,7 @@ public class Annotator {
 
     public AnnotatorResult exec(
             String caseName,
+            CasePlatform casePlatform,
             InputStream isFam,
             InputStream isFamSampleName,
             Path pathVepVcf,
@@ -89,18 +90,7 @@ public class Annotator {
 
         Map<String, Sample> samples = CaseUtils.parseFamFile(isFam, isFamSampleName);
 
-        String platform;
-        Set<String> x = Arrays.stream(pathVepVcf.getFileName().toString().toLowerCase().split("_"))
-                .collect(Collectors.toSet());
-        if (x.contains("wgs")) {
-            platform = "wgs";
-        } else if (x.contains("wes")) {
-            platform = "wes";
-        } else {
-            platform = "wgs";
-            log.warn("Could not determine platform (WES or WGS), assuming: " + platform);
-        }
-        String caseId = String.format("%s_%s", caseName, platform);
+        String caseId = String.format("%s_%s", caseName, casePlatform.name().toLowerCase());
 
         return annotateJson(
                 caseId, samples,

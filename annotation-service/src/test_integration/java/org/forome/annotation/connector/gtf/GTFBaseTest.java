@@ -1,6 +1,7 @@
 package org.forome.annotation.connector.gtf;
 
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -20,11 +21,12 @@ public class GTFBaseTest {
 	@Before
 	public void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
+		SSHConnectService sshTunnelService = new SSHConnectService();
 //		gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, (t, e) -> {
 //			log.error("Fail", e);
 //			Assert.fail();
 //		});
-		gtfConnector = new GTFConnector(serviceConfig.gtfConfigConnector, (t, e) -> {
+		gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});
