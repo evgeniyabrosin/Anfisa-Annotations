@@ -13,6 +13,8 @@ import java.nio.file.StandardOpenOption;
 
 public class ServiceConfig {
 
+    public final EnsemblVepConfigConnector ensemblVepConfigConnector;
+
     public final GnomadConfigConnector gnomadConfigConnector;
     public final ClinVarConfigConnector clinVarConfigConnector;
     public final HgmdConfigConnector hgmdConfigConnector;
@@ -42,6 +44,8 @@ public class ServiceConfig {
         gtfConfigConnector = new GTFConfigConnector((JSONObject) jConnectors.get("gtf"));
         spliceAIConfigConnector = new SpliceAIConfigConnector((JSONObject) jConnectors.get("spliceai"));
         conservationConfigConnector = new ConservationConfigConnector((JSONObject) jConnectors.get("conservation"));
+
+        ensemblVepConfigConnector = new EnsemblVepConfigConnector((JSONObject) configFileJson.get("ensembl-vep"));
 
         JSONObject jNotifications = (JSONObject) configFileJson.get("notification");
         if (jNotifications != null) {
