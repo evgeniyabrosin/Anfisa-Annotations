@@ -23,7 +23,7 @@ public class DatabaseService {
 		Path dataPath = service.getConfig().dataPath;
 
 		DBProvider dbProvider = new RocksDataBaseBuilder()
-				.withPath(dataPath.resolve("base"))
+				.withPath(dataPath.resolve("database"))
 				.build();
 		this.domainObjectSource = new DomainObjectSource(dbProvider);
 
