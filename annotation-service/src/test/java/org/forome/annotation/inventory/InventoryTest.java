@@ -22,5 +22,6 @@ public class InventoryTest {
         Assert.assertEquals("bch0051.vcf", inventory.vcfFile.getFileName().toString());
         Assert.assertEquals("bch0051_vep.json", inventory.vepJsonFile.getFileName().toString());
         Assert.assertEquals("bch0051_anfisa.json.gz", inventory.outFile.getFileName().toString());
+        Assert.assertEquals("anno.log", inventory.logFile.getFileName().toString());
     }
 }

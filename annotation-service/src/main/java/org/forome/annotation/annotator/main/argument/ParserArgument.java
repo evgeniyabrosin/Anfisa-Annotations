@@ -1,13 +1,11 @@
 package org.forome.annotation.annotator.main.argument;
 
 import org.apache.commons.cli.*;
-import org.forome.annotation.Main;
+import org.forome.annotation.annotator.main.AnnotatorMain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ParserArgument {
-
-    private final static Logger log = LoggerFactory.getLogger(Main.class);
 
     public static final String OPTION_VERSION = "version";
 
@@ -103,10 +101,14 @@ public class ParserArgument {
                 arguments = new ArgumentsAnnotation(cmd);
             }
         } catch (Throwable ex) {
-            log.error("Exception: ", ex);
+            getLazyLogger().error("Exception: ", ex);
             new HelpFormatter().printHelp("", options);
 
             throw new InterruptedException();
         }
+    }
+
+    private static Logger getLazyLogger() {
+        return LoggerFactory.getLogger(AnnotatorMain.class);
     }
 }

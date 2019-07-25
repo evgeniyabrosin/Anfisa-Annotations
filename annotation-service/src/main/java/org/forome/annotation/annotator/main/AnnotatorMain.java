@@ -2,6 +2,7 @@ package org.forome.annotation.annotator.main;
 
 import org.forome.annotation.annotator.main.argument.*;
 import org.forome.annotation.inventory.Inventory;
+import org.forome.annotation.logback.LogbackConfigure;
 import org.forome.annotation.utils.AppVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,15 +14,13 @@ import org.slf4j.LoggerFactory;
  */
 public class AnnotatorMain {
 
-    private final static Logger log = LoggerFactory.getLogger(AnnotatorMain.class);
-
     public static void main(String[] args) {
         Arguments arguments;
         try {
             ParserArgument argumentParser = new ParserArgument(args);
             arguments = argumentParser.arguments;
         } catch (Throwable e) {
-            log.error("Exception arguments parser", e);
+            getLazyLogger().error("Exception arguments parser", e);
             System.exit(2);
             return;
         }
@@ -32,6 +31,9 @@ public class AnnotatorMain {
         } else if (arguments instanceof ArgumentsInventory) {
             ArgumentsInventory argumentsInventory = (ArgumentsInventory) arguments;
             Inventory inventory = new Inventory.Builder(argumentsInventory.pathInventory).build();
+            if (inventory.logFile != null) {
+                LogbackConfigure.setLogPath(inventory.logFile);
+            }
             AnnotationConsole annotationConsole = new AnnotationConsole(
                     argumentsInventory.config,
                     inventory.caseName, inventory.casePlatform,
@@ -55,10 +57,13 @@ public class AnnotatorMain {
             );
             annotationConsole.execute();
         } else {
-            log.error("Unknown arguments");
+            getLazyLogger().error("Unknown arguments");
             System.exit(3);
             return;
         }
     }
 
+    private static Logger getLazyLogger() {
+        return LoggerFactory.getLogger(AnnotatorMain.class);
+    }
 }
