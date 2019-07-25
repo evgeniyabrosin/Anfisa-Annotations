@@ -14,7 +14,7 @@ public class SSHConnectService implements AutoCloseable {
         this.sshConnects = new HashMap<String, SSHConnect>();
     }
 
-    public SSHConnect getSSHTunnel(String host, int port, String user, String key) throws JSchException {
+    public SSHConnect getSSHConnect(String host, int port, String user, String key) throws JSchException {
         String keySSHConnect = getKeySSHConnect(host, port, user);
         SSHConnect sshConnect = sshConnects.get(keySSHConnect);
         if (sshConnect == null) {

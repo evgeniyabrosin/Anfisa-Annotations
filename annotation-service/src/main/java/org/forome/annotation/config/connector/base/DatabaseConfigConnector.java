@@ -1,11 +1,8 @@
-package org.forome.annotation.config.connector.database;
+package org.forome.annotation.config.connector.base;
 
 import net.minidev.json.JSONObject;
-import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 
-public abstract class DatabaseConfigConnector {
-
-	public final SshTunnelConfig sshTunnelConfig;
+public abstract class DatabaseConfigConnector extends SshTunnelConfigConnector {
 
 	public final String mysqlHost;
 	public final int mysqlPort;
@@ -14,11 +11,7 @@ public abstract class DatabaseConfigConnector {
 	public final String mysqlPassword;
 
 	public DatabaseConfigConnector(JSONObject parse) {
-		if (parse.containsKey("ssh_tunnel")) {
-			sshTunnelConfig = new SshTunnelConfig((JSONObject) parse.get("ssh_tunnel"));
-		} else {
-			sshTunnelConfig = null;
-		}
+		super(parse);
 
 		JSONObject parseMysql = (JSONObject) parse.get("mysql");
 		mysqlHost = parseMysql.getAsString("host");

@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.forome'
-version '0.5.0.11'
+version '0.5.0.12'
 
 sourceCompatibility = 1.8
 
@@ -41,6 +41,12 @@ sourceSets {
         compileClasspath += main.output + test.output + test_integration.output
         runtimeClasspath += main.output + test.output + test_integration.output
     }
+    manual {
+        java.srcDir 'src/manual/java'
+        resources.srcDirs = test_perfomance.resources.srcDirs + "src/manual/resources"
+        compileClasspath += main.output + test.output + test_integration.output + test_perfomance.output
+        runtimeClasspath += main.output + test.output + test_integration.output + test_perfomance.output
+    }
 }
 
 configurations {
@@ -49,6 +55,9 @@ configurations {
 
     test_perfomanceCompile.extendsFrom test_integrationCompile
     test_perfomanceRuntime.extendsFrom test_integrationRuntime
+
+    manualCompile.extendsFrom test_perfomanceCompile
+    manualRuntime.extendsFrom test_perfomanceRuntime
 }
 
 jar {

@@ -1,7 +1,7 @@
 package org.forome.annotation.connector;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import org.forome.annotation.config.connector.database.DatabaseConfigConnector;
+import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.ssh.SSHConnectService;
@@ -36,7 +36,7 @@ public class DatabaseConnector implements Closeable {
         int mysqlUrlPort;
         SshTunnelConfig sshTunnelConfig = databaseConfigConnector.sshTunnelConfig;
         if (sshTunnelConfig != null) {
-            SSHConnect sshTunnel = sshTunnelService.getSSHTunnel(
+            SSHConnect sshTunnel = sshTunnelService.getSSHConnect(
                     sshTunnelConfig.host,
                     sshTunnelConfig.port,
                     sshTunnelConfig.user,

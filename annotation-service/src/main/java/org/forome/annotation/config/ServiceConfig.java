@@ -3,6 +3,7 @@ package org.forome.annotation.config;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.config.connector.*;
+import org.forome.annotation.config.ensemblvep.EnsemblVepConfig;
 import org.forome.annotation.config.notification.NotificationSlackConfig;
 
 import java.io.InputStream;
@@ -12,6 +13,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 public class ServiceConfig {
+
+    public final EnsemblVepConfig ensemblVepConfigConnector;
 
     public final GnomadConfigConnector gnomadConfigConnector;
     public final ClinVarConfigConnector clinVarConfigConnector;
@@ -42,6 +45,8 @@ public class ServiceConfig {
         gtfConfigConnector = new GTFConfigConnector((JSONObject) jConnectors.get("gtf"));
         spliceAIConfigConnector = new SpliceAIConfigConnector((JSONObject) jConnectors.get("spliceai"));
         conservationConfigConnector = new ConservationConfigConnector((JSONObject) jConnectors.get("conservation"));
+
+        ensemblVepConfigConnector = new EnsemblVepConfig((JSONObject) configFileJson.get("ensembl-vep"));
 
         JSONObject jNotifications = (JSONObject) configFileJson.get("notification");
         if (jNotifications != null) {
