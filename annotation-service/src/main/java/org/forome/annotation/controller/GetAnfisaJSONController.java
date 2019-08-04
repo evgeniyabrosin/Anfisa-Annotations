@@ -7,6 +7,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.Service;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
+import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResultData;
@@ -28,6 +29,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -554,7 +557,7 @@ public class GetAnfisaJSONController {
         JSONObject out = new JSONObject();
         out.put("case", metadata.caseSequence);
         out.put("record_type", metadata.recordType);
-        out.put("versions", metadata.versions);
+        out.put("versions", build(metadata.versions));
         out.put("samples", new JSONObject() {{
             for (Sample sample : metadata.samples.values()) {
                 put(sample.name, build(sample));
@@ -570,6 +573,20 @@ public class GetAnfisaJSONController {
         out.put("pipeline", versions.pipeline);
         out.put("annotations", versions.annotations);
         out.put("reference", versions.reference);
+        for (DatabaseConnector.Metadata metadata : versions.metadataDatabases) {
+            StringBuilder value = new StringBuilder();
+            if (metadata.version !=null) {
+                value.append(metadata.version);
+                if (metadata.date != null) {
+                    value.append(" | ");
+                }
+            }
+            if (metadata.date != null) {
+                value.append(DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                        .withZone(ZoneId.systemDefault()).format(metadata.date));
+            }
+            out.put(metadata.product, value.toString());
+        }
         return out;
     }
 

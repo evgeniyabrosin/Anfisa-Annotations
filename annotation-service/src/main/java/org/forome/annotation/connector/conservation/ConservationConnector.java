@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 public class ConservationConnector implements AutoCloseable {
 
@@ -26,6 +27,10 @@ public class ConservationConnector implements AutoCloseable {
             ConservationConfigConnector conservationConfigConnector
     ) throws Exception {
         databaseConnector = new DatabaseConnector(sshTunnelService, conservationConfigConnector);
+    }
+
+    public List<DatabaseConnector.Metadata> getMetadata(){
+        return databaseConnector.getMetadata();
     }
 
     public Conservation getConservation(Chromosome chromosome, Position<Long> position, Position<Integer> hg38, String ref, String alt) {

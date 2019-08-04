@@ -3,6 +3,8 @@ package org.forome.annotation.annotator.struct;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import io.reactivex.Observable;
+import org.forome.annotation.connector.DatabaseConnector;
+import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.utils.AppVersion;
@@ -11,8 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 public class AnnotatorResult {
 
@@ -21,13 +22,16 @@ public class AnnotatorResult {
     public static class Metadata {
 
         public static class Versions {
+
             public final String pipelineDate = null;
             public final String annotationsDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
             public final String pipeline;
             public final String annotations;
             public final String reference;
 
-            public Versions(Path pathVepVcf) {
+            public final List<DatabaseConnector.Metadata> metadataDatabases;
+
+            public Versions(Path pathVepVcf, AnfisaConnector anfisaConnector) {
                 annotations = AppVersion.getVersionFormat();
                 if (pathVepVcf != null) {
                     VCFFileReader vcfFileReader = new VCFFileReader(pathVepVcf, false);
@@ -38,6 +42,13 @@ public class AnnotatorResult {
                     pipeline = null;
                     reference = null;
                 }
+
+                metadataDatabases = new ArrayList<>();
+                metadataDatabases.addAll(anfisaConnector.clinvarConnector.getMetadata());
+                metadataDatabases.addAll(anfisaConnector.hgmdConnector.getMetadata());
+                metadataDatabases.addAll(anfisaConnector.spliceAIConnector.getMetadata());
+                metadataDatabases.addAll(anfisaConnector.conservationConnector.getMetadata());
+                metadataDatabases.sort(Comparator.comparing(o -> o.product));
             }
         }
 
@@ -46,14 +57,14 @@ public class AnnotatorResult {
         public final Map<String, Sample> samples;
         public final Versions versions;
 
-        public Metadata(String caseSequence, Path pathVepVcf, Map<String, Sample> samples) {
+        public Metadata(String caseSequence, Path pathVepVcf, Map<String, Sample> samples, AnfisaConnector anfisaConnector) {
             this.caseSequence = caseSequence;
             this.samples = samples;
-            this.versions = new Versions(pathVepVcf);
+            this.versions = new Versions(pathVepVcf, anfisaConnector);
         }
 
-        public static Metadata build(String caseSequence, Path pathVepVcf, Map<String, Sample> samples) {
-            return new Metadata(caseSequence, pathVepVcf, samples);
+        public static Metadata build(String caseSequence, Path pathVepVcf, Map<String, Sample> samples, AnfisaConnector anfisaConnector) {
+            return new Metadata(caseSequence, pathVepVcf, samples, anfisaConnector);
         }
 
     }

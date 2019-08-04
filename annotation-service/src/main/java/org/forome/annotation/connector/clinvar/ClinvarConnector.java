@@ -60,6 +60,10 @@ public class ClinvarConnector implements AutoCloseable {
         this.databaseConnector = new DatabaseConnector(sshTunnelService, clinVarConfigConnector);
     }
 
+    public List<DatabaseConnector.Metadata> getMetadata(){
+        return databaseConnector.getMetadata();
+    }
+
     private ClinvarResult getSubmitters(Row row) {
         String[] rcvAccessions = row.rcvAccession.split(";");
         String args = String.join(",", Stream.of(rcvAccessions).map(s -> "'" + s + "'").collect(Collectors.toList()));

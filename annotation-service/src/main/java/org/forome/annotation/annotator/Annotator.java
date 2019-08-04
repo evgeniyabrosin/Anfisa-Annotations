@@ -105,7 +105,7 @@ public class Annotator {
             int startPosition
     ) {
         return new AnnotatorResult(
-                AnnotatorResult.Metadata.build(caseSequence, pathVepVcf, samples),
+                AnnotatorResult.Metadata.build(caseSequence, pathVepVcf, samples, anfisaConnector),
                 Observable.create(o -> {
                     new Thread(new Runnable() {
                         @Override
