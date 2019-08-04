@@ -38,6 +38,10 @@ public class HgmdConnector implements AutoCloseable {
         this.databaseConnector = new DatabaseConnector(sshTunnelService, hgmdConfigConnector);
     }
 
+    public List<DatabaseConnector.Metadata> getMetadata(){
+        return databaseConnector.getMetadata();
+    }
+
     public List<String> getAccNum(String chromosome, long start, long end) {
         List<String> accNums = new ArrayList<>();
         try (Connection connection = databaseConnector.createConnection()) {

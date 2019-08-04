@@ -29,6 +29,10 @@ public class SpliceAIConnector implements AutoCloseable {
         spliceAIDataConnector = new SpliceAIDataConnector(databaseConnector);
     }
 
+    public List<DatabaseConnector.Metadata> getMetadata(){
+        return databaseConnector.getMetadata();
+    }
+
     public SpliceAIResult getAll(String chromosome, long position, String ref, List<String> altList){
         return spliceAIDataConnector.getAll(chromosome, position, ref, altList);
     }

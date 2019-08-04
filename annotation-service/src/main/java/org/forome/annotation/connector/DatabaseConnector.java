@@ -12,8 +12,24 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.sql.*;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseConnector implements Closeable {
+
+    public static class Metadata {
+
+        public final String product;
+        public final String version;
+        public final Instant date;
+
+        public Metadata(String product, String version, Instant date) {
+            this.product = product;
+            this.version = version;
+            this.date = date;
+        }
+    }
 
     private final static Logger log = LoggerFactory.getLogger(DatabaseConnector.class);
 
@@ -91,6 +107,29 @@ public class DatabaseConnector implements Closeable {
             log.debug("Exception", e);
             throw ExceptionBuilder.buildOperationException(e);
         }
+    }
+
+    public List<Metadata> getMetadata() {
+        List<Metadata> metadata = new ArrayList<>();
+        try (Connection connection = createConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                try (ResultSet resultSet = statement.executeQuery("select Product, Version, Date from Metadata")) {
+                    while (resultSet.next()) {
+                        String product = resultSet.getString("Product");
+                        String version = resultSet.getString("Version");
+                        Date date = resultSet.getDate("Date");
+                        metadata.add(new Metadata(
+                                product,
+                                version,
+                                (date != null) ? Instant.ofEpochMilli(date.getTime()) : null)
+                        );
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            throw ExceptionBuilder.buildExternalDatabaseException(ex);
+        }
+        return metadata;
     }
 
     public synchronized void disconnect() {
