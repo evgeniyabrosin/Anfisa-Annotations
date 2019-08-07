@@ -88,7 +88,7 @@ public class GetAnfisaJSONController {
 
                 ArrayList<RequestItem> requestItems = parseRequestData(sRequestData);
 
-                List<CompletableFuture<List<AnfisaResult>>> futureAnfisaResults = new ArrayList<>();
+                List<CompletableFuture<AnfisaResult>> futureAnfisaResults = new ArrayList<>();
                 AnfisaConnector anfisaConnector = service.getAnfisaConnector();
                 for (RequestItem requestItem : requestItems) {
                     futureAnfisaResults.add(anfisaConnector.request(
@@ -104,7 +104,7 @@ public class GetAnfisaJSONController {
                             JSONArray results = new JSONArray();
                             for (int i = 0; i < requestItems.size(); i++) {
                                 RequestItem requestItem = requestItems.get(i);
-                                List<AnfisaResult> anfisaResults = futureAnfisaResults.get(i).join();
+                                AnfisaResult anfisaResult = futureAnfisaResults.get(i).join();
 
                                 JSONObject result = new JSONObject();
                                 result.put("input", new JSONArray() {{
@@ -115,9 +115,7 @@ public class GetAnfisaJSONController {
                                 }});
 
                                 JSONArray outAnfisaResults = new JSONArray();
-                                for (AnfisaResult anfisaResult : anfisaResults) {
-                                    outAnfisaResults.add(build(anfisaResult));
-                                }
+                                outAnfisaResults.add(build(anfisaResult));
                                 result.put("result", outAnfisaResults);
 
                                 results.add(result);
@@ -575,7 +573,7 @@ public class GetAnfisaJSONController {
         out.put("reference", versions.reference);
         for (DatabaseConnector.Metadata metadata : versions.metadataDatabases) {
             StringBuilder value = new StringBuilder();
-            if (metadata.version !=null) {
+            if (metadata.version != null) {
                 value.append(metadata.version);
                 if (metadata.date != null) {
                     value.append(" | ");

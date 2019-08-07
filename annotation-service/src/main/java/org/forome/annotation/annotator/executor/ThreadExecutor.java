@@ -137,8 +137,8 @@ public class ThreadExecutor implements AutoCloseable {
                     String alternative = allele.getDisplayString();
 
                     anfisaConnector.request(chromosome, iStart, iEnd, alternative)
-                            .thenApply(anfisaResults -> {
-                                result.future.complete(anfisaResults.get(0));
+                            .thenApply(anfisaResult -> {
+                                result.future.complete(anfisaResult);
                                 return null;
                             })
                             .exceptionally(throwable -> {

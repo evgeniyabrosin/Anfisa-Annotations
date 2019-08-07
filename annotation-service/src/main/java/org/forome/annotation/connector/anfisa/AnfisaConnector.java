@@ -114,18 +114,15 @@ public class AnfisaConnector implements AutoCloseable {
         this.gtfConnector = gtfConnector;
     }
 
-    public CompletableFuture<List<AnfisaResult>> request(Chromosome chromosome, long start, long end, String alternative) {
+    public CompletableFuture<AnfisaResult> request(Chromosome chromosome, long start, long end, String alternative) {
         String region = String.format("%s:%s:%s", chromosome.getChar(), start, end);
         String endpoint = String.format("/vep/human/region/%s/%s?hgvs=true&canonical=true&merged=true&protein=true&variant_class=true", region, alternative);
 
         return anfisaHttpClient.request(endpoint).thenApply(jsonArray -> {
-            List<AnfisaResult> result = new ArrayList<>();
-            for (Object item : jsonArray) {
-                AnfisaInput anfisaInput = new AnfisaInput.Builder(chromosome, start, end)
-                        .withVepJson((JSONObject) item).build();
-                result.add(build(null, anfisaInput));
-            }
-            return result;
+            JSONObject vepJson = (JSONObject) jsonArray.get(0);
+            AnfisaInput anfisaInput = new AnfisaInput.Builder(chromosome, start, end)
+                    .withVepJson(vepJson).build();
+            return build(null, anfisaInput);
         });
     }
 

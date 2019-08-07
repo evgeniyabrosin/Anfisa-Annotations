@@ -28,66 +28,65 @@ import java.util.List;
  */
 public class AnfisaCheckSampleTest extends AnfisaBaseTest {
 
-	private final static Logger log = LoggerFactory.getLogger(AnfisaCheckSampleTest.class);
+    private final static Logger log = LoggerFactory.getLogger(AnfisaCheckSampleTest.class);
 
-	@Test
-	public void singleSample() throws Exception {
-		check("anfisa_single_sample.json");
-	}
+    @Test
+    public void singleSample() throws Exception {
+        check("anfisa_single_sample.json");
+    }
 
-	@Test
-	public void manySample() throws Exception {
-		check("anfisa_many_sample.json");
-	}
+    @Test
+    public void manySample() throws Exception {
+        check("anfisa_many_sample.json");
+    }
 
-	private void check(String sampleFileName) throws Exception {
-		Path fileSample = Paths.get(
-				getClass().getClassLoader().getResource(sampleFileName).toURI()
-		);
-		List<String> fileSampleLines = Files.readAllLines(fileSample);
-		String samples = String.join("", fileSampleLines);
+    private void check(String sampleFileName) throws Exception {
+        Path fileSample = Paths.get(
+                getClass().getClassLoader().getResource(sampleFileName).toURI()
+        );
+        List<String> fileSampleLines = Files.readAllLines(fileSample);
+        String samples = String.join("", fileSampleLines);
 
-		JSONArray jSamples = (JSONArray) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(samples);
-		int count = 0;
-		for (Object oSamble : jSamples) {
-			count++;
-			if (count < 83) continue;
+        JSONArray jSamples = (JSONArray) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(samples);
+        int count = 0;
+        for (Object oSamble : jSamples) {
+            count++;
+            if (count < 83) continue;
 
-			JSONObject sample = (JSONObject) oSamble;
-			JSONArray sampleInput = (JSONArray) sample.get("input");
+            JSONObject sample = (JSONObject) oSamble;
+            JSONArray sampleInput = (JSONArray) sample.get("input");
 
-			List<AnfisaResult> iResults;
-			try {
-				iResults = anfisaConnector.request(
-						(Chromosome) sampleInput.get(0),
-						((Number) sampleInput.get(1)).longValue(),
-						((Number) sampleInput.get(2)).longValue(),
-						(String) sampleInput.get(3)
-				).get();
-			} catch (Exception e) {
-				throw new RuntimeException("Ошибка получение результатов. input: " + sampleInput.toJSONString(), e);
-			}
+            AnfisaResult iResult;
+            try {
+                iResult = anfisaConnector.request(
+                        (Chromosome) sampleInput.get(0),
+                        ((Number) sampleInput.get(1)).longValue(),
+                        ((Number) sampleInput.get(2)).longValue(),
+                        (String) sampleInput.get(3)
+                ).get();
+            } catch (Exception e) {
+                throw new RuntimeException("Ошибка получение результатов. input: " + sampleInput.toJSONString(), e);
+            }
 
 
-			JSONArray sampleResults = (JSONArray) sample.get("result");
-			Assert.assertEquals(sampleResults.size(), iResults.size());
+            JSONArray sampleResults = (JSONArray) sample.get("result");
+            Assert.assertEquals(sampleResults.size(), 1);
 
-			for (int i = 0; i < iResults.size(); i++) {
-				JSONObject jSampleResult = (JSONObject) sampleResults.get(i);
-				JSONObject jResult = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(
-						//Сделано специально, что бы потерять всю информацию о типах и работать с чистым json
-						GetAnfisaJSONController.build(iResults.get(i)).toJSONString()
-				);
+            JSONObject jSampleResult = (JSONObject) sampleResults.get(0);
+            JSONObject jResult = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(
+                    //Сделано специально, что бы потерять всю информацию о типах и работать с чистым json
+                    GetAnfisaJSONController.build(iResult).toJSONString()
+            );
 
 //				try {
 //					JSONEquals.equals(jSampleResult, jResult);
 //				} catch (Exception e) {
 //					throw new RuntimeException("Ошибка сравнения результатов. input: " + sampleInput.toJSONString(), e);
 //				}
-			}
 
-			log.debug("Success test(s): {}/{}", count, jSamples.size());
-		}
-	}
+
+            log.debug("Success test(s): {}/{}", count, jSamples.size());
+        }
+    }
 
 }

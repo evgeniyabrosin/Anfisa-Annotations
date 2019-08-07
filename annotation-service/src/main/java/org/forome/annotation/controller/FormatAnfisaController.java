@@ -6,7 +6,6 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.Main;
 import org.forome.annotation.Service;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.format.FormatAnfisaHttpClient;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.AnnotatorException;
@@ -77,23 +76,19 @@ public class FormatAnfisaController {
                                     requestItem.end,
                                     requestItem.alternative
                             )
-                                    .thenCompose(anfisaResults -> {
-                                        List<CompletableFuture<JSONArray>> futureItems = new ArrayList<>();
-                                        for (AnfisaResult anfisaResult : anfisaResults) {
-                                            JSONObject result = GetAnfisaJSONController.build(anfisaResult);
-                                            CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
-                                                    .exceptionally(throwable -> {
-                                                        if (throwable instanceof AnnotatorException) {
-                                                            throw (AnnotatorException)throwable;
-                                                        } else {
-                                                            Main.crash(throwable);
-                                                            return null;
-                                                        }
-                                                    });
-                                            futureItems.add(futureItem);
-                                        }
+                                    .thenCompose(anfisaResult -> {
+                                        JSONObject result = GetAnfisaJSONController.build(anfisaResult);
+                                        CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
+                                                .exceptionally(throwable -> {
+                                                    if (throwable instanceof AnnotatorException) {
+                                                        throw (AnnotatorException) throwable;
+                                                    } else {
+                                                        Main.crash(throwable);
+                                                        return null;
+                                                    }
+                                                });
 
-                                        return CompletableFuture.allOf(futureItems.toArray(new CompletableFuture[futureItems.size()]))
+                                        return futureItem
                                                 .thenApply(v -> {
                                                     JSONObject out = new JSONObject();
                                                     out.put("input", new JSONArray() {{
@@ -104,10 +99,8 @@ public class FormatAnfisaController {
                                                     }});
 
                                                     JSONArray outs = new JSONArray();
-                                                    for (CompletableFuture<JSONArray> futureItem : futureItems) {
-                                                        JSONArray result = futureItem.join();
-                                                        outs.add(result);
-                                                    }
+                                                    JSONArray fresult = futureItem.join();
+                                                    outs.add(fresult);
                                                     out.put("result", outs);
                                                     return out;
                                                 });
