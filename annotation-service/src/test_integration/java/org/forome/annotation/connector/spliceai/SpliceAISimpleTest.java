@@ -27,9 +27,4 @@ public class SpliceAISimpleTest extends SpliceAIBaseTest {
         Assert.assertEquals(0.0f, dictSql.ds_dl, 0.000001f);
     }
 
-    @Test
-    public void testDataVersion() throws Exception {
-        Assert.assertEquals("GRCh37/hg19", spliceAIConnector.getSpliceAIDataVersion());
-    }
-
 }
