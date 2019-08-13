@@ -1,6 +1,7 @@
 package org.forome.annotation.connector.anfisa.struct;
 
 import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
+import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,15 +11,13 @@ import java.util.Optional;
 public class AnfisaResultFilters {
 
 	public String chromosome;
-	public Double gnomadPopmaxAf;
 	public double fs;
 	public Long severity;
 	public List<String> has_variant = new ArrayList<>();
 	public Integer minGq;
 	public Integer probandGq;
 	public long distFromExon;
-	public String gnomadPopmax;
-	public Long gnomadPopmaxAn;
+	public GnomadResult.Popmax gnomadWidePopmax;
 	public Double gnomadAfFam;
 	public Double gnomadAfPb;
 	public Double gnomadDbGenomesAf;

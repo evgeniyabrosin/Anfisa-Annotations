@@ -9,6 +9,7 @@ import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
+import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
@@ -103,7 +104,8 @@ public class AnnotationConsole {
             }
 
             sshTunnelService = new SSHConnectService();
-            gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
+//            gnomadConnector = new GnomadConnectorOld(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
+            gnomadConnector = new GnomadConnectorImpl(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
             spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, (t, e) -> fail(e, arguments));
             conservationConnector = new ConservationConnector(sshTunnelService, serviceConfig.conservationConfigConnector);
             hgmdConnector = new HgmdConnector(sshTunnelService, serviceConfig.hgmdConfigConnector);

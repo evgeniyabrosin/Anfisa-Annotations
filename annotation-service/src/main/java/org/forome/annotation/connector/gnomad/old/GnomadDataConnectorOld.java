@@ -1,4 +1,4 @@
-package org.forome.annotation.connector.gnomad;
+package org.forome.annotation.connector.gnomad.old;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -13,9 +13,9 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class GnomadDataConnector implements Closeable {
+public class GnomadDataConnectorOld implements Closeable {
 
-    private static final Logger log = LoggerFactory.getLogger(GnomadDataConnector.class);
+    private static final Logger log = LoggerFactory.getLogger(GnomadDataConnectorOld.class);
 
     public static final ImmutableList<String> ANCESTRIES = ImmutableList.of(
             "AFR",
@@ -47,7 +47,7 @@ public class GnomadDataConnector implements Closeable {
     private static final ImmutableList<String> KEY_COLUMNS = ImmutableList.of(
             "CHROM",
             "POS",
-//            "ID",
+            "ID",
             "REF",
             "ALT"
     );
@@ -101,7 +101,7 @@ public class GnomadDataConnector implements Closeable {
 
     private final DatabaseConnector databaseConnector;
 
-    public GnomadDataConnector(DatabaseConnector databaseConnector) {
+    public GnomadDataConnectorOld(DatabaseConnector databaseConnector) {
         this.databaseConnector = databaseConnector;
     }
 
@@ -159,6 +159,52 @@ public class GnomadDataConnector implements Closeable {
                 resultSet = statement.executeQuery(
                         String.format(base_sql, chromosome, position - 1)
                 );
+
+//                if (ref.length() > alt.length()) {
+//                    if (ref.contains(alt)) {
+//                        int idx = ref.indexOf(alt);
+//                        String newAlt;
+//                        String newRef;
+//                        if (idx == 0) {
+//                            int n = alt.length() - 1;
+//                            newAlt = String.valueOf(alt.charAt(n));
+//                            newRef = ref.substring(n);
+//                        } else {
+//                            newAlt = null;
+//                            newRef = null;
+//                        }
+//
+//                        resultSet.close();
+//                        statement.close();
+//
+//                        statement = connection.createStatement();
+//                        resultSet = statement.executeQuery(
+//                                String.format(sql, chromosome, position + idx - 1, newRef, newAlt)
+//                        );
+//                    }
+//                } else if (ref.length() < alt.length()) {
+//                    if (alt.contains(ref)) {
+//                        int idx = alt.indexOf(ref);
+//                        String newAlt;
+//                        String newRef;
+//                        if (idx == 0) {
+//                            int n = ref.length() - 1;
+//                            newRef = String.valueOf(ref.charAt(n));
+//                            newAlt = alt.substring(n);
+//                        } else {
+//                            newAlt = null;
+//                            newRef = null;
+//                        }
+//
+//                        resultSet.close();
+//                        statement.close();
+//
+//                        statement = connection.createStatement();
+//                        resultSet = statement.executeQuery(
+//                                String.format(sql, chromosome, position + idx - 1, newRef, newAlt)
+//                        );
+//                    }
+//                }
             }
 
             List<Result> results = new ArrayList<>();
@@ -166,9 +212,9 @@ public class GnomadDataConnector implements Closeable {
             if (!exact) {
                 while (resultSet.next()) {
                     String diff_ref_alt = diff(ref, alt);
-                    if (Objects.equals(diff_ref_alt, diff(resultSet.getString("REF"), resultSet.getString("ALT")))
+                    if (Objects.equals(diff_ref_alt, diff(resultSet.getString(4), resultSet.getString(5)))
                             ||
-                            diff3(resultSet.getString("REF"), resultSet.getString("ALT"), diff_ref_alt)
+                            diff3(resultSet.getString(4), resultSet.getString(5), diff_ref_alt)
                     ) {
                         results.add(new Result(resultSet));
                     }

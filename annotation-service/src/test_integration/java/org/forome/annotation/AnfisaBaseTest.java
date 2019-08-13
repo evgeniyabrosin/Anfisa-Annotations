@@ -5,6 +5,7 @@ import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
+import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
@@ -35,7 +36,7 @@ public class AnfisaBaseTest {
 	public static void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		sshTunnelService = new SSHConnectService();
-		gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> {
+		gnomadConnector = new GnomadConnectorImpl(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});

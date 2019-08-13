@@ -6,6 +6,7 @@ import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
+import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
@@ -96,7 +97,8 @@ public class Service {
             this.notificationService = null;
         }
 
-        this.gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
+//        this.gnomadConnector = new GnomadConnectorOld(sshTunnelService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
+        this.gnomadConnector = new GnomadConnectorImpl(sshTunnelService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
         this.spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, uncaughtExceptionHandler);
         this.conservationConnector = new ConservationConnector(sshTunnelService, serviceConfig.conservationConfigConnector);
         this.hgmdConnector = new HgmdConnector(sshTunnelService, serviceConfig.hgmdConfigConnector);
