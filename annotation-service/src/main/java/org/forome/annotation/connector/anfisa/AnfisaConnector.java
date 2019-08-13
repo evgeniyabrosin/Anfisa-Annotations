@@ -497,9 +497,10 @@ public class AnfisaConnector implements AutoCloseable {
         Double gmAfPb = null;
         Double _afPb = null;
 
-        String popmax = null;
-        Double popmaxAf = null;
-        Long popmaxAn = null;
+        GnomadResult.Popmax widePopmax = null;
+//        String popmax = null;
+//        Double popmaxAf = null;
+//        Long popmaxAn = null;
 
         Long hom = null;
         Long hem = null;
@@ -538,9 +539,7 @@ public class AnfisaConnector implements AutoCloseable {
 
             if (_af == null || af < _af) {
                 _af = af;
-                popmax = gnomadResult.popmax;
-                popmaxAf = gnomadResult.popmaxAf;
-                popmaxAn = gnomadResult.popmaxAn;
+                widePopmax = gnomadResult.widePopmax;
             }
         }
 
@@ -551,9 +550,7 @@ public class AnfisaConnector implements AutoCloseable {
         filters.gnomadHom = hom;
         filters.gnomadHem = hem;
 
-        filters.gnomadPopmax = popmax;
-        filters.gnomadPopmaxAf = popmaxAf;
-        filters.gnomadPopmaxAn = popmaxAn;
+        filters.gnomadWidePopmax = widePopmax;
     }
 
     private GnomadResult getGnomadResult(VariantContext variantContext, JSONObject response, String alt) {
@@ -759,7 +756,11 @@ public class AnfisaConnector implements AutoCloseable {
                     gnomAD.hom = gnomadResult.overall.hom;
                     gnomAD.hem = gnomadResult.overall.hem;
                 }
-                gnomAD.popMax = String.format("%s: %s [%s]", gnomadResult.popmax, gnomadResult.popmaxAf, gnomadResult.popmaxAn);
+                if (gnomadResult.widePopmax != null) {
+                    gnomAD.widePopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
+                            gnomadResult.widePopmax.group, gnomadResult.widePopmax.af, gnomadResult.widePopmax.an
+                    );
+                }
                 gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);
 
                 view.gnomAD.add(gnomAD);
@@ -808,10 +809,9 @@ public class AnfisaConnector implements AutoCloseable {
         return null;
     }
 
-    private static Set<String> getHGMDTags(Record record)
-    {
+    private static Set<String> getHGMDTags(Record record) {
         if (record.hgmdData == null)
-            return new HashSet<> ();
+            return new HashSet<>();
         return record.hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).collect(Collectors.toSet());
     }
 
@@ -820,7 +820,7 @@ public class AnfisaConnector implements AutoCloseable {
             view.databases.hgmd = data.hgmd;
             view.databases.hgmdHg38 = data.hgmdHg38;
 
-            view.databases.hgmdTags = getHGMDTags (record).toArray (new String[0]);
+            view.databases.hgmdTags = getHGMDTags(record).toArray(new String[0]);
             if (view.databases.hgmdTags.length == 0) view.databases.hgmdTags = null;
 
             view.databases.hgmdPhenotypes = record.hgmdData.phenotypes.toArray(new String[record.hgmdData.phenotypes.size()]);
@@ -1038,9 +1038,9 @@ public class AnfisaConnector implements AutoCloseable {
         return null;
     }
 
-    public ColorCode.Code getColorCode (JSONObject vepJson, AnfisaResultData data, Record record, AnfisaResultFilters filters) {
+    public ColorCode.Code getColorCode(JSONObject vepJson, AnfisaResultData data, Record record, AnfisaResultFilters filters) {
         String csq = data.mostSevereConsequence;
-        Consequences.Severity msq = Consequences.severity (csq);
+        Consequences.Severity msq = Consequences.severity(csq);
 
         ColorCode.Shape shape;
         if (msq == Consequences.Severity.DAMAGING)
@@ -1048,45 +1048,45 @@ public class AnfisaConnector implements AutoCloseable {
         else
             shape = ColorCode.Shape.CIRCLE;
 
-        Set<String> hgmdTags = getHGMDTags (record);
-        hgmdTags.retainAll (ImmutableSet.of ("DM", "DM?"));
-        boolean hgmdDamaging = !hgmdTags.isEmpty ();
+        Set<String> hgmdTags = getHGMDTags(record);
+        hgmdTags.retainAll(ImmutableSet.of("DM", "DM?"));
+        boolean hgmdDamaging = !hgmdTags.isEmpty();
 
         ColorCode.Color color;
         if (data.clinvarSignificance != null) {
-            boolean benign = filters.clinvarTrustedBenign.orElse (filters.clinvarBenign);
+            boolean benign = filters.clinvarTrustedBenign.orElse(filters.clinvarBenign);
             if (benign) {
                 if (shape == ColorCode.Shape.CROSS || hgmdDamaging) {
                     color = ColorCode.Color.YELLOW;
-                }  else {
+                } else {
                     color = ColorCode.Color.GREEN;
                 }
-                return ColorCode.code (shape, color);
+                return ColorCode.code(shape, color);
             }
 
             for (String s : data.clinvarSignificance) {
-                s = s.toLowerCase ();
-                if (s.contains ("pathogenic") && !s.contains ("conflict")) {
+                s = s.toLowerCase();
+                if (s.contains("pathogenic") && !s.contains("conflict")) {
                     color = ColorCode.Color.RED;
-                } else if (s.contains ("conflict") || s.contains ("uncertain")) {
+                } else if (s.contains("conflict") || s.contains("uncertain")) {
                     color = ColorCode.Color.YELLOW;
                 } else {
                     continue;
                 }
 
-                return  ColorCode.code (shape, color);
+                return ColorCode.code(shape, color);
             }
         }
         if (hgmdDamaging) {
-            return ColorCode.code (shape, ColorCode.Color.RED);
+            return ColorCode.code(shape, ColorCode.Color.RED);
         }
 
         int best = 100;
         int worst = 0;
-        for (String tool: ColorCode.allInSilicoTools ()) {
+        for (String tool : ColorCode.allInSilicoTools()) {
             List<String> rawValues = getFromTranscriptsList(vepJson, tool);
-            for (String rawValue: rawValues) {
-                int value = ColorCode.inSilicoPrediction (tool, rawValue);
+            for (String rawValue : rawValues) {
+                int value = ColorCode.inSilicoPrediction(tool, rawValue);
                 if (value == 0)
                     continue;
                 if (value > worst)
@@ -1103,11 +1103,11 @@ public class AnfisaConnector implements AutoCloseable {
         else if (best < 100)
             color = ColorCode.Color.YELLOW;
         else if (shape == ColorCode.Shape.CROSS)
-            return ColorCode.code (shape, ColorCode.Color.YELLOW);
+            return ColorCode.code(shape, ColorCode.Color.YELLOW);
         else
             return null;
-        
-        return ColorCode.code (shape, color);
+
+        return ColorCode.code(shape, color);
     }
 
     private String[] getTenwiseLink(JSONObject response) {

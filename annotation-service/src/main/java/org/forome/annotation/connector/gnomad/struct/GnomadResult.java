@@ -6,31 +6,56 @@ import java.util.Set;
 
 public class GnomadResult {
 
+    public static class Popmax {
+
+        public final String group;
+        public final double af;
+        public final long an;
+
+        public Popmax(String group, double af, long an) {
+            this.group = group;
+            this.af = af;
+            this.an = an;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Popmax popmax = (Popmax) o;
+            return Double.compare(popmax.af, af) == 0 &&
+                    an == popmax.an &&
+                    Objects.equals(group, popmax.group);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(group, af, an);
+        }
+    }
+
     public static final GnomadResult EMPTY = new GnomadResult(
             null, null, null,
-            null, 0, 0,
+            null,
             Collections.emptySet()
     );
+
     public final Sum exomes;
     public final Sum genomes;
     public final Sum overall;
-    public final String popmax;
-    public final double popmaxAf;
-    public final long popmaxAn;
+    public final Popmax widePopmax;
     public final Set<Url> urls;
 
     public GnomadResult(
             Sum exomes, Sum genomes, Sum overall,
-            String popmax, double popmaxAf, long popmaxAn,
+            Popmax widePopmax,
             Set<Url> urls
     ) {
         this.exomes = exomes;
         this.genomes = genomes;
         this.overall = overall;
 
-        this.popmax = popmax;
-        this.popmaxAf = popmaxAf;
-        this.popmaxAn = popmaxAn;
+        this.widePopmax = widePopmax;
 
         this.urls = urls;
     }
@@ -40,18 +65,17 @@ public class GnomadResult {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GnomadResult that = (GnomadResult) o;
-        return Double.compare(that.popmaxAf, popmaxAf) == 0 &&
-                popmaxAn == that.popmaxAn &&
+        return Objects.equals(widePopmax, that.widePopmax) &&
                 Objects.equals(exomes, that.exomes) &&
                 Objects.equals(genomes, that.genomes) &&
                 Objects.equals(overall, that.overall) &&
-                Objects.equals(popmax, that.popmax) &&
+                Objects.equals(widePopmax, that.widePopmax) &&
                 Objects.equals(urls, that.urls);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(exomes, genomes, overall, popmax, popmaxAf, popmaxAn, urls);
+        return Objects.hash(exomes, genomes, overall, widePopmax, urls);
     }
 
     public static class Sum {

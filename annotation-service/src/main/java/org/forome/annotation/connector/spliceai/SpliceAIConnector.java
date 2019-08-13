@@ -37,10 +37,6 @@ public class SpliceAIConnector implements AutoCloseable {
         return spliceAIDataConnector.getAll(chromosome, position, ref, altList);
     }
 
-    public String getSpliceAIDataVersion() {
-        return spliceAIDataConnector.getSpliceAIDataVersion();
-    }
-
     @Override
     public void close() {
         databaseConnector.close();

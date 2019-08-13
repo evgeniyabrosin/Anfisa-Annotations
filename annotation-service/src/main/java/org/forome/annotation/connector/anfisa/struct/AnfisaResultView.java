@@ -79,7 +79,7 @@ public class AnfisaResultView {
         public String[] url;
         public String proband;
         public List<Double> pli;
-        public String popMax;
+        public String widePopmax;
         public Long hom;
         public Long hem;
     }

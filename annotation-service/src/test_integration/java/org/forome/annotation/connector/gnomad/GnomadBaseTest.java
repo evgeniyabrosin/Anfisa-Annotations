@@ -17,7 +17,7 @@ public class GnomadBaseTest {
 	public void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		SSHConnectService sshTunnelService = new SSHConnectService();
-		gnomadConnector = new GnomadConnector(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> {
+		gnomadConnector = new GnomadConnectorImpl(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});

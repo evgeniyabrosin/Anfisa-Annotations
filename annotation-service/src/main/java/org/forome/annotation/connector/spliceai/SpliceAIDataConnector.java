@@ -116,19 +116,6 @@ public class SpliceAIDataConnector implements Closeable {
         return new SpliceAIResult(cases, max_ds, dict_sql);
     }
 
-    public String getSpliceAIDataVersion() {
-        try (Connection connection = databaseConnector.createConnection()) {
-            try (Statement statement = connection.createStatement()) {
-                try (ResultSet resultSet = statement.executeQuery("SELECT version FROM VERSION")) {
-                    resultSet.next();
-                    return resultSet.getString(1);
-                }
-            }
-        } catch (SQLException ex) {
-            throw ExceptionBuilder.buildExternalDatabaseException(ex);
-        }
-    }
-
     private static Row _build(ResultSet resultSet) throws SQLException {
         String chrom = resultSet.getString("CHROM");
         int pos = resultSet.getInt("POS");
