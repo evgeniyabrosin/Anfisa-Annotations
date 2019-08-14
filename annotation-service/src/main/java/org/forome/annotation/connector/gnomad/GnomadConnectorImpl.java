@@ -3,6 +3,7 @@ package org.forome.annotation.connector.gnomad;
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.config.connector.GnomadConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
+import org.forome.annotation.connector.gnomad.struct.GnamadGroup;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 import org.forome.annotation.matcher.SequenceMatcher;
 import org.forome.annotation.service.ssh.SSHConnectService;
@@ -82,7 +83,7 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
             long ac = countAC(exomes, null);
             double af = countAF(an, ac);
             long hom = countHom(exomes);
-            Long hem = countHem(chromosome, exomes);
+            Long hem = countHem(exomes);
             sumExomes = new GnomadResult.Sum(an, ac, af, hom, hem);
         }
 
@@ -92,7 +93,7 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
             long ac = countAC(genomes, null);
             double af = countAF(an, ac);
             long hom = countHom(genomes);
-            Long hem = countHem(chromosome, genomes);
+            Long hem = countHem(genomes);
             sumGenomes = new GnomadResult.Sum(an, ac, af, hom, hem);
         }
 
@@ -102,18 +103,18 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
             long ac = countAC(overall, null);
             double af = countAF(an, ac);
             long hom = countHom(overall);
-            Long hem = countHem(chromosome, overall);
+            Long hem = countHem(overall);
             sumOverall = new GnomadResult.Sum(an, ac, af, hom, hem);
         }
 
-        GnomadResult.Popmax widePopmax = countWidePopmaxFromRows(overall);
+        GnomadResult.Popmax widePopmax = countPopmaxFromRows(overall, null);
 
         Set<GnomadResult.Url> urls = new HashSet<>();
         for (GnomadDataConnector.Result item : overall) {
-            String chrom = (String) item.columns.get("CHROM");
-            long pos = ((Number) item.columns.get("POS")).longValue();
-            String ref = (String) item.columns.get("REF");
-            String alt = (String) item.columns.get("ALT");
+            String chrom = item.getValue("CHROM");
+            long pos = ((Number) item.getValue("POS")).longValue();
+            String ref = item.getValue("REF");
+            String alt = item.getValue("ALT");
 
             SequenceMatcher matcher = new SequenceMatcher(ref, alt);
             List<SequenceMatcher.Tuple3<Integer, Integer, Integer>> matches = matcher.getMatchingBlocks();
@@ -148,27 +149,27 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
     }
 
     @Override
-    public void close(){
+    public void close() {
         databaseConnector.close();
     }
 
-    private static long countAN(List<GnomadDataConnector.Result> items, String group) {
+    private static long countAN(List<GnomadDataConnector.Result> items, GnamadGroup group) {
         long an = 0;
         String anColumn;
         if (group == null) {
             anColumn = "AN";
         } else {
-            anColumn = "AN_" + group;
+            anColumn = "AN_" + group.name();
         }
         for (GnomadDataConnector.Result item : items) {
-            Number value = (Number) item.columns.get(anColumn);
+            Number value = item.getValue(anColumn);
             if (value == null) continue;
             an += value.longValue();
         }
         return an;
     }
 
-    private static long countAC(List<GnomadDataConnector.Result> items, String group) {
+    private static long countAC(List<GnomadDataConnector.Result> items, GnamadGroup group) {
         long ac = 0;
         String acColumn;
         if (group == null) {
@@ -177,7 +178,7 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
             acColumn = "AC_" + group;
         }
         for (GnomadDataConnector.Result item : items) {
-            Number value = (Number) item.columns.get(acColumn);
+            Number value = item.getValue(acColumn);
             if (value == null) continue;
             ac += value.longValue();
         }
@@ -194,45 +195,61 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
         return af;
     }
 
-    private static GnomadResult.Popmax countWidePopmaxFromRows(List<GnomadDataConnector.Result> overall) {
-        String widePopmax = null;
-        Double widePopmaxAF = null;
-        long widePopmaxAN = 0;
+    private static GnomadResult.Popmax countPopmaxFromRows(List<GnomadDataConnector.Result> overall, GnamadGroup.Type type) {
+        GnamadGroup group = null;
+        Double popmaxAF = null;
+        long popmaxAN = 0;
 
-        for (String group : GnomadDataConnector.ANCESTRIES) {
-            long an = countAN(overall, group);
-            long ac = countAC(overall, group);
+        GnamadGroup[] groups = (type == null) ? GnamadGroup.values() : GnamadGroup.getByType(type);
+        for (GnamadGroup iGroup : groups) {
+            long an = countAN(overall, iGroup);
+            long ac = countAC(overall, iGroup);
             if (an == 0) {
                 continue;
             }
             double af = (double) ac / (double) an;
-            if (widePopmaxAF == null || af > widePopmaxAF) {
-                widePopmax = group;
-                widePopmaxAF = af;
-                widePopmaxAN = an;
+            if (popmaxAF == null || af > popmaxAF) {
+                group = iGroup;
+                popmaxAF = af;
+                popmaxAN = an;
             }
         }
 
         return new GnomadResult.Popmax(
-                widePopmax, (widePopmaxAF == null) ? 0 : widePopmaxAF, widePopmaxAN
+                group, (popmaxAF == null) ? 0 : popmaxAF, popmaxAN
         );
     }
 
     private static long countHom(List<GnomadDataConnector.Result> items) {
         long hom = 0;
-        String column = "Hom";
+        String column = "nhomalt";
         for (GnomadDataConnector.Result item : items) {
-            Number value = (Number) item.columns.get(column);
+            Number value = item.getValue(column);
             if (value == null) continue;
             hom += value.longValue();
         }
         return hom;
     }
 
-    private static Long countHem(String chromosome, List<GnomadDataConnector.Result> items) {
-        if ("X".equals(chromosome.toUpperCase())) {
-            return countAC(items, "Male");
+    private static Long countHem(List<GnomadDataConnector.Result> items) {
+        Long hem = null;
+        String column = "hem";
+        for (GnomadDataConnector.Result item : items) {
+            Number value = item.getValue(column);
+            if (value == null) continue;
+            if (hem == null) {
+                hem = value.longValue();
+            } else {
+                hem += value.longValue();
+            }
         }
-        return null;
+        return hem;
     }
+
+//    private static Long countHem(String chromosome, List<GnomadDataConnector.Result> items) {
+//        if ("X".equals(chromosome.toUpperCase())) {
+//            return countAC(items, "Male");
+//        }
+//        return null;
+//    }
 }

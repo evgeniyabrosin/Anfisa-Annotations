@@ -758,7 +758,7 @@ public class AnfisaConnector implements AutoCloseable {
                 }
                 if (gnomadResult.widePopmax != null) {
                     gnomAD.widePopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
-                            gnomadResult.widePopmax.group, gnomadResult.widePopmax.af, gnomadResult.widePopmax.an
+                            gnomadResult.widePopmax.group.name(), gnomadResult.widePopmax.af, gnomadResult.widePopmax.an
                     );
                 }
                 gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);

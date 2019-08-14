@@ -8,11 +8,11 @@ public class GnomadResult {
 
     public static class Popmax {
 
-        public final String group;
+        public final GnamadGroup group;
         public final double af;
         public final long an;
 
-        public Popmax(String group, double af, long an) {
+        public Popmax(GnamadGroup group, double af, long an) {
             this.group = group;
             this.af = af;
             this.an = an;

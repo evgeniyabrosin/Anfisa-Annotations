@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.forome'
-version '0.5.0.17'
+version '0.5.0.18'
 
 sourceCompatibility = 1.8
 
