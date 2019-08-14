@@ -210,7 +210,7 @@ public class GetAnfisaJSONController {
             out.put("chromosome", anfisaResultFilters.chromosome);
         }
         if (anfisaResultFilters.gnomadWidePopmax != null) {
-            out.put("gnomad_wide_popmax", anfisaResultFilters.gnomadWidePopmax.group);
+            out.put("gnomad_wide_popmax", anfisaResultFilters.gnomadWidePopmax.group.name());
             out.put("gnomad_wide_popmax_af", anfisaResultFilters.gnomadWidePopmax.af);
             out.put("gnomad_wide_popmax_an", anfisaResultFilters.gnomadWidePopmax.an);
         }

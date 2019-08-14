@@ -53,7 +53,7 @@ public class AnfisaSimpleTest extends AnfisaBaseTest {
     }
 
     private AnfisaResult request(Chromosome chromosome, long start, long end, String alternative) throws ExecutionException, InterruptedException {
-        AnfisaResult anfisaResult = anfisaConnector.request(new Chromosome("1"), 216062306, 216062306, "G").get();
+        AnfisaResult anfisaResult = anfisaConnector.request(chromosome, start, end, alternative).get();
         return anfisaResult;
     }
 }

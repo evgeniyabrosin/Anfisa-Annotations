@@ -40,7 +40,7 @@ public class GnomadDataConnector implements Closeable {
 
     private static final ImmutableList<String> DATA_SUFFIXES =
             new ImmutableList.Builder()
-                    .add("raw", "POPMAX")
+//                    .add("raw", "POPMAX")
                     .addAll(POP_GROUPS)
                     .build();
 
@@ -58,15 +58,16 @@ public class GnomadDataConnector implements Closeable {
             "Hom"
     );
 
-    private static final ImmutableList<String> HOM = ANCESTRIES.stream().map(s -> "Hom_" + s).collect(ImmutableList.toImmutableList());
+//    private static final ImmutableList<String> HOM = ANCESTRIES.stream().map(s -> "Hom_" + s).collect(ImmutableList.toImmutableList());
 
     private static final ImmutableList<String> AGGREGATE_DATA_COLUMNS = ImmutableList.of(
             "AN_Female + AN_Male as AN",
             "AC_Female + AC_Male as AC",
-            String.join(" + ", HOM) + " as Hom",
-            "AN_POPMAX",
-            "AC_POPMAX",
-            "POPMAX"
+            "nhomalt"
+//            ,
+//            "AN_POPMAX",
+//            "AC_POPMAX",
+//            "POPMAX"
     );
 
     private static final ImmutableList<String> DATA_COLUMNS =
@@ -76,7 +77,7 @@ public class GnomadDataConnector implements Closeable {
                             .map(b -> a + '_' + b)
             ).collect(Collectors.collectingAndThen(Collectors.toList(), ImmutableList::copyOf));
 
-    private static final String TABLE = "gnomad.VARIANTS";
+    private static final String TABLE = "gnom2.VARIANTS";
 
     private static final ImmutableList<String> COLUMNS = new ImmutableList.Builder()
             .addAll(KEY_COLUMNS)
@@ -86,16 +87,19 @@ public class GnomadDataConnector implements Closeable {
 
     public class Result {
 
-        public final Map<String, Object> columns;
+        private final Map<String, Object> columns;
 
         public Result(ResultSet resultSet) throws SQLException {
-            Map<String, Object> modifiableColumns = new HashMap<>();
+            columns = new HashMap<>();
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
-                String columnName = resultSetMetaData.getColumnName(i);
-                modifiableColumns.put(columnName, resultSet.getObject(i));
+                String columnName = resultSetMetaData.getColumnName(i).toLowerCase();
+                columns.put(columnName, resultSet.getObject(i));
             }
-            this.columns = Collections.unmodifiableMap(modifiableColumns);
+        }
+
+        public <T> T getValue(String column){
+            return (T) columns.get(column.toLowerCase());
         }
     }
 
@@ -114,8 +118,8 @@ public class GnomadDataConnector implements Closeable {
             boolean exact) throws Exception {
 
         String base_sql = String.format(
-                "SELECT %s FROM %s WHERE CHROM = '%%s' and POS = %%s",
-                String.join(", ", COLUMNS), TABLE
+                "SELECT * FROM %s WHERE CHROM = '%%s' and POS = %%s",
+                TABLE
         );
 
         String sql = null;
@@ -189,7 +193,7 @@ public class GnomadDataConnector implements Closeable {
     }
 
     @Override
-    public void close()  {
+    public void close() {
         databaseConnector.close();
     }
 
@@ -233,7 +237,7 @@ public class GnomadDataConnector implements Closeable {
         if (s1.length() + d.length() != s2.length()) {
             return false;
         }
-        for (int i=0; i<s1.length(); i++) {
+        for (int i = 0; i < s1.length(); i++) {
             String x = s1.substring(0, i);
             String y = s1.substring(i);
             if ((x + d + y).equals(s2)) {

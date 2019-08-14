@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.forome.annotation.config.connector.GnomadConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
+import org.forome.annotation.connector.gnomad.struct.GnamadGroup;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 import org.forome.annotation.matcher.SequenceMatcher;
 import org.forome.annotation.service.ssh.SSHConnectService;
@@ -145,7 +146,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
 
         return new GnomadResult(
                 sumExomes, sumGenomes, sumOverall,
-                new GnomadResult.Popmax(popmax, popmaxAF, popmaxAN),
+                new GnomadResult.Popmax(GnamadGroup.valueOf(popmax), popmaxAF, popmaxAN),
                 urls
         );
     }
