@@ -500,7 +500,7 @@ public class AnfisaConnector implements AutoCloseable {
 
         for (String alt : alt_list(variantContext, samples, response)) {
             GnomadResult gnomadResult = getGnomadResult(variantContext, response, alt);
-            if (gnomadResult == GnomadResult.EMPTY) {
+            if (gnomadResult == null) {
                 continue;
             }
             if (gnomadResult.exomes != null) {

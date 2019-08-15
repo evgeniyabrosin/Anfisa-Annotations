@@ -74,7 +74,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
 
         List<GnomadDataConnectorOld.Result> overall = new ImmutableList.Builder().addAll(exomes).addAll(genomes).build();
         if (overall.isEmpty()) {
-            return GnomadResult.EMPTY;
+            return null;
         }
 
         GnomadResult.Sum sumExomes = null;
