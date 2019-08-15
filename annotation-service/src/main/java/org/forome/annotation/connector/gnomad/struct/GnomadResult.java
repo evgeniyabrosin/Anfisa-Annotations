@@ -36,25 +36,27 @@ public class GnomadResult {
 
     public static final GnomadResult EMPTY = new GnomadResult(
             null, null, null,
-            null,
+            null, null,
             Collections.emptySet()
     );
 
     public final Sum exomes;
     public final Sum genomes;
     public final Sum overall;
+    public final Popmax popmax;
     public final Popmax widePopmax;
     public final Set<Url> urls;
 
     public GnomadResult(
             Sum exomes, Sum genomes, Sum overall,
-            Popmax widePopmax,
+            GnomadResult.Popmax popmax, Popmax widePopmax,
             Set<Url> urls
     ) {
         this.exomes = exomes;
         this.genomes = genomes;
         this.overall = overall;
 
+        this.popmax = popmax;
         this.widePopmax = widePopmax;
 
         this.urls = urls;
@@ -69,6 +71,7 @@ public class GnomadResult {
                 Objects.equals(exomes, that.exomes) &&
                 Objects.equals(genomes, that.genomes) &&
                 Objects.equals(overall, that.overall) &&
+                Objects.equals(popmax, that.popmax) &&
                 Objects.equals(widePopmax, that.widePopmax) &&
                 Objects.equals(urls, that.urls);
     }

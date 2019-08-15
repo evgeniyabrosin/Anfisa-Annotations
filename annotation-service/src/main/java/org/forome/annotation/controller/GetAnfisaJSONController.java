@@ -209,6 +209,11 @@ public class GetAnfisaJSONController {
         if (anfisaResultFilters.chromosome != null) {
             out.put("chromosome", anfisaResultFilters.chromosome);
         }
+        if (anfisaResultFilters.gnomadPopmax != null) {
+            out.put("gnomad_popmax", anfisaResultFilters.gnomadPopmax.group.name());
+            out.put("gnomad_popmax_af", anfisaResultFilters.gnomadPopmax.af);
+            out.put("gnomad_popmax_an", anfisaResultFilters.gnomadPopmax.an);
+        }
         if (anfisaResultFilters.gnomadWidePopmax != null) {
             out.put("gnomad_wide_popmax", anfisaResultFilters.gnomadWidePopmax.group.name());
             out.put("gnomad_wide_popmax_af", anfisaResultFilters.gnomadWidePopmax.af);
@@ -216,13 +221,10 @@ public class GetAnfisaJSONController {
         }
         out.put("severity", anfisaResultFilters.severity);
         out.put("gnomad_af_pb", anfisaResultFilters.gnomadAfPb);
-        out.put("gnomad_db_genomes_af", anfisaResultFilters.gnomadDbGenomesAf);
         out.put("has_variant", new JSONArray());
-        out.put("gnomad_db_exomes_af", anfisaResultFilters.gnomadDbExomesAf);
         out.put("min_gq", anfisaResultFilters.minGq);
         out.put("dist_from_exon", anfisaResultFilters.distFromExon);
         out.put("proband_gq", anfisaResultFilters.probandGq);
-//        out.put("gnomad_af_fam", anfisaResultFilters.gnomadAfFam);
         out.put("fs", anfisaResultFilters.fs);
         out.put("qd", anfisaResultFilters.qd);
 
@@ -244,9 +246,6 @@ public class GetAnfisaJSONController {
         if (anfisaResultFilters.has_variant != null) {
             out.put("has_variant", anfisaResultFilters.has_variant);
         }
-
-        out.put("gnomad_hom", anfisaResultFilters.gnomadHom);
-        out.put("gnomad_hem", anfisaResultFilters.gnomadHem);
 
         if (anfisaResultFilters.altZygosity != null) {
             out.put("alt_zygosity", anfisaResultFilters.altZygosity);

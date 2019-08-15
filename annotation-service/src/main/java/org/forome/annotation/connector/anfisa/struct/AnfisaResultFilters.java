@@ -17,13 +17,9 @@ public class AnfisaResultFilters {
 	public Integer minGq;
 	public Integer probandGq;
 	public long distFromExon;
+	public GnomadResult.Popmax gnomadPopmax;
 	public GnomadResult.Popmax gnomadWidePopmax;
-	public Double gnomadAfFam;
 	public Double gnomadAfPb;
-	public Double gnomadDbGenomesAf;
-	public Object gnomadDbExomesAf;
-	public Long gnomadHom;
-	public Long gnomadHem;
 	public double qd;
 	public Double mq;
 	public List<String> filters;

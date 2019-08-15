@@ -193,6 +193,11 @@ public class GetGnomAdDataController {
 
         out.put("overall", toJson(gnomadResult.overall));
 
+        if (gnomadResult.popmax != null) {
+            out.put("popmax", gnomadResult.popmax.group.name());
+            out.put("popmax_af", gnomadResult.popmax.af);
+            out.put("popmax_an", gnomadResult.popmax.an);
+        }
         if (gnomadResult.widePopmax != null) {
             out.put("wide_popmax", gnomadResult.widePopmax.group.name());
             out.put("wide_popmax_af", gnomadResult.widePopmax.af);

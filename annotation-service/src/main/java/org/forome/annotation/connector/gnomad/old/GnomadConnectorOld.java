@@ -146,7 +146,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
 
         return new GnomadResult(
                 sumExomes, sumGenomes, sumOverall,
-                new GnomadResult.Popmax(GnamadGroup.valueOf(popmax), popmaxAF, popmaxAN),
+                null, new GnomadResult.Popmax(GnamadGroup.valueOf(popmax), popmaxAF, popmaxAN),
                 urls
         );
     }

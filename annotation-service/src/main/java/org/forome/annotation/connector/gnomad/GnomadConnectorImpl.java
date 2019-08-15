@@ -107,6 +107,7 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
             sumOverall = new GnomadResult.Sum(an, ac, af, hom, hem);
         }
 
+        GnomadResult.Popmax popmax = countPopmaxFromRows(overall, GnamadGroup.Type.GENERAL);
         GnomadResult.Popmax widePopmax = countPopmaxFromRows(overall, null);
 
         Set<GnomadResult.Url> urls = new HashSet<>();
@@ -143,7 +144,7 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
 
         return new GnomadResult(
                 sumExomes, sumGenomes, sumOverall,
-                widePopmax,
+                popmax, widePopmax,
                 urls
         );
     }
