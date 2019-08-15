@@ -141,7 +141,7 @@ public class AnfisaConnector implements AutoCloseable {
 
         data.version = AppVersion.getVersionFormat();
 
-        callGnomAD(anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson, filters);
+        callGnomAD(context, anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson, filters);
         callSpliceai(data, filters, anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson);
         callHgmd(record, context, filters, data);
         callClinvar(context, record, anfisaInput.chromosome.getChar(), anfisaInput.start, anfisaInput.end, anfisaInput.variantContext, anfisaInput.samples, filters, data, view, anfisaInput.vepJson);
@@ -216,7 +216,7 @@ public class AnfisaConnector implements AutoCloseable {
 
         createGeneralTab(context, data, filters, view, anfisaInput.start, anfisaInput.end, anfisaInput.vepJson, caseSequence, anfisaInput.variantContext, anfisaInput.samples);
         createQualityTab(filters, view, anfisaInput.variantContext, anfisaInput.samples);
-        createGnomadTab(anfisaInput.chromosome.getChar(), anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson, filters, data, view);
+        createGnomadTab(context, anfisaInput.chromosome.getChar(), anfisaInput.variantContext, anfisaInput.samples, anfisaInput.vepJson, filters, data, view);
         createDatabasesTab(anfisaInput.vepJson, record, data, view);
         createPredictionsTab(anfisaInput.vepJson, view);
         createBioinformaticsTab(gtfAnfisaResult, context, data, view);
@@ -488,22 +488,15 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
 
-    private void callGnomAD(VariantContext variantContext, Map<String, Sample> samples, JSONObject response, AnfisaResultFilters filters) {
+    private void callGnomAD(AnfisaExecuteContext context, VariantContext variantContext, Map<String, Sample> samples, JSONObject response, AnfisaResultFilters filters) {
         Double af = null;
         Double _af = null;
-        Double emAf = null;
         Double emAfPb = null;
-        Double gmAf = null;
         Double gmAfPb = null;
         Double _afPb = null;
 
+        GnomadResult.Popmax popmax = null;
         GnomadResult.Popmax widePopmax = null;
-//        String popmax = null;
-//        Double popmaxAf = null;
-//        Long popmaxAn = null;
-
-        Long hom = null;
-        Long hem = null;
 
         for (String alt : alt_list(variantContext, samples, response)) {
             GnomadResult gnomadResult = getGnomadResult(variantContext, response, alt);
@@ -512,14 +505,12 @@ public class AnfisaConnector implements AutoCloseable {
             }
             if (gnomadResult.exomes != null) {
                 af = gnomadResult.exomes.af;
-                emAf = Math.min((emAf != null && emAf != 0.0d) ? emAf : af, af);
                 if (isProbandHasAllele(variantContext, samples, alt)) {
                     emAfPb = Math.min((emAfPb != null) ? emAfPb : af, af);
                 }
             }
             if (gnomadResult.genomes != null) {
                 af = gnomadResult.genomes.af;
-                gmAf = Math.min((gmAf != null) ? gmAf : af, af);
                 if (isProbandHasAllele(variantContext, samples, alt)) {
                     gmAfPb = Math.min((gmAfPb != null) ? gmAfPb : af, af);
                 }
@@ -530,26 +521,17 @@ public class AnfisaConnector implements AutoCloseable {
                 _afPb = Math.min((_afPb != null) ? _afPb : af, af);
             }
 
-            if (hom == null || hom < gnomadResult.overall.hom) {
-                hom = gnomadResult.overall.hom;
-            }
-            if (hem == null || hem < gnomadResult.overall.hem) {
-                hem = gnomadResult.overall.hem;
-            }
-
             if (_af == null || af < _af) {
                 _af = af;
+                popmax = gnomadResult.popmax;
                 widePopmax = gnomadResult.widePopmax;
             }
         }
 
-        filters.gnomadDbExomesAf = emAf;
-        filters.gnomadDbGenomesAf = gmAf;
-        filters.gnomadAfFam = _af;
+        context.gnomadAfFam = _af;
         filters.gnomadAfPb = _afPb;
-        filters.gnomadHom = hom;
-        filters.gnomadHem = hem;
 
+        filters.gnomadPopmax = popmax;
         filters.gnomadWidePopmax = widePopmax;
     }
 
@@ -731,8 +713,8 @@ public class AnfisaConnector implements AutoCloseable {
         }
     }
 
-    private void createGnomadTab(String chromosome, VariantContext variantContext, Map<String, Sample> samples, JSONObject json, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view) {
-        Double gnomadAf = getGnomadAf(filters);
+    private void createGnomadTab(AnfisaExecuteContext context, String chromosome, VariantContext variantContext, Map<String, Sample> samples, JSONObject json, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view) {
+        Double gnomadAf = context.gnomadAfFam;
         if (gnomadAf != null && Math.abs(gnomadAf) > 0.000001D) {
             for (String allele : alt_list(variantContext, samples, json)) {
                 GnomadResult gnomadResult = getGnomadResult(variantContext, json, allele);
@@ -1621,10 +1603,6 @@ public class AnfisaConnector implements AutoCloseable {
 
     private String getVariantClass(JSONObject json) {
         return json.getAsString("variant_class");
-    }
-
-    public Double getGnomadAf(AnfisaResultFilters filters) {
-        return filters.gnomadAfFam;
     }
 
     public String linkToPmid(String pmid) {
