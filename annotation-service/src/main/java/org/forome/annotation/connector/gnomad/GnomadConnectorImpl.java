@@ -208,7 +208,7 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
             if (an == 0) {
                 continue;
             }
-            double af = (double) ac / (double) an;
+            double af = (double) ac / ((double) an + 1.0E-10);
             if (popmaxAF == null || af > popmaxAF) {
                 group = iGroup;
                 popmaxAF = af;
