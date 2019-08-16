@@ -84,7 +84,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private final ImmutableList<String> csq_missense = ImmutableList.of("missense_variant");
 
-    private final GnomadConnector gnomadConnector;
+    public final GnomadConnector gnomadConnector;
     public final SpliceAIConnector spliceAIConnector;
     public final ConservationConnector conservationConnector;
     public final HgmdConnector hgmdConnector;
@@ -500,7 +500,7 @@ public class AnfisaConnector implements AutoCloseable {
 
         for (String alt : alt_list(variantContext, samples, response)) {
             GnomadResult gnomadResult = getGnomadResult(variantContext, response, alt);
-            if (gnomadResult == GnomadResult.EMPTY) {
+            if (gnomadResult == null) {
                 continue;
             }
             if (gnomadResult.exomes != null) {

@@ -51,6 +51,11 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         );
     }
 
+    @Override
+    public List<DatabaseConnector.Metadata> getMetadata() {
+        return gnomadDataConnector.getMetadata();
+    }
+
     public CompletableFuture<GnomadResult> request(String chromosome, long position, String reference, String alternative) {
         CompletableFuture<GnomadResult> future = new CompletableFuture();
         threadPoolGnomadExecutor.submit(() -> {
@@ -74,7 +79,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
 
         List<GnomadDataConnectorOld.Result> overall = new ImmutableList.Builder().addAll(exomes).addAll(genomes).build();
         if (overall.isEmpty()) {
-            return GnomadResult.EMPTY;
+            return null;
         }
 
         GnomadResult.Sum sumExomes = null;
@@ -152,7 +157,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
     }
 
     @Override
-    public void close(){
+    public void close() {
         databaseConnector.close();
     }
 

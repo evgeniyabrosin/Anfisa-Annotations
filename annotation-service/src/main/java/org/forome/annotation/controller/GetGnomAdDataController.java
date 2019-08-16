@@ -175,7 +175,7 @@ public class GetGnomAdDataController {
     }
 
     private static JSONObject toJson(GnomadResult gnomadResult) {
-        if (gnomadResult == GnomadResult.EMPTY) {
+        if (gnomadResult == null) {
             return new JSONObject();
         }
 
