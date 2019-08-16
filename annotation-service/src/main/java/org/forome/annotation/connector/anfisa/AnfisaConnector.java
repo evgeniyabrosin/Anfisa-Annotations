@@ -717,33 +717,35 @@ public class AnfisaConnector implements AutoCloseable {
         Double gnomadAf = context.gnomadAfFam;
         if (gnomadAf != null && Math.abs(gnomadAf) > 0.000001D) {
             for (String allele : alt_list(variantContext, samples, json)) {
-                GnomadResult gnomadResult = getGnomadResult(variantContext, json, allele);
-
                 AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
+
                 gnomAD.allele = allele;
                 gnomAD.pli = getPLIByAllele(json, allele);
-
-                if (gnomadResult.exomes != null) {
-                    gnomAD.exomeAn = gnomadResult.exomes.an;
-                    gnomAD.exomeAf = gnomadResult.exomes.af;
-                }
-                if (gnomadResult.genomes != null) {
-                    gnomAD.genomeAn = gnomadResult.genomes.an;
-                    gnomAD.genomeAf = gnomadResult.genomes.af;
-                }
-
                 gnomAD.proband = (isProbandHasAllele(variantContext, samples, allele)) ? "Yes" : "No";
-                if (gnomadResult.overall != null) {
-                    gnomAD.af = gnomadResult.overall.af;
-                    gnomAD.hom = gnomadResult.overall.hom;
-                    gnomAD.hem = gnomadResult.overall.hem;
+
+                GnomadResult gnomadResult = getGnomadResult(variantContext, json, allele);
+                if (gnomadResult != null) {
+                    if (gnomadResult.exomes != null) {
+                        gnomAD.exomeAn = gnomadResult.exomes.an;
+                        gnomAD.exomeAf = gnomadResult.exomes.af;
+                    }
+                    if (gnomadResult.genomes != null) {
+                        gnomAD.genomeAn = gnomadResult.genomes.an;
+                        gnomAD.genomeAf = gnomadResult.genomes.af;
+                    }
+
+                    if (gnomadResult.overall != null) {
+                        gnomAD.af = gnomadResult.overall.af;
+                        gnomAD.hom = gnomadResult.overall.hom;
+                        gnomAD.hem = gnomadResult.overall.hem;
+                    }
+                    if (gnomadResult.widePopmax != null) {
+                        gnomAD.widePopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
+                                gnomadResult.widePopmax.group.name(), gnomadResult.widePopmax.af, gnomadResult.widePopmax.an
+                        );
+                    }
+                    gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);
                 }
-                if (gnomadResult.widePopmax != null) {
-                    gnomAD.widePopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
-                            gnomadResult.widePopmax.group.name(), gnomadResult.widePopmax.af, gnomadResult.widePopmax.an
-                    );
-                }
-                gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);
 
                 view.gnomAD.add(gnomAD);
             }
