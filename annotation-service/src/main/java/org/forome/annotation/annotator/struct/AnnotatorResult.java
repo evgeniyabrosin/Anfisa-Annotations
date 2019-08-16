@@ -50,7 +50,7 @@ public class AnnotatorResult {
                 metadataDatabases.addAll(anfisaConnector.hgmdConnector.getMetadata());
                 metadataDatabases.addAll(anfisaConnector.spliceAIConnector.getMetadata());
                 metadataDatabases.addAll(anfisaConnector.conservationConnector.getMetadata());
-                metadataDatabases.addAll(anfisaConnector.gnomadConnector.getMetadata());
+//                metadataDatabases.addAll(anfisaConnector.gnomadConnector.getMetadata());
                 metadataDatabases.sort(Comparator.comparing(o -> o.product));
             }
         }
