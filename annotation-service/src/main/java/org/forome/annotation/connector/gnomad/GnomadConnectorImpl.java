@@ -64,6 +64,11 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
         return future;
     }
 
+    @Override
+    public List<DatabaseConnector.Metadata> getMetadata() {
+        return gnomadDataConnector.getMetadata();
+    }
+
     private GnomadResult syncRequest(String chromosome, long position, String reference, String alternative) throws Exception {
         List<GnomadDataConnector.Result> exomes = gnomadDataConnector.getData(
                 chromosome, position, reference, alternative, "e", false

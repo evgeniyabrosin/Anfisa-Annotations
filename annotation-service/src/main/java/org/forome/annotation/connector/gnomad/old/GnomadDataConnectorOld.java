@@ -105,6 +105,10 @@ public class GnomadDataConnectorOld implements Closeable {
         this.databaseConnector = databaseConnector;
     }
 
+    public List<DatabaseConnector.Metadata> getMetadata(){
+        return databaseConnector.getMetadata();
+    }
+
     public List<Result> getData(
             String chromosome,
             long position,

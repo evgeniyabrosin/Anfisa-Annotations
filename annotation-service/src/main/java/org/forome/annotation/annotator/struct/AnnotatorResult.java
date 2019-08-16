@@ -27,12 +27,14 @@ public class AnnotatorResult {
             public final String annotationsDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
             public final String pipeline;
             public final String annotations;
+            public final String annotationsBuild;
             public final String reference;
 
             public final List<DatabaseConnector.Metadata> metadataDatabases;
 
             public Versions(Path pathVepVcf, AnfisaConnector anfisaConnector) {
                 annotations = AppVersion.getVersionFormat();
+                annotationsBuild = AppVersion.getVersion();
                 if (pathVepVcf != null) {
                     VCFFileReader vcfFileReader = new VCFFileReader(pathVepVcf, false);
                     VCFHeader vcfHeader = vcfFileReader.getFileHeader();
@@ -48,6 +50,7 @@ public class AnnotatorResult {
                 metadataDatabases.addAll(anfisaConnector.hgmdConnector.getMetadata());
                 metadataDatabases.addAll(anfisaConnector.spliceAIConnector.getMetadata());
                 metadataDatabases.addAll(anfisaConnector.conservationConnector.getMetadata());
+                metadataDatabases.addAll(anfisaConnector.gnomadConnector.getMetadata());
                 metadataDatabases.sort(Comparator.comparing(o -> o.product));
             }
         }

@@ -51,6 +51,11 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         );
     }
 
+    @Override
+    public List<DatabaseConnector.Metadata> getMetadata() {
+        return gnomadDataConnector.getMetadata();
+    }
+
     public CompletableFuture<GnomadResult> request(String chromosome, long position, String reference, String alternative) {
         CompletableFuture<GnomadResult> future = new CompletableFuture();
         threadPoolGnomadExecutor.submit(() -> {
@@ -152,7 +157,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
     }
 
     @Override
-    public void close(){
+    public void close() {
         databaseConnector.close();
     }
 

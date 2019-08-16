@@ -571,6 +571,7 @@ public class GetAnfisaJSONController {
         out.put("annotations_date", versions.annotationsDate);
         out.put("pipeline", versions.pipeline);
         out.put("annotations", versions.annotations);
+        out.put("annotations_build", versions.annotationsBuild);
         out.put("reference", versions.reference);
         for (DatabaseConnector.Metadata metadata : versions.metadataDatabases) {
             StringBuilder value = new StringBuilder();

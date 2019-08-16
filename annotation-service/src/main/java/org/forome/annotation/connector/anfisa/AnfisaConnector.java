@@ -84,7 +84,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private final ImmutableList<String> csq_missense = ImmutableList.of("missense_variant");
 
-    private final GnomadConnector gnomadConnector;
+    public final GnomadConnector gnomadConnector;
     public final SpliceAIConnector spliceAIConnector;
     public final ConservationConnector conservationConnector;
     public final HgmdConnector hgmdConnector;
