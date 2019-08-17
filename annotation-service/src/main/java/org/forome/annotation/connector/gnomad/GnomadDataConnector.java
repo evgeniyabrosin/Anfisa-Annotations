@@ -2,7 +2,6 @@ package org.forome.annotation.connector.gnomad;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.slf4j.Logger;
@@ -17,73 +16,7 @@ public class GnomadDataConnector implements Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(GnomadDataConnector.class);
 
-    public static final ImmutableList<String> ANCESTRIES = ImmutableList.of(
-            "AFR",
-            "AMR",
-            "ASJ",
-            "EAS",
-            "FIN",
-            "NFE",
-            "OTH"
-    );
-
-    public static final ImmutableList<String> SEX = ImmutableList.of(
-            "Male",
-            "Female"
-    );
-
-    private static final ImmutableList<String> POP_GROUPS =
-            new ImmutableList.Builder()
-                    .addAll(ANCESTRIES)
-                    .addAll(SEX)
-                    .build();
-
-    private static final ImmutableList<String> DATA_SUFFIXES =
-            new ImmutableList.Builder()
-//                    .add("raw", "POPMAX")
-                    .addAll(POP_GROUPS)
-                    .build();
-
-    private static final ImmutableList<String> KEY_COLUMNS = ImmutableList.of(
-            "CHROM",
-            "POS",
-//            "ID",
-            "REF",
-            "ALT"
-    );
-
-    public static final ImmutableList<String> DATA_PREFIXES = ImmutableList.of(
-            "AN",
-            "AC",
-            "Hom"
-    );
-
-//    private static final ImmutableList<String> HOM = ANCESTRIES.stream().map(s -> "Hom_" + s).collect(ImmutableList.toImmutableList());
-
-    private static final ImmutableList<String> AGGREGATE_DATA_COLUMNS = ImmutableList.of(
-            "AN_Female + AN_Male as AN",
-            "AC_Female + AC_Male as AC",
-            "nhomalt"
-//            ,
-//            "AN_POPMAX",
-//            "AC_POPMAX",
-//            "POPMAX"
-    );
-
-    private static final ImmutableList<String> DATA_COLUMNS =
-            DATA_PREFIXES.stream().flatMap(
-                    a -> DATA_SUFFIXES.stream()
-                            .filter(b -> !(a.equals("Hom") && b.equals("POPMAX")))
-                            .map(b -> a + '_' + b)
-            ).collect(Collectors.collectingAndThen(Collectors.toList(), ImmutableList::copyOf));
-
     private static final String TABLE = "gnom2.VARIANTS";
-
-    private static final ImmutableList<String> COLUMNS = new ImmutableList.Builder()
-            .addAll(KEY_COLUMNS)
-            .addAll(AGGREGATE_DATA_COLUMNS)
-            .addAll(DATA_COLUMNS)
-            .build();
 
     public class Result {
 
