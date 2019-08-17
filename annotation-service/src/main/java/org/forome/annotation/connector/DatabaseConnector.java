@@ -117,7 +117,7 @@ public class DatabaseConnector implements Closeable {
                     while (resultSet.next()) {
                         String product = resultSet.getString("Product");
                         String version = resultSet.getString("Version");
-                        Date date = resultSet.getDate("Date");
+                        Date date = resultSet.getDate("Date");//YYYY-MM-dd
                         metadata.add(new Metadata(
                                 product,
                                 version,
