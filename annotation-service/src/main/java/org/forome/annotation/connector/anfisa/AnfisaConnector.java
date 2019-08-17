@@ -1,6 +1,5 @@
 package org.forome.annotation.connector.anfisa;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import htsjdk.variant.variantcontext.CommonInfo;
@@ -52,11 +51,6 @@ public class AnfisaConnector implements AutoCloseable {
         put("gene_dx", "GeneDx");
     }};
 
-    private static final ImmutableList<String> csq_damaging = ImmutableList.of(
-            "transcript_ablation", "splice_acceptor_variant", "splice_donor_variant", "stop_gained", "frameshift_variant",
-            "stop_lost", "start_lost", "transcript_amplification", "inframe_insertion", "inframe_deletion"
-    );
-
     private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
         put("Ala", "A");
         put("Arg", "R");
@@ -80,9 +74,6 @@ public class AnfisaConnector implements AutoCloseable {
         put("Val", "V");
 
     }};
-
-
-    private final ImmutableList<String> csq_missense = ImmutableList.of("missense_variant");
 
     public final GnomadConnector gnomadConnector;
     public final SpliceAIConnector spliceAIConnector;
