@@ -10,6 +10,7 @@ import org.forome.annotation.connector.gtf.struct.GTFResultLookup;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,18 +47,12 @@ public class GetGTFRegionByChromosomeAndPositionsController {
 
 	@RequestMapping(value = {"", "/"})
 	public CompletableFuture<ResponseEntity> execute(HttpServletRequest request) {
-		log.debug("GetGTFRegionByChromosomeAndPositionsController execute, time: {}", System.currentTimeMillis());
-
 		Service service = Service.getInstance();
 
-		String sessionId = request.getParameter("session");
-		if (sessionId == null) {
-			throw ExceptionBuilder.buildInvalidCredentialsException();
-		}
-		Long userId = service.getNetworkService().sessionService.checkSession(sessionId);
-		if (userId == null) {
-			throw ExceptionBuilder.buildInvalidCredentialsException();
-		}
+		BuilderAuthContext builderAuthContext = new BuilderAuthContext(service);
+		builderAuthContext.auth(request);
+
+		log.debug("GetGTFRegionByChromosomeAndPositionsController execute, time: {}", System.currentTimeMillis());
 
 		String sRequestData = request.getParameter("data");
 		if (Strings.isNullOrEmpty(sRequestData)) {

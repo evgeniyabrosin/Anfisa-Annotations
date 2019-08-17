@@ -4,6 +4,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.config.connector.*;
 import org.forome.annotation.config.ensemblvep.EnsemblVepConfig;
+import org.forome.annotation.config.frontend.FrontendConfig;
 import org.forome.annotation.config.notification.NotificationSlackConfig;
 
 import java.io.InputStream;
@@ -13,6 +14,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 public class ServiceConfig {
+
+    public final FrontendConfig frontendConfig;
 
     public final EnsemblVepConfig ensemblVepConfigConnector;
 
@@ -37,6 +40,8 @@ public class ServiceConfig {
         try (InputStream is = Files.newInputStream(configFile, StandardOpenOption.READ)) {
             configFileJson = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(is);
         }
+
+        frontendConfig = new FrontendConfig((JSONObject) configFileJson.get("frontend"));
 
         JSONObject jConnectors = (JSONObject) configFileJson.get("connectors");
         gnomadConfigConnector = new GnomadConfigConnector((JSONObject) jConnectors.get("gnomad"));

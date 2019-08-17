@@ -19,6 +19,7 @@ import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.utils.ExecutorServiceUtils;
@@ -63,18 +64,12 @@ public class GetAnfisaJSONController {
 
     @RequestMapping(value = {"", "/"})
     public CompletableFuture<ResponseEntity> execute(HttpServletRequest request) {
-        log.debug("GetAnfisaJSONController execute, time: {}", System.currentTimeMillis());
-
         Service service = Service.getInstance();
 
-        String sessionId = request.getParameter("session");
-        if (sessionId == null) {
-            throw ExceptionBuilder.buildInvalidCredentialsException();
-        }
-        Long userId = service.getNetworkService().sessionService.checkSession(sessionId);
-        if (userId == null) {
-            throw ExceptionBuilder.buildInvalidCredentialsException();
-        }
+        BuilderAuthContext builderAuthContext = new BuilderAuthContext(service);
+        builderAuthContext.auth(request);
+
+        log.debug("GetAnfisaJSONController execute, time: {}", System.currentTimeMillis());
 
         String sRequestData = request.getParameter("data");
         if (Strings.isNullOrEmpty(sRequestData)) {

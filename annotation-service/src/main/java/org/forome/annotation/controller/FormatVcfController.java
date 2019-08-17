@@ -15,6 +15,7 @@ import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.format.FormatAnfisaHttpClient;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -39,10 +40,14 @@ public class FormatVcfController {
 
     @RequestMapping(value = {"/get"})
     public CompletableFuture<ResponseEntity> get(HttpServletRequest request) {
+        Service service = Service.getInstance();
+
+        BuilderAuthContext builderAuthContext = new BuilderAuthContext(service);
+        builderAuthContext.auth(request);
+
         String requestId = UUID.randomUUID().toString().toLowerCase();
         log.debug("FormatVcfController requestId: {}, time: {}", requestId, System.currentTimeMillis());
 
-        Service service = Service.getInstance();
         AnfisaConnector anfisaConnector = service.getAnfisaConnector();
         if (anfisaConnector == null) {
             throw ExceptionBuilder.buildInvalidOperation("inited");
@@ -54,15 +59,6 @@ public class FormatVcfController {
             formatAnfisaHttpClient = new FormatAnfisaHttpClient();
         } catch (IOException e) {
             throw ExceptionBuilder.buildIOErrorException(e);
-        }
-
-        String sessionId = request.getParameter("session");
-        if (sessionId == null) {
-            throw ExceptionBuilder.buildInvalidCredentialsException();
-        }
-        Long userId = service.getNetworkService().sessionService.checkSession(sessionId);
-        if (userId == null) {
-            throw ExceptionBuilder.buildInvalidCredentialsException();
         }
 
         TempVCFFile tempVCFFile = buildTempVCFFile(request);
