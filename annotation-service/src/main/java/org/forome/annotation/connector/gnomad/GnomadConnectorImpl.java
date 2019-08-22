@@ -221,9 +221,13 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
             }
         }
 
-        return new GnomadResult.Popmax(
-                group, (popmaxAF == null) ? 0 : popmaxAF, popmaxAN
-        );
+        if (group == null) {
+            return null;
+        } else {
+            return new GnomadResult.Popmax(
+                    group, popmaxAF, popmaxAN
+            );
+        }
     }
 
     private static long countHom(List<GnomadDataConnector.Result> items) {
