@@ -1,67 +1,41 @@
 package org.forome.annotation.connector.anfisa.struct;
 
-import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Sample;
+import org.forome.annotation.struct.variant.Variant;
 
 import java.util.Map;
 
 public class AnfisaInput {
 
-    public final Chromosome chromosome;
-    public final long start;
-    public final long end;
+    public final Variant variant;
     public final JSONObject vepJson;
-    public final VariantContext variantContext;
     public final Map<String, Sample> samples;
 
     private AnfisaInput(
-            Chromosome chromosome,
-            long start, long end,
+            Variant variant,
             JSONObject vepJson,
-            VariantContext variantContext,
             Map<String, Sample> samples
     ) {
-        this.chromosome = chromosome;
-        this.start = start;
-        this.end = end;
+        this.variant = variant;
         this.vepJson = vepJson;
-        this.variantContext = variantContext;
         this.samples = samples;
-
-
-        //Валидируем хромосому
-        //TODO Ulitin V. Необходима валидация хромосомы!!!
-
-//        vepJson.getAsString("seq_region_name")
     }
 
     public static class Builder {
 
-        public final Chromosome chromosome;
-        public final long start;
-        public final long end;
+        private Variant variant;
         private JSONObject vepJson;
-        private VariantContext variantContext;
         private Map<String, Sample> samples;
 
         public Builder(
-                Chromosome chromosome,
-                long start, long end
+                Variant variant
         ) {
-            this.chromosome = chromosome;
-            this.start = start;
-            this.end = end;
+            this.variant = variant;
         }
 
         public Builder withVepJson(JSONObject vepJson) {
             this.vepJson = vepJson;
-            return this;
-        }
-
-        public Builder withVariantContext(VariantContext variantContext) {
-            this.variantContext = variantContext;
             return this;
         }
 
@@ -72,10 +46,8 @@ public class AnfisaInput {
 
         public AnfisaInput build() {
             return new AnfisaInput(
-                    chromosome,
-                    start, end,
+                    variant,
                     vepJson,
-                    variantContext,
                     samples
             );
         }

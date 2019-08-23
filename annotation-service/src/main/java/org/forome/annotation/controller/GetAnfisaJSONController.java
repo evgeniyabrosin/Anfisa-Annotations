@@ -22,6 +22,7 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Sample;
+import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,11 +51,11 @@ public class GetAnfisaJSONController {
     public static class RequestItem {
 
         public final Chromosome chromosome;
-        public final long start;
-        public final long end;
+        public final int start;
+        public final int end;
         public final String alternative;
 
-        public RequestItem(Chromosome chromosome, long start, long end, String alternative) {
+        public RequestItem(Chromosome chromosome, int start, int end, String alternative) {
             this.chromosome = chromosome;
             this.start = start;
             this.end = end;
@@ -86,10 +87,9 @@ public class GetAnfisaJSONController {
                 List<CompletableFuture<AnfisaResult>> futureAnfisaResults = new ArrayList<>();
                 AnfisaConnector anfisaConnector = service.getAnfisaConnector();
                 for (RequestItem requestItem : requestItems) {
+                    Variant variant = new Variant(requestItem.chromosome, requestItem.start, requestItem.end);
                     futureAnfisaResults.add(anfisaConnector.request(
-                            requestItem.chromosome,
-                            requestItem.start,
-                            requestItem.end,
+                            variant,
                             requestItem.alternative
                     ));
                 }
@@ -163,9 +163,9 @@ public class GetAnfisaJSONController {
 
             Chromosome chromosome = new Chromosome(oItem.getAsString("chromosome"));
 
-            long start = RequestParser.toLong("start", oItem.getAsString("start"));
+            int start = RequestParser.toInteger("start", oItem.getAsString("start"));
 
-            long end = RequestParser.toLong("end", oItem.getAsString("end"));
+            int end = RequestParser.toInteger("end", oItem.getAsString("end"));
 
             String alternative = oItem.getAsString("alternative");
             if (Strings.isNullOrEmpty(alternative)) {

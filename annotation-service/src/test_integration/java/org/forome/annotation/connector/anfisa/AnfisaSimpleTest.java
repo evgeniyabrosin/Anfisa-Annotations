@@ -5,6 +5,7 @@ import org.forome.annotation.annotator.AnnotatorTest;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.variant.Variant;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +53,14 @@ public class AnfisaSimpleTest extends AnfisaBaseTest {
 //        );
     }
 
-    private AnfisaResult request(Chromosome chromosome, long start, long end, String alternative) throws ExecutionException, InterruptedException {
-        AnfisaResult anfisaResult = anfisaConnector.request(chromosome, start, end, alternative).get();
+    private AnfisaResult request(Chromosome chromosome, int start, int end, String alternative) throws ExecutionException, InterruptedException {
+        Variant variant = new Variant(
+                chromosome,
+                start,
+                end
+        );
+
+        AnfisaResult anfisaResult = anfisaConnector.request(variant, alternative).get();
         return anfisaResult;
     }
 }

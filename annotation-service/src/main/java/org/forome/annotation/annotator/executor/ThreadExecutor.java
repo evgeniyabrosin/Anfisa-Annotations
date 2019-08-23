@@ -8,8 +8,9 @@ import org.forome.annotation.annotator.input.VCFFileIterator;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Sample;
+import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.VariantVCF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,22 +114,22 @@ public class ThreadExecutor implements AutoCloseable {
                 JSONObject vepJson = source.getVepJson();
 
                 if (vepJsonIterator != null) {
-                    Chromosome chromosome = new Chromosome(vepJson.getAsString("seq_region_name"));
-                    long iStart = vepJson.getAsNumber("start").longValue();
-                    long iEnd = vepJson.getAsNumber("end").longValue();
+                    int iStart = vepJson.getAsNumber("start").intValue();
+                    int iEnd = vepJson.getAsNumber("end").intValue();
 
-                    AnfisaInput anfisaInput = new AnfisaInput.Builder(chromosome, iStart, iEnd)
+                    AnfisaInput anfisaInput = new AnfisaInput.Builder(new VariantVCF(variantContext, iStart, iEnd))
                             .withVepJson(vepJson)
-                            .withVariantContext(variantContext)
                             .withSamples(samples)
                             .build();
 
                     AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, anfisaInput);
                     result.future.complete(anfisaResult);
                 } else {
-                    Chromosome chromosome = new Chromosome(variantContext.getContig());
-                    long iStart = variantContext.getStart();
-                    long iEnd = variantContext.getEnd();
+                    Variant variant = new VariantVCF(
+                            variantContext,
+                            variantContext.getStart(), //TODO Ulitin V. Неверно, нельзя напрямую брать из vcf-файла, из за отсутсвия стандартов - не совпадение подходов
+                            variantContext.getEnd()
+                    );
 
                     Allele allele = variantContext.getAlternateAlleles().stream()
                             .filter(iAllele -> !iAllele.getDisplayString().equals("*"))
@@ -136,7 +137,7 @@ public class ThreadExecutor implements AutoCloseable {
                             .orElse(null);
                     String alternative = allele.getDisplayString();
 
-                    anfisaConnector.request(chromosome, iStart, iEnd, alternative)
+                    anfisaConnector.request(variant, alternative)
                             .thenApply(anfisaResult -> {
                                 result.future.complete(anfisaResult);
                                 return null;
