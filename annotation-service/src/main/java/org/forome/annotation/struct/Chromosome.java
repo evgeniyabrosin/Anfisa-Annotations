@@ -5,6 +5,7 @@ import org.forome.annotation.exception.ExceptionBuilder;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Chromosome {
@@ -53,6 +54,19 @@ public class Chromosome {
      */
     public String getChromosome(){
         return toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Chromosome that = (Chromosome) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 
     @Override

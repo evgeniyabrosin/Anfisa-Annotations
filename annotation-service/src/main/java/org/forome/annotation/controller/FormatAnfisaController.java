@@ -11,6 +11,7 @@ import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
+import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,11 +65,10 @@ public class FormatAnfisaController {
 
                 List<CompletableFuture<JSONObject>> futureAnfisaResults = new ArrayList<>();
                 for (GetAnfisaJSONController.RequestItem requestItem : requestItems) {
+                    Variant variant = new Variant(requestItem.chromosome, requestItem.start, requestItem.end);
                     futureAnfisaResults.add(
                             anfisaConnector.request(
-                                    requestItem.chromosome,
-                                    requestItem.start,
-                                    requestItem.end,
+                                    variant,
                                     requestItem.alternative
                             )
                                     .thenCompose(anfisaResult -> {

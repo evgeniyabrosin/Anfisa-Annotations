@@ -6,7 +6,6 @@ import org.forome.annotation.struct.Chromosome;
 
 public class RequestParser {
 
-
     public static String toChromosome(String value) {
         Chromosome chromosome = new Chromosome(value);
         return chromosome.getChar();
@@ -18,6 +17,17 @@ public class RequestParser {
         }
         try {
             return Long.parseLong(value);
+        } catch (Throwable ex) {
+            throw ExceptionBuilder.buildInvalidValueException(param, value);
+        }
+    }
+
+    public static int toInteger(String param, String value) {
+        if (Strings.isNullOrEmpty(value)) {
+            throw ExceptionBuilder.buildInvalidValueException(param, value);
+        }
+        try {
+            return Integer.parseInt(value);
         } catch (Throwable ex) {
             throw ExceptionBuilder.buildInvalidValueException(param, value);
         }
