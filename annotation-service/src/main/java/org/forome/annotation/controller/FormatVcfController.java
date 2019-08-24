@@ -16,6 +16,7 @@ import org.forome.annotation.connector.format.FormatAnfisaHttpClient;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
+import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -48,11 +49,16 @@ public class FormatVcfController {
         String requestId = UUID.randomUUID().toString().toLowerCase();
         log.debug("FormatVcfController requestId: {}, time: {}", requestId, System.currentTimeMillis());
 
+        EnsemblVepService ensemblVepService = service.getEnsemblVepService();
+        if (ensemblVepService == null) {
+            throw ExceptionBuilder.buildInvalidOperation("inited");
+        }
+
         AnfisaConnector anfisaConnector = service.getAnfisaConnector();
         if (anfisaConnector == null) {
             throw ExceptionBuilder.buildInvalidOperation("inited");
         }
-        Annotator annotator = new Annotator(anfisaConnector);
+        Annotator annotator = new Annotator(ensemblVepService, anfisaConnector);
 
         FormatAnfisaHttpClient formatAnfisaHttpClient;
         try {

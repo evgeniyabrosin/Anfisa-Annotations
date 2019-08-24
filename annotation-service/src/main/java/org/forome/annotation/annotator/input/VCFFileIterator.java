@@ -10,14 +10,10 @@ import java.util.NoSuchElementException;
 
 public class VCFFileIterator implements AutoCloseable {
 
-    private final Path pathVcf;
-
     private final VCFFileReader vcfFileReader;
     private final CloseableIterator<VariantContext> vcfFileReaderIterator;
 
     public VCFFileIterator(Path pathVcf) {
-        this.pathVcf = pathVcf;
-
         this.vcfFileReader = new VCFFileReader(pathVcf, false);
         this.vcfFileReaderIterator = vcfFileReader.iterator();
     }

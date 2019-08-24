@@ -7,6 +7,7 @@ import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.annotator.utils.CaseUtils;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
+import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.struct.Sample;
 import org.slf4j.Logger;
@@ -24,9 +25,13 @@ public class Annotator {
 
     private static final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 4;
 
+    private final EnsemblVepService ensemblVepService;
     private final AnfisaConnector anfisaConnector;
 
-    public Annotator(AnfisaConnector anfisaConnector) {
+    public Annotator(
+            EnsemblVepService ensemblVepService,
+            AnfisaConnector anfisaConnector) {
+        this.ensemblVepService = ensemblVepService;
         this.anfisaConnector = anfisaConnector;
     }
 
@@ -111,7 +116,7 @@ public class Annotator {
                         @Override
                         public void run() {
                             try (AnnotatorExecutor annotatorExecutor = new AnnotatorExecutor(
-                                    anfisaConnector,
+                                    ensemblVepService, anfisaConnector,
                                     caseSequence, samples,
                                     pathVepVcf, pathVepJson,
                                     startPosition, MAX_THREAD_COUNT,

@@ -35,7 +35,7 @@ public class AnnotatorTest extends AnfisaBaseTest {
 
     @Test
     public void test() throws Exception {
-        Annotator annotator = new Annotator(anfisaConnector);
+        Annotator annotator = new Annotator(ensemblVepService, anfisaConnector);
         int start = 29;//1
         //Ошибочные варианты: 543, 763
 

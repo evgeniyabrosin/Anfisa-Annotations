@@ -2,6 +2,7 @@ package org.forome.annotation.connector.anfisa;
 
 import org.forome.annotation.AnfisaBaseTest;
 import org.forome.annotation.annotator.AnnotatorTest;
+import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.struct.Chromosome;
@@ -60,7 +61,9 @@ public class AnfisaSimpleTest extends AnfisaBaseTest {
                 end
         );
 
-        AnfisaResult anfisaResult = anfisaConnector.request(variant, alternative).get();
+        AnfisaResult anfisaResult = ensemblVepService.getVepJson(variant, alternative)
+                .thenApply(vepJson -> anfisaConnector.build(null, new AnfisaInput.Builder().build(), variant, vepJson))
+                .get();
         return anfisaResult;
     }
 }

@@ -4,6 +4,7 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.AnfisaBaseTest;
+import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.struct.Chromosome;
@@ -65,10 +66,9 @@ public class AnfisaCheckSampleTest extends AnfisaBaseTest {
 
             AnfisaResult iResult;
             try {
-                iResult = anfisaConnector.request(
-                        variant,
-                        (String) sampleInput.get(3)
-                ).get();
+                iResult = ensemblVepService.getVepJson(variant, (String) sampleInput.get(3))
+                        .thenApply(vepJson -> anfisaConnector.build(null, new AnfisaInput.Builder().build(), variant, vepJson))
+                        .get();
             } catch (Exception e) {
                 throw new RuntimeException("Ошибка получение результатов. input: " + sampleInput.toJSONString(), e);
             }

@@ -1,4 +1,4 @@
-package org.forome.annotation.connector.anfisa;
+package org.forome.annotation.service.ensemblvep.external;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -26,9 +26,9 @@ import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-public class AnfisaHttpClient implements Closeable {
+public class EnsemblVepHttpClient implements Closeable {
 
-    private final static Logger log = LoggerFactory.getLogger(AnfisaHttpClient.class);
+    private final static Logger log = LoggerFactory.getLogger(EnsemblVepHttpClient.class);
 
     private class QueueRequest {
 
@@ -57,7 +57,7 @@ public class AnfisaHttpClient implements Closeable {
 
     private Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
 
-    protected AnfisaHttpClient(
+    protected EnsemblVepHttpClient(
             Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) throws IOException {
         requestConfig = RequestConfig.custom()

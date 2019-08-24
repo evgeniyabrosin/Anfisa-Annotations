@@ -8,6 +8,7 @@ import org.forome.annotation.annotator.input.VCFFileIterator;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
+import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantVCF;
@@ -29,6 +30,7 @@ public class ThreadExecutor implements AutoCloseable {
 
     private final int index;
 
+    private final EnsemblVepService ensemblVepService;
     private final AnfisaConnector anfisaConnector;
 
     private final String caseSequence;
@@ -48,6 +50,7 @@ public class ThreadExecutor implements AutoCloseable {
 
     public ThreadExecutor(
             int index,
+            EnsemblVepService ensemblVepService,
             AnfisaConnector anfisaConnector,
             String caseSequence, Map<String, Sample> samples,
             Path pathVcf, Path pathVepJson,
@@ -56,6 +59,7 @@ public class ThreadExecutor implements AutoCloseable {
     ) {
         this.index = index;
 
+        this.ensemblVepService = ensemblVepService;
         this.anfisaConnector = anfisaConnector;
 
         this.caseSequence = caseSequence;
@@ -117,12 +121,16 @@ public class ThreadExecutor implements AutoCloseable {
                     int iStart = vepJson.getAsNumber("start").intValue();
                     int iEnd = vepJson.getAsNumber("end").intValue();
 
-                    AnfisaInput anfisaInput = new AnfisaInput.Builder(new VariantVCF(variantContext, iStart, iEnd))
-                            .withVepJson(vepJson)
+                    AnfisaInput anfisaInput = new AnfisaInput.Builder()
                             .withSamples(samples)
                             .build();
 
-                    AnfisaResult anfisaResult = anfisaConnector.build(caseSequence, anfisaInput);
+                    AnfisaResult anfisaResult = anfisaConnector.build(
+                            caseSequence,
+                            anfisaInput,
+                            new VariantVCF(variantContext, iStart, iEnd),
+                            vepJson
+                    );
                     result.future.complete(anfisaResult);
                 } else {
                     Variant variant = new VariantVCF(
@@ -137,8 +145,10 @@ public class ThreadExecutor implements AutoCloseable {
                             .orElse(null);
                     String alternative = allele.getDisplayString();
 
-                    anfisaConnector.request(variant, alternative)
-                            .thenApply(anfisaResult -> {
+                    ensemblVepService.getVepJson(variant, alternative)
+                            .thenApply(iVepJson -> {
+                                AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
+                                AnfisaResult anfisaResult = anfisaConnector.build(null, anfisaInput, variant, iVepJson);
                                 result.future.complete(anfisaResult);
                                 return null;
                             })

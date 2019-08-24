@@ -6,11 +6,13 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.Main;
 import org.forome.annotation.Service;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
+import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.format.FormatAnfisaHttpClient;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
+import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
@@ -49,6 +51,11 @@ public class FormatAnfisaController {
             throw ExceptionBuilder.buildInvalidValueException("data");
         }
 
+        EnsemblVepService ensemblVepService = service.getEnsemblVepService();
+        if (ensemblVepService == null) {
+            throw ExceptionBuilder.buildInvalidOperation("inited");
+        }
+
         AnfisaConnector anfisaConnector = service.getAnfisaConnector();
         if (anfisaConnector == null) {
             throw ExceptionBuilder.buildInvalidOperation("inited");
@@ -67,10 +74,8 @@ public class FormatAnfisaController {
                 for (GetAnfisaJSONController.RequestItem requestItem : requestItems) {
                     Variant variant = new Variant(requestItem.chromosome, requestItem.start, requestItem.end);
                     futureAnfisaResults.add(
-                            anfisaConnector.request(
-                                    variant,
-                                    requestItem.alternative
-                            )
+                            ensemblVepService.getVepJson(variant, requestItem.alternative)
+                                    .thenApply(vepJson -> anfisaConnector.build(null, new AnfisaInput.Builder().build(), variant, vepJson))
                                     .thenCompose(anfisaResult -> {
                                         JSONObject result = GetAnfisaJSONController.build(anfisaResult);
                                         CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
