@@ -12,7 +12,7 @@ public class InventoryTest {
 
     @Test
     public void test() throws URISyntaxException {
-        Path inventoryFile = Paths.get(getClass().getClassLoader().getResource("inventory/bch0051.cfg").toURI());
+        Path inventoryFile = Paths.get(getClass().getClassLoader().getResource("inventory/bch0051/bch0051_wgs_1.cfg").toURI());
 
         Inventory inventory = new Inventory.Builder(inventoryFile).build();
         Assert.assertEquals("bch0051", inventory.caseName);

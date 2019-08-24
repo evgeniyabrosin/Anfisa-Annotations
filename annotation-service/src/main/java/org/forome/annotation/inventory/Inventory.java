@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Inventory {
@@ -53,6 +54,10 @@ public class Inventory {
     }
 
     public static class Builder {
+
+        private static Pattern PATTERN_ALIAS_SPLIT = Pattern.compile(
+                "^split\\('([^']*)'\\,\\s*'([^\\\"]*)'\\)$"
+        );
 
         private String caseName;
         private CasePlatform casePlatform;
@@ -108,16 +113,28 @@ public class Inventory {
                 JSONObject jAliases = (JSONObject) jData.get("aliases");
                 if (jAliases != null) {
                     for (Map.Entry<String, Object> entry : jAliases.entrySet()) {
-                        aliases.put(entry.getKey(), (String) entry.getValue());
+                        String key = entry.getKey();
+                        String value = (String) entry.getValue();
+
+                        Matcher matcherSplit = PATTERN_ALIAS_SPLIT.matcher(value);
+                        if (matcherSplit.matches()) {
+                            String[] keys = key.split(",");
+                            String[] values = getValueWithAliase(matcherSplit.group(1), aliases).split(matcherSplit.group(2));
+                            for (int i = 0; i < values.length; i++) {
+                                aliases.put(keys[i].trim(), values[i]);
+                            }
+                        } else {
+                            aliases.put(key, value);
+                        }
                     }
                 }
 
-                caseName = getValueWithAliase(jData.getAsString("name"), aliases);
+                caseName = getValueWithAliase(jData.getAsString("case"), aliases);
                 if (caseName == null) {
-                    throw ExceptionBuilder.buildInvalidValueInventoryException("name");
+                    throw ExceptionBuilder.buildInvalidValueInventoryException("case");
                 }
 
-                casePlatform = CasePlatform.valueOf(jData.getAsString("platform").toUpperCase());
+                casePlatform = CasePlatform.valueOf(getValueWithAliase(jData.getAsString("platform"), aliases).toUpperCase());
 
                 String pathFamFile = getValueWithAliase(jData.getAsString("fam"), aliases);
                 if (pathFamFile == null) {

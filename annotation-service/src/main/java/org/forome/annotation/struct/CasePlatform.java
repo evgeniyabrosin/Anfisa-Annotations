@@ -4,6 +4,8 @@ public enum CasePlatform {
 
     WGS,
 
-    WES;
+    WES,
+
+    PANEL
 
 }
