@@ -1,5 +1,6 @@
 package org.forome.annotation.service.ssh.struct;
 
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -74,6 +75,9 @@ public class SSHConnect implements AutoCloseable {
         return localPort;
     }
 
+    public Channel openChannel() throws JSchException {
+        return sshSession.openChannel("exec");
+    }
 
     private synchronized void disconnect() {
         tunnels.clear();

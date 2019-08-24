@@ -15,6 +15,8 @@ import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.controller.GetAnfisaJSONController;
+import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.notification.NotificationService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.CasePlatform;
@@ -68,6 +70,7 @@ public class AnnotationConsole {
     private ClinvarConnector clinvarConnector;
     private LiftoverConnector liftoverConnector;
     private GTFConnector gtfConnector;
+    private EnsemblVepService ensemblVepService;
     private AnfisaConnector anfisaConnector;
 
     public AnnotationConsole(
@@ -112,6 +115,7 @@ public class AnnotationConsole {
             clinvarConnector = new ClinvarConnector(sshTunnelService, serviceConfig.clinVarConfigConnector);
             liftoverConnector = new LiftoverConnector();
             gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, arguments));
+            ensemblVepService = new EnsemblVepExternalService((t, e) -> fail(e, arguments));
             anfisaConnector = new AnfisaConnector(
                     gnomadConnector,
                     spliceAIConnector,
@@ -197,7 +201,7 @@ public class AnnotationConsole {
             }
 
 
-            Annotator annotator = new Annotator(anfisaConnector);
+            Annotator annotator = new Annotator(ensemblVepService, anfisaConnector);
             AnnotatorResult annotatorResult = annotator.exec(
                     caseName,
                     casePlatform,

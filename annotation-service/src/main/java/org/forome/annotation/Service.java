@@ -17,6 +17,8 @@ import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.executionqueue.*;
 import org.forome.annotation.network.NetworkService;
 import org.forome.annotation.network.component.UserEditableComponent;
+import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.notification.NotificationService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.utils.ArgumentParser;
@@ -75,6 +77,7 @@ public class Service {
     private final ClinvarConnector clinvarConnector;
     private final LiftoverConnector liftoverConnector;
     private final GTFConnector gtfConnector;
+    private final EnsemblVepService ensemblVepService;
     private final AnfisaConnector anfisaConnector;
 
     private final NotificationService notificationService;
@@ -105,6 +108,7 @@ public class Service {
         this.clinvarConnector = new ClinvarConnector(sshTunnelService, serviceConfig.clinVarConfigConnector);
         this.liftoverConnector = new LiftoverConnector();
         this.gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
+        this.ensemblVepService = new EnsemblVepExternalService(uncaughtExceptionHandler);
         this.anfisaConnector = new AnfisaConnector(
                 gnomadConnector,
                 spliceAIConnector,
@@ -171,6 +175,10 @@ public class Service {
 
     public GTFConnector getGtfConnector() {
         return gtfConnector;
+    }
+
+    public EnsemblVepService getEnsemblVepService() {
+        return ensemblVepService;
     }
 
     public AnfisaConnector getAnfisaConnector() {

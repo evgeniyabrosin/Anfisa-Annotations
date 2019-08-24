@@ -9,10 +9,7 @@ import org.forome.annotation.Service;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResultData;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResultFilters;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResultView;
+import org.forome.annotation.connector.anfisa.struct.*;
 import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
@@ -20,6 +17,7 @@ import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
+import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.struct.variant.Variant;
@@ -77,6 +75,11 @@ public class GetAnfisaJSONController {
             throw ExceptionBuilder.buildInvalidValueException("data");
         }
 
+        EnsemblVepService ensemblVepService = service.getEnsemblVepService();
+        if (ensemblVepService == null) {
+            throw ExceptionBuilder.buildInvalidOperation("inited");
+        }
+
         CompletableFuture<JSONArray> future = new CompletableFuture<>();
         ExecutorServiceUtils.poolExecutor.execute(() -> {
             try {
@@ -88,10 +91,10 @@ public class GetAnfisaJSONController {
                 AnfisaConnector anfisaConnector = service.getAnfisaConnector();
                 for (RequestItem requestItem : requestItems) {
                     Variant variant = new Variant(requestItem.chromosome, requestItem.start, requestItem.end);
-                    futureAnfisaResults.add(anfisaConnector.request(
-                            variant,
-                            requestItem.alternative
-                    ));
+                    futureAnfisaResults.add(
+                            ensemblVepService.getVepJson(variant, requestItem.alternative)
+                                    .thenApply(vepJson -> anfisaConnector.build(null, new AnfisaInput.Builder().build(), variant, vepJson))
+                    );
                 }
 
                 CompletableFuture.allOf(futureAnfisaResults.toArray(new CompletableFuture[futureAnfisaResults.size()]))
