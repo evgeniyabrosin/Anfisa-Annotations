@@ -117,7 +117,7 @@ public class Inventory {
                     throw ExceptionBuilder.buildInvalidValueInventoryException("name");
                 }
 
-                casePlatform = CasePlatform.valueOf(jData.getAsString("platform").toUpperCase());
+                casePlatform = CasePlatform.valueOf(getValueWithAliase(jData.getAsString("platform"), aliases).toUpperCase());
 
                 String pathFamFile = getValueWithAliase(jData.getAsString("fam"), aliases);
                 if (pathFamFile == null) {
