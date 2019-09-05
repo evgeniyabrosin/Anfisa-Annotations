@@ -25,7 +25,6 @@ public class ArgumentsInventory extends Arguments {
             throw new IllegalArgumentException("Config file is not exists: " + config);
         }
 
-
         String strInventoryFile = cmd.getOptionValue(ParserArgument.OPTION_FILE_INVENTORY);
         if (Strings.isNullOrEmpty(strInventoryFile)) {
             throw new IllegalArgumentException("Missing inventory file");

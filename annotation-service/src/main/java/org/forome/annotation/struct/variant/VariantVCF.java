@@ -17,7 +17,9 @@ public class VariantVCF extends Variant {
     }
 
     public static int getStart(VariantContext variantContext) {
-        throw new RuntimeException("Not implemented");
+        //TODO Ulitin V. Неверно, нельзя напрямую брать из vcf-файла, из за отсутсвия стандартов - не совпадение подходов
+        return variantContext.getStart();
+
         //Для определения start. Совершенно нет стандартов, поэтому пока был выбран подход как у vep
 //        if (!variantContext.isSimpleInsertion() && !variantContext.isSimpleDeletion()) {
 //            return variantContext.getStart();
@@ -26,5 +28,10 @@ public class VariantVCF extends Variant {
 //        } else {
 //            throw new RuntimeException("Unknown");
 //        }
+    }
+
+    public static int getEnd(VariantContext variantContext) {
+        //TODO Ulitin V. Необходимо проверить!!!, из за отсутсвия стандартов - не совпадение подходов
+        return variantContext.getEnd();
     }
 }
