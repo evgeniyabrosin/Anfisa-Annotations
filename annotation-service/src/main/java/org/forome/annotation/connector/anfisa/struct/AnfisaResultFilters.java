@@ -40,6 +40,8 @@ public class AnfisaResultFilters {
 	public ClinvarVariantSummary.ReviewStatus clinvarReviewStatus;
 	public String[] clinvarAcmgGuidelines;
 
+	public Float cnvLO;
+
 	public AnfisaResultFilters() {
 	}
 }

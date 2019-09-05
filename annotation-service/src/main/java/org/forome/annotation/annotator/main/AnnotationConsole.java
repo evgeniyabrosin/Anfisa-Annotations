@@ -51,6 +51,8 @@ public class AnnotationConsole {
     private final Path vcfFile;
     private final Path vepJsonFile;
 
+    private final Path cnvFile;
+
     private final int startPosition;
 
     private final Path outFile;
@@ -78,6 +80,7 @@ public class AnnotationConsole {
             String caseName, CasePlatform casePlatform,
             Path famFile, Path patientIdsFile,
             Path vcfFile, Path vepJsonFile,
+            Path cnvFile,
             int startPosition,
             Path outFile,
             Supplier<String> arguments
@@ -90,6 +93,8 @@ public class AnnotationConsole {
 
         this.vcfFile = vcfFile;
         this.vepJsonFile = vepJsonFile;
+
+        this.cnvFile = cnvFile;
 
         this.startPosition = startPosition;
 
@@ -137,7 +142,8 @@ public class AnnotationConsole {
             log.info("Input famFile: {}", famFile);
             log.info("Input vepVcfFile: {}", vcfFile);
             log.info("Input start position: {}", startPosition);
-            log.info("Input vepJsonFile: {}", (vepJsonFile != null) ? vepJsonFile : null);
+            log.info("Input vepJsonFile: {}", vepJsonFile);
+            log.info("Input cnvFile: {}", cnvFile);
 
             Path pathVepJson;
             if (vepJsonFile != null) {
@@ -209,6 +215,7 @@ public class AnnotationConsole {
                     patientIdsFile,
                     vcfFile,
                     pathVepJson,
+                    cnvFile,
                     startPosition
             );
             Files.deleteIfExists(outFile);

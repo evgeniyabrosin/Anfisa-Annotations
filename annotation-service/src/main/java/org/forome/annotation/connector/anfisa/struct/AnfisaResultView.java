@@ -134,6 +134,7 @@ public class AnfisaResultView {
         public List<String> spliceAiAl = new ArrayList<>();
         public List<String> spliceAiDg = new ArrayList<>();
         public List<String> spliceAiDl = new ArrayList<>();
+        public Float cnvLO;
 
         public List<String> getSpliceAiValues(String key) {
             switch (key) {

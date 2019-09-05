@@ -39,6 +39,7 @@ public class AnnotatorMain {
                     inventory.caseName, inventory.casePlatform,
                     inventory.famFile, inventory.patientIdsFile,
                     inventory.vcfFile, inventory.vepJsonFile,
+                    inventory.cnvFile,
                     0,
                     inventory.outFile,
                     () -> arguments.getArguments()
@@ -51,6 +52,7 @@ public class AnnotatorMain {
                     argumentsAnnotation.caseName, argumentsAnnotation.casePlatform,
                     argumentsAnnotation.pathFam, argumentsAnnotation.patientIdsFile,
                     argumentsAnnotation.pathVcf, argumentsAnnotation.pathVepJson,
+                    argumentsAnnotation.pathCnv,
                     argumentsAnnotation.start,
                     argumentsAnnotation.pathOutput,
                     () -> arguments.getArguments()

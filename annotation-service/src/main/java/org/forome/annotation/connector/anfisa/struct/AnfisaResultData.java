@@ -57,6 +57,8 @@ public class AnfisaResultData {
 
     public Map<String, SpliceAIResult.DictSql> spliceAI;
 
+	public Map<String, String> cnvGT;
+
 	public String version;
 
 	public void setField(String name, String value) {

@@ -19,6 +19,7 @@ public class AnnotatorExecutor implements AutoCloseable {
             AnfisaConnector anfisaConnector,
             String caseSequence, Map<String, Sample> samples,
             Path pathVepVcf, Path pathVepJson,
+            Path cnvFile,
             int start, int thread,
             Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) {
@@ -32,6 +33,7 @@ public class AnnotatorExecutor implements AutoCloseable {
                     anfisaConnector,
                     caseSequence, samples,
                     pathVepVcf, pathVepJson,
+                    cnvFile,
                     start + i, thread,
                     uncaughtExceptionHandler
             );

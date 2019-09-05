@@ -28,6 +28,8 @@ public class Inventory {
     public final Path vcfFile;
     public final Path vepJsonFile;
 
+    public final Path cnvFile;
+
     public final Path outFile;
 
     public final Path logFile;
@@ -36,6 +38,7 @@ public class Inventory {
             String caseName, CasePlatform casePlatform,
             Path famFile, Path patientIdsFile,
             Path vcfFile, Path vepJsonFile,
+            Path cnvFile,
             Path outFile,
             Path logFile
     ) {
@@ -47,6 +50,8 @@ public class Inventory {
 
         this.vcfFile = vcfFile;
         this.vepJsonFile = vepJsonFile;
+
+        this.cnvFile = cnvFile;
 
         this.outFile = outFile;
 
@@ -67,6 +72,8 @@ public class Inventory {
 
         private Path vcfFile;
         private Path vepJsonFile;
+
+        private Path cnvFile;
 
         private Path outFile;
 
@@ -158,6 +165,11 @@ public class Inventory {
                     vepJsonFile = Paths.get(pathVepJsonFile).toAbsolutePath();
                 }
 
+                String pathCnvFile = getValueWithAliase(jData.getAsString("cnv"), aliases);
+                if (pathCnvFile != null) {
+                    cnvFile = Paths.get(pathCnvFile).toAbsolutePath();
+                }
+
                 String pathOutFile = getValueWithAliase(jData.getAsString("a-json"), aliases);
                 if (pathOutFile == null) {
                     throw ExceptionBuilder.buildInvalidValueInventoryException("a-json");
@@ -199,6 +211,7 @@ public class Inventory {
                     caseName, casePlatform,
                     famFile, patientIdsFile,
                     vcfFile, vepJsonFile,
+                    cnvFile,
                     outFile,
                     logFile
             );

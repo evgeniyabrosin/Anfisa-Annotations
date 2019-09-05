@@ -12,6 +12,7 @@ import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantVCF;
+import org.forome.annotation.struct.variant.cnv.VariantCNV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,7 @@ public class ThreadExecutor implements AutoCloseable {
             AnfisaConnector anfisaConnector,
             String caseSequence, Map<String, Sample> samples,
             Path pathVcf, Path pathVepJson,
+            Path cnvFile,
             int start, int step,
             Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) {
@@ -68,7 +70,7 @@ public class ThreadExecutor implements AutoCloseable {
         this.start = start;
         this.step = step;
 
-        this.vcfFileIterator = new VCFFileIterator(pathVcf);
+        this.vcfFileIterator = new VCFFileIterator(pathVcf, cnvFile);
 
         if (pathVepJson != null) {
             vepJsonIterator = new FileReaderIterator(pathVepJson);
@@ -114,10 +116,10 @@ public class ThreadExecutor implements AutoCloseable {
                     continue;
                 }
 
-                VariantContext variantContext = source.variantContext;
+                Variant variant = source.variant;
                 JSONObject vepJson = source.getVepJson();
 
-                if (vepJsonIterator != null) {
+                if (variant instanceof VariantVCF && vepJsonIterator != null) {
                     int iStart = vepJson.getAsNumber("start").intValue();
                     int iEnd = vepJson.getAsNumber("end").intValue();
 
@@ -128,22 +130,31 @@ public class ThreadExecutor implements AutoCloseable {
                     AnfisaResult anfisaResult = anfisaConnector.build(
                             caseSequence,
                             anfisaInput,
-                            new VariantVCF(variantContext, iStart, iEnd),
+                            new VariantVCF(((VariantVCF) variant).variantContext, iStart, iEnd),
                             vepJson
                     );
                     result.future.complete(anfisaResult);
                 } else {
-                    Variant variant = new VariantVCF(
-                            variantContext,
-                            variantContext.getStart(), //TODO Ulitin V. Неверно, нельзя напрямую брать из vcf-файла, из за отсутсвия стандартов - не совпадение подходов
-                            variantContext.getEnd()
-                    );
+//                    Variant variant = new VariantVCF(
+//                            variantContext,
+//                            variantContext.getStart(), //TODO Ulitin V. Неверно, нельзя напрямую брать из vcf-файла, из за отсутсвия стандартов - не совпадение подходов
+//                            variantContext.getEnd()
+//                    );
 
-                    Allele allele = variantContext.getAlternateAlleles().stream()
-                            .filter(iAllele -> !iAllele.getDisplayString().equals("*"))
-                            .max(Comparator.comparing(variantContext::getCalledChrCount))
-                            .orElse(null);
-                    String alternative = allele.getDisplayString();
+                    String alternative;
+                    if (variant instanceof VariantVCF) {
+                        VariantContext variantContext = ((VariantVCF) variant).variantContext;
+
+                        Allele allele = variantContext.getAlternateAlleles().stream()
+                                .filter(iAllele -> !iAllele.getDisplayString().equals("*"))
+                                .max(Comparator.comparing(variantContext::getCalledChrCount))
+                                .orElse(null);
+                        alternative = allele.getDisplayString();
+                    } else if (variant instanceof VariantCNV) {
+                        alternative = "-";
+                    } else {
+                        throw new RuntimeException("Not support type variant: " + variant);
+                    }
 
                     ensemblVepService.getVepJson(variant, alternative)
                             .thenApply(iVepJson -> {
@@ -178,11 +189,11 @@ public class ThreadExecutor implements AutoCloseable {
 
     private Source nextSource(int step) {
         if (step < 1) throw new IllegalArgumentException();
-        VariantContext variantContext = null;
+        Variant variant = null;
         String strVepJson = null;
         for (int i = 0; i < step; i++) {
             try {
-                variantContext = vcfFileIterator.next();
+                variant = vcfFileIterator.next();
             } catch (NoSuchElementException ne) {
                 //Валидация того, что в vep.json - тоже не осталось записей
                 if (vepJsonIterator != null) {
@@ -194,7 +205,7 @@ public class ThreadExecutor implements AutoCloseable {
                 }
                 throw ne;
             }
-            if (vepJsonIterator != null) {
+            if (variant instanceof VariantVCF && vepJsonIterator != null) {
                 try {
                     strVepJson = vepJsonIterator.next();
                 } catch (NoSuchElementException ne) {
@@ -205,7 +216,7 @@ public class ThreadExecutor implements AutoCloseable {
                 strVepJson = null;
             }
         }
-        return new Source(variantContext, strVepJson);
+        return new Source(variant, strVepJson);
     }
 
     public Result next() {

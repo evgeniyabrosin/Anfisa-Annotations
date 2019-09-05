@@ -24,6 +24,7 @@ public class ArgumentsAnnotation extends Arguments {
     public final Path patientIdsFile;
     public final Path pathVcf;
     public final Path pathVepJson;
+    public final Path pathCnv;
     public final Path pathOutput;
 
     public final int start;
@@ -72,6 +73,13 @@ public class ArgumentsAnnotation extends Arguments {
             }
             strPathVcf = this.pathVepJson.getFileName().toString().split("\\.")[0] + ".vcf";
             this.pathVcf = Paths.get(strPathVcf).toAbsolutePath();
+        }
+
+        String strPathCnv = cmd.getOptionValue(ParserArgument.OPTION_FILE_CNV);
+        if (strPathCnv != null) {
+            this.pathCnv = Paths.get(strPathCnv).toAbsolutePath();
+        } else {
+            this.pathCnv = null;
         }
 
         this.start = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_START_POSITION, "0"));
