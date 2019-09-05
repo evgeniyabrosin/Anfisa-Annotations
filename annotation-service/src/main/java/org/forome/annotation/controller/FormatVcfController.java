@@ -73,6 +73,7 @@ public class FormatVcfController {
                 String.format("%s_wgs", "noname"),
                 null,
                 tempVCFFile.path, null,
+                null,
                 0
         );
 

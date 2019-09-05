@@ -270,6 +270,7 @@ public class GetAnfisaJSONController {
             out.put("clinvar_acmg_guidelines", anfisaResultFilters.clinvarAcmgGuidelines);
         }
 
+        out.put("cnv_lo", anfisaResultFilters.cnvLO);
         return out;
     }
 
@@ -376,6 +377,7 @@ public class GetAnfisaJSONController {
                 );
             }
         }});
+        out.put("cnv_gt", anfisaResultData.cnvGT);
         out.put("version", anfisaResultData.version);
         return out;
     }
@@ -529,6 +531,7 @@ public class GetAnfisaJSONController {
         out.put("splice_ai_dg", bioinformatics.spliceAiDg);
         out.put("splice_ai_dl", bioinformatics.spliceAiDl);
         out.put("gerp_rs", (bioinformatics.conservation != null) ? bioinformatics.conservation.gerpRS : null);
+        out.put("cnv_lo", bioinformatics.cnvLO);
         return out;
     }
 

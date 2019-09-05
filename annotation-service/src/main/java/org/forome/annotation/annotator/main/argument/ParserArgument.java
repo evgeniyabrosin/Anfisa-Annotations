@@ -16,6 +16,7 @@ public class ParserArgument {
     public static final String OPTION_FILE_FAM_NAME = "famname";
     public static final String OPTION_FILE_VCF = "vcf";
     public static final String OPTION_FILE_VEP_JSON = "vepjson";
+    public static final String OPTION_FILE_CNV = "cnv";
     public static final String OPTION_START_POSITION = "start";
     public static final String OPTION_FILE_OUTPUT = "output";
 

@@ -8,6 +8,7 @@ import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import org.forome.annotation.annotator.utils.SampleUtils;
 import org.forome.annotation.connector.anfisa.struct.*;
 import org.forome.annotation.connector.beacon.BeaconConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
@@ -29,6 +30,7 @@ import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.Sample;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantVCF;
+import org.forome.annotation.struct.variant.cnv.VariantCNV;
 import org.forome.annotation.utils.AppVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,24 +104,6 @@ public class AnfisaConnector implements AutoCloseable {
         this.gtfConnector = gtfConnector;
     }
 
-//    public CompletableFuture<AnfisaResult> request(Variant variant, String alternative) {
-//        String region = String.format("%s:%s:%s", variant.chromosome.getChar(), variant.start, variant.end);
-//        String endpoint = String.format("/vep/human/region/%s/%s?hgvs=true&canonical=true&merged=true&protein=true&variant_class=true", region, alternative);
-//
-//        return anfisaHttpClient.request(endpoint).thenApply(jsonArray -> {
-//            JSONObject vepJson = (JSONObject) jsonArray.get(0);
-//            AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-//            return build(null, anfisaInput, variant, vepJson);
-//        });
-//    }
-//
-//    public CompletableFuture<AnfisaResult> requestNew(Variant variant, String alternative) {
-//        return ensemblVepService.getVepJson(variant, alternative).thenApply(vepJson -> {
-//            AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-//            return build(null, anfisaInput, variant, vepJson);
-//        });
-//    }
-
     public AnfisaResult build(
             String caseSequence,
             AnfisaInput anfisaInput,
@@ -147,7 +131,7 @@ public class AnfisaConnector implements AutoCloseable {
         filters.severity = getSeverity(vepJson);
         filters.alts = alt_list(variant, anfisaInput.samples, vepJson);
 
-        String proband = getProband(anfisaInput.samples);
+        String proband = SampleUtils.getProband(anfisaInput.samples);
         if (proband != null) {
             String mother = anfisaInput.samples.get(proband).mother;
             String father = anfisaInput.samples.get(proband).father;
@@ -209,6 +193,14 @@ public class AnfisaConnector implements AutoCloseable {
         data.distFromBoundaryWorst = gtfAnfisaResult.distFromBoundaryWorst;
         data.regionWorst = gtfAnfisaResult.regionWorst;
 
+        if (variant instanceof VariantCNV) {
+            VariantCNV variantCNV = (VariantCNV) variant;
+            data.cnvGT = variantCNV.genotypes.values().stream()
+                    .collect(Collectors.toMap(item -> item.sampleName, item -> item.gt));
+            filters.cnvLO = view.bioinformatics.cnvLO =
+                    variantCNV.getGenotype(SampleUtils.getProband(variantCNV.genotypes.keySet())).lo;
+        }
+
         createGeneralTab(context, data, filters, view, variant.start, variant.end, vepJson, caseSequence, variant, anfisaInput.samples);
         createQualityTab(view, variant, anfisaInput.samples);
         createGnomadTab(context, variant.chromosome.getChar(), variant, anfisaInput.samples, vepJson, filters, data, view);
@@ -223,7 +215,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (variant == null || !(variant instanceof VariantVCF)) {
             return 0;
         }
-        VariantContext variantContext = ((VariantVCF)variant).variantContext;
+        VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
         Integer idx = null;
         if (sample.name.toLowerCase().equals("proband")) {
@@ -471,7 +463,7 @@ public class AnfisaConnector implements AutoCloseable {
         filters.minGq = getMinGQ(variant, samples);
         filters.probandGq = getProbandGQ(variant, samples);
         if (variant != null && variant instanceof VariantVCF) {
-            VariantContext variantContext = ((VariantVCF)variant).variantContext;
+            VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
             CommonInfo commonInfo = variantContext.getCommonInfo();
             filters.qd = toPrimitiveDouble(commonInfo.getAttribute("QD"));
@@ -672,7 +664,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (variant == null || !(variant instanceof VariantVCF)) {
             return;
         }
-        VariantContext variantContext = ((VariantVCF)variant).variantContext;
+        VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
         CommonInfo commonInfo = variantContext.getCommonInfo();
         if (commonInfo == null) return;
@@ -691,7 +683,7 @@ public class AnfisaConnector implements AutoCloseable {
         );
         view.qualitySamples.add(q_all);
 
-        String proband = getProband(samples);
+        String proband = SampleUtils.getProband(samples);
         if (proband == null) return;
 
         String mother = samples.get(proband).mother;
@@ -1018,18 +1010,6 @@ public class AnfisaConnector implements AutoCloseable {
         ));
     }
 
-    private static String getProband(Map<String, Sample> samples) {
-        if (samples == null) {
-            return null;
-        }
-        for (Map.Entry<String, Sample> entry : samples.entrySet()) {
-            if (entry.getValue().id.endsWith("a1")) {
-                return entry.getValue().id;
-            }
-        }
-        return null;
-    }
-
     public ColorCode.Code getColorCode(JSONObject vepJson, AnfisaResultData data, Record record, AnfisaResultFilters filters) {
         String csq = data.mostSevereConsequence;
         Consequences.Severity msq = Consequences.severity(csq);
@@ -1115,7 +1095,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private static List<String> alt_list(Variant variant, Map<String, Sample> samples, JSONObject vepJson) {
         if (variant != null && variant instanceof VariantVCF) {
-            VariantContext variantContext = ((VariantVCF)variant).variantContext;
+            VariantContext variantContext = ((VariantVCF) variant).variantContext;
             List<String> alleles = variantContext.getAlleles()
                     .stream().map(allele -> allele.getBaseString()).collect(Collectors.toList());
             List<String> alt_allels = variantContext.getAlternateAlleles()
@@ -1164,7 +1144,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private static String getRef(Variant variant, JSONObject vepJson) {
         if (variant != null && variant instanceof VariantVCF) {
-            VariantContext variantContext = ((VariantVCF)variant).variantContext;
+            VariantContext variantContext = ((VariantVCF) variant).variantContext;
             return variantContext.getReference().getBaseString();
         } else {
             return getRef1(vepJson);
@@ -1209,14 +1189,14 @@ public class AnfisaConnector implements AutoCloseable {
         if (samples == null || variant == null) {
             return null;
         }
-        return getVariantGQ(variant, samples.get(getProband(samples)));
+        return getVariantGQ(variant, samples.get(SampleUtils.getProband(samples)));
     }
 
     private static Integer getVariantGQ(Variant variant, Sample s) {
         if (variant == null || !(variant instanceof VariantVCF)) {
             return null;
         }
-        VariantContext variantContext = ((VariantVCF)variant).variantContext;
+        VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
         int valie = variantContext.getGenotype(s.id).getGQ();
         return (valie != -1) ? valie : null;
@@ -1633,7 +1613,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private static String ref(JSONObject json, Variant variant) {
         if (variant != null && variant instanceof VariantVCF) {
-            VariantContext variantContext = ((VariantVCF)variant).variantContext;
+            VariantContext variantContext = ((VariantVCF) variant).variantContext;
             return variantContext.getReference().getBaseString();
         } else {
             return ref1(json);
@@ -1647,7 +1627,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private static Object[] getGenotypes(Variant variant, Map<String, Sample> samples) {
         String empty = "Can not be determined";
-        String proband = getProband(samples);
+        String proband = SampleUtils.getProband(samples);
         if (proband == null) {
             return new Object[]{null, null, null, null};
         }
@@ -1693,7 +1673,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (variant == null || !(variant instanceof VariantVCF)) {
             return null;
         }
-        VariantContext variantContext = ((VariantVCF)variant).variantContext;
+        VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
         Genotype oGenotype = variantContext.getGenotype(genotype);
         if (oGenotype.isCalled()) {
@@ -1735,7 +1715,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (samples == null || variant == null || !(variant instanceof VariantVCF)) {
             return new LinkedHashSet();
         }
-        VariantContext variantContext = ((VariantVCF)variant).variantContext;
+        VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
         LinkedHashSet<String> callers = getRawCallers(variantContext);
 
@@ -1789,7 +1769,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (variant == null || !(variant instanceof VariantVCF)) {
             return Collections.emptyMap();
         }
-        VariantContext variantContext = ((VariantVCF)variant).variantContext;
+        VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
         CommonInfo commonInfo = variantContext.getCommonInfo();
 
@@ -1816,7 +1796,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (samples == null || variant == null || !(variant instanceof VariantVCF)) {
             return null;
         }
-        VariantContext variantContext = ((VariantVCF)variant).variantContext;
+        VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
         String chr = variant.chromosome.getChar();
 
@@ -1842,7 +1822,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (samples == null || variant == null || !(variant instanceof VariantVCF)) {
             return null;
         }
-        VariantContext variantContext = ((VariantVCF)variant).variantContext;
+        VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
         Object[] genotypes = getGenotypes(variant, samples);
         String probandGenotype = (String) genotypes[0];
@@ -1880,7 +1860,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (samples == null || variantContext == null) {
             return null;
         }
-        String proband = getProband(samples);
+        String proband = SampleUtils.getProband(samples);
         return samples.get(proband).sex;
     }
 

@@ -86,6 +86,7 @@ public class AnnotatorTest extends AnfisaBaseTest {
                 null,
                 Paths.get("/home/kris/processtech/tmp/bgm0135/bgm0135_wes_run3_xbrowse.vep.vcf"),
                 Paths.get("/home/kris/processtech/tmp/bgm0135/bgm0135_wes_run3_xbrowse.vep.vep.json"),
+                null,
                 start-1
         );
 

@@ -23,7 +23,8 @@ public class Annotator {
 
     private final static Logger log = LoggerFactory.getLogger(Annotator.class);
 
-    private static final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 4;
+    private static final int MAX_THREAD_COUNT = 1;
+//            Runtime.getRuntime().availableProcessors() * 4;
 
     private final EnsemblVepService ensemblVepService;
     private final AnfisaConnector anfisaConnector;
@@ -42,6 +43,7 @@ public class Annotator {
             Path pathFamSampleName,
             Path pathVepVcf,
             Path pathVepJson,
+            Path cnvFile,
             int startPosition
     ) throws IOException {
         if (!Files.exists(pathFam)) {
@@ -78,6 +80,7 @@ public class Annotator {
                     isFamSampleName,
                     pathVepVcf,
                     pathVepJson,
+                    cnvFile,
                     startPosition
             );
         }
@@ -90,6 +93,7 @@ public class Annotator {
             InputStream isFamSampleName,
             Path pathVepVcf,
             Path pathVepJson,
+            Path cnvFile,
             int startPosition
     ) throws IOException {
 
@@ -100,6 +104,7 @@ public class Annotator {
         return annotateJson(
                 caseId, samples,
                 pathVepVcf, pathVepJson,
+                cnvFile,
                 startPosition
         );
     }
@@ -107,6 +112,7 @@ public class Annotator {
     public AnnotatorResult annotateJson(
             String caseSequence, Map<String, Sample> samples,
             Path pathVepVcf, Path pathVepJson,
+            Path cnvFile,
             int startPosition
     ) {
         return new AnnotatorResult(
@@ -119,11 +125,10 @@ public class Annotator {
                                     ensemblVepService, anfisaConnector,
                                     caseSequence, samples,
                                     pathVepVcf, pathVepJson,
+                                    cnvFile,
                                     startPosition, MAX_THREAD_COUNT,
-                                    (t, e) -> {
-                                        o.tryOnError(e);
-                                    })
-                            ) {
+                                    (t, e) -> o.tryOnError(e)
+                            )) {
                                 boolean run = true;
                                 while (run) {
                                     Result result = annotatorExecutor.next();
