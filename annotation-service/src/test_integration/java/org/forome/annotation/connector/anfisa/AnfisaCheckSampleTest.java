@@ -6,7 +6,6 @@ import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.AnfisaBaseTest;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
-import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 import org.junit.Assert;
@@ -80,7 +79,7 @@ public class AnfisaCheckSampleTest extends AnfisaBaseTest {
             JSONObject jSampleResult = (JSONObject) sampleResults.get(0);
             JSONObject jResult = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(
                     //Сделано специально, что бы потерять всю информацию о типах и работать с чистым json
-                    GetAnfisaJSONController.build(iResult).toJSONString()
+                    iResult.toJSON().toJSONString()
             );
 
 //				try {

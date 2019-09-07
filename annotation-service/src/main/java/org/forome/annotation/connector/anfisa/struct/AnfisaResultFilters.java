@@ -1,5 +1,7 @@
 package org.forome.annotation.connector.anfisa.struct;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 
@@ -43,5 +45,79 @@ public class AnfisaResultFilters {
 	public Float cnvLO;
 
 	public AnfisaResultFilters() {
+	}
+
+
+	public JSONObject toJSON(AnfisaResultData anfisaResultData,
+							 AnfisaResultView.Bioinformatics bioinformatics
+	) {
+		JSONObject out = new JSONObject();
+		if (chromosome != null) {
+			out.put("chromosome", chromosome);
+		}
+		if (gnomadPopmax != null) {
+			out.put("gnomad_popmax", gnomadPopmax.group.name());
+			out.put("gnomad_popmax_af", gnomadPopmax.af);
+			out.put("gnomad_popmax_an", gnomadPopmax.an);
+		}
+		if (gnomadWidePopmax != null) {
+			out.put("gnomad_wide_popmax", gnomadWidePopmax.group.name());
+			out.put("gnomad_wide_popmax_af", gnomadWidePopmax.af);
+			out.put("gnomad_wide_popmax_an", gnomadWidePopmax.an);
+		}
+		out.put("severity", severity);
+		out.put("gnomad_af_pb", gnomadAfPb);
+		out.put("has_variant", new JSONArray());
+		out.put("min_gq", minGq);
+		out.put("dist_from_exon", distFromExon);
+		out.put("proband_gq", probandGq);
+		out.put("fs", fs);
+		out.put("qd", qd);
+
+		if (clinvarBenign != null) {
+			out.put("clinvar_benign", clinvarBenign);
+		}
+		if (clinvarTrustedBenign != null) {
+			out.put("clinvar_trusted_benign", clinvarTrustedBenign.orElse(null));
+		}
+		if (hgmdBenign != null) {
+			out.put("hgmd_benign", hgmdBenign);
+		}
+		if (mq != null) {
+			out.put("mq", mq);
+		}
+		if (filters != null) {
+			out.put("filters", filters);
+		}
+		if (has_variant != null) {
+			out.put("has_variant", has_variant);
+		}
+
+		if (altZygosity != null) {
+			out.put("alt_zygosity", altZygosity);
+		}
+
+		out.put("splice_altering", spliceAltering);
+		out.put("splice_ai_dsmax", spliceAiDsmax);
+
+		out.put("gerp_rs", (bioinformatics.conservation != null) ? bioinformatics.conservation.gerpRS : null);
+
+		out.put("ref", anfisaResultData.ref);
+		out.put("alts", alts);
+
+		out.put("num_clinvar_submitters", numClinvarSubmitters);
+
+		if (clinvarReviewStatus != null) {
+			out.put("clinvar_review_status", clinvarReviewStatus.text);
+			out.put("clinvar_criteria_provided", (clinvarReviewStatus.getCriteriaProvided() != null) ?
+					clinvarReviewStatus.getCriteriaProvided() : "Unknown");
+			out.put("clinvar_conflicts", (clinvarReviewStatus.getConflicts() != null) ?
+					clinvarReviewStatus.getConflicts() : "Unknown");
+			out.put("clinvar_stars", clinvarReviewStatus.getStars());
+			out.put("clinvar_acmg_guidelines", clinvarAcmgGuidelines);
+		}
+
+		out.put("cnv_lo", cnvLO);
+		return out;
 	}
 }

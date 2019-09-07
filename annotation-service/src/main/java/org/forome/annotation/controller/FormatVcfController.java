@@ -82,7 +82,7 @@ public class FormatVcfController {
         annotatorResult.observableAnfisaResult
                 .map(anfisaResult -> {
                     log.debug("FormatVcfController requestId: {}, 1: {}", requestId, anfisaResult);
-                    return new Object[]{anfisaResult, GetAnfisaJSONController.build(anfisaResult)};
+                    return new Object[]{anfisaResult, anfisaResult.toJSON()};
                 })
                 .flatMap(result ->
                         Observable.fromFuture(formatAnfisaHttpClient.request(((JSONObject) result[1]).toJSONString())

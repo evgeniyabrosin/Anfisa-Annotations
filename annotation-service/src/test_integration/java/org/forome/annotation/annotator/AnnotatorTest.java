@@ -5,7 +5,6 @@ import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.AnfisaBaseTest;
 import org.forome.annotation.annotator.input.FileReaderIterator;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
-import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.utils.JSONEquals;
 import org.junit.Assert;
@@ -118,7 +117,7 @@ public class AnnotatorTest extends AnfisaBaseTest {
                 anfisaResult -> {
                     JSONObject actual = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(
                             //Сделано специально, что бы потерять всю информацию о типах и работать с чистым json
-                            GetAnfisaJSONController.build(anfisaResult).toJSONString()
+                            anfisaResult.toJSON().toJSONString()
                     );
 
                     JSONObject expected = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(expecteds.next());

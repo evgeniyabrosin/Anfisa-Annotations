@@ -47,6 +47,35 @@ public class AnfisaResultView {
                     throw new RuntimeException("not support: " + name);
             }
         }
+
+        private JSONObject toJSON() {
+            JSONObject out = new JSONObject();
+            if (clinVar != null) {
+                out.put("clinVar", clinVar);
+            }
+            out.put("hgmd_pmids", hgmdPmids);
+            out.put("beacons", beacons);
+            out.put("pubmed_search", pubmedSearch);
+            out.put("clinVar_variants", clinVarVariants);
+            out.put("clinVar_phenotypes", clinVarPhenotypes);
+            out.put("hgmd", hgmd);
+            if (hgmdHg38 != null) {
+                out.put("hgmd_hg38", hgmdHg38);
+            }
+            out.put("hgmd_tags", hgmdTags);
+            out.put("omim", omim);
+            out.put("beacon_url", beaconUrl);
+            out.put("gene_dx_significance", geneDxSignificance);
+            out.put("hgmd_phenotypes", hgmdPhenotypes);
+            out.put("clinVar_submitters", clinVarSubmitters);
+            out.put("lmm_significance", lmmSignificance);
+            out.put("gene_cards", geneCards);
+            out.put("clinVar_significance", clinVarSignificance);
+            out.put("num_clinvar_submitters", numClinvarSubmitters);
+            out.put("clinvar_acmg_guidelines", clinvarAcmgGuidelines);
+            out.put("clinvar_review_status", clinvarReviewStatus);
+            return out;
+        }
     }
 
     public class Predictions {
@@ -67,6 +96,28 @@ public class AnfisaResultView {
         public List<Double> caddPhred;
         public List<Double> caddRaw;
         public String[] mutationAssessor;
+
+        private JSONObject toJSON() {
+            JSONObject out = new JSONObject();
+            out.put("polyphen2_hdiv_score", polyphen2HdivScore);
+            out.put("mutation_assessor", mutationAssessor);
+            out.put("fathmm", fathmm);
+            out.put("polyphen2_hdiv", polyphen2Hdiv);
+            out.put("polyphen2_hvar", polyphen2Hvar);
+            out.put("max_ent_scan", maxEntScan);
+            out.put("sift", sift);
+            out.put("sift_vep", siftVEP);
+            out.put("polyphen", polyphen);
+            out.put("revel", revel);
+            out.put("polyphen2_hvar_score", polyphen2HvarScore);
+            out.put("sift_score", siftScore);
+            out.put("cadd_phred", caddPhred);
+            out.put("lof_score_canonical", lofScoreCanonical);
+            out.put("cadd_raw", caddRaw);
+            out.put("mutation_taster", mutationTaster);
+            out.put("lof_score", lofScore);
+            return out;
+        }
     }
 
     public static class GnomAD {
@@ -82,6 +133,27 @@ public class AnfisaResultView {
         public String widePopmax;
         public Long hom;
         public Long hem;
+
+        private JSONObject toJSON() {
+            JSONObject out = new JSONObject();
+            if (allele != null) {
+                out.put("exome_an", exomeAn);
+                out.put("af", af);
+                out.put("url", url);
+                out.put("exome_af", exomeAf);
+                out.put("proband", proband);
+                out.put("genome_an", genomeAn);
+                out.put("genome_af", genomeAf);
+                out.put("allele", allele);
+                out.put("pli", pli);
+                out.put("wide_popmax", widePopmax);
+                out.put("hom", hom);
+                out.put("hem", hem);
+            } else {
+                out.put("url", url);
+            }
+            return out;
+        }
     }
 
     public class General {
@@ -112,6 +184,44 @@ public class AnfisaResultView {
         public List<String> variantExonCanonical = new ArrayList<>();
         public List<String> variantIntronCanonical = new ArrayList<>();
         public Optional<String> spliceAltering;
+
+        private JSONObject toJSON() {
+            JSONObject out = new JSONObject();
+            out.put("proband_genotype", probandGenotype);
+            out.put("canonical_annotation", canonicalAnnotation);
+            out.put("ensembl_transcripts_canonical", ensemblTranscriptsCanonical);
+            if (alt != null) {
+                out.put("alt", alt);
+            }
+            if (ref != null) {
+                out.put("ref", ref);
+            }
+            out.put("ppos_canonical", pposCanonical);
+            out.put("cpos_worst", cposWorst);
+            out.put("variant_intron_canonical", variantIntronCanonical);
+            out.put("cpos_other", cposOther);
+            out.put("splice_region", spliceRegion);
+            out.put("maternal_genotype", maternalGenotype);
+            out.put("variant_intron_worst", variantIntronWorst);
+            out.put("paternal_genotype", paternalGenotype);
+            out.put("genes", genes);
+            out.put("variant_exon_worst", variantExonWorst);
+            out.put("worst_annotation", worstAnnotation);
+            out.put("cpos_canonical", cposCanonical);
+            out.put("variant_exon_canonical", variantExonCanonical);
+            out.put("refseq_transcript_worst", refseqTranscriptWorst);
+            out.put("refseq_transcript_canonical", refseqTranscriptCanonical);
+            out.put("gene_splicer", geneSplicer);
+            out.put("ppos_worst", pposWorst);
+            out.put("ppos_other", pposOther);
+            out.put("hg38", hg38);
+            out.put("hg19", hg19);
+            out.put("ensembl_transcripts_worst", ensemblTranscriptsWorst);
+            if (spliceAltering != null) {
+                out.put("splice_altering", spliceAltering.orElse(null));
+            }
+            return out;
+        }
     }
 
     public static class Bioinformatics {
@@ -150,6 +260,49 @@ public class AnfisaResultView {
                     throw new RuntimeException("Unknown key: " + key);
             }
         }
+
+        private JSONObject toJSON() {
+            JSONObject out = new JSONObject();
+            out.put("human_splicing_finder", humanSplicingFinder);
+            out.put("zygosity", zygosity);
+            out.put("dist_from_exon_worst", distFromExonWorst);
+            out.put("called_by", calledBy);
+            out.put("max_ent_scan", maxEntScan);
+            out.put("dist_from_exon_canonical", distFromExonCanonical);
+            out.put("conservation", build(conservation));
+            out.put("caller_data", callerData);
+            out.put("nn_splice", nnSplice);
+            out.put("species_with_variant", speciesWithVariant);
+            out.put("other_genes", otherGenes);
+            out.put("species_with_others", speciesWithOthers);
+            out.put("inherited_from", inheritedFrom);
+            out.put("splice_ai", spliceAi);
+            out.put("splice_ai_ag", spliceAiAg);
+            out.put("splice_ai_al", spliceAiAl);
+            out.put("splice_ai_dg", spliceAiDg);
+            out.put("splice_ai_dl", spliceAiDl);
+            out.put("gerp_rs", (conservation != null) ? conservation.gerpRS : null);
+            out.put("cnv_lo", cnvLO);
+            return out;
+        }
+
+        private static JSONObject build(Conservation conservation) {
+            if (conservation == null) {
+                return null;
+            }
+            JSONObject out = new JSONObject();
+            out.put("pri_ph_cons", conservation.priPhCons);
+            out.put("mam_ph_cons", conservation.mamPhCons);
+            out.put("ver_ph_cons", conservation.verPhCons);
+            out.put("pri_phylo_p", conservation.priPhyloP);
+            out.put("mam_phylo_p", conservation.mamPhyloP);
+            out.put("ver_phylo_p", conservation.verPhyloP);
+            out.put("gerp_r_s", conservation.gerpRS);
+            out.put("gerp_r_spval", conservation.getGerpRSpval());
+            out.put("gerp_n", conservation.gerpN);
+            out.put("gerp_s", conservation.gerpS);
+            return out;
+        }
     }
 
 
@@ -169,5 +322,23 @@ public class AnfisaResultView {
         this.general = new General();
         this.bioinformatics = new Bioinformatics();
         this.qualitySamples = new JSONArray();
+    }
+
+    public JSONObject toJSON() {
+        JSONObject out = new JSONObject();
+        out.put("inheritance", inheritance);
+        out.put("databases", databases.toJSON());
+        out.put("predictions", predictions.toJSON());
+
+        JSONArray jGnomADs = new JSONArray();
+        for (AnfisaResultView.GnomAD gnomAD : gnomAD) {
+            jGnomADs.add(gnomAD.toJSON());
+        }
+        out.put("gnomAD", jGnomADs);
+
+        out.put("general", general.toJSON());
+        out.put("bioinformatics", bioinformatics.toJSON());
+        out.put("quality_samples", qualitySamples);
+        return out;
     }
 }
