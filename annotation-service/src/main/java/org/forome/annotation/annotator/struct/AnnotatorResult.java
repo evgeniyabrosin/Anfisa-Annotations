@@ -2,6 +2,7 @@ package org.forome.annotation.annotator.struct;
 
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
+import htsjdk.variant.vcf.VCFHeaderLine;
 import io.reactivex.Observable;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
@@ -38,8 +39,12 @@ public class AnnotatorResult {
                 if (pathVepVcf != null) {
                     VCFFileReader vcfFileReader = new VCFFileReader(pathVepVcf, false);
                     VCFHeader vcfHeader = vcfFileReader.getFileHeader();
-                    pipeline = vcfHeader.getOtherHeaderLine("source").getValue();
-                    reference = vcfHeader.getOtherHeaderLine("reference").getValue();
+
+                    VCFHeaderLine hlPipeline = vcfHeader.getOtherHeaderLine("source");
+                    pipeline = (hlPipeline!=null)?hlPipeline.getValue():null;
+
+                    VCFHeaderLine hlReference = vcfHeader.getOtherHeaderLine("reference");
+                    reference = (hlReference!=null)?hlReference.getValue():null;
                 } else {
                     pipeline = null;
                     reference = null;

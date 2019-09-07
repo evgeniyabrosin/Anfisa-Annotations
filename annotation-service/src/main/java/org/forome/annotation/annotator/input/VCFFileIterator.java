@@ -17,6 +17,10 @@ public class VCFFileIterator implements AutoCloseable {
 
     private final CNVFileIterator cnvFileIterator;
 
+    public VCFFileIterator(Path pathVcf) {
+        this(pathVcf, null);
+    }
+
     public VCFFileIterator(Path pathVcf, Path cnvFile) {
         this.vcfFileReader = new VCFFileReader(pathVcf, false);
         this.vcfFileReaderIterator = vcfFileReader.iterator();
