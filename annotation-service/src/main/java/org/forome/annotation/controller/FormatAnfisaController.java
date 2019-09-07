@@ -77,7 +77,7 @@ public class FormatAnfisaController {
                             ensemblVepService.getVepJson(variant, requestItem.alternative)
                                     .thenApply(vepJson -> anfisaConnector.build(null, new AnfisaInput.Builder().build(), variant, vepJson))
                                     .thenCompose(anfisaResult -> {
-                                        JSONObject result = GetAnfisaJSONController.build(anfisaResult);
+                                        JSONObject result = anfisaResult.toJSON();
                                         CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
                                                 .exceptionally(throwable -> {
                                                     if (throwable instanceof AnnotatorException) {

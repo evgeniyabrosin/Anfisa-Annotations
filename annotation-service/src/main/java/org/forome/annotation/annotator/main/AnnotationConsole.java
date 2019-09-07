@@ -14,7 +14,6 @@ import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
-import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.notification.NotificationService;
@@ -225,13 +224,13 @@ public class AnnotationConsole {
             OutputStream os = buildOutputStream(outFile);
             BufferedOutputStream bos = new BufferedOutputStream(os);
 
-            String outMetadata = GetAnfisaJSONController.build(annotatorResult.metadata).toJSONString();
+            String outMetadata = annotatorResult.metadata.toJSON().toJSONString();
             bos.write(outMetadata.getBytes(StandardCharsets.UTF_8));
             bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
             annotatorResult.observableAnfisaResult.blockingSubscribe(
                     anfisaResult -> {
-                        String out = GetAnfisaJSONController.build(anfisaResult).toJSONString();
+                        String out = anfisaResult.toJSON().toJSONString();
                         bos.write(out.getBytes(StandardCharsets.UTF_8));
                         bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
