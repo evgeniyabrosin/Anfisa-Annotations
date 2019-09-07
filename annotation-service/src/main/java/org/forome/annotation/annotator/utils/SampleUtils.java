@@ -10,6 +10,8 @@ public class SampleUtils {
     public static String getProband(Map<String, Sample> samples) {
         if (samples == null) {
             return null;
+        } else if (samples.size() == 1) {
+            return samples.values().iterator().next().id;
         }
         for (Map.Entry<String, Sample> entry : samples.entrySet()) {
             if (isProband(entry.getValue().id)) {
@@ -22,8 +24,10 @@ public class SampleUtils {
     public static String getProband(Collection<String> samples) {
         if (samples == null) {
             return null;
+        } else if (samples.size() == 1) {
+            return samples.iterator().next();
         }
-        for (String sample: samples) {
+        for (String sample : samples) {
             if (isProband(sample)) {
                 return sample;
             }
