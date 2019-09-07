@@ -4,6 +4,7 @@ import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderLine;
 import io.reactivex.Observable;
+import net.minidev.json.JSONObject;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
@@ -14,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class AnnotatorResult {
@@ -58,6 +61,31 @@ public class AnnotatorResult {
                 metadataDatabases.addAll(anfisaConnector.gnomadConnector.getMetadata());
                 metadataDatabases.sort(Comparator.comparing(o -> o.product));
             }
+
+            private JSONObject toJSON() {
+                JSONObject out = new JSONObject();
+                out.put("pipeline_date", pipelineDate);
+                out.put("annotations_date", annotationsDate);
+                out.put("pipeline", pipeline);
+                out.put("annotations", annotations);
+                out.put("annotations_build", annotationsBuild);
+                out.put("reference", reference);
+                for (DatabaseConnector.Metadata metadata : metadataDatabases) {
+                    StringBuilder value = new StringBuilder();
+                    if (metadata.version != null) {
+                        value.append(metadata.version);
+                        if (metadata.date != null) {
+                            value.append(" | ");
+                        }
+                    }
+                    if (metadata.date != null) {
+                        value.append(DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                                .withZone(ZoneId.systemDefault()).format(metadata.date));
+                    }
+                    out.put(metadata.product, value.toString());
+                }
+                return out;
+            }
         }
 
         public final String recordType = "metadata";
@@ -75,6 +103,30 @@ public class AnnotatorResult {
             return new Metadata(caseSequence, pathVepVcf, samples, anfisaConnector);
         }
 
+        public JSONObject toJSON() {
+            JSONObject out = new JSONObject();
+            out.put("case", caseSequence);
+            out.put("record_type", recordType);
+            out.put("versions", versions.toJSON());
+            out.put("samples", new JSONObject() {{
+                for (Sample sample : samples.values()) {
+                    put(sample.name, build(sample));
+                }
+            }});
+            return out;
+        }
+
+        public static JSONObject build(Sample sample) {
+            JSONObject out = new JSONObject();
+            out.put("affected", sample.affected);
+            out.put("name", sample.name);
+            out.put("family", sample.family);
+            out.put("father", sample.father);
+            out.put("sex", sample.sex);
+            out.put("mother", sample.mother);
+            out.put("id", sample.id);
+            return out;
+        }
     }
 
     public final Metadata metadata;

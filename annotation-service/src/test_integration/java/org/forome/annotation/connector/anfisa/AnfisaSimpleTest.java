@@ -4,7 +4,6 @@ import org.forome.annotation.AnfisaBaseTest;
 import org.forome.annotation.annotator.AnnotatorTest;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
-import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 import org.junit.Test;
@@ -19,9 +18,9 @@ public class AnfisaSimpleTest extends AnfisaBaseTest {
 
     @Test
     public void test() throws Exception {
-        GetAnfisaJSONController.build(
-                request(new Chromosome("1"), 6484880, 6484880, "G")
-        ).toJSONString();
+        request(
+                new Chromosome("1"), 6484880, 6484880, "G"
+        ).toJSON().toJSONString();
 //		anfisaConnector.request("1", 6500660, 6500660,"A").get();
 //		anfisaConnector.request("1", 6501044, 6501044,"G").get();
 //      anfisaConnector.request("1", 12040324, 12040324,"G").get();
