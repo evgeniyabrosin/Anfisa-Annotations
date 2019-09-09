@@ -18,3 +18,8 @@
 /annotation-service/logs/
 /annotation-service/*.json
 /annotation-service/*.txt
+
+# ---> Python
+*.pyc
+*.pyo
+*.py~
