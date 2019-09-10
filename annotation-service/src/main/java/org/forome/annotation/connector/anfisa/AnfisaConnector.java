@@ -27,7 +27,8 @@ import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
-import org.forome.annotation.struct.Sample;
+import org.forome.annotation.struct.sample.Sample;
+import org.forome.annotation.struct.sample.Samples;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantVCF;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
@@ -131,17 +132,18 @@ public class AnfisaConnector implements AutoCloseable {
         filters.severity = getSeverity(vepJson);
         filters.alts = alt_list(variant, anfisaInput.samples, vepJson);
 
-        String proband = SampleUtils.getProband(anfisaInput.samples);
+        Sample proband = anfisaInput.samples.proband;
         if (proband != null) {
-            String mother = anfisaInput.samples.get(proband).mother;
-            String father = anfisaInput.samples.get(proband).father;
+            String probandId = proband.id;
+            String mother = anfisaInput.samples.items.get(probandId).mother;
+            String father = anfisaInput.samples.items.get(probandId).father;
             data.zygosity = new HashMap<>();
             filters.altZygosity = new HashMap<>();
-            for (Map.Entry<String, Sample> entry : anfisaInput.samples.entrySet()) {
+            for (Map.Entry<String, Sample> entry : anfisaInput.samples.items.entrySet()) {
                 String name = entry.getValue().name;
                 int sex = entry.getValue().sex;
                 String label;
-                if (entry.getKey().equals(proband)) {
+                if (entry.getKey().equals(probandId)) {
                     label = String.format("proband [%s]", name);
                 } else if (entry.getKey().equals(mother)) {
                     label = String.format("mother [%s]", name);
@@ -211,7 +213,7 @@ public class AnfisaConnector implements AutoCloseable {
         return new AnfisaResult(filters, data, view);
     }
 
-    private static Integer sampleHasVariant(JSONObject json, Variant variant, Map<String, Sample> samples, Sample sample) {
+    private static Integer sampleHasVariant(JSONObject json, Variant variant, Samples samples, Sample sample) {
         if (variant == null || !(variant instanceof VariantVCF)) {
             return 0;
         }
@@ -276,7 +278,7 @@ public class AnfisaConnector implements AutoCloseable {
         }
     }
 
-    private void callClinvar(AnfisaExecuteContext context, Record record, String _chromosome, long start, long end, Map<String, Sample> samples, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view, JSONObject json) {
+    private void callClinvar(AnfisaExecuteContext context, Record record, String _chromosome, long start, long end, Samples samples, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view, JSONObject json) {
         Variant variant = context.variant;
         Chromosome chromosome = variant.chromosome;
 
@@ -368,7 +370,7 @@ public class AnfisaConnector implements AutoCloseable {
         }
     }
 
-    private void callBeacon(Variant variant, Map<String, Sample> samples, JSONObject json, AnfisaResultData data) {
+    private void callBeacon(Variant variant, Samples samples, JSONObject json, AnfisaResultData data) {
         List<String> alts = alt_list(variant, samples, json);
         data.beaconUrls = alts.stream()
                 .map(alt ->
@@ -459,7 +461,7 @@ public class AnfisaConnector implements AutoCloseable {
         return gtfAnfisaResult;
     }
 
-    private static void callQuality(AnfisaResultFilters filters, Variant variant, Map<String, Sample> samples) {
+    private static void callQuality(AnfisaResultFilters filters, Variant variant, Samples samples) {
         filters.minGq = getMinGQ(variant, samples);
         filters.probandGq = getProbandGQ(variant, samples);
         if (variant != null && variant instanceof VariantVCF) {
@@ -479,7 +481,7 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
 
-    private void callGnomAD(AnfisaExecuteContext context, Variant variant, Map<String, Sample> samples, JSONObject response, AnfisaResultFilters filters) {
+    private void callGnomAD(AnfisaExecuteContext context, Variant variant, Samples samples, JSONObject response, AnfisaResultFilters filters) {
         Double af = null;
         Double _af = null;
         Double emAfPb = null;
@@ -545,7 +547,7 @@ public class AnfisaConnector implements AutoCloseable {
         }
     }
 
-    private void callSpliceai(AnfisaResultData data, AnfisaResultFilters filters, Variant variant, Map<String, Sample> samples, JSONObject json) {
+    private void callSpliceai(AnfisaResultData data, AnfisaResultFilters filters, Variant variant, Samples samples, JSONObject json) {
         SpliceAIResult spliceAIResult = spliceAIConnector.getAll(
                 variant.chromosome.getChar(),
                 lowest_coord(json),
@@ -557,7 +559,7 @@ public class AnfisaConnector implements AutoCloseable {
         filters.spliceAiDsmax = spliceAIResult.max_ds;
     }
 
-    private void createGeneralTab(AnfisaExecuteContext context, AnfisaResultData data, AnfisaResultFilters filters, AnfisaResultView view, long start, long end, JSONObject json, String caseSequence, Variant variant, Map<String, Sample> samples) {
+    private void createGeneralTab(AnfisaExecuteContext context, AnfisaResultData data, AnfisaResultFilters filters, AnfisaResultView view, long start, long end, JSONObject json, String caseSequence, Variant variant, Samples samples) {
         view.general.genes = getGenes(json).stream().toArray(String[]::new);
         view.general.hg19 = str(context);
         view.general.hg38 = getStrHg38Coordinates(context);
@@ -660,7 +662,7 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
 
-    private void createQualityTab(AnfisaResultView view, Variant variant, Map<String, Sample> samples) {
+    private void createQualityTab(AnfisaResultView view, Variant variant, Samples samples) {
         if (variant == null || !(variant instanceof VariantVCF)) {
             return;
         }
@@ -683,16 +685,17 @@ public class AnfisaConnector implements AutoCloseable {
         );
         view.qualitySamples.add(q_all);
 
-        String proband = SampleUtils.getProband(samples);
+        Sample proband = samples.proband;
         if (proband == null) return;
+        String probandId = proband.id;
 
-        String mother = samples.get(proband).mother;
-        String father = samples.get(proband).father;
-        for (Map.Entry<String, Sample> entry : samples.entrySet()) {
+        String mother = samples.items.get(probandId).mother;
+        String father = samples.items.get(probandId).father;
+        for (Map.Entry<String, Sample> entry : samples.items.entrySet()) {
             Sample sample = entry.getValue();
             String s = sample.id;
             JSONObject q_s = new JSONObject();
-            if (s.equals(proband)) {
+            if (s.equals(probandId)) {
                 q_s.put("title", String.format("Proband: %s", sample.name));
             } else if (s.equals(mother)) {
                 q_s.put("title", String.format("Mother: %s", sample.name));
@@ -710,7 +713,7 @@ public class AnfisaConnector implements AutoCloseable {
         }
     }
 
-    private void createGnomadTab(AnfisaExecuteContext context, String chromosome, Variant variant, Map<String, Sample> samples, JSONObject json, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view) {
+    private void createGnomadTab(AnfisaExecuteContext context, String chromosome, Variant variant, Samples samples, JSONObject json, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view) {
         Double gnomadAf = context.gnomadAfFam;
         if (gnomadAf != null && Math.abs(gnomadAf) > 0.000001D) {
             for (String allele : alt_list(variant, samples, json)) {
@@ -1089,11 +1092,11 @@ public class AnfisaConnector implements AutoCloseable {
         ).toArray(String[]::new);
     }
 
-    public String altString(Variant variant, Map<String, Sample> samples, JSONObject response) {
+    public String altString(Variant variant, Samples samples, JSONObject response) {
         return String.join(",", alt_list(variant, samples, response));
     }
 
-    private static List<String> alt_list(Variant variant, Map<String, Sample> samples, JSONObject vepJson) {
+    private static List<String> alt_list(Variant variant, Samples samples, JSONObject vepJson) {
         if (variant != null && variant instanceof VariantVCF) {
             VariantContext variantContext = ((VariantVCF) variant).variantContext;
             List<String> alleles = variantContext.getAlleles()
@@ -1155,7 +1158,7 @@ public class AnfisaConnector implements AutoCloseable {
         return response.getAsString("allele_string").split("/")[0];
     }
 
-    private static boolean isProbandHasAllele(Variant variant, Map<String, Sample> samples, String alt) {
+    private static boolean isProbandHasAllele(Variant variant, Samples samples, String alt) {
         if (samples == null || variant == null) {
             return false;
         }
@@ -1168,13 +1171,13 @@ public class AnfisaConnector implements AutoCloseable {
         return set1.contains(alt);
     }
 
-    private static Integer getMinGQ(Variant variant, Map<String, Sample> samples) {
+    private static Integer getMinGQ(Variant variant, Samples samples) {
         if (variant == null || samples == null) {
             return null;
         }
 
         Integer GQ = null;
-        for (Sample s : samples.values()) {
+        for (Sample s : samples.items.values()) {
             Integer gq = getVariantGQ(variant, s);
             if (gq != null && gq != 0) {
                 if (GQ == null || gq < GQ) {
@@ -1185,11 +1188,11 @@ public class AnfisaConnector implements AutoCloseable {
         return GQ;
     }
 
-    private static Integer getProbandGQ(Variant variant, Map<String, Sample> samples) {
+    private static Integer getProbandGQ(Variant variant, Samples samples) {
         if (samples == null || variant == null) {
             return null;
         }
-        return getVariantGQ(variant, samples.get(SampleUtils.getProband(samples)));
+        return getVariantGQ(variant, samples.proband);
     }
 
     private static Integer getVariantGQ(Variant variant, Sample s) {
@@ -1625,18 +1628,19 @@ public class AnfisaConnector implements AutoCloseable {
         return s.split("/")[0];
     }
 
-    private static Object[] getGenotypes(Variant variant, Map<String, Sample> samples) {
+    private static Object[] getGenotypes(Variant variant, Samples samples) {
         String empty = "Can not be determined";
-        String proband = SampleUtils.getProband(samples);
+        Sample proband = samples.proband;
         if (proband == null) {
             return new Object[]{null, null, null, null};
         }
-        String probandGenotype = getGtBasesGenotype(variant, proband);
+        String probandId = proband.id;
+        String probandGenotype = getGtBasesGenotype(variant, probandId);
         if (probandGenotype == null) {
             probandGenotype = empty;
         }
 
-        String mother = samples.get(proband).mother;
+        String mother = samples.items.get(probandId).mother;
         if ("0".equals(mother)) {
             mother = null;
         }
@@ -1645,7 +1649,7 @@ public class AnfisaConnector implements AutoCloseable {
             maternalGenotype = empty;
         }
 
-        String father = samples.get(proband).father;
+        String father = samples.items.get(probandId).father;
         if ("0".equals(father)) {
             father = null;
         }
@@ -1657,7 +1661,7 @@ public class AnfisaConnector implements AutoCloseable {
         String finalProbandGenotype = probandGenotype;
         String finalMaternalGenotype = maternalGenotype;
         String finalPaternalGenotype = paternalGenotype;
-        List<String> otherGenotypes = samples.keySet().stream()
+        List<String> otherGenotypes = samples.items.keySet().stream()
                 .map(genotype -> getGtBasesGenotype(variant, genotype))
                 .filter(gtBases -> gtBases != null)
                 .filter(gtBases -> !gtBases.equals(finalProbandGenotype))
@@ -1711,7 +1715,7 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
 
-    private static LinkedHashSet<String> getCallers(JSONObject json, Variant variant, Map<String, Sample> samples) {
+    private static LinkedHashSet<String> getCallers(JSONObject json, Variant variant, Samples samples) {
         if (samples == null || variant == null || !(variant instanceof VariantVCF)) {
             return new LinkedHashSet();
         }
@@ -1792,7 +1796,7 @@ public class AnfisaConnector implements AutoCloseable {
         return result;
     }
 
-    private static String getZygosity(JSONObject json, Variant variant, Map<String, Sample> samples) {
+    private static String getZygosity(JSONObject json, Variant variant, Samples samples) {
         if (samples == null || variant == null || !(variant instanceof VariantVCF)) {
             return null;
         }
@@ -1818,7 +1822,7 @@ public class AnfisaConnector implements AutoCloseable {
         return "Unknown";
     }
 
-    private static String inherited_from(JSONObject json, Variant variant, Map<String, Sample> samples) {
+    private static String inherited_from(JSONObject json, Variant variant, Samples samples) {
         if (samples == null || variant == null || !(variant instanceof VariantVCF)) {
             return null;
         }
@@ -1856,12 +1860,11 @@ public class AnfisaConnector implements AutoCloseable {
         return "Inconclusive";
     }
 
-    private static Integer proband_sex(VariantContext variantContext, Map<String, Sample> samples) {
+    private static Integer proband_sex(VariantContext variantContext, Samples samples) {
         if (samples == null || variantContext == null) {
             return null;
         }
-        String proband = SampleUtils.getProband(samples);
-        return samples.get(proband).sex;
+        return samples.proband.sex;
     }
 
     private static <T> List<T> unique(List<T> lst) {

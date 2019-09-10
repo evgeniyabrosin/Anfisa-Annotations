@@ -1,4 +1,4 @@
-package org.forome.annotation.struct;
+package org.forome.annotation.struct.sample;
 
 public class Sample {
 

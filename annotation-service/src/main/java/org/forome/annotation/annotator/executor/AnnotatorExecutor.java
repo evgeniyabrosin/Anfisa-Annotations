@@ -2,11 +2,10 @@ package org.forome.annotation.annotator.executor;
 
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
-import org.forome.annotation.struct.Sample;
+import org.forome.annotation.struct.sample.Samples;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 public class AnnotatorExecutor implements AutoCloseable {
 
@@ -17,7 +16,7 @@ public class AnnotatorExecutor implements AutoCloseable {
     public AnnotatorExecutor(
             EnsemblVepService ensemblVepService,
             AnfisaConnector anfisaConnector,
-            String caseSequence, Map<String, Sample> samples,
+            String caseSequence, Samples samples,
             Path pathVepVcf, Path pathVepJson,
             Path cnvFile,
             int start, int thread,

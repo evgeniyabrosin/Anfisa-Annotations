@@ -1,6 +1,7 @@
 package org.forome.annotation.annotator.utils;
 
-import org.forome.annotation.struct.Sample;
+import org.forome.annotation.struct.sample.Sample;
+import org.forome.annotation.struct.sample.Samples;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.util.*;
 
 public class CaseUtils {
 
-    public static SortedMap<String, Sample> parseFamFile(InputStream isFam, InputStream isFamSampleName) throws IOException {
+    public static Samples parseFamFile(InputStream isFam, InputStream isFamSampleName) throws IOException {
         SortedMap<String, Sample> samples = new TreeMap<>();
 
         Map<String, String> sampleNameMap = new HashMap<>();
@@ -53,7 +54,7 @@ public class CaseUtils {
             }
         }
 
-        return samples;
+        return new Samples.Builder(samples).build();
     }
 
 }

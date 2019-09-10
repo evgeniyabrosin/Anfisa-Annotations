@@ -1,27 +1,26 @@
 package org.forome.annotation.connector.anfisa.struct;
 
-import org.forome.annotation.struct.Sample;
+import org.forome.annotation.struct.sample.Samples;
 
-import java.util.Map;
+import java.util.TreeMap;
 
 public class AnfisaInput {
 
-    public final Map<String, Sample> samples;
+    public final Samples samples;
 
-    private AnfisaInput(
-
-            Map<String, Sample> samples
-    ) {
+    private AnfisaInput(Samples samples) {
         this.samples = samples;
     }
 
     public static class Builder {
 
-        private Map<String, Sample> samples;
+        private Samples samples;
 
-        public Builder() {}
+        public Builder() {
+            this.samples = new Samples.Builder(new TreeMap<>()).build();
+        }
 
-        public Builder withSamples(Map<String, Sample> samples) {
+        public Builder withSamples(Samples samples) {
             this.samples = samples;
             return this;
         }

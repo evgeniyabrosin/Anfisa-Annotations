@@ -9,7 +9,7 @@ import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
-import org.forome.annotation.struct.Sample;
+import org.forome.annotation.struct.sample.Samples;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantVCF;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Deque;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -35,7 +34,7 @@ public class ThreadExecutor implements AutoCloseable {
     private final AnfisaConnector anfisaConnector;
 
     private final String caseSequence;
-    private final Map<String, Sample> samples;
+    private final Samples samples;
 
     private final int start;
     private final int step;
@@ -53,7 +52,7 @@ public class ThreadExecutor implements AutoCloseable {
             int index,
             EnsemblVepService ensemblVepService,
             AnfisaConnector anfisaConnector,
-            String caseSequence, Map<String, Sample> samples,
+            String caseSequence, Samples samples,
             Path pathVcf, Path pathVepJson,
             Path cnvFile,
             int start, int step,

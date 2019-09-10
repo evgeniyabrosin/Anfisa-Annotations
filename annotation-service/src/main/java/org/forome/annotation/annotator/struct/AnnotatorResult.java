@@ -8,7 +8,8 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
-import org.forome.annotation.struct.Sample;
+import org.forome.annotation.struct.sample.Sample;
+import org.forome.annotation.struct.sample.Samples;
 import org.forome.annotation.utils.AppVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,10 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 public class AnnotatorResult {
 
@@ -90,16 +94,16 @@ public class AnnotatorResult {
 
         public final String recordType = "metadata";
         public final String caseSequence;
-        public final Map<String, Sample> samples;
+        public final Samples samples;
         public final Versions versions;
 
-        public Metadata(String caseSequence, Path pathVepVcf, Map<String, Sample> samples, AnfisaConnector anfisaConnector) {
+        public Metadata(String caseSequence, Path pathVepVcf, Samples samples, AnfisaConnector anfisaConnector) {
             this.caseSequence = caseSequence;
             this.samples = samples;
             this.versions = new Versions(pathVepVcf, anfisaConnector);
         }
 
-        public static Metadata build(String caseSequence, Path pathVepVcf, Map<String, Sample> samples, AnfisaConnector anfisaConnector) {
+        public static Metadata build(String caseSequence, Path pathVepVcf, Samples samples, AnfisaConnector anfisaConnector) {
             return new Metadata(caseSequence, pathVepVcf, samples, anfisaConnector);
         }
 
@@ -108,8 +112,9 @@ public class AnnotatorResult {
             out.put("case", caseSequence);
             out.put("record_type", recordType);
             out.put("versions", versions.toJSON());
+            out.put("proband", samples.proband.id);
             out.put("samples", new JSONObject() {{
-                for (Sample sample : samples.values()) {
+                for (Sample sample : samples.items.values()) {
                     put(sample.name, build(sample));
                 }
             }});
