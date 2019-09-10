@@ -9,7 +9,7 @@ import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.CasePlatform;
-import org.forome.annotation.struct.Sample;
+import org.forome.annotation.struct.sample.Samples;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 
 public class Annotator {
 
@@ -97,7 +96,7 @@ public class Annotator {
             int startPosition
     ) throws IOException {
 
-        Map<String, Sample> samples = CaseUtils.parseFamFile(isFam, isFamSampleName);
+        Samples samples = CaseUtils.parseFamFile(isFam, isFamSampleName);
 
         String caseId = String.format("%s_%s", caseName, casePlatform.name().toLowerCase());
 
@@ -110,7 +109,7 @@ public class Annotator {
     }
 
     public AnnotatorResult annotateJson(
-            String caseSequence, Map<String, Sample> samples,
+            String caseSequence, Samples samples,
             Path pathVepVcf, Path pathVepJson,
             Path cnvFile,
             int startPosition
