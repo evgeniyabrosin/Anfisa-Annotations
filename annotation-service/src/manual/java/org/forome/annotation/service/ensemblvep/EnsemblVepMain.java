@@ -5,6 +5,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.connector.ref.RefConnector;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Chromosome;
@@ -15,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class EnsemblVepMain {
 
-    public static void main(String[] args) throws Exception {
+    public static void main1(String[] args) throws Exception {
         VariantContextBuilder variantContextBuilder = new VariantContextBuilder();
         variantContextBuilder.loc("15", 89876828, 89876836);
         variantContextBuilder.alleles(new ArrayList<Allele>(){{ add(Allele.create("TTGCTGC", false)); }});
@@ -24,21 +25,25 @@ public class EnsemblVepMain {
 //        variantContext.toStringDecodeGenotypes()
     }
 
-    public static void main1(String[] args) throws Exception {
+    //chr1:881907-881906 C>C
+
+    public static void main(String[] args) throws Exception {
         ServiceConfig serviceConfig = new ServiceConfig();
         SSHConnectService sshTunnelService = new SSHConnectService();
 
-        try(EnsemblVepService ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector)) {
-            CompletableFuture<JSONObject> futureVepJson1 = ensemblVepService.getVepJson(
-                    new Variant(new Chromosome("1"), 881907, 881906), "C"
-            );
-            CompletableFuture<JSONObject> futureVepJson2 = ensemblVepService.getVepJson(
-                    new Variant(new Chromosome("1"), 881907, 881906), "C"
-            );
-            JSONObject vepJson1 = futureVepJson1.get();
-            JSONObject vepJson2 = futureVepJson2.get();
-            System.out.println("vepJson1: " + vepJson1);
-            System.out.println("vepJson2: " + vepJson2);
+        try(EnsemblVepService ensemblVepService = new EnsemblVepInlineService(
+                sshTunnelService,
+                serviceConfig.ensemblVepConfigConnector,
+                new RefConnector(sshTunnelService, serviceConfig.refConfigConnector)
+        )) {
+            for (int i=881906; i< 881916; i++) {
+                CompletableFuture<JSONObject> futureVepJson = ensemblVepService.getVepJson(
+                        new Variant(new Chromosome("1"), i, i), "C"
+                );
+                JSONObject vepJson = futureVepJson.get();
+                System.out.println("vepJson: " + vepJson);
+            }
+            System.out.println("complete");
         }
     }
 }

@@ -23,6 +23,11 @@ public class EnsemblVepExternalService implements EnsemblVepService {
     }
 
     @Override
+    public CompletableFuture<JSONObject> getVepJson(Variant variant, String reference, String alternative) {
+        return getVepJson(variant, alternative);
+    }
+
+    @Override
     public void close() {
         ensemblVepHttpClient.close();
     }
