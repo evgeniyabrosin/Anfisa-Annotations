@@ -9,6 +9,7 @@ import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.ref.RefConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
@@ -32,6 +33,7 @@ public class AnfisaBaseTest {
 	protected static ClinvarConnector clinvarConnector;
 	protected static LiftoverConnector liftoverConnector;
 	protected static GTFConnector gtfConnector;
+	protected static RefConnector refConnector;
 	protected static EnsemblVepService ensemblVepService;
 	protected static AnfisaConnector anfisaConnector;
 
@@ -55,7 +57,8 @@ public class AnfisaBaseTest {
 			log.error("Fail", e);
 			Assert.fail();
 		});
-		ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector);
+		refConnector = new RefConnector(sshTunnelService, serviceConfig.refConfigConnector);
+		ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector, refConnector);
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
 				spliceAIConnector,

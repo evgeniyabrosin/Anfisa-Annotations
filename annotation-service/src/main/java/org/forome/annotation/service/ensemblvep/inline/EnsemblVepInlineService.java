@@ -3,6 +3,7 @@ package org.forome.annotation.service.ensemblvep.inline;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.config.ensemblvep.EnsemblVepConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
+import org.forome.annotation.connector.ref.RefConnector;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.inline.runner.EnsemblVepRunner;
 import org.forome.annotation.service.ensemblvep.inline.runner.EnsemblVepSshRunner;
@@ -28,12 +29,17 @@ public class EnsemblVepInlineService implements EnsemblVepService {
     private static Duration TIMEOUT = Duration.ofSeconds(5);
 
     private final EnsemblVepRunner ensemblVepRunner;
+    private final RefConnector refConnector;
 
     private final ConcurrentMap<String, EnsembleVepRequest> requests;
 
     private boolean isRun = true;
 
-    public EnsemblVepInlineService(SSHConnectService sshTunnelService, EnsemblVepConfig ensemblVepConfigConnector) throws Exception {
+    public EnsemblVepInlineService(
+            SSHConnectService sshTunnelService,
+            EnsemblVepConfig ensemblVepConfigConnector,
+            RefConnector refConnector
+    ) throws Exception {
         SshTunnelConfig sshTunnelConfig = ensemblVepConfigConnector.sshTunnelConfig;
         if (sshTunnelConfig != null) {
             ensemblVepRunner = new EnsemblVepSshRunner(sshTunnelService, sshTunnelConfig);
@@ -43,10 +49,12 @@ public class EnsemblVepInlineService implements EnsemblVepService {
         ensemblVepRunner.start((request, response) -> eventNewResponse(request, response));
         this.requests = new ConcurrentHashMap<>();
 
+        this.refConnector = refConnector;
+
         Thread thread = new Thread(() -> {
             while (isRun) {
                 Instant now = Instant.now();
-                for (EnsembleVepRequest ensembleVepRequest: requests.values()) {
+                for (EnsembleVepRequest ensembleVepRequest : requests.values()) {
                     if (Duration.between(now, ensembleVepRequest.getTime()).isNegative()) {
                         try {
                             log.debug("repeat request: {}", ensembleVepRequest.request);
@@ -58,7 +66,8 @@ public class EnsemblVepInlineService implements EnsemblVepService {
                 }
                 try {
                     Thread.sleep(TIMEOUT.toMillis());
-                } catch (InterruptedException ignore) {}
+                } catch (InterruptedException ignore) {
+                }
             }
         });
         thread.setDaemon(true);
@@ -66,7 +75,13 @@ public class EnsemblVepInlineService implements EnsemblVepService {
     }
 
     public CompletableFuture<JSONObject> getVepJson(Variant variant, String alternative) {
-        String request = buildRequest(variant.chromosome, variant.start, variant.end, alternative);
+        String reference = refConnector.getRef(variant);
+        return getVepJson(variant, reference, alternative);
+    }
+
+    @Override
+    public CompletableFuture<JSONObject> getVepJson(Variant variant, String reference, String alternative) {
+        String request = buildRequest(variant.chromosome, variant.start, variant.end, reference, alternative);
         synchronized (this) {
             EnsembleVepRequest ensembleVepRequest = requests.get(request);
             if (ensembleVepRequest == null) {
@@ -85,11 +100,11 @@ public class EnsemblVepInlineService implements EnsemblVepService {
         }
     }
 
-    private static String buildRequest(Chromosome chromosome, int start, int end, String alternative) {
+    private static String buildRequest(Chromosome chromosome, int start, int end, String reference, String alternative) {
         return new StringBuilder()
                 .append(chromosome.getChar()).append('\t')
                 .append(start).append('\t').append(end).append('\t')
-                .append("-/").append(alternative).toString();
+                .append(reference).append('/').append(alternative).toString();
     }
 
     private void eventNewResponse(String request, JSONObject response) {

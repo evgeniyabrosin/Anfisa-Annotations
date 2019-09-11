@@ -10,11 +10,6 @@ import java.util.List;
 public class GTFSimpleTest extends GTFBaseTest {
 
 	@Test
-	public void test() throws Exception {
-		gtfConnector.request("2", 73675228).get();
-	}
-
-	@Test
 	public void testByChromosomeAndPositions() throws Exception {
 		String chromosome = "5";
 		String transcript = "ENST00000282356";
