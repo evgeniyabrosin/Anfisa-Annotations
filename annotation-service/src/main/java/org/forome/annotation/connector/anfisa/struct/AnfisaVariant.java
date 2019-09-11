@@ -63,6 +63,6 @@ public class AnfisaVariant {
     public static final ImmutableList<String> CALLERS = ImmutableList.of(
             "BGM_AUTO_DOM", "BGM_DE_NOVO", "BGM_HOM_REC", "BGM_CMPD_HET",
             BGM_BAYES_DE_NOVO, "BGM_BAYES_CMPD_HET", "BGM_BAYES_HOM_REC",
-            "BGM_PIPELINE_A", "BGM_PIPELINE", "LMM", "SANGER"
+            "BGM_PIPELINE_A", "BGM_PIPELINE", "LMM", "SANGER", "RUFUS"
     );
 }
