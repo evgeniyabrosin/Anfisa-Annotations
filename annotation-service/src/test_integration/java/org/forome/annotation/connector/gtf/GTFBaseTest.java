@@ -12,27 +12,14 @@ public class GTFBaseTest {
 	private final static Logger log = LoggerFactory.getLogger(GTFBaseTest.class);
 
 	protected GTFConnector gtfConnector;
-//	protected GnomadConnector gnomadConnector;
-//	protected HgmdConnector hgmdConnector;
-//	protected ClinvarConnector clinvarConnector;
-//	protected LiftoverConnector liftoverConnector;
-//	protected AnfisaConnector anfisaConnector;
 
 	@Before
 	public void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		SSHConnectService sshTunnelService = new SSHConnectService();
-//		gnomadConnector = new GnomadConnector(serviceConfig.gnomadConfigConnector, (t, e) -> {
-//			log.error("Fail", e);
-//			Assert.fail();
-//		});
 		gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});
-//		hgmdConnector = new HgmdConnector(serviceConfig.hgmdConfigConnector);
-//		clinvarConnector = new ClinvarConnector(serviceConfig.clinVarConfigConnector);
-//		liftoverConnector = new LiftoverConnector();
-//		anfisaConnector = new AnfisaConnector(gnomadConnector, hgmdConnector, clinvarConnector, liftoverConnector);
 	}
 }
