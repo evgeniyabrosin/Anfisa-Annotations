@@ -4,7 +4,7 @@ import org.forome.annotation.config.connector.ConservationConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
 import org.slf4j.Logger;
@@ -23,10 +23,10 @@ public class ConservationConnector implements AutoCloseable {
     private final DatabaseConnector databaseConnector;
 
     public ConservationConnector(
-            SSHConnectService sshTunnelService,
+            DatabaseConnectService databaseConnectService,
             ConservationConfigConnector conservationConfigConnector
     ) throws Exception {
-        databaseConnector = new DatabaseConnector(sshTunnelService, conservationConfigConnector);
+        databaseConnector = new DatabaseConnector(databaseConnectService, conservationConfigConnector);
     }
 
     public List<DatabaseConnector.Metadata> getMetadata(){
@@ -52,13 +52,13 @@ public class ConservationConnector implements AutoCloseable {
         String sqlFromGerp;
         String sqlFromConservation = null;
         if (position.isSingle()) {
-            sqlFromGerp = String.format("select GerpN, GerpRS from GERP where Chrom='%s' and Pos = %s",
+            sqlFromGerp = String.format("select GerpN, GerpRS from conservation.GERP where Chrom='%s' and Pos = %s",
                     chromosome.getChar(), position.start
             );
 
             if (hg38 != null) {
                 sqlFromConservation = String.format("select priPhCons, mamPhCons, verPhCons, priPhyloP, mamPhyloP, " +
-                                "verPhyloP, GerpRSpval, GerpS from CONSERVATION where Chrom='%s' and Pos = %s",
+                                "verPhyloP, GerpRSpval, GerpS from conservation.CONSERVATION where Chrom='%s' and Pos = %s",
                         chromosome.getChar(), hg38.start
                 );
             }
@@ -82,7 +82,7 @@ public class ConservationConnector implements AutoCloseable {
                 throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", chromosome.getChar(), position));
             }
 
-            sqlFromGerp = String.format("select max(GerpN) as GerpN, max(GerpRS) as GerpRS from GERP " +
+            sqlFromGerp = String.format("select max(GerpN) as GerpN, max(GerpRS) as GerpRS from conservation.GERP " +
                     "where Chrom='%s' and Pos between %s and %s", chromosome.getChar(), hg19Pos1, hg19Pos2);
 
             if (hg38 != null) {
@@ -92,7 +92,7 @@ public class ConservationConnector implements AutoCloseable {
                 sqlFromConservation = String.format("select max(priPhCons) as priPhCons, max(mamPhCons) as mamPhCons, " +
                                 "max(verPhCons) as verPhCons, max(priPhyloP) as priPhyloP, max(mamPhyloP) as mamPhyloP, " +
                                 "max(verPhyloP) as verPhyloP, max(GerpRSpval) as GerpRSpval, max(GerpS) as GerpS " +
-                                "from CONSERVATION where Chrom='%s' and Pos between %s and %s",
+                                "from conservation.CONSERVATION where Chrom='%s' and Pos between %s and %s",
                         chromosome.getChar(), hg38Pos1, hg38Pos2
                 );
             }

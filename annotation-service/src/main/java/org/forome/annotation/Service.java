@@ -17,6 +17,7 @@ import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.executionqueue.*;
 import org.forome.annotation.network.NetworkService;
 import org.forome.annotation.network.component.UserEditableComponent;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.notification.NotificationService;
@@ -67,6 +68,7 @@ public class Service {
     private final Config config;
     private final ServiceConfig serviceConfig;
     private final SSHConnectService sshTunnelService;
+    private final DatabaseConnectService databaseConnectService;
     private final DatabaseService databaseService;
     private final NetworkService networkService;
 
@@ -91,6 +93,7 @@ public class Service {
         this.config = new Config();
         this.serviceConfig = new ServiceConfig();
         this.sshTunnelService = new SSHConnectService();
+        this.databaseConnectService = new DatabaseConnectService(sshTunnelService);
         this.databaseService = new DatabaseService(this);
         this.networkService = new NetworkService(arguments.port, uncaughtExceptionHandler);
 
@@ -101,14 +104,20 @@ public class Service {
         }
 
 //        this.gnomadConnector = new GnomadConnectorOld(sshTunnelService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
-        this.gnomadConnector = new GnomadConnectorImpl(sshTunnelService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
-        this.spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, uncaughtExceptionHandler);
-        this.conservationConnector = new ConservationConnector(sshTunnelService, serviceConfig.conservationConfigConnector);
-        this.hgmdConnector = new HgmdConnector(sshTunnelService, serviceConfig.hgmdConfigConnector);
-        this.clinvarConnector = new ClinvarConnector(sshTunnelService, serviceConfig.clinVarConfigConnector);
+        this.gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
+        this.spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
+        this.conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
+        this.hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
+        this.clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
         this.liftoverConnector = new LiftoverConnector();
-        this.gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
+        this.gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
         this.ensemblVepService = new EnsemblVepExternalService(uncaughtExceptionHandler);
+//        this.ensemblVepService = new EnsemblVepInlineService(
+//                sshTunnelService,
+//                serviceConfig.ensemblVepConfigConnector,
+//                new RefConnector(databaseConnectService, serviceConfig.refConfigConnector)
+//        );
+
         this.anfisaConnector = new AnfisaConnector(
                 gnomadConnector,
                 spliceAIConnector,
@@ -198,7 +207,9 @@ public class Service {
         conservationConnector.close();
         spliceAIConnector.close();
         gnomadConnector.close();
+        ensemblVepService.close();
 
+        databaseConnectService.close();
         sshTunnelService.close();
         instance = null;
     }

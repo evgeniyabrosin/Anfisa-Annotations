@@ -15,6 +15,7 @@ import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.ssh.SSHConnectService;
@@ -32,13 +33,14 @@ public class CNVMain {
     public static void main(String[] args) throws Exception {
         ServiceConfig serviceConfig = new ServiceConfig();
         SSHConnectService sshTunnelService = new SSHConnectService();
-        GnomadConnector gnomadConnector = new GnomadConnectorImpl(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
-        SpliceAIConnector spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, (t, e) -> crash(e));
-        ConservationConnector conservationConnector = new ConservationConnector(sshTunnelService, serviceConfig.conservationConfigConnector);
-        HgmdConnector hgmdConnector = new HgmdConnector(sshTunnelService, serviceConfig.hgmdConfigConnector);
-        ClinvarConnector clinvarConnector = new ClinvarConnector(sshTunnelService, serviceConfig.clinVarConfigConnector);
+        DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
+        GnomadConnector gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
+        SpliceAIConnector spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
+        ConservationConnector conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
+        HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
+        ClinvarConnector clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
         LiftoverConnector liftoverConnector = new LiftoverConnector();
-        GTFConnector gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
+        GTFConnector gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
         EnsemblVepService ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
         AnfisaConnector anfisaConnector = new AnfisaConnector(
                 gnomadConnector,

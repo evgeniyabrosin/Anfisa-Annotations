@@ -4,7 +4,6 @@ public class BeaconConnector {
 
 	public static final String BASE_URL = "https://beacon-network.org/";
 
-
 	public static String getUrl(
 			String chromosome,
 			long position,

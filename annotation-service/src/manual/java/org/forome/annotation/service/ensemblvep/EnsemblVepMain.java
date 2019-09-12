@@ -6,6 +6,7 @@ import htsjdk.variant.variantcontext.VariantContextBuilder;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.ref.RefConnector;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Chromosome;
@@ -30,11 +31,12 @@ public class EnsemblVepMain {
     public static void main(String[] args) throws Exception {
         ServiceConfig serviceConfig = new ServiceConfig();
         SSHConnectService sshTunnelService = new SSHConnectService();
+        DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
 
         try(EnsemblVepService ensemblVepService = new EnsemblVepInlineService(
                 sshTunnelService,
                 serviceConfig.ensemblVepConfigConnector,
-                new RefConnector(sshTunnelService, serviceConfig.refConfigConnector)
+                new RefConnector(databaseConnectService, serviceConfig.refConfigConnector)
         )) {
             for (int i=881906; i< 881916; i++) {
                 CompletableFuture<JSONObject> futureVepJson = ensemblVepService.getVepJson(

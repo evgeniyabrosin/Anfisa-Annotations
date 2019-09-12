@@ -12,4 +12,6 @@ public interface EnsemblVepService extends Closeable {
 
     CompletableFuture<JSONObject> getVepJson(Variant variant, String reference, String alternative);
 
+    void close();
+
 }

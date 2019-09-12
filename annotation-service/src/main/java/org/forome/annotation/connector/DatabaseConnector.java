@@ -2,16 +2,13 @@ package org.forome.annotation.connector;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
-import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.service.ssh.SSHConnectService;
-import org.forome.annotation.service.ssh.struct.SSHConnect;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.sql.*;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,71 +30,12 @@ public class DatabaseConnector implements Closeable {
 
     private final static Logger log = LoggerFactory.getLogger(DatabaseConnector.class);
 
-    private final SSHConnectService sshTunnelService;
-
     private final DatabaseConfigConnector databaseConfigConnector;
+    private final ComboPooledDataSource pooledDataSource;
 
-    private ComboPooledDataSource pooledDataSource;
-
-    public DatabaseConnector(SSHConnectService sshTunnelService, DatabaseConfigConnector databaseConfigConnector) throws Exception {
-        this.sshTunnelService = sshTunnelService;
+    public DatabaseConnector(DatabaseConnectService databaseConnectService, DatabaseConfigConnector databaseConfigConnector) throws Exception {
         this.databaseConfigConnector = databaseConfigConnector;
-        connect();
-    }
-
-    public synchronized void connect() throws Exception {
-        StringBuilder jdbcUrl = new StringBuilder("jdbc:mysql://")
-                .append(databaseConfigConnector.mysqlHost).append(':');
-
-        int mysqlUrlPort;
-        SshTunnelConfig sshTunnelConfig = databaseConfigConnector.sshTunnelConfig;
-        if (sshTunnelConfig != null) {
-            SSHConnect sshTunnel = sshTunnelService.getSSHConnect(
-                    sshTunnelConfig.host,
-                    sshTunnelConfig.port,
-                    sshTunnelConfig.user,
-                    sshTunnelConfig.key
-            );
-            mysqlUrlPort = sshTunnel.getTunnel(databaseConfigConnector.mysqlPort);
-        } else {
-            mysqlUrlPort = databaseConfigConnector.mysqlPort;
-        }
-        jdbcUrl.append(mysqlUrlPort).append('/').append(databaseConfigConnector.mysqlDatabase)
-                .append("?user=").append(databaseConfigConnector.mysqlUser)
-                .append("&password=").append(databaseConfigConnector.mysqlPassword)
-                .append("&useSSL=false");
-
-        String driverName = "com.mysql.jdbc.Driver";
-        Class.forName(driverName).newInstance();
-
-        pooledDataSource = new ComboPooledDataSource();
-        pooledDataSource.setDriverClass(driverName);
-        pooledDataSource.setJdbcUrl(jdbcUrl.toString());
-        pooledDataSource.setMinPoolSize(1);
-        pooledDataSource.setAcquireIncrement(1);
-        pooledDataSource.setMaxPoolSize(20);
-        pooledDataSource.setCheckoutTimeout((int) Duration.ofMinutes(1).toMillis());
-        pooledDataSource.setTestConnectionOnCheckin(false);
-        pooledDataSource.setTestConnectionOnCheckout(true);
-
-        try (Connection connection = pooledDataSource.getConnection()) {
-            try (Statement statement = connection.createStatement()) {
-                try (ResultSet resultSet = statement.executeQuery("SHOW TABLES")) {
-                    ResultSetMetaData rsmd = resultSet.getMetaData();
-                    int columnsNumber = rsmd.getColumnCount();
-                    while (resultSet.next()) {
-                        String str = "";
-                        for (int i = 1; i <= columnsNumber; i++) {
-                            if (i > 1) str += ",  ";
-                            String columnValue = resultSet.getString(i);
-                            str += columnValue + " " + rsmd.getColumnName(i);
-                        }
-                        log.debug(str);
-                    }
-                }
-            }
-        }
-        log.debug("Connected by hgmd.");
+        this.pooledDataSource = databaseConnectService.getDataSource(databaseConfigConnector);
     }
 
     public Connection createConnection() {
@@ -110,10 +48,12 @@ public class DatabaseConnector implements Closeable {
     }
 
     public List<Metadata> getMetadata() {
+        String sql = String.format("select Product, Version, Date from %s.Metadata", databaseConfigConnector.mysqlDatabase);
+
         List<Metadata> metadata = new ArrayList<>();
         try (Connection connection = createConnection()) {
             try (Statement statement = connection.createStatement()) {
-                try (ResultSet resultSet = statement.executeQuery("select Product, Version, Date from Metadata")) {
+                try (ResultSet resultSet = statement.executeQuery(sql)) {
                     while (resultSet.next()) {
                         String product = resultSet.getString("Product");
                         String version = resultSet.getString("Version");
@@ -132,21 +72,8 @@ public class DatabaseConnector implements Closeable {
         return metadata;
     }
 
-    public synchronized void disconnect() {
-        log.debug("Disconnect by clinVar.");
-        if (pooledDataSource != null) {
-            pooledDataSource.close();
-            pooledDataSource = null;
-        }
-    }
-
-    private synchronized void reconnect() throws Exception {
-        disconnect();
-        connect();
-    }
-
     @Override
     public void close() {
-        disconnect();
+
     }
 }

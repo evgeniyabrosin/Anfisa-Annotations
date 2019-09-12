@@ -2,7 +2,7 @@ package org.forome.annotation.connector.ref;
 
 import org.forome.annotation.config.connector.RefConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
-import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 
@@ -12,10 +12,10 @@ public class RefConnector implements AutoCloseable {
     private final RefDataConnector refDataConnector;
 
     public RefConnector(
-            SSHConnectService sshTunnelService,
+            DatabaseConnectService databaseConnectService,
             RefConfigConnector refConfigConnector
     ) throws Exception {
-        this.databaseConnector = new DatabaseConnector(sshTunnelService, refConfigConnector);
+        this.databaseConnector = new DatabaseConnector(databaseConnectService, refConfigConnector);
         this.refDataConnector = new RefDataConnector(databaseConnector);
     }
 

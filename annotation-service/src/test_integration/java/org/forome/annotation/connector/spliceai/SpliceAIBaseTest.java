@@ -1,8 +1,8 @@
 package org.forome.annotation.connector.spliceai;
 
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ssh.SSHConnectService;
-import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +17,8 @@ public class SpliceAIBaseTest {
 	public void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		SSHConnectService sshTunnelService = new SSHConnectService();
-		spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, (t, e) -> {
-			log.error("Fail", e);
-			Assert.fail();
-		});
+		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
+
+		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 	}
 }

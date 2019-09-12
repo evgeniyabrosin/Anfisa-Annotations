@@ -1,6 +1,7 @@
 package org.forome.annotation.connector.ref;
 
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -16,6 +17,8 @@ public class RefBaseTest {
 	public void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		SSHConnectService sshTunnelService = new SSHConnectService();
-		refConnector = new RefConnector(sshTunnelService, serviceConfig.refConfigConnector);
+		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
+
+		refConnector = new RefConnector(databaseConnectService, serviceConfig.refConfigConnector);
 	}
 }
