@@ -11,15 +11,28 @@ import java.util.Map;
  */
 public class RuntimeExec {
 
-    public static int runCommand(String command) throws Exception{
+    public static class Result {
+
+        public final int exitCode;
+        public final String out;
+        public final String outError;
+
+        private Result(int exitCode, String out, String outError) {
+            this.exitCode = exitCode;
+            this.out = out;
+            this.outError = outError;
+        }
+    }
+
+    public static Result runCommand(String command) throws Exception{
         return runCommand(command, null);
     }
 
-    public static int runCommand(String command, Map<String, String> args) throws Exception{
+    public static Result runCommand(String command, Map<String, String> args) throws Exception{
         return runCommand(command, args, null, null);
     }
 
-    public static int runCommand(String command, Map<String, String> args, Map<String, String> environment, InputStream stdin) throws Exception{
+    public static Result runCommand(String command, Map<String, String> args, Map<String, String> environment, InputStream stdin) throws Exception{
 
         //Строим запускаемую команду
         String cmd = command;
@@ -69,7 +82,11 @@ public class RuntimeExec {
         }
         inError.close();
 
-        int code = process.waitFor();//Ожидаем завершения
-        return code;
+        int exitCode = process.waitFor();//Ожидаем завершения
+        return new Result(
+                exitCode,
+                out.toString(),
+                outError.toString()
+        );
     }
 }
