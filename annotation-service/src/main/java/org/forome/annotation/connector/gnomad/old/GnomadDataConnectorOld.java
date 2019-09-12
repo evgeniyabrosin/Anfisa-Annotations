@@ -163,52 +163,6 @@ public class GnomadDataConnectorOld implements Closeable {
                 resultSet = statement.executeQuery(
                         String.format(base_sql, chromosome, position - 1)
                 );
-
-//                if (ref.length() > alt.length()) {
-//                    if (ref.contains(alt)) {
-//                        int idx = ref.indexOf(alt);
-//                        String newAlt;
-//                        String newRef;
-//                        if (idx == 0) {
-//                            int n = alt.length() - 1;
-//                            newAlt = String.valueOf(alt.charAt(n));
-//                            newRef = ref.substring(n);
-//                        } else {
-//                            newAlt = null;
-//                            newRef = null;
-//                        }
-//
-//                        resultSet.close();
-//                        statement.close();
-//
-//                        statement = connection.createStatement();
-//                        resultSet = statement.executeQuery(
-//                                String.format(sql, chromosome, position + idx - 1, newRef, newAlt)
-//                        );
-//                    }
-//                } else if (ref.length() < alt.length()) {
-//                    if (alt.contains(ref)) {
-//                        int idx = alt.indexOf(ref);
-//                        String newAlt;
-//                        String newRef;
-//                        if (idx == 0) {
-//                            int n = ref.length() - 1;
-//                            newRef = String.valueOf(ref.charAt(n));
-//                            newAlt = alt.substring(n);
-//                        } else {
-//                            newAlt = null;
-//                            newRef = null;
-//                        }
-//
-//                        resultSet.close();
-//                        statement.close();
-//
-//                        statement = connection.createStatement();
-//                        resultSet = statement.executeQuery(
-//                                String.format(sql, chromosome, position + idx - 1, newRef, newAlt)
-//                        );
-//                    }
-//                }
             }
 
             List<Result> results = new ArrayList<>();

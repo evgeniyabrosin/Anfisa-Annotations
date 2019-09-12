@@ -11,6 +11,7 @@ import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.ref.RefConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
 import org.forome.annotation.service.ssh.SSHConnectService;
@@ -25,6 +26,7 @@ public class AnfisaBaseTest {
 	private final static Logger log = LoggerFactory.getLogger(AnfisaBaseTest.class);
 
 	private static SSHConnectService sshTunnelService;
+	private static DatabaseConnectService databaseConnectService;
 
 	protected static GnomadConnector gnomadConnector;
 	protected static SpliceAIConnector spliceAIConnector;
@@ -41,23 +43,21 @@ public class AnfisaBaseTest {
 	public static void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		sshTunnelService = new SSHConnectService();
-		gnomadConnector = new GnomadConnectorImpl(sshTunnelService, serviceConfig.gnomadConfigConnector, (t, e) -> {
+		databaseConnectService = new DatabaseConnectService(sshTunnelService);
+		gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});
-		spliceAIConnector = new SpliceAIConnector(sshTunnelService, serviceConfig.spliceAIConfigConnector, (t, e) -> {
-			log.error("Fail", e);
-			Assert.fail();
-		});
-		conservationConnector = new ConservationConnector(sshTunnelService, serviceConfig.conservationConfigConnector);
-		hgmdConnector = new HgmdConnector(sshTunnelService, serviceConfig.hgmdConfigConnector);
-		clinvarConnector = new ClinvarConnector(sshTunnelService, serviceConfig.clinVarConfigConnector);
+		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
+		conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
+		hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
+		clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 		liftoverConnector = new LiftoverConnector();
-		gtfConnector = new GTFConnector(sshTunnelService, serviceConfig.gtfConfigConnector, (t, e) -> {
+		gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});
-		refConnector = new RefConnector(sshTunnelService, serviceConfig.refConfigConnector);
+		refConnector = new RefConnector(databaseConnectService, serviceConfig.refConfigConnector);
 		ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector, refConnector);
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
@@ -85,6 +85,7 @@ public class AnfisaBaseTest {
 		spliceAIConnector.close();
 		gnomadConnector.close();
 
+		databaseConnectService.close();
 		sshTunnelService.close();
 	}
 }

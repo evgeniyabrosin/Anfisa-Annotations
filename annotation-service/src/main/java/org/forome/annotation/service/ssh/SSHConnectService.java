@@ -29,7 +29,7 @@ public class SSHConnectService implements AutoCloseable {
         return sshConnect;
     }
 
-    private static String getKeySSHConnect(String host, int port, String user) {
+    public static String getKeySSHConnect(String host, int port, String user) {
         return new StringBuilder(host).append(port).append(user).toString();
     }
 

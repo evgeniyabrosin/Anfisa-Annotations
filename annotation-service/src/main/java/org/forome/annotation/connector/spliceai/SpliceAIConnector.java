@@ -3,7 +3,7 @@ package org.forome.annotation.connector.spliceai;
 import org.forome.annotation.config.connector.SpliceAIConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
-import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,13 +19,11 @@ public class SpliceAIConnector implements AutoCloseable {
 
     private final SpliceAIDataConnector spliceAIDataConnector;
 
-
     public SpliceAIConnector(
-            SSHConnectService sshTunnelService,
-            SpliceAIConfigConnector spliceAIConfigConnector,
-            Thread.UncaughtExceptionHandler uncaughtExceptionHandler
+            DatabaseConnectService databaseConnectService,
+            SpliceAIConfigConnector spliceAIConfigConnector
     ) throws Exception {
-        databaseConnector = new DatabaseConnector(sshTunnelService, spliceAIConfigConnector);
+        databaseConnector = new DatabaseConnector(databaseConnectService, spliceAIConfigConnector);
         spliceAIDataConnector = new SpliceAIDataConnector(databaseConnector);
     }
 

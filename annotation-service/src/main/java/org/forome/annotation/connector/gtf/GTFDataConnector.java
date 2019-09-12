@@ -30,7 +30,7 @@ public class GTFDataConnector implements Closeable {
         long bucket = (position / GENE_BUCKET_SIZE) * GENE_BUCKET_SIZE;
 
         String sql = String.format(
-                "SELECT gene FROM GTF_gene WHERE chromosome = %s AND bucket = %s AND %s between `start` and `end`",
+                "SELECT gene FROM ensembl.GTF_gene WHERE chromosome = %s AND bucket = %s AND %s between `start` and `end`",
                 chromosome, bucket, position
         );
 

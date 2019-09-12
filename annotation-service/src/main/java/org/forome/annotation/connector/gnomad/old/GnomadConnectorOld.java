@@ -7,7 +7,7 @@ import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.struct.GnamadGroup;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 import org.forome.annotation.matcher.SequenceMatcher;
-import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,11 +34,11 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
     private final ExecutorService threadPoolGnomadExecutor;
 
     public GnomadConnectorOld(
-            SSHConnectService sshTunnelService,
+            DatabaseConnectService databaseConnectService,
             GnomadConfigConnector gnomadConfigConnector,
             Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) throws Exception {
-        databaseConnector = new DatabaseConnector(sshTunnelService, gnomadConfigConnector);
+        databaseConnector = new DatabaseConnector(databaseConnectService, gnomadConfigConnector);
         gnomadDataConnector = new GnomadDataConnectorOld(databaseConnector);
         threadPoolGnomadExecutor = new DefaultThreadPoolExecutor(
                 MAX_THREAD_COUNT,
