@@ -20,7 +20,9 @@ public class EnsemblVepMain {
     public static void main1(String[] args) throws Exception {
         VariantContextBuilder variantContextBuilder = new VariantContextBuilder();
         variantContextBuilder.loc("15", 89876828, 89876836);
-        variantContextBuilder.alleles(new ArrayList<Allele>(){{ add(Allele.create("TTGCTGC", false)); }});
+        variantContextBuilder.alleles(new ArrayList<Allele>() {{
+            add(Allele.create("TTGCTGC", false));
+        }});
         VariantContext variantContext = variantContextBuilder.make();
         System.out.println("variantContext: " + variantContext);
 //        variantContext.toStringDecodeGenotypes()
@@ -33,7 +35,7 @@ public class EnsemblVepMain {
         SSHConnectService sshTunnelService = new SSHConnectService();
         DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
 
-        try(EnsemblVepService ensemblVepService = new EnsemblVepInlineService(
+        try (EnsemblVepService ensemblVepService = new EnsemblVepInlineService(
                 sshTunnelService,
                 serviceConfig.ensemblVepConfigConnector,
                 new RefConnector(databaseConnectService, serviceConfig.refConfigConnector)
@@ -47,5 +49,8 @@ public class EnsemblVepMain {
             }
             System.out.println("complete");
         }
+
+        databaseConnectService.close();
+        sshTunnelService.close();
     }
 }

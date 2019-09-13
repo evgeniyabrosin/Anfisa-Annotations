@@ -8,7 +8,6 @@ import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.annotator.utils.SampleUtils;
 import org.forome.annotation.connector.anfisa.struct.*;
 import org.forome.annotation.connector.beacon.BeaconConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
@@ -200,7 +199,7 @@ public class AnfisaConnector implements AutoCloseable {
             data.cnvGT = variantCNV.genotypes.values().stream()
                     .collect(Collectors.toMap(item -> item.sampleName, item -> item.gt));
             filters.cnvLO = view.bioinformatics.cnvLO =
-                    variantCNV.getGenotype(SampleUtils.getProband(variantCNV.genotypes.keySet())).lo;
+                    variantCNV.getGenotype(anfisaInput.samples.proband.id).lo;
         }
 
         createGeneralTab(context, data, filters, view, variant.start, variant.end, vepJson, caseSequence, variant, anfisaInput.samples);
