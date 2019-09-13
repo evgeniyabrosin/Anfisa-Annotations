@@ -10,7 +10,6 @@ import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
-import org.forome.annotation.connector.ref.RefConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.database.DatabaseService;
 import org.forome.annotation.database.entityobject.user.UserReadable;
@@ -20,7 +19,7 @@ import org.forome.annotation.network.NetworkService;
 import org.forome.annotation.network.component.UserEditableComponent;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
-import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
+import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.notification.NotificationService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.utils.ArgumentParser;
@@ -112,12 +111,12 @@ public class Service {
         this.clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
         this.liftoverConnector = new LiftoverConnector();
         this.gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
-//        this.ensemblVepService = new EnsemblVepExternalService(uncaughtExceptionHandler);
-        this.ensemblVepService = new EnsemblVepInlineService(
-                sshTunnelService,
-                serviceConfig.ensemblVepConfigConnector,
-                new RefConnector(databaseConnectService, serviceConfig.refConfigConnector)
-        );
+        this.ensemblVepService = new EnsemblVepExternalService(uncaughtExceptionHandler);
+//        this.ensemblVepService = new EnsemblVepInlineService(
+//                sshTunnelService,
+//                serviceConfig.ensemblVepConfigConnector,
+//                new RefConnector(databaseConnectService, serviceConfig.refConfigConnector)
+//        );
 
         this.anfisaConnector = new AnfisaConnector(
                 gnomadConnector,
