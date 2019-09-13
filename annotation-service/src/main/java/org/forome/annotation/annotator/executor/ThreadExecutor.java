@@ -119,9 +119,6 @@ public class ThreadExecutor implements AutoCloseable {
                 JSONObject vepJson = source.getVepJson();
 
                 if (variant instanceof VariantVCF && vepJsonIterator != null) {
-                    int iStart = vepJson.getAsNumber("start").intValue();
-                    int iEnd = vepJson.getAsNumber("end").intValue();
-
                     AnfisaInput anfisaInput = new AnfisaInput.Builder()
                             .withSamples(samples)
                             .build();
@@ -129,7 +126,7 @@ public class ThreadExecutor implements AutoCloseable {
                     AnfisaResult anfisaResult = anfisaConnector.build(
                             caseSequence,
                             anfisaInput,
-                            new VariantVCF(((VariantVCF) variant).variantContext, iStart, iEnd),
+                            new VariantVCF(((VariantVCF) variant).variantContext),
                             vepJson
                     );
                     result.future.complete(anfisaResult);

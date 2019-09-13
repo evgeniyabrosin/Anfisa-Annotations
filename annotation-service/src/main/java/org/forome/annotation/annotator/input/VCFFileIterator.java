@@ -39,11 +39,7 @@ public class VCFFileIterator implements AutoCloseable {
                 if ("M".equals(RequestParser.toChromosome(variantContext.getContig()))) {
                     continue;//Игнорируем митохондрии
                 }
-                return new VariantVCF(
-                        variantContext,
-                        VariantVCF.getEnd(variantContext),
-                        VariantVCF.getEnd(variantContext)
-                );
+                return new VariantVCF(variantContext);
             } else if (cnvFileIterator != null && cnvFileIterator.hasNext()) {
                 return cnvFileIterator.next();
             } else {

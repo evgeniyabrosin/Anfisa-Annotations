@@ -40,7 +40,7 @@ public class AnnotatorMain {
                     inventory.famFile, inventory.patientIdsFile,
                     inventory.vcfFile, inventory.vepJsonFile,
                     inventory.cnvFile,
-                    0,
+                    argumentsInventory.start,
                     inventory.outFile,
                     () -> arguments.getArguments()
             );
