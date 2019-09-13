@@ -30,7 +30,18 @@ public class Samples {
             if (items == null || items.isEmpty()) {
                 return null;
             }
-            return items.get(items.firstKey());
+            Sample proband = items.get(items.firstKey());
+
+            //Validation
+            for (Map.Entry<String, Sample> entry : items.entrySet()) {
+                if (entry.getValue() == proband) continue;
+                if (entry.getValue().id.endsWith("a1")) {
+                    throw new RuntimeException("Not valid samples, a1 is not first record");
+                }
+            }
+
+            return proband;
         }
+
     }
 }
