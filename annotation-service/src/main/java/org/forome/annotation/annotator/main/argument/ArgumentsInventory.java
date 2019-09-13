@@ -13,6 +13,8 @@ public class ArgumentsInventory extends Arguments {
 
     public final Path pathInventory;
 
+    public final int start;
+
     public ArgumentsInventory(CommandLine cmd) {
         super(cmd);
 
@@ -33,6 +35,8 @@ public class ArgumentsInventory extends Arguments {
         if (!Files.exists(pathInventory)) {
             throw new IllegalArgumentException("Inventory file is not exists: " + config);
         }
+
+        this.start = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_START_POSITION, "0"));
     }
 
 }

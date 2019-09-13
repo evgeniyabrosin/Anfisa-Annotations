@@ -9,10 +9,14 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantVCF;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
 class Source {
+
+    private final static Logger log = LoggerFactory.getLogger(Source.class);
 
     public final Variant variant;
     private final String strVepJson;
@@ -78,20 +82,20 @@ class Source {
                             String.format("Not equals chromosome, vcf %s and vep.json %s", variantContext.getContig(), _vepJson)
                     );
                 }
-//            if (VariantVCF.getStart(variantContext) != _vepJson.getAsNumber("start").intValue()) {
-//                throw new RuntimeException(
-//                        String.format("Not equals start, vcf: %s, vep.json: %s",
-//                                variantContext.getStart(), _vepJson.getAsNumber("start")
-//                        )
-//                );
-//            }
-//            if (variantContext.getEnd() != _vepJson.getAsNumber("end").intValue()) {
-//                throw new RuntimeException(
-//                        String.format("Not equals end, vcf: %s, vep.json: %s",
-//                                variantContext.getEnd(), _vepJson.getAsNumber("end")
-//                        )
-//                );
-//            }
+                if (VariantVCF.getStart(variantContext) != _vepJson.getAsNumber("start").intValue()) {
+                    throw new RuntimeException(
+                            String.format("Not equals start, vcf: %s, vep.json: %s",
+                                    variantContext.getStart(), _vepJson.getAsNumber("start")
+                            )
+                    );
+                }
+                if (VariantVCF.getEnd(variantContext) != _vepJson.getAsNumber("end").intValue()) {
+                    throw new RuntimeException(
+                            String.format("Not equals end, vcf: %s, vep.json: %s",
+                                    variantContext.getEnd(), _vepJson.getAsNumber("end")
+                            )
+                    );
+                }
             }
         }
         return _vepJson;
