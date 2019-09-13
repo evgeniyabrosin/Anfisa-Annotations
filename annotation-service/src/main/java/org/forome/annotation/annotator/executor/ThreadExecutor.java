@@ -134,12 +134,6 @@ public class ThreadExecutor implements AutoCloseable {
                     );
                     result.future.complete(anfisaResult);
                 } else {
-//                    Variant variant = new VariantVCF(
-//                            variantContext,
-//                            variantContext.getStart(), //TODO Ulitin V. Неверно, нельзя напрямую брать из vcf-файла, из за отсутсвия стандартов - не совпадение подходов
-//                            variantContext.getEnd()
-//                    );
-
                     String alternative;
                     if (variant instanceof VariantVCF) {
                         VariantContext variantContext = ((VariantVCF) variant).variantContext;
@@ -157,7 +151,9 @@ public class ThreadExecutor implements AutoCloseable {
 
                     ensemblVepService.getVepJson(variant, alternative)
                             .thenApply(iVepJson -> {
-                                AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
+                                AnfisaInput anfisaInput = new AnfisaInput.Builder()
+                                        .withSamples(samples)
+                                        .build();
                                 AnfisaResult anfisaResult = anfisaConnector.build(null, anfisaInput, variant, iVepJson);
                                 result.future.complete(anfisaResult);
                                 return null;

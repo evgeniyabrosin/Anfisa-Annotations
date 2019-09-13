@@ -23,25 +23,14 @@ public class Samples {
         }
 
         public Samples build() {
-            return new Samples(getProband(items), items);
+            return new Samples(getProband(), items);
         }
 
-        private static Sample getProband(Map<String, Sample> items) {
-            if (items == null) {
+        private Sample getProband() {
+            if (items == null || items.isEmpty()) {
                 return null;
-            } else if (items.size() == 1) {
-                return items.values().iterator().next();
             }
-            for (Map.Entry<String, Sample> entry : items.entrySet()) {
-                if (isProband(entry.getValue().id)) {
-                    return entry.getValue();
-                }
-            }
-            return null;
-        }
-
-        private static boolean isProband(String sample) {
-            return sample.endsWith("a1");
+            return items.get(items.firstKey());
         }
     }
 }
