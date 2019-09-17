@@ -37,12 +37,12 @@ public class GnomadResult {
     public final Sum genomes;
     public final Sum overall;
     public final Popmax popmax;
-    public final Popmax widePopmax;
+    public final Popmax rawPopmax;
     public final Set<Url> urls;
 
     public GnomadResult(
             Sum exomes, Sum genomes, Sum overall,
-            GnomadResult.Popmax popmax, Popmax widePopmax,
+            GnomadResult.Popmax popmax, Popmax rawPopmax,
             Set<Url> urls
     ) {
         this.exomes = exomes;
@@ -50,7 +50,7 @@ public class GnomadResult {
         this.overall = overall;
 
         this.popmax = popmax;
-        this.widePopmax = widePopmax;
+        this.rawPopmax = rawPopmax;
 
         this.urls = urls;
     }
@@ -60,18 +60,18 @@ public class GnomadResult {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GnomadResult that = (GnomadResult) o;
-        return Objects.equals(widePopmax, that.widePopmax) &&
+        return Objects.equals(rawPopmax, that.rawPopmax) &&
                 Objects.equals(exomes, that.exomes) &&
                 Objects.equals(genomes, that.genomes) &&
                 Objects.equals(overall, that.overall) &&
                 Objects.equals(popmax, that.popmax) &&
-                Objects.equals(widePopmax, that.widePopmax) &&
+                Objects.equals(rawPopmax, that.rawPopmax) &&
                 Objects.equals(urls, that.urls);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(exomes, genomes, overall, widePopmax, urls);
+        return Objects.hash(exomes, genomes, overall, rawPopmax, urls);
     }
 
     public static class Sum {

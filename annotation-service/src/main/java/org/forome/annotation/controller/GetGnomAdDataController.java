@@ -193,10 +193,10 @@ public class GetGnomAdDataController {
             out.put("popmax_af", gnomadResult.popmax.af);
             out.put("popmax_an", gnomadResult.popmax.an);
         }
-        if (gnomadResult.widePopmax != null) {
-            out.put("wide_popmax", gnomadResult.widePopmax.group.name());
-            out.put("wide_popmax_af", gnomadResult.widePopmax.af);
-            out.put("wide_popmax_an", gnomadResult.widePopmax.an);
+        if (gnomadResult.rawPopmax != null) {
+            out.put("raw_popmax", gnomadResult.rawPopmax.group.name());
+            out.put("raw_popmax_af", gnomadResult.rawPopmax.af);
+            out.put("raw_popmax_an", gnomadResult.rawPopmax.an);
         }
 
         JSONArray jurls = new JSONArray();
