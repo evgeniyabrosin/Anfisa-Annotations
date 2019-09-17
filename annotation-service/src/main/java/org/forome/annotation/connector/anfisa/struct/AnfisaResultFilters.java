@@ -20,8 +20,11 @@ public class AnfisaResultFilters {
 	public Integer probandGq;
 	public long distFromExon;
 	public GnomadResult.Popmax gnomadPopmax;
-	public GnomadResult.Popmax gnomadWidePopmax;
+	public GnomadResult.Popmax gnomadRawPopmax;
+	public Double gnomadAfFam;
 	public Double gnomadAfPb;
+	public Double gnomadDbExomesAf;
+	public Double gnomadDbGenomesAf;
 	public double qd;
 	public Double mq;
 	public List<String> filters;
@@ -42,6 +45,9 @@ public class AnfisaResultFilters {
 	public ClinvarVariantSummary.ReviewStatus clinvarReviewStatus;
 	public String[] clinvarAcmgGuidelines;
 
+	public Long gnomadHom;
+	public Long gnomadHem;
+
 	public Float cnvLO;
 
 	public AnfisaResultFilters() {
@@ -60,13 +66,16 @@ public class AnfisaResultFilters {
 			out.put("gnomad_popmax_af", gnomadPopmax.af);
 			out.put("gnomad_popmax_an", gnomadPopmax.an);
 		}
-		if (gnomadWidePopmax != null) {
-			out.put("gnomad_wide_popmax", gnomadWidePopmax.group.name());
-			out.put("gnomad_wide_popmax_af", gnomadWidePopmax.af);
-			out.put("gnomad_wide_popmax_an", gnomadWidePopmax.an);
+		if (gnomadRawPopmax != null) {
+			out.put("gnomad_raw_popmax", gnomadRawPopmax.group.name());
+			out.put("gnomad_raw_popmax_af", gnomadRawPopmax.af);
+			out.put("gnomad_raw_popmax_an", gnomadRawPopmax.an);
 		}
+		out.put("gnomad_af_fam", gnomadAfFam);
 		out.put("severity", severity);
 		out.put("gnomad_af_pb", gnomadAfPb);
+		out.put("gnomad_db_exomes_af", gnomadDbExomesAf);
+		out.put("gnomad_db_genomes_af", gnomadDbGenomesAf);
 		out.put("has_variant", new JSONArray());
 		out.put("min_gq", minGq);
 		out.put("dist_from_exon", distFromExon);
@@ -116,6 +125,9 @@ public class AnfisaResultFilters {
 			out.put("clinvar_stars", clinvarReviewStatus.getStars());
 			out.put("clinvar_acmg_guidelines", clinvarAcmgGuidelines);
 		}
+
+		out.put("gnomad_hom", gnomadHom);
+		out.put("gnomad_hem", gnomadHem);
 
 		out.put("cnv_lo", cnvLO);
 		return out;

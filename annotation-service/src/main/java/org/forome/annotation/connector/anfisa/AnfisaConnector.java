@@ -483,12 +483,17 @@ public class AnfisaConnector implements AutoCloseable {
     private void callGnomAD(AnfisaExecuteContext context, Variant variant, Samples samples, JSONObject response, AnfisaResultFilters filters) {
         Double af = null;
         Double _af = null;
+        Double emAf = null;
         Double emAfPb = null;
+        Double gmAf = null;
         Double gmAfPb = null;
         Double _afPb = null;
 
         GnomadResult.Popmax popmax = null;
-        GnomadResult.Popmax widePopmax = null;
+        GnomadResult.Popmax rawPopmax = null;
+
+        Long hom = null;
+        Long hem = null;
 
         for (String alt : alt_list(variant, samples, response)) {
             GnomadResult gnomadResult = getGnomadResult(variant, response, alt);
@@ -497,12 +502,14 @@ public class AnfisaConnector implements AutoCloseable {
             }
             if (gnomadResult.exomes != null) {
                 af = gnomadResult.exomes.af;
+                emAf = Math.min((emAf != null && emAf != 0.0d) ? emAf : af, af);
                 if (isProbandHasAllele(variant, samples, alt)) {
                     emAfPb = Math.min((emAfPb != null) ? emAfPb : af, af);
                 }
             }
             if (gnomadResult.genomes != null) {
                 af = gnomadResult.genomes.af;
+                gmAf = Math.min((gmAf != null) ? gmAf : af, af);
                 if (isProbandHasAllele(variant, samples, alt)) {
                     gmAfPb = Math.min((gmAfPb != null) ? gmAfPb : af, af);
                 }
@@ -513,18 +520,32 @@ public class AnfisaConnector implements AutoCloseable {
                 _afPb = Math.min((_afPb != null) ? _afPb : af, af);
             }
 
+            if (hom == null || hom < gnomadResult.overall.hom) {
+                hom = gnomadResult.overall.hom;
+            }
+            if (hem == null || hem < gnomadResult.overall.hem) {
+                hem = gnomadResult.overall.hem;
+            }
+
             if (_af == null || af < _af) {
                 _af = af;
                 popmax = gnomadResult.popmax;
-                widePopmax = gnomadResult.widePopmax;
+                rawPopmax = gnomadResult.rawPopmax;
             }
         }
-
         context.gnomadAfFam = _af;
+
+        filters.gnomadAfFam = _af;
         filters.gnomadAfPb = _afPb;
 
+        filters.gnomadDbExomesAf = emAf;
+        filters.gnomadDbGenomesAf = gmAf;
+
         filters.gnomadPopmax = popmax;
-        filters.gnomadWidePopmax = widePopmax;
+        filters.gnomadRawPopmax = rawPopmax;
+
+        filters.gnomadHom = hom;
+        filters.gnomadHem = hem;
     }
 
     private GnomadResult getGnomadResult(Variant variant, JSONObject response, String alt) {
@@ -738,9 +759,9 @@ public class AnfisaConnector implements AutoCloseable {
                         gnomAD.hom = gnomadResult.overall.hom;
                         gnomAD.hem = gnomadResult.overall.hem;
                     }
-                    if (gnomadResult.widePopmax != null) {
+                    if (gnomadResult.rawPopmax != null) {
                         gnomAD.widePopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
-                                gnomadResult.widePopmax.group.name(), gnomadResult.widePopmax.af, gnomadResult.widePopmax.an
+                                gnomadResult.rawPopmax.group.name(), gnomadResult.rawPopmax.af, gnomadResult.rawPopmax.an
                         );
                     }
                     gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);
