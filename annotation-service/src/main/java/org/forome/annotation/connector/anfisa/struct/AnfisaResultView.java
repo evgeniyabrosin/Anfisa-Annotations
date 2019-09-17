@@ -2,6 +2,7 @@ package org.forome.annotation.connector.anfisa.struct;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 
 import java.io.Serializable;
@@ -130,7 +131,7 @@ public class AnfisaResultView {
         public String[] url;
         public String proband;
         public List<Double> pli;
-        public String widePopmax;
+        public String rawPopmax;
         public Long hom;
         public Long hem;
 
@@ -146,7 +147,11 @@ public class AnfisaResultView {
                 out.put("genome_af", genomeAf);
                 out.put("allele", allele);
                 out.put("pli", pli);
-                out.put("wide_popmax", widePopmax);
+                if (AnfisaConnector.NEW_MODE) {
+                    out.put("raw_popmax", rawPopmax);
+                } else {
+                    out.put("pop_max", rawPopmax);
+                }
                 out.put("hom", hom);
                 out.put("hem", hem);
             } else {

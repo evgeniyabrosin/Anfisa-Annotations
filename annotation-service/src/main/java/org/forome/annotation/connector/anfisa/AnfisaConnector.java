@@ -45,6 +45,8 @@ import java.util.stream.Stream;
 
 public class AnfisaConnector implements AutoCloseable {
 
+    public static boolean NEW_MODE = false;
+
     private final static Logger log = LoggerFactory.getLogger(AnfisaConnector.class);
 
     private static final Map<String, String> trustedSubmitters = new HashMap<String, String>() {{
@@ -759,11 +761,21 @@ public class AnfisaConnector implements AutoCloseable {
                         gnomAD.hom = gnomadResult.overall.hom;
                         gnomAD.hem = gnomadResult.overall.hem;
                     }
-                    if (gnomadResult.rawPopmax != null) {
-                        gnomAD.widePopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
-                                gnomadResult.rawPopmax.group.name(), gnomadResult.rawPopmax.af, gnomadResult.rawPopmax.an
+                    if (AnfisaConnector.NEW_MODE) {
+                        if (gnomadResult.rawPopmax != null) {
+                            gnomAD.rawPopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
+                                    gnomadResult.rawPopmax.group.name(), gnomadResult.rawPopmax.af, gnomadResult.rawPopmax.an
+                            );
+                        }
+                    } else {
+                        gnomAD.rawPopmax = String.format(
+                                "%s: %s [%s]",
+                                gnomadResult.popmax.group.name(),
+                                gnomadResult.popmax.af,
+                                gnomadResult.popmax.an
                         );
                     }
+
                     gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);
                 }
 
