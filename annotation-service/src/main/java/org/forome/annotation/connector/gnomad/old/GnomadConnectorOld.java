@@ -3,6 +3,7 @@ package org.forome.annotation.connector.gnomad.old;
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.config.connector.GnomadConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
+import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.struct.GnamadGroup;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
@@ -149,11 +150,19 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
             urls.add(new GnomadResult.Url(chrom, pos, newRef, newAlt));
         }
 
-        return new GnomadResult(
-                sumExomes, sumGenomes, sumOverall,
-                null, new GnomadResult.Popmax(GnamadGroup.valueOf(popmax), popmaxAF, popmaxAN),
-                urls
-        );
+        if (AnfisaConnector.NEW_MODE) {
+            return new GnomadResult(
+                    sumExomes, sumGenomes, sumOverall,
+                    null, new GnomadResult.Popmax(GnamadGroup.valueOf(popmax), popmaxAF, popmaxAN),
+                    urls
+            );
+        } else {
+            return new GnomadResult(
+                    sumExomes, sumGenomes, sumOverall,
+                    new GnomadResult.Popmax(GnamadGroup.valueOf(popmax), popmaxAF, popmaxAN), null,
+                    urls
+            );
+        }
     }
 
     @Override
