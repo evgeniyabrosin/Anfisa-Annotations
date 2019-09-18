@@ -122,6 +122,7 @@ public class Inventory {
                 Map<String, String> aliases = new HashMap<>();
                 aliases.put("NAME", fileNameWithoutExt);
                 aliases.put("DIR", dir.toString());
+                aliases.put("TS", dateTimeFormatter.format(Instant.now()));
 
                 JSONObject jAliases = (JSONObject) jData.get("aliases");
                 if (jAliases != null) {
@@ -183,7 +184,6 @@ public class Inventory {
                 outFile = Paths.get(pathOutFile).toAbsolutePath();
 
                 String pathLogFile = getValueWithAliase(jData.getAsString("anno-log"), aliases);
-                pathLogFile = pathLogFile.replaceAll("%ts", dateTimeFormatter.format(Instant.now()));
                 if (pathLogFile != null) {
                     logFile = Paths.get(pathLogFile).toAbsolutePath();
                 }
