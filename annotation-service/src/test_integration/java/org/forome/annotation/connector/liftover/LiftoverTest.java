@@ -24,7 +24,7 @@ public class LiftoverTest extends AnfisaBaseTest {
          * Если длина мутации первышает 10 позиций (base pairs), то мы такие мутации переводить в 38-ю сборку не будем
          */
         Assert.assertEquals(null, liftoverConnector.toHG38(
-                new Chromosome("1"), new Position<Long>(120681279L, 120681278L)
+                new Chromosome("1"), new Position<Integer>(120681279, 120681278)
         ));
 
     }

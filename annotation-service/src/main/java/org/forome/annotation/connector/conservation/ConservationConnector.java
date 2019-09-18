@@ -33,7 +33,7 @@ public class ConservationConnector implements AutoCloseable {
         return databaseConnector.getMetadata();
     }
 
-    public Conservation getConservation(Chromosome chromosome, Position<Long> position, Position<Integer> hg38, String ref, String alt) {
+    public Conservation getConservation(Chromosome chromosome, Position<Integer> position, Position<Integer> hg38, String ref, String alt) {
         if (alt.length() == 1 && ref.length() == 1) {
             //Однобуквенный вариант
             if (hg38 != null && !hg38.isSingle()) {
@@ -48,7 +48,7 @@ public class ConservationConnector implements AutoCloseable {
         }
     }
 
-    private Conservation getConservation(Chromosome chromosome, Position<Long> position, Position<Integer> hg38) {
+    private Conservation getConservation(Chromosome chromosome, Position<Integer> position, Position<Integer> hg38) {
         String sqlFromGerp;
         String sqlFromConservation = null;
         if (position.isSingle()) {

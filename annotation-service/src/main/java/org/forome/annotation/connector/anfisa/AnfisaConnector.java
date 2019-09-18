@@ -1026,7 +1026,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private Position<Integer> getHg38Coordinates(AnfisaExecuteContext context) {
         Chromosome chromosome = context.variant.chromosome;
-        return liftoverConnector.toHG38(chromosome, new Position(
+        return liftoverConnector.toHG38(chromosome, new Position<Integer>(
                 context.variant.start,
                 context.variant.end
         ));
