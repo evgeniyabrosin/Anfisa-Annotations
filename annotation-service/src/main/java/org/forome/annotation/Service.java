@@ -125,8 +125,7 @@ public class Service {
                 hgmdConnector,
                 clinvarConnector,
                 liftoverConnector,
-                gtfConnector,
-                uncaughtExceptionHandler
+                gtfConnector
         );
 
         executionQueue.execute(this, new Execution<Void>() {

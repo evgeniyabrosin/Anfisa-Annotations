@@ -21,7 +21,7 @@ public class ConservationTest extends AnfisaBaseTest {
     public void testSimple() {
         //chr1:16378047 G>T rs35351345 4.48
         Chromosome chr1 = new Chromosome("1");
-        Position<Long> pos1 = new Position<>(16378047L);
+        Position<Integer> pos1 = new Position<>(16378047);
         Position<Integer> hgmdHG38_1 = liftoverConnector.toHG38(chr1, pos1);
         Conservation conservation1 = conservationConnector.getConservation(chr1, pos1, hgmdHG38_1, "G", "T");
         assertDouble(0.183d, conservation1.priPhCons);
@@ -37,7 +37,7 @@ public class ConservationTest extends AnfisaBaseTest {
 
         //chr4:55593464 A>C rs3822214 1.82
         Chromosome chr2 = new Chromosome("4");
-        Position<Long> pos2 = new Position<>(55593464L);
+        Position<Integer> pos2 = new Position<>(55593464);
         Position<Integer> hgmdHG38_2 = liftoverConnector.toHG38(chr2, pos2);
         Conservation conservation2 = conservationConnector.getConservation(chr2, pos2, hgmdHG38_2, "A", "C");
         assertDouble(0.935d, conservation2.priPhCons);
@@ -53,7 +53,7 @@ public class ConservationTest extends AnfisaBaseTest {
 
         //chr9:139092481 G>C rs190916587 0.34
         Chromosome chr3 = new Chromosome("9");
-        Position<Long> pos3 = new Position<>(139092481L);
+        Position<Integer> pos3 = new Position<>(139092481);
         Position<Integer> hgmdHG38_3 = liftoverConnector.toHG38(chr3, pos3);
         Conservation conservation3 = conservationConnector.getConservation(chr3, pos3, hgmdHG38_3, "G", "C");
         assertDouble(0.99d, conservation3.priPhCons);
@@ -69,7 +69,7 @@ public class ConservationTest extends AnfisaBaseTest {
 
         //chr13:86369589 A>G rs199516562 5.86
         Chromosome chr4 = new Chromosome("13");
-        Position<Long> pos4 = new Position<>(86369589L);
+        Position<Integer> pos4 = new Position<>(86369589);
         Position<Integer> hgmdHG38_4 = liftoverConnector.toHG38(chr4, pos4);
         Conservation conservation4 = conservationConnector.getConservation(chr4, pos4, hgmdHG38_4, "A", "G");
         assertDouble(0.617d, conservation4.priPhCons);
@@ -85,14 +85,14 @@ public class ConservationTest extends AnfisaBaseTest {
 
         //chr2:21266774 GGCAGCGCCA>G rs17240441
         Chromosome chr5 = new Chromosome("2");
-        Position<Long> pos5 = new Position<>(21266774L);
+        Position<Integer> pos5 = new Position<>(21266774);
         Position<Integer> hgmdHG38_5 = liftoverConnector.toHG38(chr5, pos5);
         Conservation conservation5 = conservationConnector.getConservation(chr5, pos5, hgmdHG38_5, "GGCAGCGCCA", "G");
         Assert.assertEquals(null, conservation5);//Вычисляются только однобуквенные и инсерции
 
         //chr1:175949371 A>AACC
         Chromosome chr7 = new Chromosome("1");
-        Position<Long> pos7 = new Position<>(175949371L);
+        Position<Integer> pos7 = new Position<>(175949371);
         Position<Integer> hgmdHG38_7 = liftoverConnector.toHG38(chr7, pos7);
         Conservation conservation7 = conservationConnector.getConservation(chr7, pos7, hgmdHG38_7, "A", "AACC");
         assertDouble(2.37d, conservation7.gerpRS);//Проверяем на внешнем ресурсе
@@ -102,7 +102,7 @@ public class ConservationTest extends AnfisaBaseTest {
     public void testMulti() {
         //chr2:55863360 T>TA rs35916020
         Chromosome chr1 = new Chromosome("2");
-        Position<Long> pos1 = new Position<>(55863361L, 55863360L);
+        Position<Integer> pos1 = new Position<>(55863361, 55863360);
         Position<Integer> hgmdHG38_1 = liftoverConnector.toHG38(chr1, pos1);
         Conservation conservation1 = conservationConnector.getConservation(chr1, pos1, hgmdHG38_1, "T", "TA");
         assertDouble(-0.868d, conservation1.gerpRS);//Проверяем на внешнем ресурсе
@@ -110,7 +110,7 @@ public class ConservationTest extends AnfisaBaseTest {
         //chr1:120681278 A>AT  rs201956187
         //Проверяем ситуацию когда координаты hg38 - вычислить не удалось
         Chromosome chr2 = new Chromosome("1");
-        Position<Long> pos2 = new Position<>(120681279L, 120681278L);
+        Position<Integer> pos2 = new Position<>(120681279, 120681278);
         Position<Integer> hgmdHG38_2 = liftoverConnector.toHG38(chr2, pos2);
         Conservation conservation2 = conservationConnector.getConservation(chr2, pos2, hgmdHG38_2, "A", "AT");
         Assert.assertEquals(null, conservation2.priPhCons);

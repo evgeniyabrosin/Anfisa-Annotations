@@ -29,9 +29,9 @@ public class LiftoverConnector implements AutoCloseable {
         liftOver.setShouldLogFailedIntervalsBelowThreshold(false);
     }
 
-    public Position<Integer> toHG38(Chromosome chromosome, Position<Long> position) {
-        int start = (int) Math.min(position.start, position.end);
-        int end = (int) Math.max(position.start, position.end);
+    public Position<Integer> toHG38(Chromosome chromosome, Position<Integer> position) {
+        int start = Math.min(position.start, position.end);
+        int end = Math.max(position.start, position.end);
 
         Interval interval = liftOver.liftOver(new Interval(
                 chromosome.toString(),

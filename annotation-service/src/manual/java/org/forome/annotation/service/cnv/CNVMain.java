@@ -50,8 +50,7 @@ public class CNVMain {
                 hgmdConnector,
                 clinvarConnector,
                 liftoverConnector,
-                gtfConnector,
-                (t, e) -> crash(e)
+                gtfConnector
         );
 
         Path pathVcf = Paths.get("/home/kris/processtech/tmp/3/cnv.vcf");
@@ -61,8 +60,7 @@ public class CNVMain {
             VariantCNV variant = cnvFileIterator.next();
             JSONObject vepJson = ensemblVepService.getVepJson(variant, "-").get();
             AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-            AnfisaResult anfisaResult = anfisaConnector.build(
-                    null, anfisaInput, variant, vepJson );
+            AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant, vepJson);
             log.debug("anfisaResult: " + anfisaResult);
         }
 

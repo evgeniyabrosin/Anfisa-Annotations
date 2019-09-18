@@ -84,7 +84,7 @@ public class GetAnfisaJSONController {
                     Variant variant = new Variant(requestItem.chromosome, requestItem.start, requestItem.end);
                     futureAnfisaResults.add(
                             ensemblVepService.getVepJson(variant, requestItem.alternative)
-                                    .thenApply(vepJson -> anfisaConnector.build(null, new AnfisaInput.Builder().build(), variant, vepJson))
+                                    .thenApply(vepJson -> anfisaConnector.build(new AnfisaInput.Builder().build(), variant, vepJson))
                     );
                 }
 

@@ -52,8 +52,7 @@ public class VCFMain {
                 hgmdConnector,
                 clinvarConnector,
                 liftoverConnector,
-                gtfConnector,
-                (t, e) -> crash(e)
+                gtfConnector
         );
 
         Path pathVcf = Paths.get("/home/kris/processtech/tmp/newvcf/HG002_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-22_v.3.3.2_highconf_triophased.vcf");
@@ -64,8 +63,7 @@ public class VCFMain {
                 Variant variant = vcfFileIterator.next();
                 JSONObject vepJson = ensemblVepService.getVepJson(variant, "-").get();
                 AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-                AnfisaResult anfisaResult = anfisaConnector.build(
-                        null, anfisaInput, variant, vepJson );
+                AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant, vepJson);
                 log.debug("anfisaResult: " + anfisaResult);
             } catch (NoSuchElementException e) {
                 break;

@@ -124,7 +124,6 @@ public class ThreadExecutor implements AutoCloseable {
                             .build();
 
                     AnfisaResult anfisaResult = anfisaConnector.build(
-                            caseSequence,
                             anfisaInput,
                             new VariantVCF(((VariantVCF) variant).variantContext),
                             vepJson
@@ -151,7 +150,7 @@ public class ThreadExecutor implements AutoCloseable {
                                 AnfisaInput anfisaInput = new AnfisaInput.Builder()
                                         .withSamples(samples)
                                         .build();
-                                AnfisaResult anfisaResult = anfisaConnector.build(null, anfisaInput, variant, iVepJson);
+                                AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant, iVepJson);
                                 result.future.complete(anfisaResult);
                                 return null;
                             })
