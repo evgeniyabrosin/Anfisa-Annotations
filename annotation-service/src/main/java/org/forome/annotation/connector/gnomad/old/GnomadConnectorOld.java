@@ -115,6 +115,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
 
         Object[] popmaxFromRows = countPopmaxFromRows(overall);
         String popmax = (String) popmaxFromRows[0];
+        if (popmax == null) return null;
         double popmaxAF = (double) popmaxFromRows[1];
         long popmaxAN = (long) popmaxFromRows[2];
 
