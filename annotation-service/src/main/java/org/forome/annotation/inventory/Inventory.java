@@ -12,6 +12,9 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -64,6 +67,9 @@ public class Inventory {
                 "^split\\('([^']*)'\\,\\s*'([^\\\"]*)'\\)$"
         );
 
+        private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss.SSS")
+                .withZone(ZoneId.systemDefault());
+
         private String caseName;
         private CasePlatform casePlatform;
 
@@ -85,7 +91,7 @@ public class Inventory {
 
         public Builder withFile(Path file) {
             String fileName = file.getFileName().toString();
-            String extFileName = fileName.substring(fileName.lastIndexOf(".") + 1);
+//            String extFileName = fileName.substring(fileName.lastIndexOf(".") + 1);
             String fileNameWithoutExt = fileName.substring(0, fileName.lastIndexOf("."));
 
             Path dir = file.toAbsolutePath().getParent();
@@ -177,6 +183,7 @@ public class Inventory {
                 outFile = Paths.get(pathOutFile).toAbsolutePath();
 
                 String pathLogFile = getValueWithAliase(jData.getAsString("anno-log"), aliases);
+                pathLogFile = pathLogFile.replaceAll("%ts", dateTimeFormatter.format(Instant.now()));
                 if (pathLogFile != null) {
                     logFile = Paths.get(pathLogFile).toAbsolutePath();
                 }
