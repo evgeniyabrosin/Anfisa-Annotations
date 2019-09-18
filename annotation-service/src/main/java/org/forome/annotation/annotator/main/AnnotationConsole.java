@@ -130,8 +130,7 @@ public class AnnotationConsole {
                     hgmdConnector,
                     clinvarConnector,
                     liftoverConnector,
-                    gtfConnector,
-                    (t, e) -> fail(e, arguments)
+                    gtfConnector
             );
         } catch (Throwable e) {
             fail(e, arguments);

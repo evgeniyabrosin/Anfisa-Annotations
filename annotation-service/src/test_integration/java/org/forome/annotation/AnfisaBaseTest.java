@@ -70,11 +70,7 @@ public class AnfisaBaseTest {
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,
-				gtfConnector,
-				(t, e) -> {
-					log.error("Fail", e);
-					Assert.fail();
-				}
+				gtfConnector
 		);
 	}
 

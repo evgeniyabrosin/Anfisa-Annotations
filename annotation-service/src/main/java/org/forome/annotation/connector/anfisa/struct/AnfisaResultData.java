@@ -11,8 +11,8 @@ public class AnfisaResultData {
 
 	public String totalExonIntronCanonical;
 	public String assemblyName;
-	public Long end;
-	public Long start;
+	public int start;
+	public int end;
 	public String alt;
 	public String ref;
 	public JSONArray regulatoryFeatureConsequences;
