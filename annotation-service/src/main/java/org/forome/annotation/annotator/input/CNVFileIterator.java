@@ -14,8 +14,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CNVFileIterator implements AutoCloseable {
+
+    private static Pattern PATTERN_SAMPLES = Pattern.compile(
+            "^#(.*)Samples(.*):(.*)$"
+    );
 
     private final InputStream inputStream;
     private final BufferedReader bufferedReader;
@@ -32,9 +38,11 @@ public class CNVFileIterator implements AutoCloseable {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.startsWith("#")) {
-                    if (line.startsWith("#Samples:")) {
-                        samples = Arrays.stream(line.substring("#Samples:".length())
-                                .split(",")).map(s -> s.trim()).toArray(String[]::new);
+                    Matcher matcherSamples = PATTERN_SAMPLES.matcher(line);
+                    if (matcherSamples.matches()) {
+                        samples = Arrays.stream(
+                                matcherSamples.group(3).trim().split(",")
+                        ).map(s -> s.trim()).toArray(String[]::new);
                     }
                     continue;
                 } else {

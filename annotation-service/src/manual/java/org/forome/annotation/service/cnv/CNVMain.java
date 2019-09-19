@@ -53,7 +53,7 @@ public class CNVMain {
                 gtfConnector
         );
 
-        Path pathVcf = Paths.get("/home/kris/processtech/tmp/3/cnv.vcf");
+        Path pathVcf = Paths.get("/home/kris/processtech/tmp/_3/cnv.vcf");
         CNVFileIterator cnvFileIterator = new CNVFileIterator(pathVcf);
 
         while (cnvFileIterator.hasNext()) {
