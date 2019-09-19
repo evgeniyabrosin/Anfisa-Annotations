@@ -55,7 +55,6 @@ def ingestGERP(db_host, db_port, user, password, database,
     curs = conn.cursor()
     print (INSTR_CREATE)
     curs.execute(INSTR_CREATE)
-
     for chrom_file in extendFileList(file_list):
         chrom = detectFileChrom(chrom_file)
         print("Evaluation of", chrom, "in", chrom_file)
@@ -86,8 +85,8 @@ if __name__ == '__main__':
     ingestGERP(
         db_host  = "localhost",
         db_port  = 3306,
-        user     = 'hgmd',
-        password = 'hgmd',
+        user     = 'test',
+        password = 'test',
         database = "conservation",
         batch_size = 1000,
-        file_list = ["/data/exp/vtrosman/chr*.maf.rates"])
+        file_list = ["/home/trosman/work/Conservations/chr1.maf.rates",])

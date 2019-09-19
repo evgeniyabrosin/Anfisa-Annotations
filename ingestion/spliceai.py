@@ -161,9 +161,9 @@ if __name__ == '__main__':
         help = "DBMS host")
     parser.add_argument("--port", type = int, default = 3306,
         help = "DBMS port",)
-    parser.add_argument("--user", "-u", default = 'hgmd',
+    parser.add_argument("--user", "-u", default = 'test',
         help = "DBMS user")
-    parser.add_argument("--password", "-p", default = 'hgmd',
+    parser.add_argument("--password", "-p", default = 'test',
         help="DBMS password")
     parser.add_argument("--options", "-o", nargs='*',
         help="Options to pass to database driver")
@@ -173,9 +173,9 @@ if __name__ == '__main__':
 
     files = args.files
     if (not args.user):
-        args.user = "hgmd"
+        args.user = "test"
     if (not args.password):
-        args.password = "hgmd"
+        args.password = "test"
 
     connector = SpliceAI_Import(
         args.host, dbms="MySQL", database = args.database,

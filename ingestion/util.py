@@ -22,19 +22,19 @@ def reportTime(note, total, start_time):
 
 #=== chromosome detection ================
 sChromPatt = re.compile("(\\b|\\W)chr(\w+)(\\b|\\W)", re.I)
-CHROM_LIST = {str(idx) for idx in range(1, 23)} + {"M", "X", "Y"}
+CHROM_LIST = {str(idx) for idx in range(1, 23)} | {"M", "X", "Y"}
 def detectFileChrom(filename):
     qq = sChromPatt.search(os.path.basename(filename))
-    assert qq is not None and qq.group(2).upper in CHROM_LIST, (
+    assert qq is not None and qq.group(2).upper() in CHROM_LIST, (
         "Failed to detect chrom in filename: " + filename)
     return qq.group(2).upper()
 
 #=== file list extension ================
 def extendFileList(files):
-    result = []
-    for fname in files:
-        if '*' in fname:
-            result += glob(fname)[:]
-        else:
-            result += fname
-    return sorted(result)
+   result = []
+   for fname in files:
+       if '*' in fname:
+           result += list(glob(fname))
+       else:
+           result.append(fname)
+   return sorted(result)
