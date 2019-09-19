@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import htsjdk.variant.variantcontext.CommonInfo;
 import htsjdk.variant.variantcontext.Genotype;
-import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -217,47 +216,25 @@ public class AnfisaConnector implements AutoCloseable {
         }
         VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
-        Integer idx = null;
-        if (sample.name.toLowerCase().equals("proband")) {
-            idx = 0;
-        } else if (sample.name.toLowerCase().equals("mother")) {
-            idx = 1;
-        } else if (sample.name.toLowerCase().equals("father")) {
-            idx = 2;
+        Genotype oGenotype = variantContext.getGenotype(sample.id);
+        switch (oGenotype.getType()) {
+            case NO_CALL: //Генотип не может быть определен из-за плохого качества секвенирования
+            case UNAVAILABLE: //Не имеет альтернативных аллелей
+            case MIXED:
+                return null;
+            case HOM_REF:
+                //Если все аллели равны ref
+                // REF/REF
+                return 0;
+            case HET:
+                // REF/ALTn
+                return 1;
+            case HOM_VAR:
+                // ALTn/ALTk
+                return 2;
+            default:
+                throw new RuntimeException("Unknown state: " + oGenotype.getType());
         }
-
-        Genotype oGenotype;
-        if (idx == null) {
-            oGenotype = variantContext.getGenotype(sample.id);
-        } else {
-            /**
-             genotypes = self.get_genotypes()
-             if (len(genotypes) <= idx):
-             return False
-             genotype = genotypes[idx]
-             */
-            throw new RuntimeException("Not implemented");
-        }
-
-        String genotype;
-        if (oGenotype.isCalled()) {
-            genotype = oGenotype.getGenotypeString();
-        } else if (oGenotype.getType() == GenotypeType.UNAVAILABLE) {
-            //Не имеет альтернативного аллеля
-            return 0;
-        } else if (oGenotype.getType() == GenotypeType.NO_CALL) {
-            //Генотип не может быть определен из-за плохого качества секвенирования
-            return null;
-        } else {
-            throw new RuntimeException("Unknown state");
-        }
-
-        Set<String> set1 = Arrays.stream(genotype.split("/")).collect(Collectors.toSet());
-        Set<String> set2 = new HashSet<>(alt_list(variant, samples, json));
-        if (!Collections.disjoint(set1, set2)) {
-            return 3 - set1.size();
-        }
-        return 0;
     }
 
     private void callHgmd(Record record, AnfisaExecuteContext anfisaExecuteContext, AnfisaResultFilters filters, AnfisaResultData data) {
