@@ -41,7 +41,7 @@ public class CaseUtils {
                 }
                 String[] sl = line.split("\t");
 
-                String id = sl[1];
+                String id = sl[1].toLowerCase();
                 String name = sampleNameMap.getOrDefault(id, id);
                 String family = sl[0];
                 String father = sl[2];

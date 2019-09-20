@@ -20,9 +20,7 @@ public class VariantVCF extends Variant {
     }
 
     public static int getStart(VariantContext variantContext) {
-        if (variantContext.getReference().length() == 1 &&
-                isSingleAlleles(variantContext.getAlternateAlleles())
-        ) {
+        if (isEqualsLength(variantContext.getReference(), variantContext.getAlternateAlleles())) {
             return variantContext.getStart();
         } else {
             return variantContext.getStart() + 1;
@@ -33,12 +31,18 @@ public class VariantVCF extends Variant {
         return variantContext.getEnd();
     }
 
-    private static boolean isSingleAlleles(List<Allele> alleles) {
+    /**
+     * Проверяем, что длина одного из аллелей равна длине реверенса
+     * @param reference
+     * @param alleles
+     * @return
+     */
+    private static boolean isEqualsLength(Allele reference, List<Allele> alleles) {
         for (Allele allele : alleles) {
-            if (allele.length() != 1) {
-                return false;
+            if (allele.length() == reference.length()) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }

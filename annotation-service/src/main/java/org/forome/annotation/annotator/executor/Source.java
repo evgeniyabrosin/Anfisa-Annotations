@@ -84,15 +84,17 @@ class Source {
                 }
                 if (VariantVCF.getStart(variantContext) != _vepJson.getAsNumber("start").intValue()) {
                     throw new RuntimeException(
-                            String.format("Not equals start, vcf: %s, vep.json: %s",
-                                    variantContext.getStart(), _vepJson.getAsNumber("start")
+                            String.format("Not equals start, vcf: %s, vep.json: %s, input: %s",
+                                    VariantVCF.getStart(variantContext), _vepJson.getAsNumber("start"),
+                                    _vepJson.getAsString("input")
                             )
                     );
                 }
                 if (VariantVCF.getEnd(variantContext) != _vepJson.getAsNumber("end").intValue()) {
                     throw new RuntimeException(
-                            String.format("Not equals end, vcf: %s, vep.json: %s",
-                                    variantContext.getEnd(), _vepJson.getAsNumber("end")
+                            String.format("Not equals end, vcf: %s, vep.json: %s, input: %s",
+                                    VariantVCF.getEnd(variantContext), _vepJson.getAsNumber("end"),
+                                    _vepJson.getAsString("input")
                             )
                     );
                 }
