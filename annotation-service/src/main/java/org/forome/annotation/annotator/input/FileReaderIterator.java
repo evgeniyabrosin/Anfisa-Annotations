@@ -1,6 +1,10 @@
 package org.forome.annotation.annotator.input;
 
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.struct.Chromosome;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,19 +16,15 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.zip.GZIPInputStream;
 
-public class FileReaderIterator implements Iterator<String>, AutoCloseable {
+public class FileReaderIterator implements Iterator<JSONObject>, AutoCloseable {
 
     private final InputStream inputStream;
     private final BufferedReader bufferedReader;
 
-    private String nextValue;
+    private JSONObject nextValue;
 
     public FileReaderIterator(Path pathVepJson) {
         this(getInputStream(pathVepJson), pathVepJson.getFileName().toString().endsWith(".gz"));
-    }
-
-    public FileReaderIterator(InputStream inputStream) {
-        this(inputStream, false);
     }
 
     public FileReaderIterator(InputStream inputStream, boolean gzip) {
@@ -42,29 +42,44 @@ public class FileReaderIterator implements Iterator<String>, AutoCloseable {
         nextValue = readNextValue();
     }
 
-    private String readNextValue() {
-        try {
-            return bufferedReader.readLine();
-        } catch (IOException e) {
-            throw ExceptionBuilder.buildIOErrorException(e);
-        }
-    }
-
     @Override
     public boolean hasNext() {
         return (nextValue != null);
     }
 
     @Override
-    public String next() {
+    public JSONObject next() {
         if (nextValue == null) {
             throw new NoSuchElementException();
         }
 
-        String value = nextValue;
-        nextValue = readNextValue();
+        JSONObject value = nextValue;
+        while (true) {
+            nextValue = readNextValue();
+            if (nextValue != null
+                    && Chromosome.CHR_M == Chromosome.of(nextValue.getAsString("seq_region_name"))
+            ) {
+                continue;//Игнорируем митохондрии
+            }
+            break;
+        }
 
         return value;
+    }
+
+    private JSONObject readNextValue() {
+        try {
+            String line = bufferedReader.readLine();
+            if (line == null) {
+                return null;
+            } else {
+                return (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(line);
+            }
+        } catch (IOException e) {
+            throw ExceptionBuilder.buildIOErrorException(e);
+        } catch (ParseException e) {
+            throw ExceptionBuilder.buildInvalidVepJsonException(e);
+        }
     }
 
     @Override

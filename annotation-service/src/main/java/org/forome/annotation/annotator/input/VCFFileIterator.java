@@ -3,7 +3,7 @@ package org.forome.annotation.annotator.input;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
-import org.forome.annotation.controller.utils.RequestParser;
+import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantVCF;
 
@@ -36,10 +36,7 @@ public class VCFFileIterator implements AutoCloseable {
         while (true) {
             if (vcfFileReaderIterator.hasNext()) {
                 VariantContext variantContext = vcfFileReaderIterator.next();
-                if ("MT".equals(variantContext.getContig())) {
-                    continue;//https://rm.processtech.ru/issues/1345
-                }
-                if ("M".equals(RequestParser.toChromosome(variantContext.getContig()))) {
+                if (Chromosome.CHR_M == Chromosome.of(variantContext.getContig())) {
                     continue;//Игнорируем митохондрии
                 }
                 return new VariantVCF(variantContext);

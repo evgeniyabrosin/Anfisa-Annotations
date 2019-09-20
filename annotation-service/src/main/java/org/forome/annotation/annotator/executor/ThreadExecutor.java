@@ -116,7 +116,7 @@ public class ThreadExecutor implements AutoCloseable {
                 }
 
                 Variant variant = source.variant;
-                JSONObject vepJson = source.getVepJson();
+                JSONObject vepJson = source.vepJson;
 
                 if (variant instanceof VariantVCF && vepJsonIterator != null) {
                     AnfisaInput anfisaInput = new AnfisaInput.Builder()
@@ -181,7 +181,7 @@ public class ThreadExecutor implements AutoCloseable {
     private Source nextSource(int step) {
         if (step < 1) throw new IllegalArgumentException();
         Variant variant = null;
-        String strVepJson = null;
+        JSONObject vepJson = null;
         for (int i = 0; i < step; i++) {
             try {
                 variant = vcfFileIterator.next();
@@ -198,16 +198,16 @@ public class ThreadExecutor implements AutoCloseable {
             }
             if (variant instanceof VariantVCF && vepJsonIterator != null) {
                 try {
-                    strVepJson = vepJsonIterator.next();
+                    vepJson = vepJsonIterator.next();
                 } catch (NoSuchElementException ne) {
                     //Валидация того, что в vep.json - остались записи
                     throw new RuntimeException("Not equals count rows, vcf file and vep.json file");
                 }
             } else {
-                strVepJson = null;
+                vepJson = null;
             }
         }
-        return new Source(variant, strVepJson);
+        return new Source(variant, vepJson);
     }
 
     public Result next() {

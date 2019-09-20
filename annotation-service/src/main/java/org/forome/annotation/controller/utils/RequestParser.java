@@ -7,7 +7,7 @@ import org.forome.annotation.struct.Chromosome;
 public class RequestParser {
 
     public static String toChromosome(String value) {
-        Chromosome chromosome = new Chromosome(value);
+        Chromosome chromosome = Chromosome.of(value);
         return chromosome.getChar();
     }
 

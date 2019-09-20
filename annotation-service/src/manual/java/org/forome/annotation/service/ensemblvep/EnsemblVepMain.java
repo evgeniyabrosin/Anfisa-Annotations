@@ -42,7 +42,7 @@ public class EnsemblVepMain {
         )) {
             for (int i=881906; i< 881916; i++) {
                 CompletableFuture<JSONObject> futureVepJson = ensemblVepService.getVepJson(
-                        new Variant(new Chromosome("1"), i, i), "C"
+                        new Variant(Chromosome.of("1"), i, i), "C"
                 );
                 JSONObject vepJson = futureVepJson.get();
                 System.out.println("vepJson: " + vepJson);

@@ -71,6 +71,12 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("invalid_vcf_file", cause);
 	}
 
+	public static AnnotatorException buildInvalidChromosome(String value) {
+		return EXCEPTION_FACTORY.build("invalid_chromosome", new HashMap<String, Object>() {{
+			put("value", value);
+		}});
+	}
+
 	public static AnnotatorException buildNotUniqueValueException(String fieldName, Object fieldValue) {
 		return EXCEPTION_FACTORY.build("not_unique_value", new HashMap<String, Object>() {{
 			put("field_name", fieldName);

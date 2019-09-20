@@ -84,7 +84,7 @@ public class CNVFileIterator implements AutoCloseable {
     private VariantCNV build(String value) {
         String[] values = value.split("\t");
 
-        Chromosome chromosome = new Chromosome(values[0]);
+        Chromosome chromosome = Chromosome.of(values[0]);
         int start = Integer.parseInt(values[1]);
         int end = Integer.parseInt(values[2]);
 

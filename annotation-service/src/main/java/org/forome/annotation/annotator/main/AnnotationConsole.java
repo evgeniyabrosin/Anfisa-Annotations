@@ -139,6 +139,7 @@ public class AnnotationConsole {
 
     public void execute() {
         try {
+            log.info("Version: {}", AppVersion.getVersion());
             log.info("Input caseName: {}", caseName);
             log.info("Input famFile: {}", famFile);
             log.info("Input vepVcfFile: {}", vcfFile);

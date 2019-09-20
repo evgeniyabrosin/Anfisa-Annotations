@@ -50,7 +50,7 @@ public class RequestParserTest {
 		}
 
 		try {
-			RequestParser.toChromosome("m");
+			RequestParser.toChromosome("h");
 			Assert.fail();
 		} catch (AnnotatorException ignore) {
 		}
