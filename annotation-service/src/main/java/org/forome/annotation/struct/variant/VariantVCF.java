@@ -12,7 +12,7 @@ public class VariantVCF extends Variant {
 
     public VariantVCF(VariantContext variantContext) {
         super(
-                new Chromosome(variantContext.getContig()),
+                Chromosome.of(variantContext.getContig()),
                 getStart(variantContext),
                 getEnd(variantContext)
         );

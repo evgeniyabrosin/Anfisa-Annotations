@@ -155,7 +155,7 @@ public class GetAnfisaJSONController {
             }
             JSONObject oItem = (JSONObject) item;
 
-            Chromosome chromosome = new Chromosome(oItem.getAsString("chromosome"));
+            Chromosome chromosome = Chromosome.of(oItem.getAsString("chromosome"));
 
             int start = RequestParser.toInteger("start", oItem.getAsString("start"));
 
