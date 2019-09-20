@@ -36,6 +36,9 @@ public class VCFFileIterator implements AutoCloseable {
         while (true) {
             if (vcfFileReaderIterator.hasNext()) {
                 VariantContext variantContext = vcfFileReaderIterator.next();
+                if ("MT".equals(variantContext.getContig())) {
+                    continue;//https://rm.processtech.ru/issues/1345
+                }
                 if ("M".equals(RequestParser.toChromosome(variantContext.getContig()))) {
                     continue;//Игнорируем митохондрии
                 }
