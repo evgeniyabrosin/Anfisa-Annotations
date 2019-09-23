@@ -223,15 +223,24 @@ public class AnfisaConnector implements AutoCloseable {
             case MIXED:
                 return null;
             case HOM_REF:
-                //Если все аллели равны ref
-                // REF/REF
-                return 0;
             case HET:
-                // REF/ALTn
-                return 1;
             case HOM_VAR:
-                // ALTn/ALTk
-                return 2;
+                //Звездочка означает мусор. Считаем, что звездочка – это референс
+                String ref = variantContext.getReference().getBaseString();
+                String allele1 = oGenotype.getAlleles().get(0).getBaseString();
+                String allele2 = oGenotype.getAlleles().get(1).getBaseString();
+                boolean isRef1 = "*".equals(allele1) || ref.equals(allele1);
+                boolean isRef2 = "*".equals(allele2) || ref.equals(allele2);
+                if (isRef1 && isRef2) {
+                    // REF/REF
+                    return 0;
+                } else if (!isRef1 && !isRef2) {
+                    // ALTn/ALTk
+                    return 2;
+                } else {
+                    // REF/ALTn
+                    return 1;
+                }
             default:
                 throw new RuntimeException("Unknown state: " + oGenotype.getType());
         }
