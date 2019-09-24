@@ -150,11 +150,11 @@ public class AnfisaConnector implements AutoCloseable {
                     label = entry.getKey();
                 }
 
-                Integer zyg = sampleHasVariant(vepJson, variant, anfisaInput.samples, entry.getValue());
+                int zyg = sampleHasVariant(vepJson, variant, anfisaInput.samples, entry.getValue());
                 data.zygosity.put(entry.getKey(), zyg);
-                Integer modified_zygosity = (!variant.chromosome.getChar().equals("X") || sex == 2 || (zyg != null && zyg == 0)) ? zyg : (Integer) 2;
+                int modified_zygosity = (!variant.chromosome.getChar().equals("X") || sex == 2 || (zyg == 0)) ? zyg : 2;
                 filters.altZygosity.put(entry.getKey(), modified_zygosity);
-                if (zyg != null && zyg > 0) {
+                if (zyg > 0) {
                     filters.has_variant.add(label);
                 }
             }
@@ -210,7 +210,7 @@ public class AnfisaConnector implements AutoCloseable {
         return new AnfisaResult(filters, data, view);
     }
 
-    private static Integer sampleHasVariant(JSONObject json, Variant variant, Samples samples, Sample sample) {
+    private static int sampleHasVariant(JSONObject json, Variant variant, Samples samples, Sample sample) {
         if (variant == null || !(variant instanceof VariantVCF)) {
             return 0;
         }
@@ -221,7 +221,7 @@ public class AnfisaConnector implements AutoCloseable {
             case NO_CALL: //Генотип не может быть определен из-за плохого качества секвенирования
             case UNAVAILABLE: //Не имеет альтернативных аллелей
             case MIXED:
-                return null;
+                return 0;
             case HOM_REF:
             case HET:
             case HOM_VAR:
