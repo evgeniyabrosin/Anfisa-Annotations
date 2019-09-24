@@ -2,7 +2,6 @@ package org.forome.annotation.service.cnv;
 
 import net.minidev.json.JSONObject;
 import org.forome.annotation.Main;
-import org.forome.annotation.annotator.input.CNVFileIterator;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
@@ -15,6 +14,7 @@ import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.forome.annotation.iterator.cnv.CNVFileIterator;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
