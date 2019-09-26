@@ -1556,7 +1556,7 @@ public class AnfisaConnector implements AutoCloseable {
         AnfisaInput anfisaInput = context.anfisaInput;
         String str = getStrHg19Coordinates(context);
         if (isSnv(variant)) {
-            return String.format("%s  %s>%s",
+            return String.format("%s %s>%s",
                     str,
                     ref(context.vepJson, context.variant),
                     altString(context.variant, anfisaInput.samples, context.vepJson)
