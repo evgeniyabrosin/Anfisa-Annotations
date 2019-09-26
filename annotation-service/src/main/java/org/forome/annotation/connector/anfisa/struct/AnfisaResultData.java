@@ -3,6 +3,7 @@ package org.forome.annotation.connector.anfisa.struct;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
+import org.forome.annotation.struct.variant.VariantType;
 
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ public class AnfisaResultData {
 
 	public Map<String, String> clinvarSubmitters;
 
-	public String variantClass;
+	public VariantType variantClass;
 
     public List<Object[]> distFromBoundaryCanonical;
     public String regionCanonical;
@@ -154,9 +155,7 @@ public class AnfisaResultData {
 		if (geneDx != null) {
 			out.put("gene_dx", geneDx);
 		}
-		if (variantClass != null) {
-			out.put("variant_class", variantClass);
-		}
+		out.put("variant_class", variantClass.toJSON());
 		if (distFromBoundaryCanonical != null) {
 			out.put("dist_from_boundary_canonical", distFromBoundaryCanonical);
 		}

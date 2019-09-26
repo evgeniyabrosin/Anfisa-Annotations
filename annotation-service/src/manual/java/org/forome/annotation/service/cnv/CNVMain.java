@@ -59,8 +59,10 @@ public class CNVMain {
         while (cnvFileIterator.hasNext()) {
             VariantCNV variant = cnvFileIterator.next();
             JSONObject vepJson = ensemblVepService.getVepJson(variant, "-").get();
+            variant.setVepJson(vepJson);
+
             AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-            AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant, vepJson);
+            AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant);
             log.debug("anfisaResult: " + anfisaResult);
         }
 

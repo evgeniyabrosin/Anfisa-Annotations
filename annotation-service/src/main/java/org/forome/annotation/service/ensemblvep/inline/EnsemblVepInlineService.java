@@ -81,7 +81,17 @@ public class EnsemblVepInlineService implements EnsemblVepService {
 
     @Override
     public CompletableFuture<JSONObject> getVepJson(Variant variant, String reference, String alternative) {
-        String request = buildRequest(variant.chromosome, variant.start, variant.end, reference, alternative);
+        return getVepJson(variant.chromosome, variant.start, variant.end, reference, alternative);
+    }
+
+    @Override
+    public CompletableFuture<JSONObject> getVepJson(Chromosome chromosome, int start, int end, String alternative) {
+        String reference = refConnector.getRef(chromosome, start, end);
+        return getVepJson(chromosome, start, end, reference, alternative);
+    }
+
+    private CompletableFuture<JSONObject> getVepJson(Chromosome chromosome, int start, int end, String reference, String alternative) {
+        String request = buildRequest(chromosome, start, end, reference, alternative);
         synchronized (this) {
             EnsembleVepRequest ensembleVepRequest = requests.get(request);
             if (ensembleVepRequest == null) {

@@ -2,7 +2,7 @@ package org.forome.annotation.struct.variant;
 
 import org.forome.annotation.struct.Chromosome;
 
-public class Variant {
+public abstract class Variant {
 
     public final Chromosome chromosome;
     public final int start;
@@ -13,4 +13,28 @@ public class Variant {
         this.start = start;
         this.end = end;
     }
+
+    public abstract VariantType getVariantType();
+
+//    public static Variant build(Chromosome chromosome, int start, int end) {
+//
+//        return new Variant(chromosome, start, end) {
+//
+//            @Override
+//            public VariantType getVariantType() {
+//                throw new RuntimeException("getVariantType");
+////                if (start==end) {
+////                    return VariantType.CNV;
+////                }
+////
+////                return null;
+//            }
+//
+//            @Override
+//            public List<String> getTranscripts() {
+//                throw new RuntimeException("getTranscripts");
+//            }
+//
+//        };
+//    }
 }

@@ -11,8 +11,9 @@ import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.sample.Samples;
 import org.forome.annotation.struct.variant.Variant;
-import org.forome.annotation.struct.variant.VariantVCF;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
+import org.forome.annotation.struct.variant.vcf.VariantVCF;
+import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +117,6 @@ public class ThreadExecutor implements AutoCloseable {
                 }
 
                 Variant variant = source.variant;
-                JSONObject vepJson = source.vepJson;
 
                 if (variant instanceof VariantVCF && vepJsonIterator != null) {
                     AnfisaInput anfisaInput = new AnfisaInput.Builder()
@@ -125,8 +125,7 @@ public class ThreadExecutor implements AutoCloseable {
 
                     AnfisaResult anfisaResult = anfisaConnector.build(
                             anfisaInput,
-                            new VariantVCF(((VariantVCF) variant).variantContext),
-                            vepJson
+                            variant
                     );
                     result.future.complete(anfisaResult);
                 } else {
@@ -147,10 +146,12 @@ public class ThreadExecutor implements AutoCloseable {
 
                     ensemblVepService.getVepJson(variant, alternative)
                             .thenApply(iVepJson -> {
+                                ((VariantVep) variant).setVepJson(iVepJson);
+
                                 AnfisaInput anfisaInput = new AnfisaInput.Builder()
                                         .withSamples(samples)
                                         .build();
-                                AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant, iVepJson);
+                                AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant);
                                 result.future.complete(anfisaResult);
                                 return null;
                             })
@@ -180,11 +181,11 @@ public class ThreadExecutor implements AutoCloseable {
 
     private Source nextSource(int step) {
         if (step < 1) throw new IllegalArgumentException();
-        Variant variant = null;
+        VariantVep variantVep = null;
         JSONObject vepJson = null;
         for (int i = 0; i < step; i++) {
             try {
-                variant = vcfFileIterator.next();
+                variantVep = vcfFileIterator.next();
             } catch (NoSuchElementException ne) {
                 //Валидация того, что в vep.json - тоже не осталось записей
                 if (vepJsonIterator != null) {
@@ -196,7 +197,7 @@ public class ThreadExecutor implements AutoCloseable {
                 }
                 throw ne;
             }
-            if (variant instanceof VariantVCF && vepJsonIterator != null) {
+            if (variantVep instanceof VariantVCF && vepJsonIterator != null) {
                 try {
                     vepJson = vepJsonIterator.next();
                 } catch (NoSuchElementException ne) {
@@ -207,7 +208,7 @@ public class ThreadExecutor implements AutoCloseable {
                 vepJson = null;
             }
         }
-        return new Source(variant, vepJson);
+        return new Source(variantVep, vepJson);
     }
 
     public Result next() {
