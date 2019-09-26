@@ -12,11 +12,9 @@ import java.util.stream.Collectors;
 public class VariantCNV extends VariantVep {
 
     public final Map<String, Genotype> genotypes;
-    private final List<String> transcripts;
 
-    public VariantCNV(Chromosome chromosome, int start, int end, List<String> transcripts, List<Genotype> genotypes) {
+    public VariantCNV(Chromosome chromosome, int start, int end, List<Genotype> genotypes) {
         super(chromosome, start, end);
-        this.transcripts = Collections.unmodifiableList(transcripts);
         this.genotypes = Collections.unmodifiableMap(
                 genotypes.stream()
                         .collect(Collectors.toMap(item -> item.sampleName, item -> item))
@@ -41,9 +39,4 @@ public class VariantCNV extends VariantVep {
     public List<String> getAltAllele() {
         return Collections.singletonList("-");
     }
-
-    //    @Override
-//    public List<String> getTranscripts() {
-//        return transcripts;
-//    }
 }

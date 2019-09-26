@@ -113,7 +113,6 @@ public class CNVFileIterator implements AutoCloseable {
         return new VariantCNV(
                 record.chromosome,
                 record.start, record.end,
-                new ArrayList<>(),
                 genotypes
         );
     }
