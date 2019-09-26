@@ -19,7 +19,7 @@ import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.ssh.SSHConnectService;
-import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,10 +60,11 @@ public class VCFMain {
 
         while (true) {
             try {
-                Variant variant = vcfFileIterator.next();
+                VariantVep variant = vcfFileIterator.next();
                 JSONObject vepJson = ensemblVepService.getVepJson(variant, "-").get();
+                variant.setVepJson(vepJson);
                 AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-                AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant, vepJson);
+                AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant);
                 log.debug("anfisaResult: " + anfisaResult);
             } catch (NoSuchElementException e) {
                 break;

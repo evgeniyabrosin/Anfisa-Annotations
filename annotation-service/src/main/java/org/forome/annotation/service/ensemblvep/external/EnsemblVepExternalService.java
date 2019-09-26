@@ -2,6 +2,7 @@ package org.forome.annotation.service.ensemblvep.external;
 
 import net.minidev.json.JSONObject;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 
 import java.io.IOException;
@@ -25,6 +26,13 @@ public class EnsemblVepExternalService implements EnsemblVepService {
     @Override
     public CompletableFuture<JSONObject> getVepJson(Variant variant, String reference, String alternative) {
         return getVepJson(variant, alternative);
+    }
+
+    @Override
+    public CompletableFuture<JSONObject> getVepJson(Chromosome chromosome, int start, int end, String alternative) {
+        String region = String.format("%s:%s:%s", chromosome.getChar(), start, end);
+        String endpoint = String.format("/vep/human/region/%s/%s?hgvs=true&canonical=true&merged=true&protein=true&variant_class=true", region, alternative);
+        return ensemblVepHttpClient.request(endpoint).thenApply(jsonArray -> (JSONObject) jsonArray.get(0));
     }
 
     @Override

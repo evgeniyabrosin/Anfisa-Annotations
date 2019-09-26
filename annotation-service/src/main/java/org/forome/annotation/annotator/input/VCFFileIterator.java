@@ -3,9 +3,10 @@ package org.forome.annotation.annotator.input;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+import org.forome.annotation.iterator.cnv.CNVFileIterator;
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.variant.Variant;
-import org.forome.annotation.struct.variant.VariantVCF;
+import org.forome.annotation.struct.variant.vcf.VariantVCF;
+import org.forome.annotation.struct.variant.vep.VariantVep;
 
 import java.nio.file.Path;
 import java.util.NoSuchElementException;
@@ -32,7 +33,7 @@ public class VCFFileIterator implements AutoCloseable {
         }
     }
 
-    public Variant next() throws NoSuchElementException {
+    public VariantVep next() throws NoSuchElementException {
         while (true) {
             if (vcfFileReaderIterator.hasNext()) {
                 VariantContext variantContext = vcfFileReaderIterator.next();

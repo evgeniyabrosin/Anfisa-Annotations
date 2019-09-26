@@ -28,8 +28,10 @@ import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.sample.Sample;
 import org.forome.annotation.struct.sample.Samples;
 import org.forome.annotation.struct.variant.Variant;
-import org.forome.annotation.struct.variant.VariantVCF;
+import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
+import org.forome.annotation.struct.variant.vcf.VariantVCF;
+import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.AppVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,8 +107,10 @@ public class AnfisaConnector implements AutoCloseable {
 
     public AnfisaResult build(
             AnfisaInput anfisaInput,
-            Variant variant, JSONObject vepJson
+            Variant variant
     ) {
+        JSONObject vepJson = (variant instanceof VariantVep) ? ((VariantVep) variant).getVepJson() : null;
+
         Record record = new Record();
         AnfisaExecuteContext context = new AnfisaExecuteContext(
                 anfisaInput, variant, vepJson
@@ -183,7 +187,7 @@ public class AnfisaConnector implements AutoCloseable {
         data.transcriptConsequences = (JSONArray) vepJson.get("transcript_consequences");
         data.id = vepJson.getAsString("id");
         data.strand = (vepJson.containsKey("strand")) ? vepJson.getAsNumber("strand").longValue() : null;
-        data.variantClass = (vepJson.containsKey("variant_class")) ? vepJson.getAsString("variant_class") : null;
+        data.variantClass = variant.getVariantType();
 
         data.colorCode = getColorCode(vepJson, data, record, filters);
 
@@ -267,7 +271,7 @@ public class AnfisaConnector implements AutoCloseable {
         Chromosome chromosome = variant.chromosome;
 
         List<ClinvarResult> clinvarResults;
-        if (isSnv(json)) {
+        if (isSnv(variant)) {
             clinvarResults = clinvarConnector.getData(_chromosome, variant.start, variant.end, alt_list(variant, samples, json));
         } else {
             clinvarResults = clinvarConnector.getExpandedData(_chromosome, variant.start);
@@ -569,7 +573,7 @@ public class AnfisaConnector implements AutoCloseable {
         view.general.hg19 = str(context);
         view.general.hg38 = getStrHg38Coordinates(context);
 
-        if (isSnv(json)) {
+        if (isSnv(variant)) {
             data.ref = getRef(variant, json);
             data.alt = altString(variant, samples, json);
         } else {
@@ -1548,17 +1552,18 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
     public String str(AnfisaExecuteContext context) {
+        Variant variant = context.variant;
         AnfisaInput anfisaInput = context.anfisaInput;
         String str = getStrHg19Coordinates(context);
-        if (isSnv(context.vepJson)) {
+        if (isSnv(variant)) {
             return String.format("%s  %s>%s",
                     str,
                     ref(context.vepJson, context.variant),
                     altString(context.variant, anfisaInput.samples, context.vepJson)
             );
         } else {
-            String variantClass = getVariantClass(context.vepJson);
-            return String.format("%s %s", str, (variantClass != null) ? variantClass : "None");
+            VariantType typeVariable = variant.getVariantType();
+            return String.format("%s %s", str, (typeVariable != null) ? typeVariable.toJSON() : "None");
         }
     }
 
@@ -1589,12 +1594,8 @@ public class AnfisaConnector implements AutoCloseable {
         return vepJson.getAsString("most_severe_consequence");
     }
 
-    public boolean isSnv(JSONObject vepJson) {
-        return "SNV".equals(getVariantClass(vepJson));
-    }
-
-    private String getVariantClass(JSONObject vepJson) {
-        return vepJson.getAsString("variant_class");
+    public boolean isSnv(Variant variant) {
+        return variant.getVariantType() == VariantType.SNV;
     }
 
     public String linkToPmid(String pmid) {

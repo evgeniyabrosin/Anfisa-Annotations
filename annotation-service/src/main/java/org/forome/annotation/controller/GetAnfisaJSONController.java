@@ -14,7 +14,7 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,10 +81,13 @@ public class GetAnfisaJSONController {
                 List<CompletableFuture<AnfisaResult>> futureAnfisaResults = new ArrayList<>();
                 AnfisaConnector anfisaConnector = service.getAnfisaConnector();
                 for (RequestItem requestItem : requestItems) {
-                    Variant variant = new Variant(requestItem.chromosome, requestItem.start, requestItem.end);
                     futureAnfisaResults.add(
-                            ensemblVepService.getVepJson(variant, requestItem.alternative)
-                                    .thenApply(vepJson -> anfisaConnector.build(new AnfisaInput.Builder().build(), variant, vepJson))
+                            ensemblVepService.getVepJson(requestItem.chromosome, requestItem.start, requestItem.end, requestItem.alternative)
+                                    .thenApply(vepJson -> {
+                                        VariantVep variantVep = new VariantVep(requestItem.chromosome, requestItem.start, requestItem.end);
+                                        variantVep.setVepJson(vepJson);
+                                        return anfisaConnector.build(new AnfisaInput.Builder().build(), variantVep);
+                                    })
                     );
                 }
 

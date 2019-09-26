@@ -1,6 +1,5 @@
-package org.forome.annotation.annotator.input;
+package org.forome.annotation.iterator.cnv;
 
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.cnv.Genotype;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
 
@@ -30,6 +29,8 @@ public class CNVFileIterator implements AutoCloseable {
 
     private VariantCNV nextVariant;
 
+    private CNVFileRecord nextProcessedRecord;
+
     public CNVFileIterator(Path pathCnv) {
         try {
             this.inputStream = Files.newInputStream(pathCnv);
@@ -46,7 +47,7 @@ public class CNVFileIterator implements AutoCloseable {
                     }
                     continue;
                 } else {
-                    nextVariant = build(line);
+                    nextVariant = readVariant(new CNVFileRecord(line));
                     break;
                 }
             }
@@ -66,40 +67,55 @@ public class CNVFileIterator implements AutoCloseable {
 
         try {
             VariantCNV result = nextVariant;
-
-            String line = bufferedReader.readLine();
-            if (line != null) {
-                nextVariant = build(line);
+            if (nextProcessedRecord!=null) {
+                nextVariant = readVariant(nextProcessedRecord);
             } else {
                 nextVariant = null;
-                close();
             }
-
             return result;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private VariantCNV build(String value) {
-        String[] values = value.split("\t");
+    private VariantCNV readVariant(CNVFileRecord record) throws IOException {
+        List<CNVFileRecord> records = new ArrayList<>();
+        records.add(record);
 
-        Chromosome chromosome = Chromosome.of(values[0]);
-        int start = Integer.parseInt(values[1]);
-        int end = Integer.parseInt(values[2]);
-
-        String[] gts = values[6].split(":");
-        String[] los = values[7].split(":");
+        while (true) {
+            String line = bufferedReader.readLine();
+            if (line != null) {
+                CNVFileRecord iRecord = new CNVFileRecord(line);
+                if (record.chromosome.equals(iRecord.chromosome) &&
+                        record.start == iRecord.start &&
+                        record.end == iRecord.end
+                ) {
+                    records.add(iRecord);
+                } else {
+                    nextProcessedRecord = iRecord;
+                    break;
+                }
+            } else {
+                nextProcessedRecord = null;
+                close();
+                break;
+            }
+        }
 
         List<Genotype> genotypes = new ArrayList<>();
         for (int i = 0; i < samples.length; i++) {
             String sample = samples[i];
-            String gt = gts[i].trim();
-            float lo = Float.parseFloat(los[i].trim());
+            String gt = record.gts[i].trim();
+            float lo = Float.parseFloat(record.los[i].trim());
             genotypes.add(new Genotype(sample, gt, lo));
         }
 
-        return new VariantCNV(chromosome, start, end, genotypes);
+        return new VariantCNV(
+                record.chromosome,
+                record.start, record.end,
+                new ArrayList<>(),
+                genotypes
+        );
     }
 
     @Override

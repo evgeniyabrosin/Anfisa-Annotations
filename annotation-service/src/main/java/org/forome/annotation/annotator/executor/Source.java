@@ -4,8 +4,8 @@ import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.variant.Variant;
-import org.forome.annotation.struct.variant.VariantVCF;
+import org.forome.annotation.struct.variant.vcf.VariantVCF;
+import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,12 +15,14 @@ class Source {
 
     private final static Logger log = LoggerFactory.getLogger(Source.class);
 
-    public final Variant variant;
+    public final VariantVep variant;
     public final JSONObject vepJson;
 
-    public Source(Variant variant, JSONObject vepJson) {
+    public Source(VariantVep variant, JSONObject vepJson) {
         this.variant = variant;
         this.vepJson = vepJson;
+
+        variant.setVepJson(vepJson);
 
         //Валидация на соотвествие строк
         if (variant instanceof VariantVCF) {
@@ -44,20 +46,7 @@ class Source {
                 );
             }
 
-            int vcfStart = variantContext.getStart();
-            int vcfEnd = variantContext.getEnd();
-            int vepJsonPosition = Integer.parseInt(vepJsonInput[1]);
-            if (!(
-                    Math.min(vcfStart, vcfEnd) <= vepJsonPosition && vepJsonPosition <= Math.max(vcfStart, vcfEnd)
-            )) {
-                throw new RuntimeException(
-                        String.format("Not equals: vcf start: %s, vcf end: %s, vep.json position: %s",
-                                vcfStart, vcfEnd, vepJsonPosition
-                        )
-                );
-            }
-
-            //Дополнительная, валидация(с другой стороны)
+            //Валидация позиций
             if (!Objects.equals(
                     Chromosome.of(variantContext.getContig()),
                     Chromosome.of(vepJson.getAsString("seq_region_name"))
@@ -82,6 +71,20 @@ class Source {
                         )
                 );
             }
+
+            //Валидация VariantType
+//            String vepVariantType = vepJson.getAsString("variant_class");
+//            VariantType vcfVariantType = variant.getVariantType();
+//            log.debug("{} {}", vepVariantType, vcfVariantType);
+//            if (!vepVariantType.equals(vcfVariantType.toJSON())) {
+//                throw new RuntimeException(
+//                        String.format("Not equals VariantType, vcf: %s, vep.json: %s, input: %s",
+//                                vcfVariantType, vepVariantType,
+//                                vepJson.getAsString("input")
+//                        )
+//                );
+//            }
+
         }
     }
 }

@@ -10,7 +10,6 @@ import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.variant.Variant;
 
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
@@ -42,7 +41,7 @@ public class EnsemblVepMain {
         )) {
             for (int i=881906; i< 881916; i++) {
                 CompletableFuture<JSONObject> futureVepJson = ensemblVepService.getVepJson(
-                        new Variant(Chromosome.of("1"), i, i), "C"
+                        Chromosome.of("1"), i, i, "C"
                 );
                 JSONObject vepJson = futureVepJson.get();
                 System.out.println("vepJson: " + vepJson);
