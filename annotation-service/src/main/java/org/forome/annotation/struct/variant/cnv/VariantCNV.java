@@ -32,7 +32,17 @@ public class VariantCNV extends VariantVep {
         return VariantType.CNV;
     }
 
-//    @Override
+    @Override
+    public String getRef() {
+        return "DEL";
+    }
+
+    @Override
+    public List<String> getAltAllele() {
+        return Collections.singletonList("-");
+    }
+
+    //    @Override
 //    public List<String> getTranscripts() {
 //        return transcripts;
 //    }
