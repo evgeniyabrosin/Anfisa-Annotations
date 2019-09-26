@@ -2,6 +2,8 @@ package org.forome.annotation.struct.variant;
 
 import org.forome.annotation.struct.Chromosome;
 
+import java.util.List;
+
 public abstract class Variant {
 
     public final Chromosome chromosome;
@@ -15,6 +17,10 @@ public abstract class Variant {
     }
 
     public abstract VariantType getVariantType();
+
+    public abstract String getRef();
+
+    public abstract List<String> getAltAllele();
 
 //    public static Variant build(Chromosome chromosome, int start, int end) {
 //

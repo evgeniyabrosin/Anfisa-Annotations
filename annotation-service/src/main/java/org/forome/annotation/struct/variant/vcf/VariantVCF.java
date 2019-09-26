@@ -1,11 +1,15 @@
 package org.forome.annotation.struct.variant.vcf;
 
 import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class VariantVCF extends VariantVep {
 
@@ -18,6 +22,39 @@ public class VariantVCF extends VariantVep {
                 getEnd(variantContext)
         );
         this.variantContext = variantContext;
+    }
+
+    @Override
+    public String getRef() {
+        return variantContext.getReference().getBaseString();
+    }
+
+    @Override
+    public List<String> getAltAllele() {
+        List<String> alleles = variantContext.getAlleles()
+                .stream().map(allele -> allele.getBaseString()).collect(Collectors.toList());
+        List<String> alt_allels = variantContext.getAlternateAlleles()
+                .stream().map(allele -> allele.getBaseString()).collect(Collectors.toList());
+        Map<String, Long> counts = new HashMap<>();
+        for (Genotype genotype : variantContext.getGenotypes()) {
+            int[] ad = genotype.getAD();
+            if (ad == null || ad.length == 0) {
+                return alt_allels;
+            }
+            for (int i = 0; i < alleles.size(); i++) {
+                String al = alleles.get(i);
+                long n = ad[i];
+                counts.put(al, counts.getOrDefault(al, 0L) + n);
+            }
+        }
+        List<String> tmp_alt_allels = alt_allels.stream()
+                .filter(s -> counts.containsKey(s) && counts.get(s) > 0)
+                .collect(Collectors.toList());
+        if (!tmp_alt_allels.isEmpty()) {
+            return tmp_alt_allels;
+        } else {
+            return alt_allels;
+        }
     }
 
     /*
