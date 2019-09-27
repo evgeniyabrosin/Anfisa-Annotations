@@ -1,6 +1,6 @@
 package org.forome.annotation.iterator.cnv;
 
-import org.forome.annotation.struct.variant.cnv.Genotype;
+import org.forome.annotation.struct.variant.cnv.GenotypeCNV;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
 
 import java.io.BufferedReader;
@@ -102,18 +102,17 @@ public class CNVFileIterator implements AutoCloseable {
             }
         }
 
-        List<Genotype> genotypes = new ArrayList<>();
+        List<GenotypeCNV> genotypes = new ArrayList<>();
         for (int i = 0; i < samples.length; i++) {
             String sample = samples[i];
             String gt = record.gts[i].trim();
             float lo = Float.parseFloat(record.los[i].trim());
-            genotypes.add(new Genotype(sample, gt, lo));
+            genotypes.add(new GenotypeCNV(sample, gt, lo));
         }
 
         return new VariantCNV(
                 record.chromosome,
                 record.start, record.end,
-                new ArrayList<>(),
                 genotypes
         );
     }
