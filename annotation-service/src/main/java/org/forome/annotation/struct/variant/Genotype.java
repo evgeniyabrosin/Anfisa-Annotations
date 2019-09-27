@@ -8,5 +8,8 @@ public abstract class Genotype {
         this.sampleName = sampleName;
     }
 
+    public abstract int hasVariant();
+
     public abstract String getGenotypeString();
+
 }

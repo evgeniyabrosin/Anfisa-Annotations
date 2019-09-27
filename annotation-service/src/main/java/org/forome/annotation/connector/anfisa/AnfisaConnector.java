@@ -154,7 +154,7 @@ public class AnfisaConnector implements AutoCloseable {
                     label = entry.getKey();
                 }
 
-                int zyg = sampleHasVariant(variant, entry.getValue());
+                int zyg = variant.getGenotype(entry.getValue().id).hasVariant();
                 data.zygosity.put(entry.getKey(), zyg);
                 int modified_zygosity = (!variant.chromosome.getChar().equals("X") || sex == 2 || (zyg == 0)) ? zyg : 2;
                 filters.altZygosity.put(entry.getKey(), modified_zygosity);
@@ -219,42 +219,6 @@ public class AnfisaConnector implements AutoCloseable {
             return variant.getRef() + "/" + String.join("/", variant.getAltAllele());
         } else {
             return ((VariantVep)variant).getVepJson().getAsString("allele_string");
-        }
-    }
-
-    private static int sampleHasVariant(Variant variant, Sample sample) {
-        if (variant == null || !(variant instanceof VariantVCF)) {
-            return 0;
-        }
-        VariantContext variantContext = ((VariantVCF) variant).variantContext;
-
-        Genotype oGenotype = variantContext.getGenotype(sample.id);
-        switch (oGenotype.getType()) {
-            case NO_CALL: //Генотип не может быть определен из-за плохого качества секвенирования
-            case UNAVAILABLE: //Не имеет альтернативных аллелей
-            case MIXED:
-                return 0;
-            case HOM_REF:
-            case HET:
-            case HOM_VAR:
-                //Звездочка означает мусор. Считаем, что звездочка – это референс
-                String ref = variantContext.getReference().getBaseString();
-                String allele1 = oGenotype.getAlleles().get(0).getBaseString();
-                String allele2 = oGenotype.getAlleles().get(1).getBaseString();
-                boolean isRef1 = "*".equals(allele1) || ref.equals(allele1);
-                boolean isRef2 = "*".equals(allele2) || ref.equals(allele2);
-                if (isRef1 && isRef2) {
-                    // REF/REF
-                    return 0;
-                } else if (!isRef1 && !isRef2) {
-                    // ALTn/ALTk
-                    return 2;
-                } else {
-                    // REF/ALTn
-                    return 1;
-                }
-            default:
-                throw new RuntimeException("Unknown state: " + oGenotype.getType());
         }
     }
 
@@ -1711,10 +1675,9 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
     private static String getZygosity(Variant variant, Samples samples) {
-        if (samples == null || variant == null || !(variant instanceof VariantVCF)) {
+        if (samples == null || variant == null) {
             return null;
         }
-        VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
         String chr = variant.chromosome.getChar();
 
@@ -1724,7 +1687,7 @@ public class AnfisaConnector implements AutoCloseable {
         }
         List<String> set1 = Arrays.stream(genotype.split("/")).distinct().collect(Collectors.toList());
 
-        if ("X".equals(chr.toUpperCase()) && proband_sex(variantContext, samples) == 1) {
+        if ("X".equals(chr.toUpperCase()) && proband_sex(samples) == 1) {
             return "X-linked";
         }
         if (set1.size() == 1) {
@@ -1737,10 +1700,9 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
     private static String inherited_from(Variant variant, Samples samples) {
-        if (samples == null || variant == null || !(variant instanceof VariantVCF)) {
+        if (samples == null || variant == null) {
             return null;
         }
-        VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
         Object[] genotypes = getGenotypes(variant, samples);
         String probandGenotype = (String) genotypes[0];
@@ -1749,7 +1711,7 @@ public class AnfisaConnector implements AutoCloseable {
 
         String chr = variant.chromosome.getChar();
 
-        if ("X".equals(chr.toUpperCase()) && proband_sex(variantContext, samples) == 1) {
+        if ("X".equals(chr.toUpperCase()) && proband_sex(samples) == 1) {
             if (probandGenotype.equals(maternalGenotype)) {
                 return "Mother";
             } else {
@@ -1774,8 +1736,8 @@ public class AnfisaConnector implements AutoCloseable {
         return "Inconclusive";
     }
 
-    private static Integer proband_sex(VariantContext variantContext, Samples samples) {
-        if (samples == null || variantContext == null) {
+    private static Integer proband_sex(Samples samples) {
+        if (samples == null) {
             return null;
         }
         return samples.proband.sex;

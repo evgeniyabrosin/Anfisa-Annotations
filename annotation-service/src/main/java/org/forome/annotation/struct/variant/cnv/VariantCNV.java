@@ -15,6 +15,7 @@ public class VariantCNV extends VariantVep {
 
     public VariantCNV(Chromosome chromosome, int start, int end, List<GenotypeCNV> genotypes) {
         super(chromosome, start, end);
+        genotypes.forEach(genotypeCNV -> genotypeCNV.setVariantCNV(this));
         this.genotypes = Collections.unmodifiableMap(
                 genotypes.stream()
                         .collect(Collectors.toMap(item -> item.sampleName, item -> item))
@@ -33,11 +34,19 @@ public class VariantCNV extends VariantVep {
 
     @Override
     public String getRef() {
-        return "DEL";
+        return "[LONG REF]";
     }
 
     @Override
     public List<String> getAltAllele() {
         return Collections.singletonList("-");
+    }
+
+    protected String getAllele(int index) {
+        if (index == 0) {
+            return getRef();
+        } else {
+            return getAltAllele().get(index - 1);
+        }
     }
 }
