@@ -1563,7 +1563,7 @@ public class AnfisaConnector implements AutoCloseable {
             return new Object[]{null, null, null, null};
         }
         String probandId = proband.id;
-        String probandGenotype = getGtBasesGenotype(variant, probandId);
+        String probandGenotype = variant.getGenotype(probandId).getGenotypeString();
         if (probandGenotype == null) {
             probandGenotype = empty;
         }
@@ -1572,7 +1572,7 @@ public class AnfisaConnector implements AutoCloseable {
         if ("0".equals(mother)) {
             mother = null;
         }
-        String maternalGenotype = (mother != null) ? getGtBasesGenotype(variant, mother) : null;
+        String maternalGenotype = (mother != null) ? variant.getGenotype(mother).getGenotypeString() : null;
         if (mother != null && maternalGenotype == null) {
             maternalGenotype = empty;
         }
@@ -1581,7 +1581,7 @@ public class AnfisaConnector implements AutoCloseable {
         if ("0".equals(father)) {
             father = null;
         }
-        String paternalGenotype = (father != null) ? getGtBasesGenotype(variant, father) : null;
+        String paternalGenotype = (father != null) ? variant.getGenotype(father).getGenotypeString() : null;
         if (father != null && paternalGenotype == null) {
             paternalGenotype = empty;
         }
@@ -1590,7 +1590,7 @@ public class AnfisaConnector implements AutoCloseable {
         String finalMaternalGenotype = maternalGenotype;
         String finalPaternalGenotype = paternalGenotype;
         List<String> otherGenotypes = samples.items.keySet().stream()
-                .map(genotype -> getGtBasesGenotype(variant, genotype))
+                .map(iSample -> variant.getGenotype(iSample).getGenotypeString())
                 .filter(gtBases -> gtBases != null)
                 .filter(gtBases -> !gtBases.equals(finalProbandGenotype))
                 .filter(gtBases -> !gtBases.equals(finalMaternalGenotype))
@@ -1599,20 +1599,6 @@ public class AnfisaConnector implements AutoCloseable {
                 .collect(Collectors.toList());
 
         return new Object[]{probandGenotype, maternalGenotype, paternalGenotype, otherGenotypes};
-    }
-
-    private static String getGtBasesGenotype(Variant variant, String genotype) {
-        if (variant == null || !(variant instanceof VariantVCF)) {
-            return null;
-        }
-        VariantContext variantContext = ((VariantVCF) variant).variantContext;
-
-        Genotype oGenotype = variantContext.getGenotype(genotype);
-        if (oGenotype.isCalled()) {
-            return oGenotype.getGenotypeString();
-        } else {
-            return null;
-        }
     }
 
     private static String getMostSevere(List<String> consequenceTerms) {

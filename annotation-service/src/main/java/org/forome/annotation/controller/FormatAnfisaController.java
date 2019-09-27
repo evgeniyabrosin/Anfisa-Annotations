@@ -13,6 +13,7 @@ import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
@@ -75,7 +76,7 @@ public class FormatAnfisaController {
                     futureAnfisaResults.add(
                             ensemblVepService.getVepJson(requestItem.chromosome, requestItem.start, requestItem.end, requestItem.alternative)
                                     .thenApply(vepJson -> {
-                                        VariantVep variantVep = new VariantVep(requestItem.chromosome, requestItem.start, requestItem.end);
+                                        VariantVep variantVep = new VariantCustom(requestItem.chromosome, requestItem.start, requestItem.end);
                                         variantVep.setVepJson(vepJson);
                                         return anfisaConnector.build(new AnfisaInput.Builder().build(), variantVep);
                                     })

@@ -1,8 +1,8 @@
 package org.forome.annotation.struct.variant.cnv;
 
-public class Genotype {
+import org.forome.annotation.struct.variant.Genotype;
 
-    public final String sampleName;
+public class GenotypeCNV extends Genotype {
 
     /**
      * 0/0 – означает, что сэмпл гомозиготен по референсу (то есть, у него вариант отсутствует),
@@ -16,9 +16,14 @@ public class Genotype {
      */
     public final float lo;
 
-    public Genotype(String sampleName, String gt, float lo) {
-        this.sampleName = sampleName;
+    public GenotypeCNV(String sampleName, String gt, float lo) {
+        super(sampleName);
         this.gt = gt;
         this.lo = lo;
+    }
+
+    @Override
+    public String getGenotypeString() {
+        return null;
     }
 }

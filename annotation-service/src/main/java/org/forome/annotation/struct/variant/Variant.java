@@ -18,6 +18,8 @@ public abstract class Variant {
 
     public abstract VariantType getVariantType();
 
+    public abstract Genotype getGenotype(String sample);
+
     public abstract String getRef();
 
     public abstract List<String> getAltAllele();

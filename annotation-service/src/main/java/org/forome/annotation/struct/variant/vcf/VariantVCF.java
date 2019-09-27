@@ -1,9 +1,9 @@
 package org.forome.annotation.struct.variant.vcf;
 
 import htsjdk.variant.variantcontext.Allele;
-import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
 import java.util.HashMap;
@@ -25,6 +25,11 @@ public class VariantVCF extends VariantVep {
     }
 
     @Override
+    public Genotype getGenotype(String sample) {
+        return new GenotypeVCF(sample, variantContext.getGenotype(sample));
+    }
+
+    @Override
     public String getRef() {
         return variantContext.getReference().getBaseString();
     }
@@ -36,7 +41,7 @@ public class VariantVCF extends VariantVep {
         List<String> alt_allels = variantContext.getAlternateAlleles()
                 .stream().map(allele -> allele.getBaseString()).collect(Collectors.toList());
         Map<String, Long> counts = new HashMap<>();
-        for (Genotype genotype : variantContext.getGenotypes()) {
+        for (htsjdk.variant.variantcontext.Genotype genotype : variantContext.getGenotypes()) {
             int[] ad = genotype.getAD();
             if (ad == null || ad.length == 0) {
                 return alt_allels;

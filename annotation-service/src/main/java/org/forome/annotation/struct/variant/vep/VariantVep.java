@@ -8,7 +8,7 @@ import org.forome.annotation.struct.variant.VariantType;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VariantVep extends Variant {
+public abstract class VariantVep extends Variant {
 
     private JSONObject vepJson;
 

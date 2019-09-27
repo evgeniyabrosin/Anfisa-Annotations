@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 
 public class VariantCNV extends VariantVep {
 
-    public final Map<String, Genotype> genotypes;
+    public final Map<String, GenotypeCNV> genotypes;
 
-    public VariantCNV(Chromosome chromosome, int start, int end, List<Genotype> genotypes) {
+    public VariantCNV(Chromosome chromosome, int start, int end, List<GenotypeCNV> genotypes) {
         super(chromosome, start, end);
         this.genotypes = Collections.unmodifiableMap(
                 genotypes.stream()
@@ -21,7 +21,8 @@ public class VariantCNV extends VariantVep {
         );
     }
 
-    public Genotype getGenotype(String sample) {
+    @Override
+    public GenotypeCNV getGenotype(String sample) {
         return genotypes.get(sample);
     }
 
