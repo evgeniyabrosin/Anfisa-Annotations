@@ -15,12 +15,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 public class AnnotatorResult {
@@ -29,10 +30,12 @@ public class AnnotatorResult {
 
     public static class Metadata {
 
+        public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                .withZone(ZoneId.systemDefault());
+
         public static class Versions {
 
-            public final String pipelineDate = null;
-            public final String annotationsDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            public final Instant pipelineDate;
             public final String pipeline;
             public final String annotations;
             public final String annotationsBuild;
@@ -48,13 +51,25 @@ public class AnnotatorResult {
                     VCFHeader vcfHeader = vcfFileReader.getFileHeader();
 
                     VCFHeaderLine hlPipeline = vcfHeader.getOtherHeaderLine("source");
-                    pipeline = (hlPipeline!=null)?hlPipeline.getValue():null;
+                    pipeline = (hlPipeline != null) ? hlPipeline.getValue() : null;
 
                     VCFHeaderLine hlReference = vcfHeader.getOtherHeaderLine("reference");
-                    reference = (hlReference!=null)?hlReference.getValue():null;
+                    reference = (hlReference != null) ? hlReference.getValue() : null;
+
+                    VCFHeaderLine hlPipelineDate = vcfHeader.getOtherHeaderLine("fileDate");
+                    if (hlPipelineDate != null) {
+                        try {
+                            pipelineDate = new SimpleDateFormat("yyyyMMdd").parse(hlPipelineDate.getValue()).toInstant();
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        pipelineDate = null;
+                    }
                 } else {
                     pipeline = null;
                     reference = null;
+                    pipelineDate = null;
                 }
 
                 metadataDatabases = new ArrayList<>();
@@ -68,8 +83,8 @@ public class AnnotatorResult {
 
             private JSONObject toJSON() {
                 JSONObject out = new JSONObject();
-                out.put("pipeline_date", pipelineDate);
-                out.put("annotations_date", annotationsDate);
+                out.put("pipeline_date", (pipelineDate != null) ? DATE_TIME_FORMATTER.format(pipelineDate) : null);
+                out.put("annotations_date", DATE_TIME_FORMATTER.format(Instant.now()));
                 out.put("pipeline", pipeline);
                 out.put("annotations", annotations);
                 out.put("annotations_build", annotationsBuild);
@@ -83,8 +98,7 @@ public class AnnotatorResult {
                         }
                     }
                     if (metadata.date != null) {
-                        value.append(DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                                .withZone(ZoneId.systemDefault()).format(metadata.date));
+                        value.append(DATE_TIME_FORMATTER.format(metadata.date));
                     }
                     out.put(metadata.product, value.toString());
                 }

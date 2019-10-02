@@ -24,6 +24,8 @@ public abstract class Variant {
 
     public abstract List<String> getAltAllele();
 
+    public abstract String getMostSevereConsequence();
+
 //    public static Variant build(Chromosome chromosome, int start, int end) {
 //
 //        return new Variant(chromosome, start, end) {

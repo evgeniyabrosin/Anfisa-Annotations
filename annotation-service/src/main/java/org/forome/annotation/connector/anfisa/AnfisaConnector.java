@@ -130,7 +130,7 @@ public class AnfisaConnector implements AutoCloseable {
         GtfAnfisaResult gtfAnfisaResult = callGtf(variant, vepJson);
         callQuality(filters, variant, anfisaInput.samples);
 
-        filters.severity = getSeverity(vepJson);
+        filters.severity = getSeverity(variant);
         filters.alts = variant.getAltAllele();
 
         Sample proband = anfisaInput.samples.proband;
@@ -164,7 +164,7 @@ public class AnfisaConnector implements AutoCloseable {
             }
         }
 
-        List<Object> d = getDistanceFromExon(gtfAnfisaResult, vepJson, "worst");
+        List<Object> d = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, "worst");
         filters.distFromExon = d.stream()
                 .filter(o -> (o instanceof Number))
                 .map(o -> ((Number) o).longValue())
@@ -178,18 +178,20 @@ public class AnfisaConnector implements AutoCloseable {
         data.motifFeatureConsequences = (JSONArray) vepJson.get("motif_feature_consequences");
         data.intergenicConsequences = (JSONArray) vepJson.get("intergenic_consequences");
         data.start = variant.start;
-        data.mostSevereConsequence = vepJson.getAsString("most_severe_consequence");
+        data.mostSevereConsequence = variant.getMostSevereConsequence();
         data.alleleString = getAlleleString(variant);
         data.seqRegionName = vepJson.getAsString("seq_region_name");
         data.colocatedVariants = (JSONArray) vepJson.get("colocated_variants");
-        data.input = vepJson.getAsString("input");
+        if (!(variant instanceof VariantCNV)) {
+            data.input = vepJson.getAsString("input");
+        }
         data.label = getLabel(context);
-        data.transcriptConsequences = (JSONArray) vepJson.get("transcript_consequences");
-        data.id = vepJson.getAsString("id");
+        data.transcriptConsequences = ((VariantVep) variant).getTranscriptConsequences();
+        data.id = ((VariantVep) variant).getId();
         data.strand = (vepJson.containsKey("strand")) ? vepJson.getAsNumber("strand").longValue() : null;
         data.variantClass = variant.getVariantType();
 
-        data.colorCode = getColorCode(vepJson, data, record, filters);
+        data.colorCode = getColorCode((VariantVep) variant, data, record, filters);
 
         data.distFromBoundaryCanonical = gtfAnfisaResult.distFromBoundaryCanonical;
         data.regionCanonical = gtfAnfisaResult.regionCanonical;
@@ -207,8 +209,8 @@ public class AnfisaConnector implements AutoCloseable {
         createGeneralTab(context, data, filters, view, vepJson, variant, anfisaInput.samples);
         createQualityTab(view, variant, anfisaInput.samples);
         createGnomadTab(context, variant.chromosome.getChar(), variant, anfisaInput.samples, vepJson, view);
-        createDatabasesTab(vepJson, record, data, view);
-        createPredictionsTab(vepJson, view);
+        createDatabasesTab((VariantVep) variant, record, data, view);
+        createPredictionsTab((VariantVep) variant, vepJson, view);
         createBioinformaticsTab(gtfAnfisaResult, context, data, view);
 
         return new AnfisaResult(filters, data, view);
@@ -360,12 +362,12 @@ public class AnfisaConnector implements AutoCloseable {
         for (String kind : transcriptKinds) {
             List<String> transcripts;
             if ("canonical".equals(kind)) {
-                transcripts = getCanonicalTranscripts(vepJson).stream()
+                transcripts = getCanonicalTranscripts((VariantVep) variant).stream()
                         .filter(jsonObject -> "Ensembl".equals(jsonObject.getAsString("source")))
                         .map(jsonObject -> jsonObject.getAsString("transcript_id"))
                         .collect(Collectors.toList());
             } else if ("worst".equals(kind)) {
-                transcripts = getMostSevereTranscripts(vepJson).stream()
+                transcripts = getMostSevereTranscripts((VariantVep) variant).stream()
                         .filter(jsonObject -> "Ensembl".equals(jsonObject.getAsString("source")))
                         .map(jsonObject -> jsonObject.getAsString("transcript_id"))
                         .collect(Collectors.toList());
@@ -541,7 +543,7 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
     private void createGeneralTab(AnfisaExecuteContext context, AnfisaResultData data, AnfisaResultFilters filters, AnfisaResultView view, JSONObject json, Variant variant, Samples samples) {
-        view.general.genes = getGenes(json).stream().toArray(String[]::new);
+        view.general.genes = getGenes((VariantVep) variant).stream().toArray(String[]::new);
         view.general.hg19 = str(context);
         view.general.hg38 = getStrHg38Coordinates(context);
 
@@ -553,12 +555,12 @@ public class AnfisaConnector implements AutoCloseable {
             view.general.alt = getAltAllelesString(variant);
         }
 
-        List<String>[] cPosTpl = getPosTpl(json, "c");
+        List<String>[] cPosTpl = getPosTpl((VariantVep) variant, "c");
         view.general.cposWorst = cPosTpl[0];
         view.general.cposCanonical = cPosTpl[1];
         view.general.cposOther = cPosTpl[2];
 
-        List<String>[] pPosTpl = getPosTpl(json, "p");
+        List<String>[] pPosTpl = getPosTpl((VariantVep) variant, "p");
         view.general.pposWorst = pPosTpl[0];
         view.general.pposCanonical = pPosTpl[1];
         view.general.pposOther = pPosTpl[2];
@@ -569,38 +571,43 @@ public class AnfisaConnector implements AutoCloseable {
         view.general.paternalGenotype = (String) gGenotypes[2];
 
         view.general.worstAnnotation = data.mostSevereConsequence;
-        List<String> consequenceTerms = getFromCanonicalTranscript(json, "consequence_terms");
-        String canonicalAnnotation = getMostSevere(consequenceTerms);
-        if (consequenceTerms.size() > 1) {
-            String finalCanonicalAnnotation = canonicalAnnotation;
-            List<String> otherTerms = consequenceTerms.stream()
-                    .filter(s -> !s.equals(finalCanonicalAnnotation))
-                    .collect(Collectors.toList());
-            canonicalAnnotation = String.format("%s [%s]", canonicalAnnotation, String.join(", ", otherTerms));
+        List<String> consequenceTerms = getFromCanonicalTranscript((VariantVep) variant, "consequence_terms");
+
+        if (variant instanceof VariantCNV) {
+            view.general.canonicalAnnotation = VariantCNV.COPY_NUMBER_VARIATION;
+        } else {
+            String canonicalAnnotation = getMostSevere(consequenceTerms);
+            if (consequenceTerms.size() > 1) {
+                String finalCanonicalAnnotation = canonicalAnnotation;
+                List<String> otherTerms = consequenceTerms.stream()
+                        .filter(s -> !s.equals(finalCanonicalAnnotation))
+                        .collect(Collectors.toList());
+                canonicalAnnotation = String.format("%s [%s]", canonicalAnnotation, String.join(", ", otherTerms));
+            }
+            view.general.canonicalAnnotation = canonicalAnnotation;
         }
-        view.general.canonicalAnnotation = canonicalAnnotation;
 
-        view.general.spliceRegion = getFromTranscripts(json, "spliceregion", "all");
-        view.general.geneSplicer = getFromTranscripts(json, "genesplicer", "all");
+        view.general.spliceRegion = getFromTranscripts((VariantVep) variant, "spliceregion", "all");
+        view.general.geneSplicer = getFromTranscripts((VariantVep) variant, "genesplicer", "all");
 
-        List<JSONObject> transcripts = getMostSevereTranscripts(json);
+        List<JSONObject> transcripts = getMostSevereTranscripts((VariantVep) variant);
         view.general.refseqTranscriptWorst = getFromTranscripts(transcripts, "transcript_id", "RefSeq");
         view.general.ensemblTranscriptsWorst = getFromTranscripts(transcripts, "transcript_id", "Ensembl");
 
-        transcripts = getCanonicalTranscripts(json);
+        transcripts = getCanonicalTranscripts((VariantVep) variant);
         view.general.refseqTranscriptCanonical = getFromTranscripts(transcripts, "transcript_id", "RefSeq");
         view.general.ensemblTranscriptsCanonical = getFromTranscripts(transcripts, "transcript_id", "Ensembl");
 
-        view.general.variantExonWorst = getFromWorstTranscript(json, "exon");
-        view.general.variantIntronWorst = getFromWorstTranscript(json, "intron");
-        view.general.variantExonCanonical = getFromCanonicalTranscript(json, "exon");
-        view.general.variantIntronCanonical = getFromCanonicalTranscript(json, "intron");
+        view.general.variantExonWorst = getFromWorstTranscript((VariantVep) variant, "exon");
+        view.general.variantIntronWorst = getFromWorstTranscript((VariantVep) variant, "intron");
+        view.general.variantExonCanonical = getFromCanonicalTranscript((VariantVep) variant, "exon");
+        view.general.variantIntronCanonical = getFromCanonicalTranscript((VariantVep) variant, "intron");
 
-        String[] intronOrExonCanonical = getIntronOrExon(json, "canonical");
+        String[] intronOrExonCanonical = getIntronOrExon((VariantVep) variant, "canonical");
         data.variantExonIntronCanonical = intronOrExonCanonical[0];
         data.totalExonIntronCanonical = intronOrExonCanonical[1];
 
-        String[] intronOrExonWorst = getIntronOrExon(json, "worst");
+        String[] intronOrExonWorst = getIntronOrExon((VariantVep) variant, "worst");
         data.variantExonIntronWorst = intronOrExonWorst[0];
         data.totalExonIntronWorst = intronOrExonWorst[1];
 
@@ -617,9 +624,9 @@ public class AnfisaConnector implements AutoCloseable {
         return filters.spliceAltering;
     }
 
-    private static String[] getIntronOrExon(JSONObject json, String kind) {
-        List<String> introns = getFromTranscripts(json, "intron", kind);
-        List<String> exons = getFromTranscripts(json, "exon", kind);
+    private static String[] getIntronOrExon(VariantVep variantVep, String kind) {
+        List<String> introns = getFromTranscripts(variantVep, "intron", kind);
+        List<String> exons = getFromTranscripts(variantVep, "exon", kind);
         List<String> e = (exons.size() > 0) ? exons : introns;
         if (e.size() == 0) {
             return new String[]{null, null};
@@ -701,7 +708,7 @@ public class AnfisaConnector implements AutoCloseable {
                 AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
 
                 gnomAD.allele = allele;
-                gnomAD.pli = getPLIByAllele(json, allele);
+                gnomAD.pli = getPLIByAllele((VariantVep) variant, allele);
                 gnomAD.proband = (isProbandHasAllele(variant, samples, allele)) ? "Yes" : "No";
 
                 GnomadResult gnomadResult = getGnomadResult(variant, allele);
@@ -760,8 +767,8 @@ public class AnfisaConnector implements AutoCloseable {
         return Math.max(variant.start, variant.end);
     }
 
-    private static List<Double> getPLIByAllele(JSONObject json, String allele) {
-        List<JSONObject> transcripts = getTranscripts(json, "protein_coding");
+    private static List<Double> getPLIByAllele(VariantVep variantVep, String allele) {
+        List<JSONObject> transcripts = getTranscripts(variantVep, "protein_coding");
         String key = "exacpli";
         List<Double> list = unique(
                 transcripts.stream()
@@ -782,7 +789,7 @@ public class AnfisaConnector implements AutoCloseable {
         return record.hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).collect(Collectors.toSet());
     }
 
-    private void createDatabasesTab(JSONObject response, Record record, AnfisaResultData data, AnfisaResultView view) {
+    private void createDatabasesTab(VariantVep variantVep, Record record, AnfisaResultData data, AnfisaResultView view) {
         if (data.hgmd != null) {
             view.databases.hgmd = data.hgmd;
             view.databases.hgmdHg38 = data.hgmdHg38;
@@ -817,48 +824,48 @@ public class AnfisaConnector implements AutoCloseable {
         for (String submitter : trustedSubmitters.keySet()) {
             view.databases.setField(String.format("%s_significance", submitter), data.getField(submitter));
         }
-        view.databases.pubmedSearch = getTenwiseLink(response);
-        view.databases.omim = getGenes(response).stream().map(gene ->
+        view.databases.pubmedSearch = getTenwiseLink(variantVep);
+        view.databases.omim = getGenes(variantVep).stream().map(gene ->
                 String.format("https://omim.org/search/?search=approved_gene_symbol:%s&retrieve=geneMap", gene)
         ).toArray(String[]::new);
-        view.databases.geneCards = getGenes(response).stream().map(gene ->
+        view.databases.geneCards = getGenes(variantVep).stream().map(gene ->
                 String.format("https://www.genecards.org/cgi-bin/carddisp.pl?gene=%s", gene)
         ).toArray(String[]::new);
     }
 
-    private void createPredictionsTab(JSONObject json, AnfisaResultView view) {
-        view.predictions.lofScore = getFromTranscripts(json, "loftool", "all")
+    private void createPredictionsTab(VariantVep variantVep, JSONObject vepJson, AnfisaResultView view) {
+        view.predictions.lofScore = getFromTranscripts(variantVep, "loftool", "all")
                 .stream().map(s -> Double.parseDouble(s)).sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
-        view.predictions.lofScoreCanonical = getFromCanonicalTranscript(json, "loftool")
+        view.predictions.lofScoreCanonical = getFromCanonicalTranscript(variantVep, "loftool")
                 .stream().map(s -> Double.parseDouble(s)).sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
 
-        view.predictions.maxEntScan = getMaxEnt(json);
+        view.predictions.maxEntScan = getMaxEnt(variantVep);
 
-        view.predictions.polyphen = getFromTranscriptsList(json, "polyphen_prediction").stream().toArray(String[]::new);
-        view.predictions.polyphen2Hvar = getFromTranscriptsList(json, "Polyphen2_HVAR_pred".toLowerCase()).stream().collect(Collectors.toList());
-        view.predictions.polyphen2Hdiv = getFromTranscriptsList(json, "Polyphen2_HDIV_pred".toLowerCase()).stream().collect(Collectors.toList());
-        view.predictions.polyphen2HvarScore = getFromTranscriptsList(json, "Polyphen2_HVAR_score".toLowerCase()).stream()
+        view.predictions.polyphen = getFromTranscriptsList(variantVep, "polyphen_prediction").stream().toArray(String[]::new);
+        view.predictions.polyphen2Hvar = getFromTranscriptsList(variantVep, "Polyphen2_HVAR_pred".toLowerCase()).stream().collect(Collectors.toList());
+        view.predictions.polyphen2Hdiv = getFromTranscriptsList(variantVep, "Polyphen2_HDIV_pred".toLowerCase()).stream().collect(Collectors.toList());
+        view.predictions.polyphen2HvarScore = getFromTranscriptsList(variantVep, "Polyphen2_HVAR_score".toLowerCase()).stream()
                 .collect(Collectors.toList());
-        view.predictions.polyphen2HdivScore = getFromTranscriptsList(json, "Polyphen2_HDIV_score".toLowerCase()).stream()
+        view.predictions.polyphen2HdivScore = getFromTranscriptsList(variantVep, "Polyphen2_HDIV_score".toLowerCase()).stream()
                 .collect(Collectors.toList());
-        view.predictions.sift = getFromTranscriptsList(json, "sift_prediction").stream().toArray(String[]::new);
-        view.predictions.siftVEP = getFromTranscriptsList(json, "sift_pred").stream().toArray(String[]::new);
-        view.predictions.siftScore = getFromTranscriptsList(json, "sift_score").stream().toArray(String[]::new);
-        view.predictions.revel = getFromTranscriptsList(json, "revel_score").stream().map(s -> Double.parseDouble(s))
+        view.predictions.sift = getFromTranscriptsList(variantVep, "sift_prediction").stream().toArray(String[]::new);
+        view.predictions.siftVEP = getFromTranscriptsList(variantVep, "sift_pred").stream().toArray(String[]::new);
+        view.predictions.siftScore = getFromTranscriptsList(variantVep, "sift_score").stream().toArray(String[]::new);
+        view.predictions.revel = getFromTranscriptsList(variantVep, "revel_score").stream().map(s -> Double.parseDouble(s))
                 .collect(Collectors.toList());
-        view.predictions.mutationTaster = getFromTranscriptsList(json, "mutationtaster_pred").stream().toArray(String[]::new);
-        view.predictions.fathmm = getFromTranscriptsList(json, "fathmm_pred").stream().toArray(String[]::new);
-        view.predictions.caddPhred = getFromTranscriptsList(json, "cadd_phred").stream().map(s -> Double.parseDouble(s))
+        view.predictions.mutationTaster = getFromTranscriptsList(variantVep, "mutationtaster_pred").stream().toArray(String[]::new);
+        view.predictions.fathmm = getFromTranscriptsList(variantVep, "fathmm_pred").stream().toArray(String[]::new);
+        view.predictions.caddPhred = getFromTranscriptsList(variantVep, "cadd_phred").stream().map(s -> Double.parseDouble(s))
                 .collect(Collectors.toList());
-        view.predictions.caddRaw = getFromTranscriptsList(json, "cadd_raw").stream().map(s -> Double.parseDouble(s))
+        view.predictions.caddRaw = getFromTranscriptsList(variantVep, "cadd_raw").stream().map(s -> Double.parseDouble(s))
                 .collect(Collectors.toList());
-        view.predictions.mutationAssessor = getFromTranscriptsList(json, "mutationassessor_pred").stream().toArray(String[]::new);
+        view.predictions.mutationAssessor = getFromTranscriptsList(variantVep, "mutationassessor_pred").stream().toArray(String[]::new);
     }
 
-    private static List<String> getMaxEnt(JSONObject json) {
-        List<JSONObject> transcripts = getTranscripts(json, "protein_coding");
+    private static List<String> getMaxEnt(VariantVep variantVep) {
+        List<JSONObject> transcripts = getTranscripts(variantVep, "protein_coding");
         Set<String> x = new HashSet<>();
         for (JSONObject transcript : transcripts) {
             Number m1 = transcript.getAsNumber("maxentscan_ref");
@@ -883,16 +890,16 @@ public class AnfisaConnector implements AutoCloseable {
 
         view.bioinformatics.zygosity = getZygosity(variant, anfisaInput.samples);
         view.bioinformatics.inheritedFrom = inherited_from(variant, anfisaInput.samples);
-        view.bioinformatics.distFromExonWorst = getDistanceFromExon(gtfAnfisaResult, vepJson, "worst");
-        view.bioinformatics.distFromExonCanonical = getDistanceFromExon(gtfAnfisaResult, vepJson, "canonical");
+        view.bioinformatics.distFromExonWorst = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, "worst");
+        view.bioinformatics.distFromExonCanonical = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, "canonical");
         view.bioinformatics.conservation = buildConservation(anfisaExecuteContext);
         view.bioinformatics.speciesWithVariant = "";
         view.bioinformatics.speciesWithOthers = "";
-        view.bioinformatics.maxEntScan = getMaxEnt(vepJson);
+        view.bioinformatics.maxEntScan = getMaxEnt((VariantVep) variant);
         view.bioinformatics.nnSplice = "";
         view.bioinformatics.humanSplicingFinder = "";
-        view.bioinformatics.otherGenes = getOtherGenes(vepJson);
-        view.bioinformatics.calledBy = getCallers(vepJson, variant, anfisaInput.samples).stream().toArray(String[]::new);
+        view.bioinformatics.otherGenes = getOtherGenes((VariantVep) variant);
+        view.bioinformatics.calledBy = getCallers(variant, anfisaInput.samples).stream().toArray(String[]::new);
         view.bioinformatics.callerData = getCallersData(variant);
         view.bioinformatics.spliceAi = list_dsmax(data);
 
@@ -961,9 +968,9 @@ public class AnfisaConnector implements AutoCloseable {
         return result;
     }
 
-    private static String[] getOtherGenes(JSONObject response) {
-        Set<String> genes = new HashSet<>(getGenes(response));
-        Set<String> allGenes = new HashSet<>(getFromTranscriptsByBiotype(response, "gene_symbol", "all"));
+    private static String[] getOtherGenes(VariantVep variantVep) {
+        Set<String> genes = new HashSet<>(getGenes(variantVep));
+        Set<String> allGenes = new HashSet<>(getFromTranscriptsByBiotype(variantVep, "gene_symbol", "all"));
 
         Set<String> result = new HashSet<>();
         result.addAll(allGenes);
@@ -994,7 +1001,7 @@ public class AnfisaConnector implements AutoCloseable {
         ));
     }
 
-    public ColorCode.Code getColorCode(JSONObject vepJson, AnfisaResultData data, Record record, AnfisaResultFilters filters) {
+    public ColorCode.Code getColorCode(VariantVep variantVep, AnfisaResultData data, Record record, AnfisaResultFilters filters) {
         String csq = data.mostSevereConsequence;
         Consequences.Severity msq = Consequences.severity(csq);
 
@@ -1040,7 +1047,7 @@ public class AnfisaConnector implements AutoCloseable {
         int best = 100;
         int worst = 0;
         for (String tool : ColorCode.allInSilicoTools()) {
-            List<String> rawValues = getFromTranscriptsList(vepJson, tool);
+            List<String> rawValues = getFromTranscriptsList(variantVep, tool);
             for (String rawValue : rawValues) {
                 int value = ColorCode.inSilicoPrediction(tool, rawValue);
                 if (value == 0)
@@ -1066,8 +1073,8 @@ public class AnfisaConnector implements AutoCloseable {
         return ColorCode.code(shape, color);
     }
 
-    private String[] getTenwiseLink(JSONObject response) {
-        List<String> hgncIds = getHgncIds(response);
+    private String[] getTenwiseLink(VariantVep variantVep) {
+        List<String> hgncIds = getHgncIds(variantVep);
         return hgncIds.stream().map(hgncId ->
                 String.format("https://www.tenwiseapps.nl/publicdl/variant_report/HGNC_%s_variant_report.html", hgncId)
         ).toArray(String[]::new);
@@ -1124,8 +1131,8 @@ public class AnfisaConnector implements AutoCloseable {
         return (valie != -1) ? valie : null;
     }
 
-    private Long getSeverity(JSONObject response) {
-        String csq = response.getAsString("most_severe_consequence");
+    private Long getSeverity(Variant variant) {
+        String csq = variant.getMostSevereConsequence();
         int n = AnfisaVariant.SEVERITY.size();
         for (int s = 0; s < n; s++) {
             if (AnfisaVariant.SEVERITY.get(s).contains(csq)) {
@@ -1135,7 +1142,7 @@ public class AnfisaConnector implements AutoCloseable {
         return null;
     }
 
-    private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, JSONObject json, String kind) {
+    private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, VariantVep variantVep, String kind) {
         List<Object[]> distFromBoundary;
         if ("canonical".equals(kind)) {
             distFromBoundary = gtfAnfisaResult.distFromBoundaryCanonical;
@@ -1151,7 +1158,7 @@ public class AnfisaConnector implements AutoCloseable {
         }
 
         return unique(
-                getHgvsList(json, "c", kind).stream()
+                getHgvsList(variantVep, "c", kind).stream()
                         .map(hgvcs -> getDistanceHgvsc(hgvcs))
                         .collect(Collectors.toList()),
                 "Exonic"
@@ -1217,7 +1224,7 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
     public String getLabel(AnfisaExecuteContext context) {
-        List<String> genes = getGenes(context.vepJson);
+        List<String> genes = getGenes((VariantVep) context.variant);
         String gene;
         if (genes.size() == 0) {
             gene = "None";
@@ -1232,22 +1239,17 @@ public class AnfisaConnector implements AutoCloseable {
         return String.format("[%s] %s", gene, vstr);
     }
 
-    private static List<String> getGenes(JSONObject response) {
-        return getFromTranscriptsList(response, "gene_symbol");
+    private static List<String> getGenes(VariantVep variantVep) {
+        return getFromTranscriptsList(variantVep, "gene_symbol");
     }
 
-    public List<String> getHgncIds(JSONObject response) {
-        return getFromTranscriptsList(response, "hgnc_id");
+    public List<String> getHgncIds(VariantVep variantVep) {
+        return getFromTranscriptsList(variantVep, "hgnc_id");
     }
 
-    /**
-     * def get_most_severe_transcripts(self):
-     * msq = self.get_msq()
-     * return [t for t in self.get_transcripts() if (msq in t.get("consequence_terms"))]
-     */
-    private static List<JSONObject> getMostSevereTranscripts(JSONObject json) {
-        String msq = getMsq(json);
-        return getTranscripts(json, "protein_coding").stream()
+    private static List<JSONObject> getMostSevereTranscripts(VariantVep variantVep) {
+        String msq = variantVep.getMostSevereConsequence();
+        return getTranscripts(variantVep, "protein_coding").stream()
                 .filter(jsonObject -> {
                     JSONArray consequenceTerms = (JSONArray) jsonObject.get("consequence_terms");
                     return (consequenceTerms != null && consequenceTerms.contains(msq));
@@ -1255,20 +1257,20 @@ public class AnfisaConnector implements AutoCloseable {
                 .collect(Collectors.toList());
     }
 
-    private static List<JSONObject> getCanonicalTranscripts(JSONObject json) {
-        return getTranscripts(json, "protein_coding").stream()
+    private static List<JSONObject> getCanonicalTranscripts(VariantVep variantVep) {
+        return getTranscripts(variantVep, "protein_coding").stream()
                 .filter(jsonObject -> jsonObject.containsKey("canonical"))
                 .collect(Collectors.toList());
     }
 
 
-    private static List<String> getFromTranscriptsList(JSONObject json, String key) {
-        return getFromTranscriptsByBiotype(json, key, "protein_coding");
+    private static List<String> getFromTranscriptsList(VariantVep variantVep, String key) {
+        return getFromTranscriptsByBiotype(variantVep, key, "protein_coding");
     }
 
-    private static List<JSONObject> getTranscripts(JSONObject response, String biotype) {
+    private static List<JSONObject> getTranscripts(VariantVep variantVep, String biotype) {
         List<JSONObject> result = new ArrayList<>();
-        JSONArray jTranscriptConsequences = (JSONArray) response.get("transcript_consequences");
+        JSONArray jTranscriptConsequences = variantVep.getTranscriptConsequences();
         if (jTranscriptConsequences != null) {
             for (Object oItem : jTranscriptConsequences) {
                 JSONObject item = (JSONObject) oItem;
@@ -1282,10 +1284,10 @@ public class AnfisaConnector implements AutoCloseable {
         return result;
     }
 
-    private static List<String> getFromTranscriptsByBiotype(JSONObject response, String key, String biotype) {
+    private static List<String> getFromTranscriptsByBiotype(VariantVep variantVep, String key, String biotype) {
         List<String> result = new ArrayList<>();
 
-        for (JSONObject item : getTranscripts(response, biotype)) {
+        for (JSONObject item : getTranscripts(variantVep, biotype)) {
             Object oValue = item.get(key);
             if (oValue == null) continue;
             if (oValue instanceof JSONArray) {
@@ -1317,18 +1319,18 @@ public class AnfisaConnector implements AutoCloseable {
         return result;
     }
 
-    private static List<String> getFromWorstTranscript(JSONObject json, String key) {
+    private static List<String> getFromWorstTranscript(VariantVep variantVep, String key) {
         return unique(
-                getMostSevereTranscripts(json).stream()
+                getMostSevereTranscripts(variantVep).stream()
                         .filter(jsonObject -> jsonObject.containsKey(key))
                         .map(jsonObject -> jsonObject.getAsString(key))
                         .collect(Collectors.toList())
         );
     }
 
-    private static List<String> getFromCanonicalTranscript(JSONObject json, String key) {
+    private static List<String> getFromCanonicalTranscript(VariantVep variantVep, String key) {
         return unique(
-                getCanonicalTranscripts(json).stream()
+                getCanonicalTranscripts(variantVep).stream()
                         .filter(jsonObject -> jsonObject.containsKey(key))
                         .flatMap(jsonObject -> {
                             Object value = jsonObject.get(key);
@@ -1355,27 +1357,27 @@ public class AnfisaConnector implements AutoCloseable {
         );
     }
 
-    private static List<String> getFromTranscripts(JSONObject json, String key, String type) {
+    private static List<String> getFromTranscripts(VariantVep variantVep, String key, String type) {
         if ("all".equals(type)) {
-            return getFromTranscriptsList(json, key);
+            return getFromTranscriptsList(variantVep, key);
         } else if ("canonical".equals(type)) {
-            return getFromCanonicalTranscript(json, key);
+            return getFromCanonicalTranscript(variantVep, key);
         } else if ("worst".equals(type)) {
-            return getFromWorstTranscript(json, key);
+            return getFromWorstTranscript(variantVep, key);
         } else {
             throw new RuntimeException("Unknown type: " + type);
         }
     }
 
-    private static List<String> getHgvsList(JSONObject json, String type, String kind) {
+    private static List<String> getHgvsList(VariantVep variantVep, String type, String kind) {
         if ("c".equals(type)) {
-            return getFromTranscripts(json, "hgvsc", kind);
+            return getFromTranscripts(variantVep, "hgvsc", kind);
         } else if ("p".equals(type)) {
-            return getFromTranscripts(json, "hgvsp", kind);
+            return getFromTranscripts(variantVep, "hgvsp", kind);
         } else {
             List<String> result = new ArrayList<>();
-            result.addAll(getFromTranscripts(json, "hgvsc", kind));
-            result.addAll(getFromTranscripts(json, "hgvsp", kind));
+            result.addAll(getFromTranscripts(variantVep, "hgvsc", kind));
+            result.addAll(getFromTranscripts(variantVep, "hgvsp", kind));
             return result;
         }
     }
@@ -1431,24 +1433,24 @@ public class AnfisaConnector implements AutoCloseable {
         return String.format("%s%s%s", rprotein1, rpos, rprotein2);
     }
 
-    private static List<String> getPos(JSONObject json, String type, String kind) {
-        List<String> hgvsList = getHgvsList(json, type, kind);
+    private static List<String> getPos(VariantVep variantVep, String type, String kind) {
+        List<String> hgvsList = getHgvsList(variantVep, type, kind);
         List<String> poss = hgvsList.stream()
                 .map(hgvcs -> hgvcsPos(hgvcs, type, true))
                 .collect(Collectors.toList());
         return unique(poss);
     }
 
-    private static List<String>[] getPosTpl(JSONObject json, String type) {
+    private static List<String>[] getPosTpl(VariantVep variantVep, String type) {
         Set<String> ss = new HashSet<>();
 
-        List<String> c_worst = getPos(json, type, "worst");
+        List<String> c_worst = getPos(variantVep, type, "worst");
         ss.addAll(c_worst);
 
-        List<String> c_canonical = getPos(json, type, "canonical");
+        List<String> c_canonical = getPos(variantVep, type, "canonical");
         ss.addAll(c_canonical);
 
-        List<String> c_other = getPos(json, type, "all");
+        List<String> c_other = getPos(variantVep, type, "all");
         if (c_other.isEmpty()) {
             c_other = Collections.emptyList();
         } else {
@@ -1497,10 +1499,6 @@ public class AnfisaConnector implements AutoCloseable {
         } else {
             return String.format("%s:%s-%s", c, hg19Coordinates.start, hg19Coordinates.end);
         }
-    }
-
-    private static String getMsq(JSONObject vepJson) {
-        return vepJson.getAsString("most_severe_consequence");
     }
 
     public boolean isSnv(Variant variant) {
@@ -1593,15 +1591,23 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
 
-    private static LinkedHashSet<String> getCallers(JSONObject vepJson, Variant variant, Samples samples) {
-        if (samples == null || variant == null || !(variant instanceof VariantVCF)) {
+    private static LinkedHashSet<String> getCallers(Variant variant, Samples samples) {
+        if (samples == null || variant == null) {
             return new LinkedHashSet();
         }
-        VariantContext variantContext = ((VariantVCF) variant).variantContext;
         String ref = variant.getRef();
         List<String> alt_set = variant.getAltAllele();
 
-        LinkedHashSet<String> callers = getRawCallers(variantContext);
+        LinkedHashSet<String> callers;
+        if (variant instanceof VariantVCF) {
+            VariantContext variantContext = ((VariantVCF) variant).variantContext;
+            callers = getRawCallers(variantContext);
+        } else if (variant instanceof VariantCNV){
+            callers = new LinkedHashSet();
+            callers.add("CNV");
+        } else {
+            throw new RuntimeException("Not support variant: " + variant);
+        }
 
         Object[] genotypes = getGenotypes(variant, samples);
         String probandGenotype = (String) genotypes[0];
