@@ -1,5 +1,6 @@
 package org.forome.annotation.struct.variant.vep;
 
+import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
@@ -45,4 +46,15 @@ public abstract class VariantVep extends Variant {
         return result;
     }
 
+    public String getMostSevereConsequence() {
+        return vepJson.getAsString("most_severe_consequence");
+    }
+
+    public String getId(){
+        return vepJson.getAsString("id");
+    }
+
+    public JSONArray getTranscriptConsequences(){
+        return (JSONArray) vepJson.get("transcript_consequences");
+    }
 }

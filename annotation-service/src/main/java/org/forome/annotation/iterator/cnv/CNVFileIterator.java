@@ -9,12 +9,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CNVFileIterator implements AutoCloseable {
 
@@ -102,6 +100,8 @@ public class CNVFileIterator implements AutoCloseable {
             }
         }
 
+        Set<String> transcripts = records.stream().map(item -> item.transcript).collect(Collectors.toSet());
+
         List<GenotypeCNV> genotypes = new ArrayList<>();
         for (int i = 0; i < samples.length; i++) {
             String sample = samples[i];
@@ -113,6 +113,7 @@ public class CNVFileIterator implements AutoCloseable {
         return new VariantCNV(
                 record.chromosome,
                 record.start, record.end,
+                transcripts,
                 genotypes
         );
     }
