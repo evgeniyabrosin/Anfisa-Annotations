@@ -126,7 +126,7 @@ public class AnfisaConnector implements AutoCloseable {
         callSpliceai(data, filters, variant, anfisaInput.samples, vepJson);
         callHgmd(record, context, filters, data);
         callClinvar(context, record, variant.chromosome.getChar(), anfisaInput.samples, filters, data, view, vepJson);
-        callBeacon(variant, anfisaInput.samples, vepJson, data);
+        callBeacon(variant, data);
         GtfAnfisaResult gtfAnfisaResult = callGtf(variant, vepJson);
         callQuality(filters, variant, anfisaInput.samples);
 
@@ -332,7 +332,10 @@ public class AnfisaConnector implements AutoCloseable {
         }
     }
 
-    private void callBeacon(Variant variant, Samples samples, JSONObject json, AnfisaResultData data) {
+    private void callBeacon(Variant variant, AnfisaResultData data) {
+        if (variant instanceof VariantCNV) {
+            return;
+        }
         List<String> alts = variant.getAltAllele();
         data.beaconUrls = alts.stream()
                 .map(alt ->
@@ -1442,6 +1445,12 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
     private static List<String>[] getPosTpl(VariantVep variantVep, String type) {
+        if (variantVep instanceof VariantCNV) {
+            return new List[]{
+                    Collections.emptyList(), Collections.emptyList(), Collections.emptyList()
+            };
+        }
+
         Set<String> ss = new HashSet<>();
 
         List<String> c_worst = getPos(variantVep, type, "worst");
