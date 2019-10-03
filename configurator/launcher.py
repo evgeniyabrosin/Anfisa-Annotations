@@ -10,9 +10,9 @@ def start(working_dir, inventory):
     executable = "java"
     jar = "/data/projects/Annotations/lib/annotation.jar"
     main = "org.forome.annotation.annotator.main.AnnotatorMainFork"
-    annotator_cfg = "/data/projects/Annotations/lib/bgm.json"
+    #annotator_cfg = "/data/projects/Annotations/lib/bgm.json"
 
-    args = ["-cp", jar, main, "-config", annotator_cfg, "-inventory", inventory]
+    args = ["-cp", jar, main, "-inventory", inventory]
 
     child_pid = os.fork()
     if (child_pid):
