@@ -22,8 +22,7 @@ if __name__ == '__main__':
     print(args)
 
     working_dir = args.dir
-    case = args.case if args.case else os.path.basename(working_dir).split('_')[
-        0]
+    case = args.case if args.case else os.path.basename(working_dir).split('_')[0]
     if (args.input):
         input_file = args.input
     else:
@@ -55,8 +54,7 @@ if __name__ == '__main__':
         print("Platform: {}".format(platform))
     else:
         platform = "wgs"
-        print("Could not determine platform (WES or WGS), assuming: ".format(
-            platform))
+        print("Could not determine platform (WES or WGS), assuming: ".format(platform))
 
     working_dir = args.dir
     case_id = "{}_{}".format(case, platform)
@@ -69,6 +67,7 @@ if __name__ == '__main__':
         patient_ids_file = "$"
 
     if (input_file.endswith(".gz")):
+        print("Unpacking: ".format(input_file))
         os.system("gunzip {}".format(input_file))
         input_file = input_file[:-3]
 
@@ -96,9 +95,6 @@ if __name__ == '__main__':
         config["vcf"] = cfg_vcf
     if (vep_json):
         config["vep-json"] = "${DIR}/" + vep_json
-    config["anno-log"] = "annotations.log"
-    config["a-json"] = "${DIR}/" + output
-    config["docs"] = []
 
     inventory = os.path.join(working_dir, "{}.cfg".format(case_id))
 

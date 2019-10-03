@@ -8,10 +8,9 @@
     "project": "${PROJECT}",
     "vcf": "${DIR}/${NAME}_xbrowse.vep.vcf",
     "cnv": "${DIR}/deletions.svaba.exons.txt",
-    "vep-json": "${DIR}/${NAME}_xbrowse.vep.vep.json",
     "a-json": "${DIR}/${NAME}_anfisa.json.gz",
     "fam": "${DIR}/${CASE}.fam",
-    "anno-log": "${DIR}/annotations.log",
+    "anno-log": "${DIR}/annotations-${TS}.log",
     "config": "${DIR}/config.json",
     "docs": [
         {
