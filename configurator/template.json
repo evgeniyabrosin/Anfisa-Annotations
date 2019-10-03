@@ -1,0 +1,90 @@
+{
+    "aliases": {
+         "CASE,PLATFORM,PROJECT": "split('${NAME}', '_')"
+    },
+    "name": "${NAME}",
+    "case": "${CASE}",
+    "platform": "${PLATFORM}",
+    "project": "${PROJECT}",
+    "vcf": "${DIR}/${NAME}_xbrowse.vep.vcf",
+    "cnv": "${DIR}/deletions.svaba.exons.txt",
+    "vep-json": "${DIR}/${NAME}_xbrowse.vep.vep.json",
+    "a-json": "${DIR}/${NAME}_anfisa.json.gz",
+    "fam": "${DIR}/${CASE}.fam",
+    "anno-log": "${DIR}/annotations.log",
+    "config": "${DIR}/config.json",
+    "docs": [
+        {
+            "kind": "html",
+            "title": "SvABA Report",
+            "source": "${DIR}/docs/svaba_report_*.html"
+        },
+        {
+            "kind": "group",
+            "title": "Callability Analysis",
+            "source": "${DIR}/docs/callability/",
+            "dest": "CallabilityAnalysis",
+            "docs": [
+                {
+                  "kind": "*.txt",
+                  "title": "Genes with Uncallable Regions",
+                  "source":    "./*.short.csv",
+                  "dest": "CallabilityShort.html"
+                },
+                {
+                  "kind": "*.txt",
+                  "title": "Full Callability Report (alaphbetcially by genes)",
+                  "source":    "./*.full.csv",
+                  "dest": "CallabilityFull.html"
+                }
+            ]
+        },
+        {
+            "kind": "group",
+            "title": "QC reports",
+            "source": "${DIR}/docs/qc_reports/",
+            "dest": "qc_reports",
+            "docs": [
+                {
+                    "kind": "png",
+                     "title": "Ancestry PCA Plot",
+                     "source": "./pca_plot.png",
+                     "dest": "pca_plot.html"
+                },
+                {
+                     "kind": "*.txt",
+                     "title": "QC Report",
+                     "source": "./qc_report.*.txt",
+                     "dest": "qc_report.html"
+                },
+                {
+                     "kind": "*.png",
+                     "title": "Coverage Histograms",
+                     "source": "./coverage.histogram.*.png",
+                     "dest": "coverage_histograms.html"
+                },
+                {
+                     "kind": "png",
+                     "title": "Coverage comparison",
+                     "source": "./coverage_comparison.png",
+                     "dest": "coverage_comparison.html"
+                }
+            ]
+        },
+        {
+            "kind": "group",
+            "title": "Viruses Detection",
+            "source": "${DIR}/docs/viruses/",
+            "dest": "viruses",
+            "docs": [
+                {
+                     "kind": "*.txt",
+                     "title": "Detected Viruses",
+                     "source": "./*.viral_report.txt",
+                     "dest": "DetectedViruses.html"
+                }
+            ]
+        }
+
+    ]
+}
