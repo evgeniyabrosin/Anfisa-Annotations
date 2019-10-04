@@ -889,7 +889,6 @@ public class AnfisaConnector implements AutoCloseable {
     private void createBioinformaticsTab(GtfAnfisaResult gtfAnfisaResult, AnfisaExecuteContext anfisaExecuteContext, AnfisaResultData data, AnfisaResultView view) {
         AnfisaInput anfisaInput = anfisaExecuteContext.anfisaInput;
         Variant variant = anfisaExecuteContext.variant;
-        JSONObject vepJson = anfisaExecuteContext.vepJson;
 
         view.bioinformatics.zygosity = getZygosity(variant, anfisaInput.samples);
         view.bioinformatics.inheritedFrom = inherited_from(variant, anfisaInput.samples);
@@ -1323,32 +1322,40 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
     private static List<String> getFromWorstTranscript(VariantVep variantVep, String key) {
-        return unique(
-                getMostSevereTranscripts(variantVep).stream()
-                        .filter(jsonObject -> jsonObject.containsKey(key))
-                        .map(jsonObject -> jsonObject.getAsString(key))
-                        .collect(Collectors.toList())
-        );
+        if ("exon".equals(key) && variantVep instanceof VariantCNV) {
+            return ((VariantCNV)variantVep).exonNums;
+        } else {
+            return unique(
+                    getMostSevereTranscripts(variantVep).stream()
+                            .filter(jsonObject -> jsonObject.containsKey(key))
+                            .map(jsonObject -> jsonObject.getAsString(key))
+                            .collect(Collectors.toList())
+            );
+        }
     }
 
     private static List<String> getFromCanonicalTranscript(VariantVep variantVep, String key) {
-        return unique(
-                getCanonicalTranscripts(variantVep).stream()
-                        .filter(jsonObject -> jsonObject.containsKey(key))
-                        .flatMap(jsonObject -> {
-                            Object value = jsonObject.get(key);
-                            if (value instanceof String) {
-                                return Stream.of((String) value);
-                            } else if (value instanceof Number) {
-                                return Stream.of(String.valueOf((Number) value));
-                            } else {
-                                return ((JSONArray) value)
-                                        .stream()
-                                        .map(o -> (String) o);
-                            }
-                        })
-                        .collect(Collectors.toList())
-        );
+        if ("exon".equals(key) && variantVep instanceof VariantCNV) {
+            return ((VariantCNV)variantVep).exonNums;
+        } else {
+            return unique(
+                    getCanonicalTranscripts(variantVep).stream()
+                            .filter(jsonObject -> jsonObject.containsKey(key))
+                            .flatMap(jsonObject -> {
+                                Object value = jsonObject.get(key);
+                                if (value instanceof String) {
+                                    return Stream.of((String) value);
+                                } else if (value instanceof Number) {
+                                    return Stream.of(String.valueOf((Number) value));
+                                } else {
+                                    return ((JSONArray) value)
+                                            .stream()
+                                            .map(o -> (String) o);
+                                }
+                            })
+                            .collect(Collectors.toList())
+            );
+        }
     }
 
     private static List<String> getFromTranscripts(List<JSONObject> transcripts, String key, String source) {
@@ -1738,7 +1745,7 @@ public class AnfisaConnector implements AutoCloseable {
             if (probandGenotype.equals(maternalGenotype)) {
                 return "Both parents";
             } else {
-                return "Both parents";
+                return "Possible De-Novo";
             }
         }
 

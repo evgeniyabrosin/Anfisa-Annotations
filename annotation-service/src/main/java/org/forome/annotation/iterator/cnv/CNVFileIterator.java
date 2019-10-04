@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class CNVFileIterator implements AutoCloseable {
 
@@ -100,7 +99,15 @@ public class CNVFileIterator implements AutoCloseable {
             }
         }
 
-        Set<String> transcripts = records.stream().map(item -> item.transcript).collect(Collectors.toSet());
+        LinkedHashSet<String> exonNums = new LinkedHashSet<String>();
+        for (CNVFileRecord item: records) {
+            exonNums.add(item.exonNum);
+        }
+
+        LinkedHashSet<String> transcripts = new LinkedHashSet<String>();
+        for (CNVFileRecord item: records) {
+            transcripts.add(item.transcript);
+        }
 
         List<GenotypeCNV> genotypes = new ArrayList<>();
         for (int i = 0; i < samples.length; i++) {
@@ -113,7 +120,8 @@ public class CNVFileIterator implements AutoCloseable {
         return new VariantCNV(
                 record.chromosome,
                 record.start, record.end,
-                transcripts,
+                new ArrayList<>(exonNums),
+                new ArrayList<>(transcripts),
                 genotypes
         );
     }

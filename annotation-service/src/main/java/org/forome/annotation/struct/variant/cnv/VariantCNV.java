@@ -9,20 +9,22 @@ import org.forome.annotation.struct.variant.vep.VariantVep;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class VariantCNV extends VariantVep {
 
     public static final String COPY_NUMBER_VARIATION = "copy_number_variation";
 
-    public final Map<String, GenotypeCNV> genotypes;
-    public final Set<String> transcripts;
+    public final List<String> exonNums;
 
-    public VariantCNV(Chromosome chromosome, int start, int end, Set<String> transcripts, List<GenotypeCNV> genotypes) {
+    public final Map<String, GenotypeCNV> genotypes;
+    public final List<String> transcripts;
+
+    public VariantCNV(Chromosome chromosome, int start, int end, List<String> exonNums, List<String> transcripts, List<GenotypeCNV> genotypes) {
         super(chromosome, start, end);
         genotypes.forEach(genotypeCNV -> genotypeCNV.setVariantCNV(this));
-        this.transcripts = Collections.unmodifiableSet(transcripts);
+        this.exonNums = exonNums;
+        this.transcripts = Collections.unmodifiableList(transcripts);
         this.genotypes = Collections.unmodifiableMap(
                 genotypes.stream()
                         .collect(Collectors.toMap(item -> item.sampleName, item -> item))
