@@ -4,6 +4,8 @@ public enum VariantType {
 
     SNV("SNV"),
 
+    INDEL("indel"),
+
     SEQUENCE_ALTERATION("sequence_alteration"),
 
     /** Deletion relative to the reference */
