@@ -97,8 +97,30 @@ public class VariantVCF extends VariantVep {
         if (isAnyEqualsLength(variantContext.getReference(), variantContext.getAlternateAlleles())) {
             return variantContext.getStart();
         } else {
-            return variantContext.getStart() + 1;
+            char fRef = variantContext.getReference().getBaseString().charAt(0);
+            boolean increment = false;
+            for (Allele allele : variantContext.getAlternateAlleles()) {
+                char fAlt = allele.getBaseString().charAt(0);
+                if (fRef == fAlt) {
+                    increment = true;
+                    break;
+                }
+            }
+
+            if (increment) {
+                return variantContext.getStart() + 1;
+            } else {
+                return variantContext.getStart();
+            }
         }
+
+    /*
+    if (isAnyEqualsLength(variantContext.getReference(), variantContext.getAlternateAlleles())) {
+        return variantContext.getStart();
+    } else {
+        return variantContext.getStart() + 1;
+    }
+    */
     }
 
     public static int getEnd(VariantContext variantContext) {

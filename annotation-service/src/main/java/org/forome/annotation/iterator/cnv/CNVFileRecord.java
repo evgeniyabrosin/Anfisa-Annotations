@@ -7,6 +7,7 @@ public class CNVFileRecord {
     protected final Chromosome chromosome;
     protected final int start;
     protected final int end;
+    protected final String exonNum;
     protected final String transcript;
     protected final String[] gts;
     protected final String[] los;
@@ -17,6 +18,8 @@ public class CNVFileRecord {
         chromosome = Chromosome.of(values[0]);
         start = Integer.parseInt(values[1]);
         end = Integer.parseInt(values[2]);
+
+        exonNum = values[3];
 
         transcript = values[5];
 
