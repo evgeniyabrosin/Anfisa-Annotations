@@ -1143,9 +1143,9 @@ public class AnfisaConnector implements AutoCloseable {
             }
         }
 
-        if (worst >= 30) {
+        if (best >= 30) {
             color = ColorCode.Color.RED;
-        } else if (best <= 10) {
+        } else if (worst <= 10) {
             color = ColorCode.Color.GREEN;
         } else if (best < 100) {
             color = ColorCode.Color.YELLOW;
