@@ -2,9 +2,7 @@ package org.forome.annotation.connector.anfisa;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import htsjdk.variant.variantcontext.CommonInfo;
-import htsjdk.variant.variantcontext.Genotype;
-import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.connector.anfisa.struct.*;
@@ -220,7 +218,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (variant instanceof VariantCNV) {
             return variant.getRef() + "/" + String.join("/", variant.getAltAllele());
         } else {
-            return ((VariantVep)variant).getVepJson().getAsString("allele_string");
+            return ((VariantVep) variant).getVepJson().getAsString("allele_string");
         }
     }
 
@@ -682,8 +680,8 @@ public class AnfisaConnector implements AutoCloseable {
 
         String mother = samples.items.get(probandId).mother;
         String father = samples.items.get(probandId).father;
-        for (Map.Entry<String, Sample> entry : samples.items.entrySet()) {
-            Sample sample = entry.getValue();
+        List<Allele> alleles = variantContext.getAlleles();
+        for (Sample sample : getSortedSamples(samples, variant)) {
             String s = sample.id;
             JSONObject q_s = new JSONObject();
             if (s.equals(probandId)) {
@@ -697,11 +695,95 @@ public class AnfisaConnector implements AutoCloseable {
             }
 
             Genotype oGenotype = variantContext.getGenotype(sample.id);
-            q_s.put("allelic_depth", oGenotype.getAnyAttribute("AD"));
+            String type = oGenotype.getType().name();
+            String gt = oGenotype.getGenotypeString(false);
+            if (oGenotype.hasAD()) {
+                int[] ad = oGenotype.getAD();
+                List<String> adList = new ArrayList<>();
+                for (int i = 0; i < ad.length; i++) {
+                    if (ad[i] > 0) {
+                        adList.add(alleles.get(i).getBaseString() + ":" + ad[i]);
+                    }
+                }
+                q_s.put("allelic_depth", String.join(",", adList));
+            } else {
+                q_s.put("allelic_depth", oGenotype.getAnyAttribute("AD"));
+            }
             q_s.put("read_depth", oGenotype.getAnyAttribute("DP"));
             q_s.put("genotype_quality", getVariantGQ(variant, sample));
+            q_s.put("genotype", type + ":" + gt);
             view.qualitySamples.add(q_s);
         }
+    }
+
+    /**
+     * Return sort samples
+     * 1) Proband, if exists
+     * 2) Mother, if exists
+     * 3) Father, if exists
+     * 4) All samples alphabetically, that have variant (type in {htsjdk.variant.variantcontext.GenotypeType.HET, HOM_VAR})
+     * 5) All samples alphabetically, with no call (type in {NO_CALL, UNAVAILABLE, MIXED})
+     * 6) All homo ref samples alphabetically (type = HOM_REF)
+     */
+    private static List<Sample> getSortedSamples(Samples samples, Variant variant) {
+        if (!(variant instanceof VariantVCF)) {
+            return new ArrayList<>(samples.items.values());
+        }
+        VariantContext variantContext = ((VariantVCF) variant).variantContext;
+
+        List<Sample> result = new ArrayList<>();
+        List<Sample> pool = new ArrayList<>(samples.items.values());
+
+        Sample proband = samples.proband;
+        if (proband != null) {
+            result.add(proband);
+            pool.remove(proband);
+        }
+
+        String motherId = proband.mother;
+        if (!"0".equals(motherId)) {
+            Sample mother = samples.items.get(motherId);
+            result.add(mother);
+            pool.remove(mother);
+        }
+
+        String fatherId = proband.father;
+        if (!"0".equals(fatherId)) {
+            Sample father = samples.items.get(fatherId);
+            result.add(father);
+            pool.remove(father);
+        }
+
+        if (variant instanceof VariantVCF) {
+            //4) All samples alphabetically, that have variant (type in {htsjdk.variant.variantcontext.GenotypeType.HET, HOM_VAR})
+            List<Sample> samples4 = pool.stream().filter(sample -> {
+                GenotypeType genotypeType = variantContext.getGenotype(sample.id).getType();
+                return (genotypeType == GenotypeType.HET || genotypeType == GenotypeType.HOM_VAR);
+            }).sorted(Comparator.comparing(o -> o.id)).collect(Collectors.toList());
+            result.addAll(samples4);
+            pool.removeAll(samples4);
+
+            //5) All samples alphabetically, with no call (type in {NO_CALL, UNAVAILABLE, MIXED})
+            List<Sample> samples5 = pool.stream().filter(sample -> {
+                GenotypeType genotypeType = variantContext.getGenotype(sample.id).getType();
+                return (genotypeType == GenotypeType.NO_CALL || genotypeType == GenotypeType.UNAVAILABLE || genotypeType == GenotypeType.MIXED);
+            }).sorted(Comparator.comparing(o -> o.id)).collect(Collectors.toList());
+            result.addAll(samples5);
+            pool.removeAll(samples5);
+
+            //6) All homo ref samples alphabetically (type = HOM_REF)
+            List<Sample> samples6 = pool.stream().filter(sample -> {
+                GenotypeType genotypeType = variantContext.getGenotype(sample.id).getType();
+                return (genotypeType == GenotypeType.HOM_REF);
+            }).sorted(Comparator.comparing(o -> o.id)).collect(Collectors.toList());
+            result.addAll(samples6);
+            pool.removeAll(samples6);
+        }
+        //Добавляем оставшихся
+        Collections.sort(pool, Comparator.comparing(o -> o.id));
+        result.addAll(pool);
+
+        return result;
     }
 
     private void createGnomadTab(AnfisaExecuteContext context, String chromosome, Variant variant, Samples samples, JSONObject json, AnfisaResultView view) {
@@ -1323,7 +1405,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private static List<String> getFromWorstTranscript(VariantVep variantVep, String key) {
         if ("exon".equals(key) && variantVep instanceof VariantCNV) {
-            return ((VariantCNV)variantVep).exonNums;
+            return ((VariantCNV) variantVep).exonNums;
         } else {
             return unique(
                     getMostSevereTranscripts(variantVep).stream()
@@ -1336,7 +1418,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private static List<String> getFromCanonicalTranscript(VariantVep variantVep, String key) {
         if ("exon".equals(key) && variantVep instanceof VariantCNV) {
-            return ((VariantCNV)variantVep).exonNums;
+            return ((VariantCNV) variantVep).exonNums;
         } else {
             return unique(
                     getCanonicalTranscripts(variantVep).stream()
@@ -1618,7 +1700,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (variant instanceof VariantVCF) {
             VariantContext variantContext = ((VariantVCF) variant).variantContext;
             callers = getRawCallers(variantContext);
-        } else if (variant instanceof VariantCNV){
+        } else if (variant instanceof VariantCNV) {
             callers = new LinkedHashSet();
             callers.add("CNV");
         } else {
