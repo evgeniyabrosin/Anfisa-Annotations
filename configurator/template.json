@@ -79,7 +79,7 @@
                 {
                      "kind": "*.txt",
                      "title": "Detected Viruses",
-                     "source": "./*.viral_report.txt",
+                     "source": "./*viral_report*.txt",
                      "dest": "DetectedViruses.html"
                 }
             ]
