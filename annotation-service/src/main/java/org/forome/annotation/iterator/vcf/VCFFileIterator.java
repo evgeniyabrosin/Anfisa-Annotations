@@ -3,12 +3,14 @@ package org.forome.annotation.iterator.vcf;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.iterator.cnv.CNVFileIterator;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 public class VCFFileIterator implements AutoCloseable {
@@ -28,6 +30,13 @@ public class VCFFileIterator implements AutoCloseable {
 
         if (cnvFile != null) {
             cnvFileIterator = new CNVFileIterator(cnvFile);
+
+            //Validation equals samples
+            List<String> vcfSamples = vcfFileReader.getFileHeader().getGenotypeSamples();
+            List<String> cnvSamples = cnvFileIterator.getSamples();
+            if (vcfSamples.size() != cnvSamples.size() || !vcfSamples.containsAll(cnvSamples)) {
+                throw ExceptionBuilder.buildNotEqualSamplesVcfAndCnvFile();
+            }
         } else {
             cnvFileIterator = null;
         }
