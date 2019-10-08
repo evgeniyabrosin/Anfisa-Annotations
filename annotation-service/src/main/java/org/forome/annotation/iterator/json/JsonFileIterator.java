@@ -1,4 +1,4 @@
-package org.forome.annotation.annotator.input;
+package org.forome.annotation.iterator.json;
 
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
@@ -16,18 +16,18 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.zip.GZIPInputStream;
 
-public class FileReaderIterator implements Iterator<JSONObject>, AutoCloseable {
+public class JsonFileIterator implements Iterator<JSONObject>, AutoCloseable {
 
     private final InputStream inputStream;
     private final BufferedReader bufferedReader;
 
     private JSONObject nextValue;
 
-    public FileReaderIterator(Path pathVepJson) {
+    public JsonFileIterator(Path pathVepJson) {
         this(getInputStream(pathVepJson), pathVepJson.getFileName().toString().endsWith(".gz"));
     }
 
-    public FileReaderIterator(InputStream inputStream, boolean gzip) {
+    public JsonFileIterator(InputStream inputStream, boolean gzip) {
         this.inputStream = inputStream;
         if (gzip) {
             try {

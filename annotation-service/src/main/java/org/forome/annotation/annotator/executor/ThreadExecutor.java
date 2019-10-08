@@ -3,11 +3,11 @@ package org.forome.annotation.annotator.executor;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.annotator.input.FileReaderIterator;
-import org.forome.annotation.annotator.input.VCFFileIterator;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
+import org.forome.annotation.iterator.json.JsonFileIterator;
+import org.forome.annotation.iterator.vcf.VCFFileIterator;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.sample.Samples;
 import org.forome.annotation.struct.variant.Variant;
@@ -41,7 +41,7 @@ public class ThreadExecutor implements AutoCloseable {
     private final int step;
 
     private final VCFFileIterator vcfFileIterator;
-    private final FileReaderIterator vepJsonIterator;
+    private final JsonFileIterator vepJsonIterator;
 
     private Result nextResult;
     private final Deque<Result> waitExecuteVariants;//Варианты ожидающие выполнения
@@ -73,7 +73,7 @@ public class ThreadExecutor implements AutoCloseable {
         this.vcfFileIterator = new VCFFileIterator(pathVcf, cnvFile);
 
         if (pathVepJson != null) {
-            vepJsonIterator = new FileReaderIterator(pathVepJson);
+            vepJsonIterator = new JsonFileIterator(pathVepJson);
         } else {
             vepJsonIterator = null;
         }
