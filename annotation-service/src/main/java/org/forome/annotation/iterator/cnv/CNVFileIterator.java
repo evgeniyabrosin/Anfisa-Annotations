@@ -1,5 +1,6 @@
 package org.forome.annotation.iterator.cnv;
 
+import com.google.common.collect.ImmutableList;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.cnv.GenotypeCNV;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
@@ -37,7 +38,7 @@ public class CNVFileIterator implements AutoCloseable {
     private final InputStream inputStream;
     private final BufferedReader bufferedReader;
 
-    private String[] samples;
+    private List<String> samples;
     private Map<String, Integer> columns;
 
     private VariantCNV nextVariant;
@@ -56,7 +57,7 @@ public class CNVFileIterator implements AutoCloseable {
                     if (matcherSamples.matches()) {
                         samples = Arrays.stream(
                                 matcherSamples.group(4).trim().split(",")
-                        ).map(s -> s.trim()).toArray(String[]::new);
+                        ).map(s -> s.trim()).collect(ImmutableList.toImmutableList());
                     }
 
                     Matcher matcherHeadData = PATTERN_HEAD_DATA.matcher(line);
@@ -76,6 +77,10 @@ public class CNVFileIterator implements AutoCloseable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<String> getSamples() {
+        return samples;
     }
 
     public boolean hasNext() {
@@ -135,8 +140,8 @@ public class CNVFileIterator implements AutoCloseable {
         }
 
         List<GenotypeCNV> genotypes = new ArrayList<>();
-        for (int i = 0; i < samples.length; i++) {
-            String sample = samples[i];
+        for (int i = 0; i < samples.size(); i++) {
+            String sample = samples.get(i);
             String gt = record.gts[i].trim();
             float lo = Float.parseFloat(record.los[i].trim());
             genotypes.add(new GenotypeCNV(sample, gt, lo));
