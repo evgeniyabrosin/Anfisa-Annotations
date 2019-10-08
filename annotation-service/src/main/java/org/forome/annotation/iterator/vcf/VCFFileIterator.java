@@ -1,4 +1,4 @@
-package org.forome.annotation.annotator.input;
+package org.forome.annotation.iterator.vcf;
 
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;

@@ -12,20 +12,19 @@ public class CNVFileRecord {
     protected final String[] gts;
     protected final String[] los;
 
-    protected CNVFileRecord(String value) {
-        String[] values = value.split("\t");
-
-        chromosome = Chromosome.of(values[0]);
-        start = Integer.parseInt(values[1]);
-        end = Integer.parseInt(values[2]);
-
-        exonNum = values[3];
-
-        transcript = values[5];
-
-        gts = values[6].split(":");
-        los = values[7].split(":");
+    public CNVFileRecord(
+            Chromosome chromosome,
+            int start, int end,
+            String exonNum,
+            String transcript,
+            String[] gts, String[] los
+    ) {
+        this.chromosome = chromosome;
+        this.start = start;
+        this.end = end;
+        this.exonNum = exonNum;
+        this.transcript = transcript;
+        this.gts = gts;
+        this.los = los;
     }
-
-
 }
