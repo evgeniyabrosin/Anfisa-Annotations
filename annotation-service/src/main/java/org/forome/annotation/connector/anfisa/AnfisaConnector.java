@@ -15,7 +15,6 @@ import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 import org.forome.annotation.connector.gtf.GTFConnector;
-import org.forome.annotation.connector.gtf.struct.GTFRegion;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
@@ -82,7 +81,8 @@ public class AnfisaConnector implements AutoCloseable {
     public final HgmdConnector hgmdConnector;
     public final ClinvarConnector clinvarConnector;
     private final LiftoverConnector liftoverConnector;
-    private final GTFConnector gtfConnector;
+
+    private final GtfAnfisaBuilder gtfAnfisaBuilder;
 
     public AnfisaConnector(
             GnomadConnector gnomadConnector,
@@ -100,7 +100,7 @@ public class AnfisaConnector implements AutoCloseable {
         this.clinvarConnector = clinvarConnector;
         this.liftoverConnector = liftoverConnector;
 
-        this.gtfConnector = gtfConnector;
+        this.gtfAnfisaBuilder = new GtfAnfisaBuilder(gtfConnector);
     }
 
     public AnfisaResult build(
@@ -125,7 +125,7 @@ public class AnfisaConnector implements AutoCloseable {
         callHgmd(record, context, filters, data);
         callClinvar(context, record, variant.chromosome.getChar(), anfisaInput.samples, filters, data, view, vepJson);
         callBeacon(variant, data);
-        GtfAnfisaResult gtfAnfisaResult = callGtf(variant, vepJson);
+        GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant);
         callQuality(filters, variant, anfisaInput.samples);
 
         filters.severity = getSeverity(variant);
@@ -162,7 +162,7 @@ public class AnfisaConnector implements AutoCloseable {
             }
         }
 
-        List<Object> d = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, "worst");
+        List<Object> d = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.WORST);
         filters.distFromExon = d.stream()
                 .filter(o -> (o instanceof Number))
                 .map(o -> ((Number) o).longValue())
@@ -191,10 +191,14 @@ public class AnfisaConnector implements AutoCloseable {
 
         data.colorCode = getColorCode((VariantVep) variant, data, record, filters);
 
-        data.distFromBoundaryCanonical = gtfAnfisaResult.distFromBoundaryCanonical;
-        data.regionCanonical = gtfAnfisaResult.regionCanonical;
-        data.distFromBoundaryWorst = gtfAnfisaResult.distFromBoundaryWorst;
-        data.regionWorst = gtfAnfisaResult.regionWorst;
+        if (gtfAnfisaResult.canonical != null) {
+            data.distFromBoundaryCanonical = gtfAnfisaResult.canonical.distFromBoundary;
+            data.regionCanonical = gtfAnfisaResult.canonical.region;
+        }
+        if (gtfAnfisaResult.worst != null) {
+            data.distFromBoundaryWorst = gtfAnfisaResult.worst.distFromBoundary;
+            data.regionWorst = gtfAnfisaResult.worst.region;
+        }
 
         if (variant instanceof VariantCNV) {
             VariantCNV variantCNV = (VariantCNV) variant;
@@ -344,84 +348,6 @@ public class AnfisaConnector implements AutoCloseable {
                         )
                 )
                 .toArray(String[]::new);
-    }
-
-    private GtfAnfisaResult callGtf(Variant variant, JSONObject vepJson) {
-        GtfAnfisaResult gtfAnfisaResult = new GtfAnfisaResult();
-
-        //TODO Ulitin V. Отличие от python-реализации
-        //Дело в том, что в оригинальной версии используется set для позиции, но в коде ниже используется итерация этому
-        //списку и в конечном итоге это вляет на значение поля region - судя по всему это потенциальный баг и
-        //необходима консультация с Михаилом
-        List<Integer> pos = new ArrayList<>();
-        pos.add(variant.start);
-        if (variant.start != variant.end) {
-            pos.add(variant.end);
-        }
-
-        List<String> transcriptKinds = Lists.newArrayList("canonical", "worst");
-        for (String kind : transcriptKinds) {
-            List<String> transcripts;
-            if ("canonical".equals(kind)) {
-                transcripts = getCanonicalTranscripts((VariantVep) variant).stream()
-                        .filter(jsonObject -> "Ensembl".equals(jsonObject.getAsString("source")))
-                        .map(jsonObject -> jsonObject.getAsString("transcript_id"))
-                        .collect(Collectors.toList());
-            } else if ("worst".equals(kind)) {
-                transcripts = getMostSevereTranscripts((VariantVep) variant).stream()
-                        .filter(jsonObject -> "Ensembl".equals(jsonObject.getAsString("source")))
-                        .map(jsonObject -> jsonObject.getAsString("transcript_id"))
-                        .collect(Collectors.toList());
-            } else {
-                throw new RuntimeException("Unknown Transcript Kind: " + kind);
-            }
-            if (transcripts.isEmpty()) {
-                continue;
-            }
-
-            List<Object[]> distances = new ArrayList<>();
-            Long dist = null;
-            String region = null;
-            Long index = null;
-            Integer n = null;
-            for (String t : transcripts) {
-                dist = null;
-                for (Integer p : pos) {
-                    Object[] result = gtfConnector.lookup(p, t);
-                    if (result == null) {
-                        continue;
-                    }
-                    long d = (long) result[0];
-
-                    GTFRegion gtfRegion = (GTFRegion) result[1];
-                    region = gtfRegion.region;
-                    if (gtfRegion.indexRegion != null) {
-                        index = gtfRegion.indexRegion;
-                        n = (int) result[2];
-                    }
-
-                    if (dist == null || d < dist) {
-                        dist = d;
-                    }
-                }
-                distances.add(
-                        new Object[]{
-                                dist, region, index, n
-                        }
-                );
-            }
-
-            if ("canonical".equals(kind)) {
-                gtfAnfisaResult.distFromBoundaryCanonical = distances;
-                gtfAnfisaResult.regionCanonical = region;
-            } else if ("worst".equals(kind)) {
-                gtfAnfisaResult.distFromBoundaryWorst = distances;
-                gtfAnfisaResult.regionWorst = region;
-            } else {
-                throw new RuntimeException("Unknown Transcript Kind: " + kind);
-            }
-        }
-        return gtfAnfisaResult;
     }
 
     private static void callQuality(AnfisaResultFilters filters, Variant variant, Samples samples) {
@@ -604,11 +530,11 @@ public class AnfisaConnector implements AutoCloseable {
         view.general.variantExonCanonical = getFromCanonicalTranscript((VariantVep) variant, "exon");
         view.general.variantIntronCanonical = getFromCanonicalTranscript((VariantVep) variant, "intron");
 
-        String[] intronOrExonCanonical = getIntronOrExon((VariantVep) variant, "canonical");
+        String[] intronOrExonCanonical = getIntronOrExon((VariantVep) variant, Kind.CANONICAL);
         data.variantExonIntronCanonical = intronOrExonCanonical[0];
         data.totalExonIntronCanonical = intronOrExonCanonical[1];
 
-        String[] intronOrExonWorst = getIntronOrExon((VariantVep) variant, "worst");
+        String[] intronOrExonWorst = getIntronOrExon((VariantVep) variant, Kind.WORST);
         data.variantExonIntronWorst = intronOrExonWorst[0];
         data.totalExonIntronWorst = intronOrExonWorst[1];
 
@@ -625,9 +551,9 @@ public class AnfisaConnector implements AutoCloseable {
         return filters.spliceAltering;
     }
 
-    private static String[] getIntronOrExon(VariantVep variantVep, String kind) {
-        List<String> introns = getFromTranscripts(variantVep, "intron", kind);
-        List<String> exons = getFromTranscripts(variantVep, "exon", kind);
+    private static String[] getIntronOrExon(VariantVep variantVep, Kind kind) {
+        List<String> introns = getFromTranscripts(variantVep, "intron", kind.value);
+        List<String> exons = getFromTranscripts(variantVep, "exon", kind.value);
         List<String> e = (exons.size() > 0) ? exons : introns;
         if (e.size() == 0) {
             return new String[]{null, null};
@@ -974,8 +900,8 @@ public class AnfisaConnector implements AutoCloseable {
 
         view.bioinformatics.zygosity = getZygosity(variant, anfisaInput.samples);
         view.bioinformatics.inheritedFrom = inherited_from(variant, anfisaInput.samples);
-        view.bioinformatics.distFromExonWorst = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, "worst");
-        view.bioinformatics.distFromExonCanonical = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, "canonical");
+        view.bioinformatics.distFromExonCanonical = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.CANONICAL);
+        view.bioinformatics.distFromExonWorst = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.WORST);
         view.bioinformatics.conservation = buildConservation(anfisaExecuteContext);
         view.bioinformatics.speciesWithVariant = "";
         view.bioinformatics.speciesWithOthers = "";
@@ -1228,23 +1154,16 @@ public class AnfisaConnector implements AutoCloseable {
         return null;
     }
 
-    private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, VariantVep variantVep, String kind) {
-        List<Object[]> distFromBoundary;
-        if ("canonical".equals(kind)) {
-            distFromBoundary = gtfAnfisaResult.distFromBoundaryCanonical;
-        } else if ("worst".equals(kind)) {
-            distFromBoundary = gtfAnfisaResult.distFromBoundaryWorst;
-        } else {
-            throw new RuntimeException("Unknown kind: " + kind);
-        }
-        if (distFromBoundary != null) {
+    private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, VariantVep variantVep, Kind kind) {
+        GtfAnfisaResult.RegionAndBoundary region = gtfAnfisaResult.getRegion(kind);
+        if (region != null) {
             return unique(
-                    distFromBoundary.stream().map(objects -> (Long) objects[0]).collect(Collectors.toList())
+                    region.distFromBoundary.stream().map(objects -> (Long) objects[0]).collect(Collectors.toList())
             );
         }
 
         return unique(
-                getHgvsList(variantVep, "c", kind).stream()
+                getHgvsList(variantVep, "c", kind.value).stream()
                         .map(hgvcs -> getDistanceHgvsc(hgvcs))
                         .collect(Collectors.toList()),
                 "Exonic"
@@ -1333,7 +1252,7 @@ public class AnfisaConnector implements AutoCloseable {
         return getFromTranscriptsList(variantVep, "hgnc_id");
     }
 
-    private static List<JSONObject> getMostSevereTranscripts(VariantVep variantVep) {
+    protected static List<JSONObject> getMostSevereTranscripts(VariantVep variantVep) {
         String msq = variantVep.getMostSevereConsequence();
         return getTranscripts(variantVep, "protein_coding").stream()
                 .filter(jsonObject -> {
@@ -1343,7 +1262,7 @@ public class AnfisaConnector implements AutoCloseable {
                 .collect(Collectors.toList());
     }
 
-    private static List<JSONObject> getCanonicalTranscripts(VariantVep variantVep) {
+    protected static List<JSONObject> getCanonicalTranscripts(VariantVep variantVep) {
         return getTranscripts(variantVep, "protein_coding").stream()
                 .filter(jsonObject -> jsonObject.containsKey("canonical"))
                 .collect(Collectors.toList());

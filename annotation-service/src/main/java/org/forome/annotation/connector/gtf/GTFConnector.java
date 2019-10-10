@@ -104,27 +104,6 @@ public class GTFConnector implements AutoCloseable {
             }
         }
 
-
-        /*
-        List<GTFTranscriptRowExternal> rows = gtfDataConnector.getTranscriptRowsByChromosomeAndPositions(chromosome, positions);
-
-        List<GTFResultLookup> result = new ArrayList<>();
-
-        List<String> transcripts = rows.stream().map(row -> row.transcript).distinct().collect(Collectors.toList());
-        for (String transcript: transcripts) {
-            List<GTFTranscriptRow> transcriptRows = rows.stream().filter(row -> transcript.equals(row.transcript))
-                    .collect(Collectors.toList());
-
-            String gene = ((GTFTranscriptRowExternal)transcriptRows.get(0)).gene;
-
-            for (long position: positions) {
-                Object[] iResult = lookup(position, transcriptRows);
-                GTFRegion region = (GTFRegion)iResult[1];
-                result.add(new GTFResultLookup(transcript, gene,  position, region.region, region.indexRegion));
-            }
-        }
-        */
-
         return result;
     }
 

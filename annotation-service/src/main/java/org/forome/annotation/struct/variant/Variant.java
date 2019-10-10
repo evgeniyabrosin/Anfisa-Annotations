@@ -26,25 +26,4 @@ public abstract class Variant {
 
     public abstract String getMostSevereConsequence();
 
-//    public static Variant build(Chromosome chromosome, int start, int end) {
-//
-//        return new Variant(chromosome, start, end) {
-//
-//            @Override
-//            public VariantType getVariantType() {
-//                throw new RuntimeException("getVariantType");
-////                if (start==end) {
-////                    return VariantType.CNV;
-////                }
-////
-////                return null;
-//            }
-//
-//            @Override
-//            public List<String> getTranscripts() {
-//                throw new RuntimeException("getTranscripts");
-//            }
-//
-//        };
-//    }
 }
