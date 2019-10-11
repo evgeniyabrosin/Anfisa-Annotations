@@ -192,11 +192,11 @@ public class AnfisaConnector implements AutoCloseable {
         data.colorCode = getColorCode((VariantVep) variant, data, record, filters);
 
         if (gtfAnfisaResult.canonical != null) {
-            data.distFromBoundaryCanonical = gtfAnfisaResult.canonical.distFromBoundary;
+            data.distFromBoundaryCanonical = gtfAnfisaResult.canonical.distances;
             data.regionCanonical = gtfAnfisaResult.canonical.region;
         }
         if (gtfAnfisaResult.worst != null) {
-            data.distFromBoundaryWorst = gtfAnfisaResult.worst.distFromBoundary;
+            data.distFromBoundaryWorst = gtfAnfisaResult.worst.distances;
             data.regionWorst = gtfAnfisaResult.worst.region;
         }
 
@@ -1158,7 +1158,7 @@ public class AnfisaConnector implements AutoCloseable {
         GtfAnfisaResult.RegionAndBoundary region = gtfAnfisaResult.getRegion(kind);
         if (region != null) {
             return unique(
-                    region.distFromBoundary.stream().map(objects -> (Long) objects[0]).collect(Collectors.toList())
+                    region.distances.stream().map(distance -> distance.dist).collect(Collectors.toList())
             );
         }
 

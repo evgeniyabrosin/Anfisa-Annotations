@@ -82,6 +82,10 @@ public class GTFConnector implements AutoCloseable {
         return future;
     }
 
+    public List<GTFTranscriptRow> getTranscriptRows(String transcript) {
+        return gtfDataConnector.getTranscriptRows(transcript);
+    }
+
     public Object[] lookup(long pos, String transcript) {
         List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
         if (rows.isEmpty()) return null;
@@ -100,7 +104,7 @@ public class GTFConnector implements AutoCloseable {
 
                 Object[] iResult = lookup(position, transcript);
                 GTFRegion region = (GTFRegion)iResult[1];
-                result.add(new GTFResultLookup(transcript, rows.get(0).gene,  position, region.region, region.indexRegion));
+                result.add(new GTFResultLookup(transcript, rows.get(0).gene, position, region.region, region.indexRegion));
             }
         }
 
@@ -118,7 +122,7 @@ public class GTFConnector implements AutoCloseable {
             return new Object[]{(pos - sup), GTFRegion.DOWNSTREAM};
         }
 
-        List<Long> a = new ArrayList<>();
+        List<Integer> a = new ArrayList<>();
         for (GTFTranscriptRow row : rows) {
             a.add(row.start);
             a.add(row.end);
@@ -154,7 +158,7 @@ public class GTFConnector implements AutoCloseable {
             region = "intron";
         }
 
-        return new Object[]{d, new GTFRegion(region, index), rows.size()};
+        return new Object[]{d, new GTFRegion(region, (int)index), rows.size()};
     }
 
     @Override

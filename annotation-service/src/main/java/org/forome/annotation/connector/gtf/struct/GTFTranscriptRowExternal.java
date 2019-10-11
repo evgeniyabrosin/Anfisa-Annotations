@@ -8,7 +8,7 @@ public class GTFTranscriptRowExternal extends GTFTranscriptRow {
 
     public GTFTranscriptRowExternal(
             String transcript, String gene, String approved,
-            long start, long end,
+            int start, int end,
             String feature
     ) {
         super(gene, start, end, feature);

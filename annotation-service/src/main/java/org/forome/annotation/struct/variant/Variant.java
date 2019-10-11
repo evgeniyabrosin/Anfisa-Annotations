@@ -20,6 +20,8 @@ public abstract class Variant {
 
     public abstract Genotype getGenotype(String sample);
 
+    public abstract String getId();
+
     public abstract String getRef();
 
     public abstract List<String> getAltAllele();

@@ -6,9 +6,9 @@ public class GTFResultLookup {
     public final String gene;
     public final long position;
     public final String region;
-    public final Long index;
+    public final Integer index;
 
-    public GTFResultLookup(String transcript, String gene, long position, String region, Long index) {
+    public GTFResultLookup(String transcript, String gene, long position, String region, Integer index) {
         this.transcript = transcript;
         this.gene = gene;
         this.position = position;

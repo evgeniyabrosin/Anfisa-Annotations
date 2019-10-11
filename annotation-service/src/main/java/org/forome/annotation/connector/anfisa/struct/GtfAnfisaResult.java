@@ -1,5 +1,7 @@
 package org.forome.annotation.connector.anfisa.struct;
 
+import net.minidev.json.JSONArray;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -7,12 +9,35 @@ public class GtfAnfisaResult {
 
     public static class RegionAndBoundary {
 
-        public final String region;
-        public final List<Object[]> distFromBoundary;
+        public static class DistanceFromBoundary {
+            public final long dist;
+            public final String region;
+            public final Integer index;
+            public final Integer size;
 
-        public RegionAndBoundary(String region, List<Object[]> distFromBoundary) {
+            public DistanceFromBoundary(long dist, String region, Integer index, Integer size) {
+                this.dist = dist;
+                this.region = region;
+                this.index = index;
+                this.size = size;
+            }
+
+            public JSONArray toJSON() {
+                JSONArray out = new JSONArray();
+                out.add(dist);
+                out.add(region);
+                out.add(index);
+                out.add(size);
+                return out;
+            }
+        }
+
+        public final String region;
+        public final List<DistanceFromBoundary> distances;
+
+        public RegionAndBoundary(String region, List<DistanceFromBoundary> distances) {
             this.region = region;
-            this.distFromBoundary = Collections.unmodifiableList(distFromBoundary);
+            this.distances = Collections.unmodifiableList(distances);
         }
     }
 
