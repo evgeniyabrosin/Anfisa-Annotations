@@ -50,9 +50,9 @@ public class AnfisaResultData {
 
 	public VariantType variantClass;
 
-    public List<Object[]> distFromBoundaryCanonical;
+    public List<GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary> distFromBoundaryCanonical;
     public String regionCanonical;
-    public List<Object[]> distFromBoundaryWorst;
+    public List<GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary> distFromBoundaryWorst;
     public String regionWorst;
 
     public Map<String, Integer> zygosity;
@@ -157,13 +157,21 @@ public class AnfisaResultData {
 		}
 		out.put("variant_class", variantClass.toJSON());
 		if (distFromBoundaryCanonical != null) {
-			out.put("dist_from_boundary_canonical", distFromBoundaryCanonical);
+			out.put("dist_from_boundary_canonical", new JSONArray(){{
+				for (GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distance: distFromBoundaryCanonical) {
+					add(distance.toJSON());
+				}
+			}});
 		}
 		if (regionCanonical != null) {
 			out.put("region_canonical", regionCanonical);
 		}
 		if (distFromBoundaryWorst != null) {
-			out.put("dist_from_boundary_worst", distFromBoundaryWorst);
+			out.put("dist_from_boundary_worst", new JSONArray(){{
+				for (GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distance: distFromBoundaryWorst) {
+					add(distance.toJSON());
+				}
+			}});
 		}
 		if (regionWorst != null) {
 			out.put("region_worst", regionWorst);

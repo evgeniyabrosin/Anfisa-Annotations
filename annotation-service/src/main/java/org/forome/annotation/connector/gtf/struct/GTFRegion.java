@@ -7,9 +7,9 @@ public class GTFRegion {
     public static GTFRegion DOWNSTREAM = new GTFRegion("downstream", null);
 
     public final String region;
-    public final Long indexRegion;
+    public final Integer indexRegion;
 
-    public GTFRegion(String region, Long indexRegion) {
+    public GTFRegion(String region, Integer indexRegion) {
         this.region = region;
         this.indexRegion = indexRegion;
     }

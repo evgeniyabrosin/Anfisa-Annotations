@@ -61,8 +61,8 @@ public class GTFDataConnector implements Closeable {
                 try (ResultSet resultSet = statement.executeQuery(sql)) {
                     while (resultSet.next()) {
                         String gene = resultSet.getString("gene");
-                        long start = resultSet.getLong("start");
-                        long end = resultSet.getLong("end");
+                        int start = resultSet.getInt("start");
+                        int end = resultSet.getInt("end");
                         String feature = resultSet.getString("feature");
                         rows.add(new GTFTranscriptRow(
                                 gene,
@@ -99,8 +99,8 @@ public class GTFDataConnector implements Closeable {
                         String transcript = resultSet.getString("transcript");
                         String gene = resultSet.getString("gene");
                         String approved = resultSet.getString("approved");
-                        long start = resultSet.getLong("start");
-                        long end = resultSet.getLong("end");
+                        int start = resultSet.getInt("start");
+                        int end = resultSet.getInt("end");
                         String feature = resultSet.getString("feature");
                         rows.add(new GTFTranscriptRowExternal(
                                 transcript, gene, approved,
