@@ -8,6 +8,7 @@ import java.util.Set;
 public class ColorCode {
 
     public enum Shape {
+
         CROSS("-cross"),
         CIRCLE("");
 
@@ -24,6 +25,7 @@ public class ColorCode {
     }
 
     public enum Color {
+
         GREY("grey"),
         GREEN("green"),
         RED("red"),
@@ -39,10 +41,6 @@ public class ColorCode {
         public String toString() {
             return color;
         }
-    }
-
-    private static String stringValue(Shape shape, Color color) {
-        return String.valueOf(color) + String.valueOf(shape);
     }
 
     public enum Code {
@@ -69,6 +67,10 @@ public class ColorCode {
         public String toString() {
             return code;
         }
+    }
+
+    private static String stringValue(Shape shape, Color color) {
+        return String.valueOf(color) + String.valueOf(shape);
     }
 
     public static Code code(Shape shape, Color color) {
