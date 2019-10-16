@@ -26,7 +26,6 @@ public class AnfisaResultData {
 	public String alleleString;
 	public String seqRegionName;
 	public String totalExonIntronWorst;
-	public String[] beaconUrls;
 	public String input;
 	public String label;
 	public JSONArray transcriptConsequences;
@@ -115,7 +114,6 @@ public class AnfisaResultData {
 		out.put("allele_string", alleleString);
 		out.put("seq_region_name", seqRegionName);
 		out.put("total_exon_intron_worst", totalExonIntronWorst);
-		out.put("beacon_url", beaconUrls);
 		if (colocatedVariants != null) {
 			out.put("colocated_variants", colocatedVariants);
 		}

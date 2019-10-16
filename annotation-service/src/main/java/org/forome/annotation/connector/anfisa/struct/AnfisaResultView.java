@@ -22,7 +22,6 @@ public class AnfisaResultView {
         public String[] hgmdTags;
         public String[] hgmdPhenotypes;
         public String[] hgmdPmids;
-        public String[] beaconUrl;
         public String[] clinVarSubmitters;
         public String lmmSignificance;
         public String geneDxSignificance;
@@ -57,7 +56,6 @@ public class AnfisaResultView {
                 out.put("hgmd_hg38", hgmdHg38);
             }
             out.put("hgmd_tags", hgmdTags);
-            out.put("beacon_url", beaconUrl);
             out.put("gene_dx_significance", geneDxSignificance);
             out.put("hgmd_phenotypes", hgmdPhenotypes);
             out.put("clinVar_submitters", clinVarSubmitters);
