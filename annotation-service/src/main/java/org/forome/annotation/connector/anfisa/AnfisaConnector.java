@@ -6,7 +6,6 @@ import htsjdk.variant.variantcontext.*;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.connector.anfisa.struct.*;
-import org.forome.annotation.connector.beacon.BeaconConnector;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.clinvar.struct.ClinvarResult;
 import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
@@ -122,7 +121,6 @@ public class AnfisaConnector implements AutoCloseable {
         callSpliceai(data, filters, variant, anfisaInput.samples, vepJson);
         callHgmd(record, context, filters, data);
         callClinvar(context, record, variant.chromosome.getChar(), anfisaInput.samples, filters, data, view, vepJson);
-        callBeacon(variant, data);
         GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant);
         callQuality(filters, variant, anfisaInput.samples);
 
@@ -330,22 +328,6 @@ public class AnfisaConnector implements AutoCloseable {
                     clinvarVariantSummary.guidelineTypes.stream()
                             .map(guideline -> guideline.getStrValue()).toArray(String[]::new);
         }
-    }
-
-    private void callBeacon(Variant variant, AnfisaResultData data) {
-        if (variant instanceof VariantCNV) {
-            return;
-        }
-        List<String> alts = variant.getAltAllele();
-        data.beaconUrls = alts.stream()
-                .map(alt ->
-                        BeaconConnector.getUrl(
-                                variant.chromosome.getChar(),
-                                variant.start,
-                                variant.getRef(), alt
-                        )
-                )
-                .toArray(String[]::new);
     }
 
     private static void callQuality(AnfisaResultFilters filters, Variant variant, Samples samples) {
@@ -810,7 +792,6 @@ public class AnfisaConnector implements AutoCloseable {
         } else {
             view.databases.hgmd = "Not Present";
         }
-        view.databases.beaconUrl = data.beaconUrls;
 
         if (data.clinvarVariants != null) {
             view.databases.clinVarVariants = Arrays.stream(data.clinvarVariants).distinct().toArray(String[]::new);
