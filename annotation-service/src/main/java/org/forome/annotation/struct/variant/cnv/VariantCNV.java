@@ -2,6 +2,7 @@ package org.forome.annotation.struct.variant.cnv;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.vep.VariantVep;
@@ -47,15 +48,20 @@ public class VariantCNV extends VariantVep {
     }
 
     @Override
-    public List<String> getAltAllele() {
-        return Collections.singletonList("-");
+    public List<Allele> getAltAllele() {
+        return Collections.singletonList(Allele.EMPTY);
+    }
+
+    @Override
+    public List<String> getStrAltAllele() {
+        return Collections.singletonList(Allele.EMPTY_BASE);
     }
 
     protected String getAllele(int index) {
         if (index == 0) {
             return getRef();
         } else {
-            return getAltAllele().get(index - 1);
+            return getStrAltAllele().get(index - 1);
         }
     }
 

@@ -1,5 +1,6 @@
 package org.forome.annotation.struct.variant;
 
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 
 import java.util.List;
@@ -24,7 +25,9 @@ public abstract class Variant {
 
     public abstract String getRef();
 
-    public abstract List<String> getAltAllele();
+    public abstract List<Allele> getAltAllele();
+
+    public abstract List<String> getStrAltAllele();
 
     public abstract String getMostSevereConsequence();
 
