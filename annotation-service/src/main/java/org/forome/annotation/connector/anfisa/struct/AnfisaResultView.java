@@ -16,8 +16,6 @@ public class AnfisaResultView {
     public class Databases {
         public String[] clinVar;
 
-        public Object beacons;
-        public String[] pubmedSearch;
         public String[] clinVarVariants;
         public String[] clinVarPhenotypes;
         public String hgmd;
@@ -25,12 +23,10 @@ public class AnfisaResultView {
         public String[] hgmdTags;
         public String[] hgmdPhenotypes;
         public String[] hgmdPmids;
-        public String[] omim;
         public String[] beaconUrl;
         public String[] clinVarSubmitters;
         public String lmmSignificance;
         public String geneDxSignificance;
-        public String[] geneCards;
         public String[] clinVarSignificance;
         public Integer numClinvarSubmitters;
         public String[] clinvarAcmgGuidelines;
@@ -55,8 +51,6 @@ public class AnfisaResultView {
                 out.put("clinVar", clinVar);
             }
             out.put("hgmd_pmids", hgmdPmids);
-            out.put("beacons", beacons);
-            out.put("pubmed_search", pubmedSearch);
             out.put("clinVar_variants", clinVarVariants);
             out.put("clinVar_phenotypes", clinVarPhenotypes);
             out.put("hgmd", hgmd);
@@ -64,13 +58,11 @@ public class AnfisaResultView {
                 out.put("hgmd_hg38", hgmdHg38);
             }
             out.put("hgmd_tags", hgmdTags);
-            out.put("omim", omim);
             out.put("beacon_url", beaconUrl);
             out.put("gene_dx_significance", geneDxSignificance);
             out.put("hgmd_phenotypes", hgmdPhenotypes);
             out.put("clinVar_submitters", clinVarSubmitters);
             out.put("lmm_significance", lmmSignificance);
-            out.put("gene_cards", geneCards);
             out.put("clinVar_significance", clinVarSignificance);
             out.put("num_clinvar_submitters", numClinvarSubmitters);
             out.put("clinvar_acmg_guidelines", clinvarAcmgGuidelines);
