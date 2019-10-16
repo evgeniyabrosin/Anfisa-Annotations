@@ -2,7 +2,6 @@ package org.forome.annotation.connector.anfisa.struct;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 
@@ -66,10 +65,6 @@ public class AnfisaResultFilters {
 			out.put("gnomad_popmax", gnomadPopmax.group.name());
 			out.put("gnomad_popmax_af", gnomadPopmax.af);
 			out.put("gnomad_popmax_an", gnomadPopmax.an);
-		} else if (!AnfisaConnector.NEW_MODE) {
-			out.put("gnomad_popmax", null);
-			out.put("gnomad_popmax_af", null);
-			out.put("gnomad_popmax_an", null);
 		}
 		if (gnomadRawPopmax != null) {
 			out.put("gnomad_raw_popmax", gnomadRawPopmax.group.name());
