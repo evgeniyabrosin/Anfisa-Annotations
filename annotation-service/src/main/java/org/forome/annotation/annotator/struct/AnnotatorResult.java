@@ -20,9 +20,9 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AnnotatorResult {
 
@@ -35,6 +35,10 @@ public class AnnotatorResult {
 
         public static class Versions {
 
+            private static Pattern PATTERN_GATK_VERSION = Pattern.compile(
+                    "^<ID=(ApplyRecalibration|CombineVariants),Version=(.*?)[,](.*)$", Pattern.CASE_INSENSITIVE
+            );
+
             public final Instant pipelineDate;
             public final String pipeline;
             public final String annotations;
@@ -43,9 +47,14 @@ public class AnnotatorResult {
 
             public final List<DatabaseConnector.Metadata> metadataDatabases;
 
+            private final Map<String, String> toolGatks;
+            private final Map<String, String> toolBcfs;
+
             public Versions(Path pathVepVcf, AnfisaConnector anfisaConnector) {
                 annotations = AppVersion.getVersionFormat();
                 annotationsBuild = AppVersion.getVersion();
+                toolGatks = new HashMap<String, String>();
+                toolBcfs = new HashMap<String, String>();
                 if (pathVepVcf != null) {
                     VCFFileReader vcfFileReader = new VCFFileReader(pathVepVcf, false);
                     VCFHeader vcfHeader = vcfFileReader.getFileHeader();
@@ -65,6 +74,28 @@ public class AnnotatorResult {
                         }
                     } else {
                         pipelineDate = null;
+                    }
+
+                    VCFHeaderLine hlGatkCV = vcfHeader.getMetaDataLine("GATKCommandLine.CombineVariants");
+                    if (hlGatkCV != null) {
+                        Matcher matcher = PATTERN_GATK_VERSION.matcher(hlGatkCV.getValue());
+                        if (!matcher.matches()) {
+                            throw new RuntimeException("Not support format GATK version: " + hlGatkCV.getValue());
+                        }
+                        toolGatks.put("combine_variants", matcher.group(2));
+                    }
+                    VCFHeaderLine hlGatkAR = vcfHeader.getMetaDataLine("GATKCommandLine.ApplyRecalibration");
+                    if (hlGatkAR != null) {
+                        Matcher matcher = PATTERN_GATK_VERSION.matcher(hlGatkAR.getValue());
+                        if (!matcher.matches()) {
+                            throw new RuntimeException("Not support format GATK version: " + hlGatkAR.getValue());
+                        }
+                        toolGatks.put("apply_recalibration", matcher.group(2));
+                    }
+
+                    VCFHeaderLine hlBCFAnnotateVersion = vcfHeader.getMetaDataLine("bcftools_annotateVersion");
+                    if (hlBCFAnnotateVersion != null) {
+                        toolBcfs.put("annotate", hlBCFAnnotateVersion.getValue());
                     }
                 } else {
                     pipeline = null;
@@ -101,6 +132,12 @@ public class AnnotatorResult {
                         value.append(DATE_TIME_FORMATTER.format(metadata.date));
                     }
                     out.put(metadata.product, value.toString());
+                }
+                if (!toolGatks.isEmpty()) {
+                    out.put("gatk", toolGatks);
+                }
+                if (!toolBcfs.isEmpty()) {
+                    out.put("bcftools", toolBcfs);
                 }
                 return out;
             }
