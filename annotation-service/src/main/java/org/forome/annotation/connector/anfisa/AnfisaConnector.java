@@ -835,13 +835,6 @@ public class AnfisaConnector implements AutoCloseable {
         for (String submitter : trustedSubmitters.keySet()) {
             view.databases.setField(String.format("%s_significance", submitter), data.getField(submitter));
         }
-        view.databases.pubmedSearch = getTenwiseLink(variantVep);
-        view.databases.omim = getGenes(variantVep).stream().map(gene ->
-                String.format("https://omim.org/search/?search=approved_gene_symbol:%s&retrieve=geneMap", gene)
-        ).toArray(String[]::new);
-        view.databases.geneCards = getGenes(variantVep).stream().map(gene ->
-                String.format("https://www.genecards.org/cgi-bin/carddisp.pl?gene=%s", gene)
-        ).toArray(String[]::new);
     }
 
     private void createPredictionsTab(VariantVep variantVep, JSONObject vepJson, AnfisaResultView view) {
@@ -1083,13 +1076,6 @@ public class AnfisaConnector implements AutoCloseable {
 
 
         return ColorCode.code(shape, color);
-    }
-
-    private String[] getTenwiseLink(VariantVep variantVep) {
-        List<String> hgncIds = getHgncIds(variantVep);
-        return hgncIds.stream().map(hgncId ->
-                String.format("https://www.tenwiseapps.nl/publicdl/variant_report/HGNC_%s_variant_report.html", hgncId)
-        ).toArray(String[]::new);
     }
 
     public String getAltAllelesString(Variant variant) {
