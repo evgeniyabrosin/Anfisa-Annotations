@@ -129,7 +129,7 @@ public class AnfisaConnector implements AutoCloseable {
         callQuality(filters, variant, anfisaInput.samples);
 
         filters.severity = getSeverity(variant);
-        filters.alts = variant.getAltAllele();
+        filters.alts = variant.getStrAltAllele();
 
         Sample proband = anfisaInput.samples.proband;
         if (proband != null) {
@@ -220,7 +220,7 @@ public class AnfisaConnector implements AutoCloseable {
 
     private static String getAlleleString(Variant variant) {
         if (variant instanceof VariantCNV) {
-            return variant.getRef() + "/" + String.join("/", variant.getAltAllele());
+            return variant.getRef() + "/" + String.join("/", variant.getStrAltAllele());
         } else {
             return ((VariantVep) variant).getVepJson().getAsString("allele_string");
         }
@@ -248,7 +248,7 @@ public class AnfisaConnector implements AutoCloseable {
 
         List<ClinvarResult> clinvarResults;
         if (isSnv(variant)) {
-            clinvarResults = clinvarConnector.getData(_chromosome, variant.start, variant.end, variant.getAltAllele());
+            clinvarResults = clinvarConnector.getData(_chromosome, variant.start, variant.end, variant.getStrAltAllele());
         } else {
             clinvarResults = clinvarConnector.getExpandedData(_chromosome, variant.start);
         }
@@ -338,7 +338,7 @@ public class AnfisaConnector implements AutoCloseable {
         if (variant instanceof VariantCNV) {
             return;
         }
-        List<String> alts = variant.getAltAllele();
+        List<String> alts = variant.getStrAltAllele();
         data.beaconUrls = alts.stream()
                 .map(alt ->
                         BeaconConnector.getUrl(
@@ -385,7 +385,7 @@ public class AnfisaConnector implements AutoCloseable {
         Long hom = null;
         Long hem = null;
 
-        for (String alt : variant.getAltAllele()) {
+        for (String alt : variant.getStrAltAllele()) {
             GnomadResult gnomadResult = getGnomadResult(variant, alt);
             if (gnomadResult == null) {
                 continue;
@@ -462,7 +462,7 @@ public class AnfisaConnector implements AutoCloseable {
                 variant.chromosome.getChar(),
                 lowest_coord(variant),
                 variant.getRef(),
-                variant.getAltAllele()
+                variant.getStrAltAllele()
         );
         data.spliceAI = spliceAIResult.dict_sql;
         filters.spliceAltering = spliceAIResult.cases;
@@ -715,7 +715,7 @@ public class AnfisaConnector implements AutoCloseable {
     private void createGnomadTab(AnfisaExecuteContext context, String chromosome, Variant variant, Samples samples, JSONObject json, AnfisaResultView view) {
         Double gnomadAf = context.gnomadAfFam;
         if (gnomadAf != null && Math.abs(gnomadAf) > 0.000001D) {
-            for (String allele : variant.getAltAllele()) {
+            for (String allele : variant.getStrAltAllele()) {
                 AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
 
                 gnomAD.allele = allele;
@@ -941,7 +941,7 @@ public class AnfisaConnector implements AutoCloseable {
         JSONObject vepJson = context.vepJson;
         Chromosome chromosome = variant.chromosome;
         String ref = variant.getRef();
-        List<String> alts = variant.getAltAllele();
+        List<String> alts = variant.getStrAltAllele();
         if (alts.size() > 1) {
             return null;
         }
@@ -1093,7 +1093,7 @@ public class AnfisaConnector implements AutoCloseable {
     }
 
     public String getAltAllelesString(Variant variant) {
-        return String.join(",", variant.getAltAllele());
+        return String.join(",", variant.getStrAltAllele());
     }
 
     private static boolean isProbandHasAllele(Variant variant, Samples samples, String alt) {
@@ -1615,7 +1615,7 @@ public class AnfisaConnector implements AutoCloseable {
             return new LinkedHashSet();
         }
         String ref = variant.getRef();
-        List<String> alt_set = variant.getAltAllele();
+        List<String> alt_set = variant.getStrAltAllele();
 
         LinkedHashSet<String> callers;
         if (variant instanceof VariantVCF) {

@@ -2,6 +2,7 @@ package org.forome.annotation.struct.variant.vep;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantType;
@@ -37,11 +38,11 @@ public abstract class VariantVep extends Variant {
     }
 
     @Override
-    public List<String> getAltAllele() {
+    public List<Allele> getAltAllele() {
         String[] ss = vepJson.getAsString("allele_string").split("/");
-        List<String> result = new ArrayList<>();
+        List<Allele> result = new ArrayList<>();
         for (int i = 1; i < ss.length; i++) {
-            result.add(ss[i]);
+            result.add(new Allele(ss[i]));
         }
         return result;
     }

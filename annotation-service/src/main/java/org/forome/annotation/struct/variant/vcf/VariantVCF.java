@@ -1,7 +1,7 @@
 package org.forome.annotation.struct.variant.vcf;
 
-import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.vep.VariantVep;
@@ -34,64 +34,40 @@ public class VariantVCF extends VariantVep {
         return variantContext.getReference().getBaseString();
     }
 
+    /**
+     * В VCF файле могуь находится аллели которые не относятся ни к одному генотипу, поэтому необходима фильтрация
+     * всех альтернативный аллелей, алгоритм следующий:
+     * Пробегаемся по всем генотипам, и посредством поля AD, суммируем как часто встречается каждый аллель в каждом генотипе
+     * В случае, если аллель встречался больше 0 раз, то мы считаем, что этот аллель используется
+     * @return
+     */
     @Override
-    public List<String> getAltAllele() {
-        List<String> alleles = variantContext.getAlleles()
-                .stream().map(allele -> allele.getBaseString()).collect(Collectors.toList());
-        List<String> alt_allels = variantContext.getAlternateAlleles()
-                .stream().map(allele -> allele.getBaseString()).collect(Collectors.toList());
-        Map<String, Long> counts = new HashMap<>();
+    public List<Allele> getAltAllele() {
+        List<Allele> alleles = variantContext.getAlleles()
+                .stream().map(allele -> new Allele(allele.getBaseString())).collect(Collectors.toList());
+        List<Allele> altAllels = variantContext.getAlternateAlleles()
+                .stream().map(allele -> new Allele(allele.getBaseString())).collect(Collectors.toList());
+        Map<Allele, Long> counts = new HashMap<>();
         for (htsjdk.variant.variantcontext.Genotype genotype : variantContext.getGenotypes()) {
             int[] ad = genotype.getAD();
             if (ad == null || ad.length == 0) {
-                return alt_allels;
+                return altAllels;
             }
             for (int i = 0; i < alleles.size(); i++) {
-                String al = alleles.get(i);
+                Allele al = alleles.get(i);
                 long n = ad[i];
                 counts.put(al, counts.getOrDefault(al, 0L) + n);
             }
         }
-        List<String> tmp_alt_allels = alt_allels.stream()
+        List<Allele> filterAltAllels = altAllels.stream()
                 .filter(s -> counts.containsKey(s) && counts.get(s) > 0)
                 .collect(Collectors.toList());
-        if (!tmp_alt_allels.isEmpty()) {
-            return tmp_alt_allels;
+        if (!filterAltAllels.isEmpty()) {
+            return filterAltAllels;
         } else {
-            return alt_allels;
+            return altAllels;
         }
     }
-
-    /*
-    @Override
-    public VariantType getVariantType() {
-        Allele ref = variantContext.getReference();
-        List<Allele> altAlleles = variantContext.getAlternateAlleles();
-
-        VariantContext.Type vcfVariantType = variantContext.getType();
-        StructuralVariantType structuralVariantType = variantContext.getStructuralVariantType();
-        switch (vcfVariantType) {
-            case SNP:
-                if (isAllEqualsLength(ref, altAlleles)) {
-                    return VariantType.SNV;
-                }
-                break;
-            case INDEL:
-                if (altAlleles.stream().filter(allele -> allele.length() < ref.length()).count() == 0) {
-                    //Все альтернативные аллели длинее референса
-                    return VariantType.INS;
-                } else if (altAlleles.stream().filter(allele -> allele.length() > ref.length()).count() == 0) {
-                    //Все альтернативные аллели короче референса
-                    return VariantType.DEL;
-                }
-                break;
-            default:
-                throw new RuntimeException("Unknown vcf variantType: " + vcfVariantType);
-        }
-
-        return VariantType.SEQUENCE_ALTERATION;
-    }
-    */
 
     public static int getStart(VariantContext variantContext) {
         if (isAnyEqualsLength(variantContext.getReference(), variantContext.getAlternateAlleles())) {
@@ -99,7 +75,7 @@ public class VariantVCF extends VariantVep {
         } else {
             char fRef = variantContext.getReference().getBaseString().charAt(0);
             boolean increment = false;
-            for (Allele allele : variantContext.getAlternateAlleles()) {
+            for (htsjdk.variant.variantcontext.Allele allele : variantContext.getAlternateAlleles()) {
                 char fAlt = allele.getBaseString().charAt(0);
                 if (fRef == fAlt) {
                     increment = true;
@@ -113,14 +89,6 @@ public class VariantVCF extends VariantVep {
                 return variantContext.getStart();
             }
         }
-
-    /*
-    if (isAnyEqualsLength(variantContext.getReference(), variantContext.getAlternateAlleles())) {
-        return variantContext.getStart();
-    } else {
-        return variantContext.getStart() + 1;
-    }
-    */
     }
 
     public static int getEnd(VariantContext variantContext) {
@@ -134,25 +102,13 @@ public class VariantVCF extends VariantVep {
      * @param alleles
      * @return
      */
-    private static boolean isAnyEqualsLength(Allele reference, List<Allele> alleles) {
-        for (Allele allele : alleles) {
+    private static boolean isAnyEqualsLength(htsjdk.variant.variantcontext.Allele reference, List<htsjdk.variant.variantcontext.Allele> alleles) {
+        for (htsjdk.variant.variantcontext.Allele allele : alleles) {
             if (allele.length() == reference.length()) {
                 return true;
             }
         }
         return false;
-    }
-
-    private static boolean isAllEqualsLength(Allele reference, List<Allele> alleles) {
-        for (Allele allele : alleles) {
-            if ("*".equals(allele.getBaseString())) {
-                return false;
-            }
-            if (allele.length() != reference.length()) {
-                return false;
-            }
-        }
-        return true;
     }
 
 }
