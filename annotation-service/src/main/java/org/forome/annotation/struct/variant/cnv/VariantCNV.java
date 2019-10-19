@@ -52,11 +52,6 @@ public class VariantCNV extends VariantVep {
         return Collections.singletonList(Allele.EMPTY);
     }
 
-    @Override
-    public List<String> getStrAltAllele() {
-        return Collections.singletonList(Allele.EMPTY_BASE);
-    }
-
     protected String getAllele(int index) {
         if (index == 0) {
             return getRef();

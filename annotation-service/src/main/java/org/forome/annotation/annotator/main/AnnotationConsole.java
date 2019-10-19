@@ -48,6 +48,8 @@ public class AnnotationConsole {
     private final Path famFile;
     private final Path patientIdsFile;
 
+    private final Path pathCohorts;
+
     private final Path vcfFile;
     private final Path vepJsonFile;
 
@@ -80,6 +82,7 @@ public class AnnotationConsole {
             Path configFile,
             String caseName, CasePlatform casePlatform,
             Path famFile, Path patientIdsFile,
+            Path pathCohorts,
             Path vcfFile, Path vepJsonFile,
             Path cnvFile,
             int startPosition,
@@ -91,6 +94,8 @@ public class AnnotationConsole {
 
         this.famFile = famFile;
         this.patientIdsFile = patientIdsFile;
+
+        this.pathCohorts = pathCohorts;
 
         this.vcfFile = vcfFile;
         this.vepJsonFile = vepJsonFile;
@@ -142,6 +147,7 @@ public class AnnotationConsole {
             log.info("Version: {}", AppVersion.getVersion());
             log.info("Input caseName: {}", caseName);
             log.info("Input famFile: {}", famFile);
+            log.info("Input cohortFile: {}", pathCohorts);
             log.info("Input vepVcfFile: {}", vcfFile);
             log.info("Input start position: {}", startPosition);
             log.info("Input vepJsonFile: {}", vepJsonFile);
@@ -161,6 +167,7 @@ public class AnnotationConsole {
                     casePlatform,
                     famFile,
                     patientIdsFile,
+                    pathCohorts,
                     vcfFile,
                     pathVepJson,
                     cnvFile,

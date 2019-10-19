@@ -4,6 +4,7 @@ import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class Variant {
 
@@ -27,7 +28,9 @@ public abstract class Variant {
 
     public abstract List<Allele> getAltAllele();
 
-    public abstract List<String> getStrAltAllele();
+    public List<String> getStrAltAllele() {
+        return getAltAllele().stream().map(Allele::getBaseString).collect(Collectors.toList());
+    }
 
     public abstract String getMostSevereConsequence();
 

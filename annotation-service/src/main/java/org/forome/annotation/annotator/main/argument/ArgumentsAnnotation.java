@@ -22,6 +22,7 @@ public class ArgumentsAnnotation extends Arguments {
 
     public final Path pathFam;
     public final Path patientIdsFile;
+    public final Path cohortFile;
     public final Path pathVcf;
     public final Path pathVepJson;
     public final Path pathCnv;
@@ -55,6 +56,13 @@ public class ArgumentsAnnotation extends Arguments {
             patientIdsFile = Paths.get(strPathFamSampleName).toAbsolutePath();
         } else {
             patientIdsFile = null;
+        }
+
+        String strCohortFile = cmd.getOptionValue(ParserArgument.OPTION_FILE_COHORT);
+        if (strCohortFile != null) {
+            cohortFile = Paths.get(strCohortFile).toAbsolutePath();
+        } else {
+            cohortFile = null;
         }
 
         String strPathVepJson = cmd.getOptionValue(ParserArgument.OPTION_FILE_VEP_JSON);

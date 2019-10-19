@@ -14,6 +14,7 @@ public class ParserArgument {
     public static final String OPTION_CASE_NAME = "name";
     public static final String OPTION_FILE_FAM = "fam";
     public static final String OPTION_FILE_FAM_NAME = "famname";
+    public static final String OPTION_FILE_COHORT = "cohort";
     public static final String OPTION_FILE_VCF = "vcf";
     public static final String OPTION_FILE_VEP_JSON = "vepjson";
     public static final String OPTION_FILE_CNV = "cnv";
@@ -64,6 +65,12 @@ public class ParserArgument {
                         .hasArg(true)
                         .optionalArg(true)
                         .desc("Absolute path to fam names file")
+                        .build())
+                .addOption(Option.builder()
+                        .longOpt(OPTION_FILE_COHORT)
+                        .hasArg(true)
+                        .optionalArg(true)
+                        .desc("Absolute path to cohort file")
                         .build())
                 .addOption(Option.builder()
                         .longOpt(OPTION_FILE_VCF)
