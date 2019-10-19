@@ -380,7 +380,7 @@ public class AnfisaConnector implements AutoCloseable {
         }
     }
 
-    private static void callQuality(AnfisaResultFilters filters, Variant variant, Samples samples) {
+    private static void callQuality(AnfisaResultFilters filters, Variant variant, MCase samples) {
         filters.minGq = getMinGQ(variant, samples);
         filters.probandGq = getProbandGQ(variant, samples);
         if (variant != null && variant instanceof VariantVCF) {
