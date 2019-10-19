@@ -28,6 +28,8 @@ public class Inventory {
     public final Path famFile;
     public final Path patientIdsFile;
 
+    public final Path cohortFile;
+
     public final Path vcfFile;
     public final Path vepJsonFile;
 
@@ -40,6 +42,7 @@ public class Inventory {
     private Inventory(
             String caseName, CasePlatform casePlatform,
             Path famFile, Path patientIdsFile,
+            Path cohortFile,
             Path vcfFile, Path vepJsonFile,
             Path cnvFile,
             Path outFile,
@@ -50,6 +53,8 @@ public class Inventory {
 
         this.famFile = famFile;
         this.patientIdsFile = patientIdsFile;
+
+        this.cohortFile = cohortFile;
 
         this.vcfFile = vcfFile;
         this.vepJsonFile = vepJsonFile;
@@ -75,6 +80,8 @@ public class Inventory {
 
         private Path famFile;
         private Path patientIdsFile;
+
+        private Path cohortFile;
 
         private Path vcfFile;
         private Path vepJsonFile;
@@ -161,6 +168,11 @@ public class Inventory {
                     patientIdsFile = Paths.get(pathPatientIdsFile).toAbsolutePath();
                 }
 
+                String pathCohortFile = getValueWithAliase(jData.getAsString("cohort"), aliases);
+                if (pathCohortFile != null) {
+                    cohortFile = Paths.get(pathCohortFile).toAbsolutePath();
+                }
+
                 String pathVcfFile = getValueWithAliase(jData.getAsString("vcf"), aliases);
                 if (pathVcfFile == null) {
                     throw ExceptionBuilder.buildInvalidValueInventoryException("vcf");
@@ -217,6 +229,7 @@ public class Inventory {
             return new Inventory(
                     caseName, casePlatform,
                     famFile, patientIdsFile,
+                    cohortFile,
                     vcfFile, vepJsonFile,
                     cnvFile,
                     outFile,

@@ -9,7 +9,7 @@ import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.CasePlatform;
-import org.forome.annotation.struct.sample.Samples;
+import org.forome.annotation.struct.mcase.MCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +39,7 @@ public class Annotator {
             CasePlatform casePlatform,
             Path pathFam,
             Path pathFamSampleName,
+            Path pathCohorts,
             Path pathVepVcf,
             Path pathVepJson,
             Path cnvFile,
@@ -69,13 +70,15 @@ public class Annotator {
         }
 
         try (InputStream isFam = Files.newInputStream(pathFam);
-             InputStream isFamSampleName = (pathFamSampleName != null) ? Files.newInputStream(pathFamSampleName) : null
+             InputStream isFamSampleName = (pathFamSampleName != null) ? Files.newInputStream(pathFamSampleName) : null;
+             InputStream isCohorts = (pathCohorts != null) ? Files.newInputStream(pathCohorts) : null
         ) {
             return exec(
                     caseName,
                     casePlatform,
                     isFam,
                     isFamSampleName,
+                    isCohorts,
                     pathVepVcf,
                     pathVepJson,
                     cnvFile,
@@ -89,13 +92,14 @@ public class Annotator {
             CasePlatform casePlatform,
             InputStream isFam,
             InputStream isFamSampleName,
+            InputStream isCohorts,
             Path pathVepVcf,
             Path pathVepJson,
             Path cnvFile,
             int startPosition
     ) throws IOException {
 
-        Samples samples = CaseUtils.parseFamFile(isFam, isFamSampleName);
+        MCase samples = CaseUtils.parseFamFile(isFam, isFamSampleName, isCohorts);
 
         String caseId = String.format("%s_%s", caseName, casePlatform.name().toLowerCase());
 
@@ -108,7 +112,7 @@ public class Annotator {
     }
 
     public AnnotatorResult annotateJson(
-            String caseSequence, Samples samples,
+            String caseSequence, MCase samples,
             Path pathVepVcf, Path pathVepJson,
             Path cnvFile,
             int startPosition

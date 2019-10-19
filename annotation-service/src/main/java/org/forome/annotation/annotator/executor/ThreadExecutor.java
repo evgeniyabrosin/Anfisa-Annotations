@@ -9,7 +9,7 @@ import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.iterator.json.JsonFileIterator;
 import org.forome.annotation.iterator.vcf.VCFFileIterator;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
-import org.forome.annotation.struct.sample.Samples;
+import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
@@ -35,7 +35,7 @@ public class ThreadExecutor implements AutoCloseable {
     private final AnfisaConnector anfisaConnector;
 
     private final String caseSequence;
-    private final Samples samples;
+    private final MCase samples;
 
     private final int start;
     private final int step;
@@ -53,7 +53,7 @@ public class ThreadExecutor implements AutoCloseable {
             int index,
             EnsemblVepService ensemblVepService,
             AnfisaConnector anfisaConnector,
-            String caseSequence, Samples samples,
+            String caseSequence, MCase samples,
             Path pathVcf, Path pathVepJson,
             Path cnvFile,
             int start, int step,
