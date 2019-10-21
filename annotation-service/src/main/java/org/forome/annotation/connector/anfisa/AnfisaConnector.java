@@ -879,8 +879,16 @@ public class AnfisaConnector implements AutoCloseable {
         view.predictions.siftScore = getFromTranscriptsList(variantVep, "sift_score").stream().toArray(String[]::new);
         view.predictions.revel = getFromTranscriptsList(variantVep, "revel_score").stream().map(s -> Double.parseDouble(s))
                 .collect(Collectors.toList());
-        view.predictions.mutationTaster = getFromTranscriptsList(variantVep, "mutationtaster_pred").stream().toArray(String[]::new);
-        view.predictions.fathmm = getFromTranscriptsList(variantVep, "fathmm_pred").stream().toArray(String[]::new);
+        view.predictions.mutationTaster = getFromTranscriptsList(variantVep, "mutationtaster_pred").stream()
+                .flatMap(s -> Arrays.stream(s.split(",")))
+                .map(s -> s.trim())
+                .filter(s -> !s.isEmpty())
+                .distinct().toArray(String[]::new);
+        view.predictions.fathmm = getFromTranscriptsList(variantVep, "fathmm_pred").stream()
+                .flatMap(s -> Arrays.stream(s.split(",")))
+                .map(s -> s.trim())
+                .filter(s -> !s.isEmpty())
+                .distinct().toArray(String[]::new);
         view.predictions.caddPhred = getFromTranscriptsList(variantVep, "cadd_phred").stream().map(s -> Double.parseDouble(s))
                 .collect(Collectors.toList());
         view.predictions.caddRaw = getFromTranscriptsList(variantVep, "cadd_raw").stream().map(s -> Double.parseDouble(s))
