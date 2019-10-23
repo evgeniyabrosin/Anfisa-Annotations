@@ -97,6 +97,10 @@ if __name__ == '__main__':
         config["vcf"] = cfg_vcf
     if (vep_json):
         config["vep-json"] = "${DIR}/" + vep_json
+    if "cnv" in config:
+        cnv_file = config["cnv"]
+        if (not os.path.isfile(cnv_file)):
+            del config["cnv"]
 
     inventory = os.path.join(working_dir, "{}.cfg".format(case_id))
 
