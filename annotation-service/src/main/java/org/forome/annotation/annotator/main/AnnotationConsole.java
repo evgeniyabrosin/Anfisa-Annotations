@@ -279,7 +279,7 @@ public class AnnotationConsole {
         String cmd = new StringBuilder("/db/vep-93/ensembl-vep/vep ")
                 .append("--buffer_size 50000 ")
                 .append("--cache --dir /db/data/vep/cache --dir_cache /db/data/vep/cache ")
-                .append("--fork 8 ")
+                .append("--fork 6 ")
                 .append("--uniprot --hgvs --symbol --numbers --domains --regulatory --canonical --protein --biotype --tsl --appris --gene_phenotype --variant_class ")
                 .append("--fasta /db/data/vep/cache/homo_sapiens/93_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz ")
                 .append("--force_overwrite ")

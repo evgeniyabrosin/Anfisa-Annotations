@@ -28,7 +28,7 @@ public class Inventory {
     public final Path famFile;
     public final Path patientIdsFile;
 
-    public final Path cohortFile;
+    public final Path cohortsFile;
 
     public final Path vcfFile;
     public final Path vepJsonFile;
@@ -42,7 +42,7 @@ public class Inventory {
     private Inventory(
             String caseName, CasePlatform casePlatform,
             Path famFile, Path patientIdsFile,
-            Path cohortFile,
+            Path cohortsFile,
             Path vcfFile, Path vepJsonFile,
             Path cnvFile,
             Path outFile,
@@ -54,7 +54,7 @@ public class Inventory {
         this.famFile = famFile;
         this.patientIdsFile = patientIdsFile;
 
-        this.cohortFile = cohortFile;
+        this.cohortsFile = cohortsFile;
 
         this.vcfFile = vcfFile;
         this.vepJsonFile = vepJsonFile;
@@ -81,7 +81,7 @@ public class Inventory {
         private Path famFile;
         private Path patientIdsFile;
 
-        private Path cohortFile;
+        private Path cohortsFile;
 
         private Path vcfFile;
         private Path vepJsonFile;
@@ -168,9 +168,9 @@ public class Inventory {
                     patientIdsFile = Paths.get(pathPatientIdsFile).toAbsolutePath();
                 }
 
-                String pathCohortFile = getValueWithAliase(jData.getAsString("cohort"), aliases);
-                if (pathCohortFile != null) {
-                    cohortFile = Paths.get(pathCohortFile).toAbsolutePath();
+                String pathCohortsFile = getValueWithAliase(jData.getAsString("cohorts"), aliases);
+                if (pathCohortsFile != null) {
+                    cohortsFile = Paths.get(pathCohortsFile).toAbsolutePath();
                 }
 
                 String pathVcfFile = getValueWithAliase(jData.getAsString("vcf"), aliases);
@@ -229,7 +229,7 @@ public class Inventory {
             return new Inventory(
                     caseName, casePlatform,
                     famFile, patientIdsFile,
-                    cohortFile,
+                    cohortsFile,
                     vcfFile, vepJsonFile,
                     cnvFile,
                     outFile,

@@ -6,10 +6,7 @@ import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class AnfisaResultView {
 
@@ -318,6 +315,7 @@ public class AnfisaResultView {
     public final General general;
     public final Bioinformatics bioinformatics;
     public final JSONArray qualitySamples;
+    public HashMap<String, HashMap<String, Float>> cohorts = new HashMap<>();
 
     public AnfisaResultView() {
         this.inheritance = new JSONObject();
@@ -344,6 +342,11 @@ public class AnfisaResultView {
         out.put("general", general.toJSON());
         out.put("bioinformatics", bioinformatics.toJSON());
         out.put("quality_samples", qualitySamples);
+        if (cohorts.isEmpty()) {
+            out.put("cohorts", null);
+        } else {
+            out.put("cohorts", cohorts);
+        }
         return out;
     }
 }
