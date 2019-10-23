@@ -38,7 +38,7 @@ public class AnnotatorMain {
                     argumentsInventory.config,
                     inventory.caseName, inventory.casePlatform,
                     inventory.famFile, inventory.patientIdsFile,
-                    inventory.cohortFile,
+                    inventory.cohortsFile,
                     inventory.vcfFile, inventory.vepJsonFile,
                     inventory.cnvFile,
                     argumentsInventory.start,

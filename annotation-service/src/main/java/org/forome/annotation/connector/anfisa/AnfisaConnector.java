@@ -211,15 +211,15 @@ public class AnfisaConnector implements AutoCloseable {
         createDatabasesTab((VariantVep) variant, record, data, view);
         createPredictionsTab((VariantVep) variant, vepJson, view);
         createBioinformaticsTab(gtfAnfisaResult, context, data, view);
-        countCohorts(filters, anfisaInput.samples, variant);
+        countCohorts(view, anfisaInput.samples, variant);
 
         return new AnfisaResult(filters, data, view);
     }
 
-    private void countCohorts(AnfisaResultFilters filters, MCase mCase, Variant variant) {
+    private void countCohorts(AnfisaResultView view, MCase mCase, Variant variant) {
         for (Cohort cohort : mCase.cohorts) {
             float[] count = countCohort(variant, cohort.getSamples());
-            filters.cohort.put(
+            view.cohorts.put(
                     cohort.name,
                     new HashMap<String, Float>() {{
                         put("AF", count[0]);
@@ -229,7 +229,7 @@ public class AnfisaConnector implements AutoCloseable {
         }
 
         float[] countAll = countCohort(variant, mCase.samples.values());
-        filters.cohort.put(
+        view.cohorts.put(
                 "ALL",
                 new HashMap<String, Float>() {{
                     put("AF", countAll[0]);

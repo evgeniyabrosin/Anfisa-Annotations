@@ -1,6 +1,7 @@
 package org.forome.annotation.annotator;
 
 import io.reactivex.Observable;
+import net.minidev.json.parser.ParseException;
 import org.forome.annotation.annotator.executor.AnnotatorExecutor;
 import org.forome.annotation.annotator.executor.Result;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
@@ -44,7 +45,7 @@ public class Annotator {
             Path pathVepJson,
             Path cnvFile,
             int startPosition
-    ) throws IOException {
+    ) throws IOException, ParseException {
         if (!Files.exists(pathFam)) {
             throw new RuntimeException("Fam file is not exists: " + pathFam.toAbsolutePath());
         }
@@ -97,7 +98,7 @@ public class Annotator {
             Path pathVepJson,
             Path cnvFile,
             int startPosition
-    ) throws IOException {
+    ) throws IOException, ParseException {
 
         MCase samples = CaseUtils.parseFamFile(isFam, isFamSampleName, isCohorts);
 

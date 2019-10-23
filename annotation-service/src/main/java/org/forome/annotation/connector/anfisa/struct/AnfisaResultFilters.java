@@ -50,8 +50,6 @@ public class AnfisaResultFilters {
 
 	public Float cnvLO;
 
-	public HashMap<String, HashMap<String, Float>> cohort = new HashMap<>();
-
 
 	public AnfisaResultFilters() {
 	}
@@ -134,7 +132,6 @@ public class AnfisaResultFilters {
 
 		out.put("cnv_lo", cnvLO);
 
-		out.put("cohort", cohort);
 		return out;
 	}
 }
