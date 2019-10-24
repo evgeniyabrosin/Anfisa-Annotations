@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 
 public class AnfisaConnector implements AutoCloseable {
 
-    private final static Logger log = LoggerFactory.getLogger(AnfisaConnector.class);
+	private final static Logger log = LoggerFactory.getLogger(AnfisaConnector.class);
 
 	private static final Map<String, String> trustedSubmitters = new HashMap<String, String>() {{
 		put("lmm", "Laboratory for Molecular Medicine,Partners HealthCare Personalized Medicine");
@@ -390,11 +390,11 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-    private static void callQuality(AnfisaResultFilters filters, Variant variant, MCase samples) {
-        filters.minGq = getMinGQ(variant, samples);
-        filters.probandGq = getProbandGQ(variant, samples);
-        if (variant != null && variant instanceof VariantVCF) {
-            VariantContext variantContext = ((VariantVCF) variant).variantContext;
+	private static void callQuality(AnfisaResultFilters filters, Variant variant, MCase samples) {
+		filters.minGq = getMinGQ(variant, samples);
+		filters.probandGq = getProbandGQ(variant, samples);
+		if (variant != null && variant instanceof VariantVCF) {
+			VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
 			CommonInfo commonInfo = variantContext.getCommonInfo();
 			filters.qd = toPrimitiveDouble(commonInfo.getAttribute("QD"));
@@ -773,16 +773,16 @@ public class AnfisaConnector implements AutoCloseable {
 						gnomAD.genomeAf = gnomadResult.genomes.af;
 					}
 
-                    if (gnomadResult.overall != null) {
-                        gnomAD.af = gnomadResult.overall.af;
-                        gnomAD.hom = gnomadResult.overall.hom;
-                        gnomAD.hem = gnomadResult.overall.hem;
-                    }
-                    if (gnomadResult.rawPopmax != null) {
-                        gnomAD.rawPopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
-                                gnomadResult.rawPopmax.group.name(), gnomadResult.rawPopmax.af, gnomadResult.rawPopmax.an
-                        );
-                    }
+					if (gnomadResult.overall != null) {
+						gnomAD.af = gnomadResult.overall.af;
+						gnomAD.hom = gnomadResult.overall.hom;
+						gnomAD.hem = gnomadResult.overall.hem;
+					}
+					if (gnomadResult.rawPopmax != null) {
+						gnomAD.rawPopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
+								gnomadResult.rawPopmax.group.name(), gnomadResult.rawPopmax.af, gnomadResult.rawPopmax.an
+						);
+					}
 
 					gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);
 				}
@@ -846,26 +846,26 @@ public class AnfisaConnector implements AutoCloseable {
 					.map(hgmdPmidRow -> hgmdPmidRow.pmid).map(pmid -> linkToPmid(pmid)).toArray(String[]::new);
 			if (view.databases.hgmdPmids.length == 0) view.databases.hgmdPmids = null;
 
-            data.hgmdPmids = record.hgmdData.hgmdPmidRows.stream()
-                    .map(hgmdPmidRow -> hgmdPmidRow.pmid).toArray(String[]::new);
-            if (data.hgmdPmids.length == 0) data.hgmdPmids = null;
-        } else {
-            view.databases.hgmd = "Not Present";
-        }
+			data.hgmdPmids = record.hgmdData.hgmdPmidRows.stream()
+					.map(hgmdPmidRow -> hgmdPmidRow.pmid).toArray(String[]::new);
+			if (data.hgmdPmids.length == 0) data.hgmdPmids = null;
+		} else {
+			view.databases.hgmd = "Not Present";
+		}
 
-        if (data.clinvarVariants != null) {
-            view.databases.clinVarVariants = Arrays.stream(data.clinvarVariants).distinct().toArray(String[]::new);
-        }
-        if (data.clinvarSignificance != null) {
-            view.databases.clinVarSignificance = Arrays.stream(data.clinvarSignificance).distinct().toArray(String[]::new);
-        }
-        if (data.clinvarPhenotypes != null) {
-            view.databases.clinVarPhenotypes = Arrays.stream(data.clinvarPhenotypes).distinct().toArray(String[]::new);
-        }
-        for (String submitter : trustedSubmitters.keySet()) {
-            view.databases.setField(String.format("%s_significance", submitter), data.getField(submitter));
-        }
-    }
+		if (data.clinvarVariants != null) {
+			view.databases.clinVarVariants = Arrays.stream(data.clinvarVariants).distinct().toArray(String[]::new);
+		}
+		if (data.clinvarSignificance != null) {
+			view.databases.clinVarSignificance = Arrays.stream(data.clinvarSignificance).distinct().toArray(String[]::new);
+		}
+		if (data.clinvarPhenotypes != null) {
+			view.databases.clinVarPhenotypes = Arrays.stream(data.clinvarPhenotypes).distinct().toArray(String[]::new);
+		}
+		for (String submitter : trustedSubmitters.keySet()) {
+			view.databases.setField(String.format("%s_significance", submitter), data.getField(submitter));
+		}
+	}
 
 	private void createPredictionsTab(VariantVep variantVep, JSONObject vepJson, AnfisaResultView view) {
 		view.predictions.lofScore = getFromTranscripts(variantVep, "loftool", "all")
@@ -1116,9 +1116,9 @@ public class AnfisaConnector implements AutoCloseable {
 		return ColorCode.code(shape, color);
 	}
 
-    public String getAltAllelesString(Variant variant) {
-        return String.join(",", variant.getStrAltAllele());
-    }
+	public String getAltAllelesString(Variant variant) {
+		return String.join(",", variant.getStrAltAllele());
+	}
 
 	private static boolean isProbandHasAllele(Variant variant, MCase samples, String alt) {
 		if (samples == null || variant == null) {
