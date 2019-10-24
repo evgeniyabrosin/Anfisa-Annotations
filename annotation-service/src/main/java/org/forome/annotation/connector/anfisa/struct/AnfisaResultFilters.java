@@ -50,6 +50,11 @@ public class AnfisaResultFilters {
 
 	public Float cnvLO;
 
+	/**
+	 * Список таких когорт, для которых, этот вариант есть хотя бы у одного сэмпла из когорты.
+	 */
+	public String[] cohortHasVariant;
+
 
 	public AnfisaResultFilters() {
 	}
@@ -131,6 +136,8 @@ public class AnfisaResultFilters {
 		out.put("gnomad_hem", gnomadHem);
 
 		out.put("cnv_lo", cnvLO);
+
+		out.put("cohort_has_variant", cohortHasVariant);
 
 		return out;
 	}

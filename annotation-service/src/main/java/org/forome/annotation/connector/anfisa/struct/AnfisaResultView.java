@@ -327,7 +327,7 @@ public class AnfisaResultView {
         out.put("general", general.toJSON());
         out.put("bioinformatics", bioinformatics.toJSON());
         out.put("quality_samples", qualitySamples);
-        if (cohorts.isEmpty()) {
+        if (cohorts.size() == 1) {//Когорт нет и есть тольок группа ALL
             out.put("cohorts", null);
         } else {
             out.put("cohorts", cohorts);

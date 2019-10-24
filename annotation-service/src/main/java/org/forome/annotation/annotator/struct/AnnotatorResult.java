@@ -171,12 +171,15 @@ public class AnnotatorResult {
                     put(sample.name, build(sample));
                 }
             }});
-            out.put("cohorts", new JSONObject() {{
-                for (Cohort cohort: mCase.cohorts) {
-                    put(cohort.name, new JSONArray(){{
-                        for(Sample sample: cohort.getSamples()) {
-                            add(sample.name);
-                        }
+            out.put("cohorts", new JSONArray() {{
+                for (Cohort cohort : mCase.cohorts) {
+                    add(new JSONObject() {{
+                        put("name", cohort.name);
+                        put("members", new JSONArray() {{
+                            for (Sample sample : cohort.getSamples()) {
+                                add(sample.name);
+                            }
+                        }});
                     }});
                 }
             }});
