@@ -12,6 +12,18 @@
 
     "gerp.database":    "conservation",
     "gerp.batch_size":  1000,
-    "gerp.file_list":   ["?/chr*.maf.rates"])
+    "gerp.file_list":   ["?/chr*.maf.rates"],
+    
+    "gnomad.database":    "gnom2",
+    "gnomad.batch_size":  1000,
+    "gnomad.file_list":   ["?.sites.*.vcf.bgz"],
+    
+    "pharmgkb.database":   "pgkb",
+    "pharmgkb.path":   "/?",
+    "pharmgkb.batch_size": 100,
+    
+    "gtex.database":    "gtex",
+    "gtex.batch_size":  10000,
+    "gtex.filename":    "?/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_median_tpm.gct.gz"
 }
 
