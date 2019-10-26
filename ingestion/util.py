@@ -21,9 +21,10 @@ def reportTime(note, total, start_time):
         note, total, dt, total / (dt + .0001)))
 
 #=== chromosome detection ================
-sChromPatt = re.compile("(\\b|\\W)chr(\w+)(\\b|\\W)", re.I)
-CHROM_LIST = {str(idx) for idx in range(1, 23)} | {"M", "X", "Y"}
-def detectFileChrom(filename):
+
+def detectFileChrom(parameter, filename):
+    sChromPatt = re.compile("(\\b|\\W){}(\w+)(\\b|\\W)".format(parameter), re.I)
+    CHROM_LIST = {str(idx) for idx in range(1, 23)} | {"M", "X", "Y"}
     qq = sChromPatt.search(os.path.basename(filename))
     assert qq is not None and qq.group(2).upper() in CHROM_LIST, (
         "Failed to detect chrom in filename: " + filename)
