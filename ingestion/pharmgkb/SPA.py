@@ -1,5 +1,5 @@
 '''
-Create table <name> in db pgkb and insert data into it
+Create table <name> in db pharmgkb and insert data into it
 FILE NAME                    TABLE NAME
 study_parameters.tsv         SPA
 
@@ -159,6 +159,6 @@ if __name__ == '__main__':
         db_port  = 3306,
         user     = 'test',
         password = 'test',
-        database = "pgkb",
+        database = "pharmgkb",
         batch_size = 100,
         filename = "/db/data/PharmGKB/annotations/study_parameters.tsv")

@@ -1,20 +1,20 @@
 '''
-Create table <name> in db pgkb and insert data into it
+Create table <name> in db pharmgkb and insert data into it
 FILE NAME                    TABLE NAME
 var_pheno_ann.py             VPA
 
 COLUMN                      COLUMN NAME         TYPE
 Annotation ID            	 AID                INT(10)
-Variant                  	 VAR                VARCHAR(124)
-Gene                     	 GENE               VARCHAR(167)
+Variant                  	 VAR                TEXT
+Gene                     	 GENE               TEXT
 Chemical                 	 CHEM               TEXT
 PMID                     	 PMID               INT(10)
 Phenotype Category       	 PCAT               VARCHAR(37)
 Significance             	 SIGN               VARCHAR(10)
 Notes                    	 NOTES              TEXT
 Sentence                 	 SENT               TEXT
-StudyParameters          	 corresponds with the Study Parameters ID in the study_parameters.tsv file 64
-Alleles                  	 AL                VARCHAR(167)
+StudyParameters          	 corresponds with the Study Parameters ID in the study_parameters.tsv file 
+Alleles                  	 AL                 TEXT
 Chromosome               	 CHROM              VARCHAR(5)
 '''
 
@@ -140,6 +140,6 @@ if __name__ == '__main__':
         db_port  = 3306,
         user     = 'test',
         password = 'test',
-        database = "pgkb",
+        database = "pharmgkb",
         batch_size = 100,
         filename = "/db/data/PharmGKB/annotations/var_pheno_ann.tsv")

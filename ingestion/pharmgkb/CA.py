@@ -1,11 +1,11 @@
 '''
-Create table <name> in db pgkb and insert data into it
+Create table <name> in db pharmgkb and insert data into it
 FILE NAME               TABLE NAME
 clinical_ann.tsv        CA
 
 COLUMN                   COLUMN NAME         TYPE
 Genotype-Phenotype ID    GPID                INT(10)
-Genotype                 GTYPE               VARCHAR(121)
+Genotype                 GTYPE               TEXT
 Clinical Phenotype       CPTYPE              TEXT
 
 '''
@@ -38,7 +38,7 @@ def reportTime(note, total, start_time):
 
 INSTR_CREATE = """CREATE TABLE IF NOT EXISTS CA(
     GPID                INT(10),
-    GTYPE               VARCHAR(121),
+    GTYPE               TEXT,
     CPTYPE              TEXT,
     PRIMARY KEY (GPID));"""
 
@@ -112,6 +112,6 @@ if __name__ == '__main__':
         db_port  = 3306,
         user     = 'test',
         password = 'test',
-        database = "pgkb",
+        database = "pharmgkb",
         batch_size = 100,
         filename = "/db/data/PharmGKB/annotations/clinical_ann.tsv")

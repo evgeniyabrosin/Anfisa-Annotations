@@ -1,20 +1,20 @@
 '''
-Create table <name> in db pgkb and insert data into it
+Create table <name> in db pharmgkb and insert data into it
 FILE NAME                    TABLE NAME
 var_drug_ann.tsv             VFA
 
 COLUMN                      COLUMN NAME         TYPE
 Annotation ID            	 AID                INT(10)
 Variant                  	 VAR                TEXT
-Gene                     	 GENE               VARCHAR(167)
+Gene                     	 GENE               TEXT
 Chemical                 	 CHEM               TEXT
 PMID                     	 PMID               INT(10)
 Phenotype Category       	 PCAT               VARCHAR(26)
 Significance             	 SIGN               VARCHAR(10)
 Notes                    	 NOTES              TEXT
 Sentence                 	 SENT               TEXT
-StudyParameters          	 corresponds with the Study Parameters ID in the study_parameters.tsv file 64
-Alleles                  	 AL                VARCHAR(189)
+StudyParameters          	 corresponds with the Study Parameters ID in the study_parameters.tsv file 
+Alleles                  	 AL                 TEXT
 Chromosome               	 CHROM              VARCHAR(5)
 '''
 
@@ -47,14 +47,14 @@ def reportTime(note, total, start_time):
 INSTR_CREATE = """CREATE TABLE IF NOT EXISTS VFA(
     AID                INT(10),
     VAR                TEXT,
-    GENE               VARCHAR(167),
+    GENE               TEXT,
     CHEM               TEXT,
     PMID               INT(10),
     PCAT               VARCHAR(26),
     SIGN               VARCHAR(10),
     NOTES              TEXT,
     SENT               TEXT,
-    AL                VARCHAR(189),
+    AL                 TEXT,
     CHROM              VARCHAR(5),
     PRIMARY KEY (AID));"""
 
@@ -140,6 +140,6 @@ if __name__ == '__main__':
         db_port  = 3306,
         user     = 'test',
         password = 'test',
-        database = "pgkb",
+        database = "pharmgkb",
         batch_size = 100,
         filename = "/db/data/PharmGKB/annotations/var_fa_ann.tsv")

@@ -18,7 +18,7 @@
     "gnomad.batch_size":  1000,
     "gnomad.file_list":   ["?.sites.*.vcf.bgz"],
     
-    "pharmgkb.database":   "pgkb",
+    "pharmgkb.database":   "pharmgkb",
     "pharmgkb.path":   "/?",
     "pharmgkb.batch_size": 100,
     

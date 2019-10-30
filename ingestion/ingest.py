@@ -74,7 +74,7 @@ if args.mode == "gnomad":
 #========================================
 if args.mode == "pharmgkb":
     from pharmgkb.CA import ingestCA
-    from pharmgkb.CAM import ingestCAM
+    from pharmgkb.CAmeta import ingestCAmeta
     from pharmgkb.CAmeta2CA import ingestCAmeta2CA
     from pharmgkb.SPA import ingestSPA
     from pharmgkb.VDA import ingestVDA
@@ -83,6 +83,7 @@ if args.mode == "pharmgkb":
     from pharmgkb.VFA2SPA import ingestVFA2SPA
     from pharmgkb.VPA import ingestVPA
     from pharmgkb.VPA2SPA import ingestVPA2SPA
+    from pgkb_retab import pgkbReTab
     
     ingestCA(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
@@ -93,7 +94,7 @@ if args.mode == "pharmgkb":
         batch_size = config["pharmgkb.batch_size"],
         filename   = config["pharmgkb.path"] + '/clinical_ann.tsv')
     
-    ingestCAM(
+    ingestCAmeta(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
         db_port    = config.get("pharmgkb.db.port", std_db_port),
         user       = config.get("pharmgkb.db.user", std_user),
@@ -173,6 +174,12 @@ if args.mode == "pharmgkb":
         database   = config["pharmgkb.database"],
         batch_size = config["pharmgkb.batch_size"],
         filename   = config["pharmgkb.path"] + '/var_pheno_ann.tsv')  
+    pgkbReTab(
+        db_host    = config.get("pharmgkb.db.host", std_db_host),
+        db_port    = config.get("pharmgkb.db.port", std_db_port),
+        user       = config.get("pharmgkb.db.user", std_user),
+        password   = config.get("pharmgkb.db.password", std_password),
+        database   = config["pharmgkb.database"])    
                    
     sys.exit()
  
