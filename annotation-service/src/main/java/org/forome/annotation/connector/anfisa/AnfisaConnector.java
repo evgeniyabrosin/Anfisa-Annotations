@@ -244,6 +244,8 @@ public class AnfisaConnector implements AutoCloseable {
 		//Находим такие когорты, для которых, этот вариант есть хотя бы у одного сэмпла из когорты.
 		LinkedHashSet<Cohort> cohortHasVariant = new LinkedHashSet<>();
 		for (Sample sample : mCase.samples.values()) {
+			if (sample.cohort == null) continue;
+
 			int zyg = variant.getGenotype(sample.id).hasVariant();
 			if (zyg > 0) {
 				cohortHasVariant.add(sample.cohort);
