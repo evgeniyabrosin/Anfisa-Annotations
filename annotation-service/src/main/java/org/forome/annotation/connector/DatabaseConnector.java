@@ -47,8 +47,12 @@ public class DatabaseConnector implements Closeable {
         }
     }
 
+    public String getDatabase() {
+        return databaseConfigConnector.mysqlDatabase;
+    }
+
     public List<Metadata> getMetadata() {
-        String sql = String.format("select Product, Version, Date from %s.Metadata", databaseConfigConnector.mysqlDatabase);
+        String sql = String.format("select Product, Version, Date from %s.Metadata", getDatabase());
 
         List<Metadata> metadata = new ArrayList<>();
         try (Connection connection = createConnection()) {

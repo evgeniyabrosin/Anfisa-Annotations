@@ -111,6 +111,7 @@ public class AnnotatorResult {
                 metadataDatabases.addAll(anfisaConnector.spliceAIConnector.getMetadata());
                 metadataDatabases.addAll(anfisaConnector.conservationConnector.getMetadata());
                 metadataDatabases.addAll(anfisaConnector.gnomadConnector.getMetadata());
+                metadataDatabases.addAll(anfisaConnector.gtexConnector.getMetadata());
                 metadataDatabases.sort(Comparator.comparing(o -> o.product));
             }
 

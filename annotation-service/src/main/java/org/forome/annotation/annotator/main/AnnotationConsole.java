@@ -10,6 +10,7 @@ import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
@@ -75,6 +76,7 @@ public class AnnotationConsole {
     private ClinvarConnector clinvarConnector;
     private LiftoverConnector liftoverConnector;
     private GTFConnector gtfConnector;
+    private GTEXConnector gtexConnector;
     private EnsemblVepService ensemblVepService;
     private AnfisaConnector anfisaConnector;
 
@@ -127,6 +129,7 @@ public class AnnotationConsole {
             clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
             liftoverConnector = new LiftoverConnector();
             gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, arguments));
+            gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
             ensemblVepService = new EnsemblVepExternalService((t, e) -> fail(e, arguments));
             anfisaConnector = new AnfisaConnector(
                     gnomadConnector,
@@ -135,7 +138,8 @@ public class AnnotationConsole {
                     hgmdConnector,
                     clinvarConnector,
                     liftoverConnector,
-                    gtfConnector
+                    gtfConnector,
+                    gtexConnector
             );
         } catch (Throwable e) {
             fail(e, arguments);

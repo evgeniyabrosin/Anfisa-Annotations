@@ -26,6 +26,7 @@ public class ServiceConfig {
     public final SpliceAIConfigConnector spliceAIConfigConnector;
     public final ConservationConfigConnector conservationConfigConnector;
     public final RefConfigConnector refConfigConnector;
+    public final GTEXConfigConnector gtexConfigConnector;
 
     public final NotificationSlackConfig notificationSlackConfig;
 
@@ -44,6 +45,8 @@ public class ServiceConfig {
 
         frontendConfig = new FrontendConfig((JSONObject) configFileJson.get("frontend"));
 
+        ensemblVepConfigConnector = new EnsemblVepConfig((JSONObject) configFileJson.get("ensembl-vep"));
+
         JSONObject jConnectors = (JSONObject) configFileJson.get("connectors");
         gnomadConfigConnector = new GnomadConfigConnector((JSONObject) jConnectors.get("gnomad"));
         clinVarConfigConnector = new ClinVarConfigConnector((JSONObject) jConnectors.get("clinvar"));
@@ -52,8 +55,7 @@ public class ServiceConfig {
         spliceAIConfigConnector = new SpliceAIConfigConnector((JSONObject) jConnectors.get("spliceai"));
         conservationConfigConnector = new ConservationConfigConnector((JSONObject) jConnectors.get("conservation"));
         refConfigConnector = new RefConfigConnector((JSONObject) jConnectors.get("ref"));
-
-        ensemblVepConfigConnector = new EnsemblVepConfig((JSONObject) configFileJson.get("ensembl-vep"));
+        gtexConfigConnector = new GTEXConfigConnector((JSONObject) jConnectors.get("gtex"));
 
         JSONObject jNotifications = (JSONObject) configFileJson.get("notification");
         if (jNotifications != null) {

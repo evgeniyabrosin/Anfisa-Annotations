@@ -172,6 +172,11 @@ public class AnfisaResultView {
         public List<String> variantIntronCanonical = new ArrayList<>();
         public Optional<String> spliceAltering;
 
+		/**
+		 * Содержится набор органов на которые с большой вероятностью вляет затронутый ген
+		 */
+		public List<String> mostlyExpressed = new ArrayList<>();
+
         private JSONObject toJSON() {
             JSONObject out = new JSONObject();
             out.put("proband_genotype", probandGenotype);
@@ -207,6 +212,7 @@ public class AnfisaResultView {
             if (spliceAltering != null) {
                 out.put("splice_altering", spliceAltering.orElse(null));
             }
+			out.put("mostly_expressed", mostlyExpressed);
             return out;
         }
     }

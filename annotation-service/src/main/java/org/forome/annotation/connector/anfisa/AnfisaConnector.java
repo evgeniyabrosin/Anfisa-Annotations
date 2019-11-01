@@ -13,6 +13,8 @@ import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
+import org.forome.annotation.connector.gtex.GTEXConnector;
+import org.forome.annotation.connector.gtex.struct.Tissue;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
@@ -81,6 +83,7 @@ public class AnfisaConnector implements AutoCloseable {
 	private final LiftoverConnector liftoverConnector;
 
 	private final GtfAnfisaBuilder gtfAnfisaBuilder;
+	public final GTEXConnector gtexConnector;
 
 	public AnfisaConnector(
 			GnomadConnector gnomadConnector,
@@ -89,7 +92,8 @@ public class AnfisaConnector implements AutoCloseable {
 			HgmdConnector hgmdConnector,
 			ClinvarConnector clinvarConnector,
 			LiftoverConnector liftoverConnector,
-			GTFConnector gtfConnector
+			GTFConnector gtfConnector,
+			GTEXConnector gtexConnector
 	) {
 		this.gnomadConnector = gnomadConnector;
 		this.spliceAIConnector = spliceAIConnector;
@@ -97,6 +101,7 @@ public class AnfisaConnector implements AutoCloseable {
 		this.hgmdConnector = hgmdConnector;
 		this.clinvarConnector = clinvarConnector;
 		this.liftoverConnector = liftoverConnector;
+		this.gtexConnector = gtexConnector;
 
 		this.gtfAnfisaBuilder = new GtfAnfisaBuilder(gtfConnector);
 	}
@@ -587,6 +592,39 @@ public class AnfisaConnector implements AutoCloseable {
 		} else {
 			view.general.spliceAltering = Optional.empty();
 		}
+
+		//Собираем на какие органы может максимально повлияет этот вариант
+		List<Tissue> tissues = getTissues(getGenes((VariantVep) variant));
+		view.general.mostlyExpressed = tissues.stream()
+				.map(tissue -> tissue.toJSON()).collect(Collectors.toList());
+		filters.topTissue = tissues.stream().map(tissue -> tissue.name).findFirst().orElse(null);
+		filters.topTissues = tissues.stream().map(tissue -> tissue.name).distinct().toArray(String[]::new);
+	}
+
+	/**
+	 * Собираем на какие органы может максимально повлияет этот вариант, в выборку попадают:
+	 * 1) TOP3 по полю: expression
+	 * 2) И tissue для которых RelExp больше 0.8
+	 * @param genes
+	 * @return
+	 */
+	public List<Tissue> getTissues(List<String> genes) {
+		List<Tissue> fullTissues = new ArrayList<>();
+		for (String gene : genes) {
+			fullTissues.addAll(gtexConnector.getTissues(gene));
+		}
+		//Добавляем top3 по полю expression
+		LinkedHashSet<Tissue> tissues = fullTissues.stream()
+				.sorted((o1, o2) -> Float.compare(o2.expression, o1.expression))
+				.limit(3).collect(Collectors.toCollection(LinkedHashSet::new));
+		//Ищем у кого RelExp больше 0.8
+		tissues.addAll(
+				fullTissues.stream()
+						.filter(tissue -> tissue.relExp >= 0.8f)
+						.sorted((o1, o2) -> Float.compare(o2.relExp, o1.relExp))
+						.collect(Collectors.toList())
+		);
+		return new ArrayList<>(tissues);
 	}
 
 	private static String getSpliceAltering(AnfisaResultFilters filters) {

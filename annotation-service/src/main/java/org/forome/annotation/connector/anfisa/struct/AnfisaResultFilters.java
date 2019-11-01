@@ -55,6 +55,8 @@ public class AnfisaResultFilters {
 	 */
 	public String[] cohortHasVariant;
 
+	public String topTissue;
+	public String[] topTissues;
 
 	public AnfisaResultFilters() {
 	}
@@ -138,6 +140,9 @@ public class AnfisaResultFilters {
 		out.put("cnv_lo", cnvLO);
 
 		out.put("cohort_has_variant", cohortHasVariant);
+
+		out.put("top_tissue", topTissue);
+		out.put("top_tissues", topTissues);
 
 		return out;
 	}

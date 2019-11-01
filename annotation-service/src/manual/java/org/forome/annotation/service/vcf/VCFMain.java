@@ -10,6 +10,7 @@ import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
@@ -44,6 +45,7 @@ public class VCFMain {
         ClinvarConnector clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
         LiftoverConnector liftoverConnector = new LiftoverConnector();
         GTFConnector gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
+        GTEXConnector gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
         EnsemblVepService ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
         AnfisaConnector anfisaConnector = new AnfisaConnector(
                 gnomadConnector,
@@ -52,7 +54,8 @@ public class VCFMain {
                 hgmdConnector,
                 clinvarConnector,
                 liftoverConnector,
-                gtfConnector
+                gtfConnector,
+                gtexConnector
         );
 
         Path pathVcf = Paths.get("/home/kris/processtech/tmp/newvcf/HG002_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-22_v.3.3.2_highconf_triophased.vcf");
