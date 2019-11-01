@@ -5,10 +5,7 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class AnfisaResultView {
 
@@ -175,6 +172,11 @@ public class AnfisaResultView {
         public List<String> variantIntronCanonical = new ArrayList<>();
         public Optional<String> spliceAltering;
 
+		/**
+		 * Содержится набор органов на которые с большой вероятностью вляет затронутый ген
+		 */
+		public List<String> mostlyExpressed = new ArrayList<>();
+
         private JSONObject toJSON() {
             JSONObject out = new JSONObject();
             out.put("proband_genotype", probandGenotype);
@@ -210,6 +212,7 @@ public class AnfisaResultView {
             if (spliceAltering != null) {
                 out.put("splice_altering", spliceAltering.orElse(null));
             }
+			out.put("mostly_expressed", mostlyExpressed);
             return out;
         }
     }
@@ -303,6 +306,7 @@ public class AnfisaResultView {
     public final General general;
     public final Bioinformatics bioinformatics;
     public final JSONArray qualitySamples;
+    public HashMap<String, HashMap<String, Float>> cohorts = new HashMap<>();
 
     public AnfisaResultView() {
         this.inheritance = new JSONObject();
@@ -329,6 +333,11 @@ public class AnfisaResultView {
         out.put("general", general.toJSON());
         out.put("bioinformatics", bioinformatics.toJSON());
         out.put("quality_samples", qualitySamples);
+        if (cohorts.size() == 1) {//Когорт нет и есть тольок группа ALL
+            out.put("cohorts", null);
+        } else {
+            out.put("cohorts", cohorts);
+        }
         return out;
     }
 }

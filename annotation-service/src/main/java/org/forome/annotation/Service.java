@@ -7,6 +7,7 @@ import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
@@ -79,6 +80,7 @@ public class Service {
     private final ClinvarConnector clinvarConnector;
     private final LiftoverConnector liftoverConnector;
     private final GTFConnector gtfConnector;
+    private final GTEXConnector gtexConnector;
     private final EnsemblVepService ensemblVepService;
     private final AnfisaConnector anfisaConnector;
 
@@ -111,6 +113,7 @@ public class Service {
         this.clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
         this.liftoverConnector = new LiftoverConnector();
         this.gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
+        this.gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
         this.ensemblVepService = new EnsemblVepExternalService(uncaughtExceptionHandler);
 //        this.ensemblVepService = new EnsemblVepInlineService(
 //                sshTunnelService,
@@ -125,7 +128,8 @@ public class Service {
                 hgmdConnector,
                 clinvarConnector,
                 liftoverConnector,
-                gtfConnector
+                gtfConnector,
+                gtexConnector
         );
 
         executionQueue.execute(this, new Execution<Void>() {

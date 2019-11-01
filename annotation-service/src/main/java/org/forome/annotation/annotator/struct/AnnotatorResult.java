@@ -4,12 +4,14 @@ import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderLine;
 import io.reactivex.Observable;
+import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
-import org.forome.annotation.struct.sample.Sample;
-import org.forome.annotation.struct.sample.Samples;
+import org.forome.annotation.struct.mcase.Cohort;
+import org.forome.annotation.struct.mcase.MCase;
+import org.forome.annotation.struct.mcase.Sample;
 import org.forome.annotation.utils.AppVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,6 +111,7 @@ public class AnnotatorResult {
                 metadataDatabases.addAll(anfisaConnector.spliceAIConnector.getMetadata());
                 metadataDatabases.addAll(anfisaConnector.conservationConnector.getMetadata());
                 metadataDatabases.addAll(anfisaConnector.gnomadConnector.getMetadata());
+                metadataDatabases.addAll(anfisaConnector.gtexConnector.getMetadata());
                 metadataDatabases.sort(Comparator.comparing(o -> o.product));
             }
 
@@ -145,16 +148,16 @@ public class AnnotatorResult {
 
         public final String recordType = "metadata";
         public final String caseSequence;
-        public final Samples samples;
+        public final MCase mCase;
         public final Versions versions;
 
-        public Metadata(String caseSequence, Path pathVepVcf, Samples samples, AnfisaConnector anfisaConnector) {
+        public Metadata(String caseSequence, Path pathVepVcf, MCase mCase, AnfisaConnector anfisaConnector) {
             this.caseSequence = caseSequence;
-            this.samples = samples;
+            this.mCase = mCase;
             this.versions = new Versions(pathVepVcf, anfisaConnector);
         }
 
-        public static Metadata build(String caseSequence, Path pathVepVcf, Samples samples, AnfisaConnector anfisaConnector) {
+        public static Metadata build(String caseSequence, Path pathVepVcf, MCase samples, AnfisaConnector anfisaConnector) {
             return new Metadata(caseSequence, pathVepVcf, samples, anfisaConnector);
         }
 
@@ -163,10 +166,22 @@ public class AnnotatorResult {
             out.put("case", caseSequence);
             out.put("record_type", recordType);
             out.put("versions", versions.toJSON());
-            out.put("proband", samples.proband.id);
+            out.put("proband", mCase.proband.id);
             out.put("samples", new JSONObject() {{
-                for (Sample sample : samples.items.values()) {
+                for (Sample sample : mCase.samples.values()) {
                     put(sample.name, build(sample));
+                }
+            }});
+            out.put("cohorts", new JSONArray() {{
+                for (Cohort cohort : mCase.cohorts) {
+                    add(new JSONObject() {{
+                        put("name", cohort.name);
+                        put("members", new JSONArray() {{
+                            for (Sample sample : cohort.getSamples()) {
+                                add(sample.name);
+                            }
+                        }});
+                    }});
                 }
             }});
             return out;

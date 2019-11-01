@@ -10,6 +10,7 @@ import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
@@ -48,6 +49,8 @@ public class AnnotationConsole {
     private final Path famFile;
     private final Path patientIdsFile;
 
+    private final Path pathCohorts;
+
     private final Path vcfFile;
     private final Path vepJsonFile;
 
@@ -73,6 +76,7 @@ public class AnnotationConsole {
     private ClinvarConnector clinvarConnector;
     private LiftoverConnector liftoverConnector;
     private GTFConnector gtfConnector;
+    private GTEXConnector gtexConnector;
     private EnsemblVepService ensemblVepService;
     private AnfisaConnector anfisaConnector;
 
@@ -80,6 +84,7 @@ public class AnnotationConsole {
             Path configFile,
             String caseName, CasePlatform casePlatform,
             Path famFile, Path patientIdsFile,
+            Path pathCohorts,
             Path vcfFile, Path vepJsonFile,
             Path cnvFile,
             int startPosition,
@@ -91,6 +96,8 @@ public class AnnotationConsole {
 
         this.famFile = famFile;
         this.patientIdsFile = patientIdsFile;
+
+        this.pathCohorts = pathCohorts;
 
         this.vcfFile = vcfFile;
         this.vepJsonFile = vepJsonFile;
@@ -122,6 +129,7 @@ public class AnnotationConsole {
             clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
             liftoverConnector = new LiftoverConnector();
             gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, arguments));
+            gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
             ensemblVepService = new EnsemblVepExternalService((t, e) -> fail(e, arguments));
             anfisaConnector = new AnfisaConnector(
                     gnomadConnector,
@@ -130,7 +138,8 @@ public class AnnotationConsole {
                     hgmdConnector,
                     clinvarConnector,
                     liftoverConnector,
-                    gtfConnector
+                    gtfConnector,
+                    gtexConnector
             );
         } catch (Throwable e) {
             fail(e, arguments);
@@ -142,6 +151,7 @@ public class AnnotationConsole {
             log.info("Version: {}", AppVersion.getVersion());
             log.info("Input caseName: {}", caseName);
             log.info("Input famFile: {}", famFile);
+            log.info("Input cohortFile: {}", pathCohorts);
             log.info("Input vepVcfFile: {}", vcfFile);
             log.info("Input start position: {}", startPosition);
             log.info("Input vepJsonFile: {}", vepJsonFile);
@@ -161,6 +171,7 @@ public class AnnotationConsole {
                     casePlatform,
                     famFile,
                     patientIdsFile,
+                    pathCohorts,
                     vcfFile,
                     pathVepJson,
                     cnvFile,
@@ -272,7 +283,7 @@ public class AnnotationConsole {
         String cmd = new StringBuilder("/db/vep-93/ensembl-vep/vep ")
                 .append("--buffer_size 50000 ")
                 .append("--cache --dir /db/data/vep/cache --dir_cache /db/data/vep/cache ")
-                .append("--fork 8 ")
+                .append("--fork 6 ")
                 .append("--uniprot --hgvs --symbol --numbers --domains --regulatory --canonical --protein --biotype --tsl --appris --gene_phenotype --variant_class ")
                 .append("--fasta /db/data/vep/cache/homo_sapiens/93_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz ")
                 .append("--force_overwrite ")

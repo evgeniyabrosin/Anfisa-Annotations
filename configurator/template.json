@@ -19,6 +19,11 @@
             "source": "${DIR}/docs/svaba_report_*.html"
         },
         {
+            "kind": "html",
+            "title": "XHMM Report",
+            "source": "${DIR}/docs/xhmm_report_*.html"
+        },
+        {
             "kind": "group",
             "title": "Callability Analysis",
             "source": "${DIR}/docs/callability/",

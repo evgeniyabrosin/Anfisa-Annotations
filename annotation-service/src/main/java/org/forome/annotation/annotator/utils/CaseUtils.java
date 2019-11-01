@@ -1,17 +1,33 @@
 package org.forome.annotation.annotator.utils;
 
-import org.forome.annotation.struct.sample.Sample;
-import org.forome.annotation.struct.sample.Samples;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
+import org.forome.annotation.struct.mcase.Cohort;
+import org.forome.annotation.struct.mcase.MCase;
+import org.forome.annotation.struct.mcase.Sample;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CaseUtils {
 
-    public static Samples parseFamFile(InputStream isFam, InputStream isFamSampleName) throws IOException {
+    /**
+     * sample["name"]      = sample_map.get(id, id)
+     * sample['family']    = family
+     * sample['id']        = id
+     * sample['father']    = father
+     * sample['mother']    = mother
+     * sample['sex']       = int(sex)
+     * sample['affected']  = (int(affected) == 2)
+     */
+    public static MCase parseFamFile(InputStream isFam, InputStream isFamSampleName, InputStream isCohorts) throws IOException, ParseException {
         SortedMap<String, Sample> samples = new TreeMap<>();
 
         Map<String, String> sampleNameMap = new HashMap<>();
@@ -33,6 +49,23 @@ public class CaseUtils {
             }
         }
 
+        //Раскидываем маски семплов по когортам
+        LinkedHashMap<Cohort, List<Pattern>> cohortMaskSamples = new LinkedHashMap<>();
+        if (isCohorts != null) {
+            JSONArray jCohorts = (JSONArray) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(isCohorts);
+            for (Object joCohort : jCohorts) {
+                JSONObject jCohort = (JSONObject) joCohort;
+                Cohort cohort = new Cohort(jCohort.getAsString("name"));
+                List<Pattern> maskSamples = ((JSONArray) jCohort.get("members")).stream().map(o -> (String) o)
+                        .map(s -> Pattern.compile(
+                                "^" + s.replaceAll("\\*", "(.*)") + "$"
+                        ))
+                        .collect(Collectors.toList());
+                cohortMaskSamples.put(cohort, maskSamples);
+            }
+            isCohorts.close();
+        }
+
         try (BufferedReader isBFam = new BufferedReader(new InputStreamReader(isFam))) {
             String line;
             while ((line = isBFam.readLine()) != null) {
@@ -49,12 +82,26 @@ public class CaseUtils {
                 int sex = Integer.parseInt(sl[4]);
                 boolean affected = Integer.parseInt(sl[5]) == 2;
 
-                Sample sample = new Sample(id, name, family, father, mother, sex, affected);
+                Cohort cohort = null;
+                for (Map.Entry<Cohort, List<Pattern>> entry : cohortMaskSamples.entrySet()) {
+                    for (Pattern pattern : entry.getValue()) {
+                        if (pattern.matcher(id).matches()) {
+                            if (cohort != null) {
+                                throw new RuntimeException("Cohort: Not unique matches sample: " + id);
+                            }
+
+                            cohort = entry.getKey();
+                            break;
+                        }
+                    }
+                }
+
+                Sample sample = new Sample(id, name, family, father, mother, sex, affected, cohort);
                 samples.put(id, sample);
             }
         }
 
-        return new Samples.Builder(samples).build();
+        return new MCase.Builder(samples, new ArrayList<>(cohortMaskSamples.keySet())).build();
     }
 
 }

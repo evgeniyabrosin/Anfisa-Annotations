@@ -27,9 +27,11 @@ if __name__ == '__main__':
         input_file = args.input
     else:
         vcfs = glob.glob(os.path.join(working_dir, "*{}*vcf*".format(case)))
-        vcfs = [vcf for vcf in vcfs if not vcf.endswith('idx')]
+        vcfs = sorted([vcf for vcf in vcfs if not vcf.endswith('idx')])
         if len(vcfs) == 0:
             raise Exception("No VCF files are found in {}".format(working_dir))
+        elif len(vcfs) == 2 and vcfs[1] == vcfs[0] + ".gz":
+            input_file = os.path.basename(vcfs[0])
         elif len(vcfs) > 1:
             raise Exception(
                 "Ambiguos VCF files are in {}: {}".format(working_dir,
@@ -95,6 +97,10 @@ if __name__ == '__main__':
         config["vcf"] = cfg_vcf
     if (vep_json):
         config["vep-json"] = "${DIR}/" + vep_json
+    if "cnv" in config:
+        cnv_file = config["cnv"]
+        if (not os.path.isfile(cnv_file)):
+            del config["cnv"]
 
     inventory = os.path.join(working_dir, "{}.cfg".format(case_id))
 

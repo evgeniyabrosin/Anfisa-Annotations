@@ -6,6 +6,7 @@ import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
@@ -36,6 +37,7 @@ public class AnfisaBaseTest {
 	protected static LiftoverConnector liftoverConnector;
 	protected static GTFConnector gtfConnector;
 	protected static RefConnector refConnector;
+	protected static GTEXConnector gtexConnector;
 	protected static EnsemblVepService ensemblVepService;
 	protected static AnfisaConnector anfisaConnector;
 
@@ -62,6 +64,7 @@ public class AnfisaBaseTest {
 			Assert.fail();
 		});
 		refConnector = new RefConnector(databaseConnectService, serviceConfig.refConfigConnector);
+		gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
 		ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector, refConnector);
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
@@ -70,7 +73,8 @@ public class AnfisaBaseTest {
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,
-				gtfConnector
+				gtfConnector,
+				gtexConnector
 		);
 	}
 

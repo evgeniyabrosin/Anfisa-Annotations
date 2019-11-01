@@ -71,6 +71,10 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("invalid_vcf_file", cause);
 	}
 
+	public static AnnotatorException buildNotEqualSamplesVcfAndFamFile() {
+		return EXCEPTION_FACTORY.build("not_equal_samples_vcf_and_fam_file");
+	}
+
 	public static AnnotatorException buildNotEqualSamplesVcfAndCnvFile() {
 		return EXCEPTION_FACTORY.build("not_equal_samples_vcf_and_cnv_file");
 	}
