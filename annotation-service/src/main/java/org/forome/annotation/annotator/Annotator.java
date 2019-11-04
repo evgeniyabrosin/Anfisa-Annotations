@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class Annotator {
 
@@ -135,11 +136,13 @@ public class Annotator {
                                 boolean run = true;
                                 while (run) {
                                     Result result = annotatorExecutor.next();
-                                    AnfisaResult anfisaResult;
+                                    List<AnfisaResult> anfisaResults;
                                     try {
-                                        anfisaResult = result.future.get();
-                                        if (anfisaResult != null) {
-                                            o.onNext(anfisaResult);
+                                        anfisaResults = result.future.get();
+                                        if (anfisaResults != null) {
+                                            for (AnfisaResult anfisaResult: anfisaResults) {
+                                                o.onNext(anfisaResult);
+                                            }
                                         } else {
                                             run = false;
                                         }

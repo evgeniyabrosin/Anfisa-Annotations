@@ -302,7 +302,7 @@ public class AnfisaResultView {
     public final JSONObject inheritance;
     public final Databases databases;
     public final Predictions predictions;
-    public final List<GnomAD> gnomAD;
+    public GnomAD gnomAD;
     public final General general;
     public final Bioinformatics bioinformatics;
     public final JSONArray qualitySamples;
@@ -312,7 +312,6 @@ public class AnfisaResultView {
         this.inheritance = new JSONObject();
         this.databases = new Databases();
         this.predictions = new Predictions();
-        this.gnomAD = new ArrayList<>();
         this.general = new General();
         this.bioinformatics = new Bioinformatics();
         this.qualitySamples = new JSONArray();
@@ -323,13 +322,7 @@ public class AnfisaResultView {
         out.put("inheritance", inheritance);
         out.put("databases", databases.toJSON());
         out.put("predictions", predictions.toJSON());
-
-        JSONArray jGnomADs = new JSONArray();
-        for (AnfisaResultView.GnomAD gnomAD : gnomAD) {
-            jGnomADs.add(gnomAD.toJSON());
-        }
-        out.put("gnomAD", jGnomADs);
-
+        out.put("gnomAD", gnomAD.toJSON());
         out.put("general", general.toJSON());
         out.put("bioinformatics", bioinformatics.toJSON());
         out.put("quality_samples", qualitySamples);

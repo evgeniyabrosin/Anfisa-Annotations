@@ -1,16 +1,15 @@
 package org.forome.annotation.connector.spliceai;
 
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
+import org.forome.annotation.struct.Allele;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.ArrayList;
 
 public class SpliceAISimpleTest extends SpliceAIBaseTest {
 
     @Test
     public void testGetAll() throws Exception {
-        SpliceAIResult spliceAIResult = spliceAIConnector.getAll("10", 92897L, "A", new ArrayList<String>(){{ add("C"); }});
+        SpliceAIResult spliceAIResult = spliceAIConnector.getAll("10", 92897L, "A", new Allele("C"));
         Assert.assertEquals("unlikely", spliceAIResult.cases);
         Assert.assertEquals(0.1391f, spliceAIResult.max_ds, 0.000001f);
 

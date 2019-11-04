@@ -79,7 +79,7 @@ public class GetAnfisaJSONController {
 
                 ArrayList<RequestItem> requestItems = parseRequestData(sRequestData);
 
-                List<CompletableFuture<AnfisaResult>> futureAnfisaResults = new ArrayList<>();
+                List<CompletableFuture<List<AnfisaResult>>> futureAnfisaResults = new ArrayList<>();
                 AnfisaConnector anfisaConnector = service.getAnfisaConnector();
                 for (RequestItem requestItem : requestItems) {
                     futureAnfisaResults.add(
@@ -97,21 +97,23 @@ public class GetAnfisaJSONController {
                             JSONArray results = new JSONArray();
                             for (int i = 0; i < requestItems.size(); i++) {
                                 RequestItem requestItem = requestItems.get(i);
-                                AnfisaResult anfisaResult = futureAnfisaResults.get(i).join();
 
-                                JSONObject result = new JSONObject();
-                                result.put("input", new JSONArray() {{
-                                    add(requestItem.chromosome);
-                                    add(requestItem.start);
-                                    add(requestItem.end);
-                                    add(requestItem.alternative);
-                                }});
+                                List<AnfisaResult> anfisaResults = futureAnfisaResults.get(i).join();
+                                for (AnfisaResult anfisaResult: anfisaResults) {
+                                    JSONObject result = new JSONObject();
+                                    result.put("input", new JSONArray() {{
+                                        add(requestItem.chromosome);
+                                        add(requestItem.start);
+                                        add(requestItem.end);
+                                        add(requestItem.alternative);
+                                    }});
 
-                                JSONArray outAnfisaResults = new JSONArray();
-                                outAnfisaResults.add(anfisaResult.toJSON());
-                                result.put("result", outAnfisaResults);
+                                    JSONArray outAnfisaResults = new JSONArray();
+                                    outAnfisaResults.add(anfisaResult.toJSON());
+                                    result.put("result", outAnfisaResults);
 
-                                results.add(result);
+                                    results.add(result);
+                                }
                             }
 
                             long t2 = System.currentTimeMillis();

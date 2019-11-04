@@ -5,6 +5,7 @@ import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.spliceai.struct.Row;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.struct.Allele;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class SpliceAIDataConnector implements Closeable {
 
@@ -61,15 +61,10 @@ public class SpliceAIDataConnector implements Closeable {
         this.databaseConnector = databaseConnector;
     }
 
-    public SpliceAIResult getAll(String chromosome, long position, String ref, List<String> alt_list) {
-        if (alt_list.isEmpty()) {
-            throw new IllegalArgumentException();
-        }
-
+    public SpliceAIResult getAll(String chromosome, long position, String ref, Allele altAllele) {
         String select_list = String.join(", ", COLUMNS);
-        String alt_values = alt_list.stream().map(s -> "'" + s + "'").collect(Collectors.joining(", "));
-        String sql = String.format("SELECT %s FROM %s WHERE CHROM = '%s' AND POS = %s AND REF = '%s' AND ALT IN (%s)",
-                select_list, TABLE, chromosome, position, ref, alt_values
+        String sql = String.format("SELECT DISTINCT %s FROM %s WHERE CHROM = '%s' AND POS = %s AND REF = '%s' AND ALT = '%s'",
+                select_list, TABLE, chromosome, position, ref, altAllele.getBaseString()
         );
         List<Row> rows = new ArrayList<>();
         try (Connection connection = databaseConnector.createConnection()) {
