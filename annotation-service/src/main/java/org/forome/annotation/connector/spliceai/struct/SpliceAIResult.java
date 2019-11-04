@@ -55,6 +55,7 @@ public class SpliceAIResult {
 
     public final String cases;
     public final Float max_ds;
+
     public final Map<String, DictSql> dict_sql;
 
     public SpliceAIResult(String cases, Float max_ds, Map<String, DictSql> dict_sql) {

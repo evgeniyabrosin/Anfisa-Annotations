@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class CNVMain {
 
@@ -65,8 +66,10 @@ public class CNVMain {
             variant.setVepJson(vepJson);
 
             AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-            AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant);
-            log.debug("anfisaResult: " + anfisaResult);
+            List<AnfisaResult> anfisaResults = anfisaConnector.build(anfisaInput, variant);
+            for (AnfisaResult anfisaResult: anfisaResults) {
+                log.debug("anfisaResult: " + anfisaResult);
+            }
         }
 
         log.debug("end");

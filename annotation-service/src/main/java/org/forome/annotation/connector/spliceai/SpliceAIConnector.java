@@ -4,6 +4,7 @@ import org.forome.annotation.config.connector.SpliceAIConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.struct.Allele;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +32,8 @@ public class SpliceAIConnector implements AutoCloseable {
         return databaseConnector.getMetadata();
     }
 
-    public SpliceAIResult getAll(String chromosome, long position, String ref, List<String> altList){
-        return spliceAIDataConnector.getAll(chromosome, position, ref, altList);
+    public SpliceAIResult getAll(String chromosome, long position, String ref, Allele altAllele){
+        return spliceAIDataConnector.getAll(chromosome, position, ref, altAllele);
     }
 
     @Override

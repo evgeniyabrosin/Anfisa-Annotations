@@ -7,6 +7,7 @@ import org.forome.annotation.Main;
 import org.forome.annotation.Service;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
+import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.format.FormatAnfisaHttpClient;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.AnnotatorException;
@@ -80,19 +81,22 @@ public class FormatAnfisaController {
                                         variantVep.setVepJson(vepJson);
                                         return anfisaConnector.build(new AnfisaInput.Builder().build(), variantVep);
                                     })
-                                    .thenCompose(anfisaResult -> {
-                                        JSONObject result = anfisaResult.toJSON();
-                                        CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
-                                                .exceptionally(throwable -> {
-                                                    if (throwable instanceof AnnotatorException) {
-                                                        throw (AnnotatorException) throwable;
-                                                    } else {
-                                                        Main.crash(throwable);
-                                                        return null;
-                                                    }
-                                                });
-
-                                        return futureItem
+                                    .thenCompose(anfisaResults -> {
+                                        List<CompletableFuture<JSONArray>> futureItems = new ArrayList<>();
+                                        for (AnfisaResult anfisaResult: anfisaResults) {
+                                            JSONObject result = anfisaResult.toJSON();
+                                            CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
+                                                    .exceptionally(throwable -> {
+                                                        if (throwable instanceof AnnotatorException) {
+                                                            throw (AnnotatorException) throwable;
+                                                        } else {
+                                                            Main.crash(throwable);
+                                                            return null;
+                                                        }
+                                                    });
+                                            futureItems.add(futureItem);
+                                        }
+                                        return CompletableFuture.allOf(futureItems.toArray(new CompletableFuture[futureItems.size()]))
                                                 .thenApply(v -> {
                                                     JSONObject out = new JSONObject();
                                                     out.put("input", new JSONArray() {{
@@ -103,8 +107,10 @@ public class FormatAnfisaController {
                                                     }});
 
                                                     JSONArray outs = new JSONArray();
-                                                    JSONArray fresult = futureItem.join();
-                                                    outs.add(fresult);
+                                                    for(CompletableFuture<JSONArray> futureItem: futureItems) {
+                                                        JSONArray fresult = futureItem.join();
+                                                        outs.add(fresult);
+                                                    }
                                                     out.put("result", outs);
                                                     return out;
                                                 });
@@ -132,8 +138,6 @@ public class FormatAnfisaController {
                                 throwable = ex.getCause();
                             }
                             if (throwable instanceof IOException) {
-                                //TODO Ulitin V. Через пару дней необходимо удалить
-                                log.error("TODO! Этого сообщения быть не должно", throwable);
                                 throwable = ExceptionBuilder.buildExternalServiceException(throwable, throwable.getMessage());
                             }
                             log.error("Exception execute request", throwable);

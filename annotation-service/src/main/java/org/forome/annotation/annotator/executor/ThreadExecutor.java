@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -123,11 +124,11 @@ public class ThreadExecutor implements AutoCloseable {
                             .withSamples(samples)
                             .build();
 
-                    AnfisaResult anfisaResult = anfisaConnector.build(
+                    List<AnfisaResult> anfisaResults = anfisaConnector.build(
                             anfisaInput,
                             variant
                     );
-                    result.future.complete(anfisaResult);
+                    result.future.complete(anfisaResults);
                 } else {
                     String alternative;
                     if (variant instanceof VariantVCF) {
@@ -151,8 +152,8 @@ public class ThreadExecutor implements AutoCloseable {
                                 AnfisaInput anfisaInput = new AnfisaInput.Builder()
                                         .withSamples(samples)
                                         .build();
-                                AnfisaResult anfisaResult = anfisaConnector.build(anfisaInput, variant);
-                                result.future.complete(anfisaResult);
+                                List<AnfisaResult> anfisaResults = anfisaConnector.build(anfisaInput, variant);
+                                result.future.complete(anfisaResults);
                                 return null;
                             })
                             .exceptionally(throwable -> {
