@@ -21,6 +21,7 @@ import org.forome.annotation.connector.gtex.struct.Tissue;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
@@ -45,8 +46,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-//import htsjdk.variant.variantcontext.*;
 
 public class AnfisaConnector implements AutoCloseable {
 
@@ -90,6 +89,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 	private final GtfAnfisaBuilder gtfAnfisaBuilder;
 	public final GTEXConnector gtexConnector;
+	public final PharmGKBConnector pharmGKBConnector;
 
 	public AnfisaConnector(
 			GnomadConnector gnomadConnector,
@@ -99,7 +99,8 @@ public class AnfisaConnector implements AutoCloseable {
 			ClinvarConnector clinvarConnector,
 			LiftoverConnector liftoverConnector,
 			GTFConnector gtfConnector,
-			GTEXConnector gtexConnector
+			GTEXConnector gtexConnector,
+			PharmGKBConnector pharmGKBConnector
 	) {
 		this.gnomadConnector = gnomadConnector;
 		this.spliceAIConnector = spliceAIConnector;
@@ -108,6 +109,7 @@ public class AnfisaConnector implements AutoCloseable {
 		this.clinvarConnector = clinvarConnector;
 		this.liftoverConnector = liftoverConnector;
 		this.gtexConnector = gtexConnector;
+		this.pharmGKBConnector = pharmGKBConnector;
 
 		this.gtfAnfisaBuilder = new GtfAnfisaBuilder(gtfConnector);
 	}
@@ -116,21 +118,21 @@ public class AnfisaConnector implements AutoCloseable {
 			AnfisaInput anfisaInput,
 			Variant variant
 	) {
-        List<AnfisaResult> results = new ArrayList<>();
-        for (Allele altAllele : variant.getAltAllele()) {
-            results.add(build(
-                    anfisaInput,
-                    variant, altAllele
-            ));
-        }
-        return results;
-    }
+		List<AnfisaResult> results = new ArrayList<>();
+		for (Allele altAllele : variant.getAltAllele()) {
+			results.add(build(
+					anfisaInput,
+					variant, altAllele
+			));
+		}
+		return results;
+	}
 
-    public AnfisaResult build(
-            AnfisaInput anfisaInput,
-            Variant variant, Allele altAllele
-    ) {
-        JSONObject vepJson = (variant instanceof VariantVep) ? ((VariantVep) variant).getVepJson() : null;
+	public AnfisaResult build(
+			AnfisaInput anfisaInput,
+			Variant variant, Allele altAllele
+	) {
+		JSONObject vepJson = (variant instanceof VariantVep) ? ((VariantVep) variant).getVepJson() : null;
 
 		Record record = new Record();
 		AnfisaExecuteContext context = new AnfisaExecuteContext(
@@ -143,15 +145,15 @@ public class AnfisaConnector implements AutoCloseable {
 
 		data.version = AppVersion.getVersionFormat();
 
-        callGnomAD(context, variant, anfisaInput.samples, filters, altAllele);
-        callSpliceai(data, filters, variant, altAllele);
-        callHgmd(record, context, filters, data);
-        callClinvar(context, record, variant.chromosome.getChar(), anfisaInput.samples, filters, data, view, vepJson);
-        GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant);
-        callQuality(filters, variant, anfisaInput.samples);
+		callGnomAD(context, variant, anfisaInput.samples, filters, altAllele);
+		callSpliceai(data, filters, variant, altAllele);
+		callHgmd(record, context, filters, data);
+		callClinvar(context, record, variant.chromosome.getChar(), anfisaInput.samples, filters, data, view, vepJson);
+		GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant);
+		callQuality(filters, variant, anfisaInput.samples);
 
-        filters.severity = getSeverity(variant);
-        filters.alt = altAllele.getBaseString();
+		filters.severity = getSeverity(variant);
+		filters.alt = altAllele.getBaseString();
 
 		Sample proband = anfisaInput.samples.proband;
 		if (proband != null) {
@@ -236,6 +238,7 @@ public class AnfisaConnector implements AutoCloseable {
 		createDatabasesTab((VariantVep) variant, record, data, view);
 		createPredictionsTab((VariantVep) variant, vepJson, view);
 		createBioinformaticsTab(gtfAnfisaResult, context, data, view);
+		createPharmacogenomicsTab(view, filters, variant);
 		countCohorts(view, filters, anfisaInput.samples, variant);
 
 		return new AnfisaResult(filters, data, view);
@@ -452,42 +455,42 @@ public class AnfisaConnector implements AutoCloseable {
 		Long hom = null;
 		Long hem = null;
 
-			GnomadResult gnomadResult = getGnomadResult(variant, altAllele);
-			if (gnomadResult == null) {
-				return;
-			}
-			if (gnomadResult.exomes != null) {
-				af = gnomadResult.exomes.af;
-				emAf = Math.min((emAf != null && emAf != 0.0d) ? emAf : af, af);
-				if (isProbandHasAllele(variant, samples, altAllele)) {
-					emAfPb = Math.min((emAfPb != null) ? emAfPb : af, af);
-				}
-			}
-			if (gnomadResult.genomes != null) {
-				af = gnomadResult.genomes.af;
-				gmAf = Math.min((gmAf != null) ? gmAf : af, af);
-				if (isProbandHasAllele(variant, samples, altAllele)) {
-					gmAfPb = Math.min((gmAfPb != null) ? gmAfPb : af, af);
-				}
-			}
-
-			af = gnomadResult.overall.af;
+		GnomadResult gnomadResult = getGnomadResult(variant, altAllele);
+		if (gnomadResult == null) {
+			return;
+		}
+		if (gnomadResult.exomes != null) {
+			af = gnomadResult.exomes.af;
+			emAf = Math.min((emAf != null && emAf != 0.0d) ? emAf : af, af);
 			if (isProbandHasAllele(variant, samples, altAllele)) {
-				_afPb = Math.min((_afPb != null) ? _afPb : af, af);
+				emAfPb = Math.min((emAfPb != null) ? emAfPb : af, af);
 			}
+		}
+		if (gnomadResult.genomes != null) {
+			af = gnomadResult.genomes.af;
+			gmAf = Math.min((gmAf != null) ? gmAf : af, af);
+			if (isProbandHasAllele(variant, samples, altAllele)) {
+				gmAfPb = Math.min((gmAfPb != null) ? gmAfPb : af, af);
+			}
+		}
 
-			if (hom == null || hom < gnomadResult.overall.hom) {
-				hom = gnomadResult.overall.hom;
-			}
-			if (hem == null || hem < gnomadResult.overall.hem) {
-				hem = gnomadResult.overall.hem;
-			}
+		af = gnomadResult.overall.af;
+		if (isProbandHasAllele(variant, samples, altAllele)) {
+			_afPb = Math.min((_afPb != null) ? _afPb : af, af);
+		}
 
-			if (_af == null || af < _af) {
-				_af = af;
-				popmax = gnomadResult.popmax;
-				rawPopmax = gnomadResult.rawPopmax;
-			}
+		if (hom == null || hom < gnomadResult.overall.hom) {
+			hom = gnomadResult.overall.hom;
+		}
+		if (hem == null || hem < gnomadResult.overall.hem) {
+			hem = gnomadResult.overall.hem;
+		}
+
+		if (_af == null || af < _af) {
+			_af = af;
+			popmax = gnomadResult.popmax;
+			rawPopmax = gnomadResult.rawPopmax;
+		}
 		context.gnomadAfFam = _af;
 
 		filters.gnomadAfFam = _af;
@@ -623,6 +626,7 @@ public class AnfisaConnector implements AutoCloseable {
 	 * Собираем на какие органы может максимально повлияет этот вариант, в выборку попадают:
 	 * 1) TOP3 по полю: expression
 	 * 2) И tissue для которых RelExp больше 0.8
+	 *
 	 * @param genes
 	 * @return
 	 */
@@ -813,36 +817,37 @@ public class AnfisaConnector implements AutoCloseable {
 	private void createGnomadTab(AnfisaExecuteContext context, String chromosome, Variant variant, MCase samples, JSONObject json, AnfisaResultView view, Allele altAllele) {
 		Double gnomadAf = context.gnomadAfFam;
 		if (gnomadAf != null && Math.abs(gnomadAf) > 0.000001D) {
-				AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
+			AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
 
-				gnomAD.allele = altAllele.getBaseString();;
-				gnomAD.pli = getPLIByAllele((VariantVep) variant, altAllele);
-				gnomAD.proband = (isProbandHasAllele(variant, samples, altAllele)) ? "Yes" : "No";
+			gnomAD.allele = altAllele.getBaseString();
+			;
+			gnomAD.pli = getPLIByAllele((VariantVep) variant, altAllele);
+			gnomAD.proband = (isProbandHasAllele(variant, samples, altAllele)) ? "Yes" : "No";
 
-				GnomadResult gnomadResult = getGnomadResult(variant, altAllele);
-				if (gnomadResult != null) {
-					if (gnomadResult.exomes != null) {
-						gnomAD.exomeAn = gnomadResult.exomes.an;
-						gnomAD.exomeAf = gnomadResult.exomes.af;
-					}
-					if (gnomadResult.genomes != null) {
-						gnomAD.genomeAn = gnomadResult.genomes.an;
-						gnomAD.genomeAf = gnomadResult.genomes.af;
-					}
-
-					if (gnomadResult.overall != null) {
-						gnomAD.af = gnomadResult.overall.af;
-						gnomAD.hom = gnomadResult.overall.hom;
-						gnomAD.hem = gnomadResult.overall.hem;
-					}
-					if (gnomadResult.rawPopmax != null) {
-						gnomAD.rawPopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
-								gnomadResult.rawPopmax.group.name(), gnomadResult.rawPopmax.af, gnomadResult.rawPopmax.an
-						);
-					}
-
-					gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);
+			GnomadResult gnomadResult = getGnomadResult(variant, altAllele);
+			if (gnomadResult != null) {
+				if (gnomadResult.exomes != null) {
+					gnomAD.exomeAn = gnomadResult.exomes.an;
+					gnomAD.exomeAf = gnomadResult.exomes.af;
 				}
+				if (gnomadResult.genomes != null) {
+					gnomAD.genomeAn = gnomadResult.genomes.an;
+					gnomAD.genomeAf = gnomadResult.genomes.af;
+				}
+
+				if (gnomadResult.overall != null) {
+					gnomAD.af = gnomadResult.overall.af;
+					gnomAD.hom = gnomadResult.overall.hom;
+					gnomAD.hem = gnomadResult.overall.hem;
+				}
+				if (gnomadResult.rawPopmax != null) {
+					gnomAD.rawPopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
+							gnomadResult.rawPopmax.group.name(), gnomadResult.rawPopmax.af, gnomadResult.rawPopmax.an
+					);
+				}
+
+				gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);
+			}
 
 			view.gnomAD = gnomAD;
 		} else {
@@ -865,21 +870,21 @@ public class AnfisaConnector implements AutoCloseable {
 		return Math.max(variant.start, variant.end);
 	}
 
-    private static List<Double> getPLIByAllele(VariantVep variantVep, Allele altAllele) {
-        List<JSONObject> transcripts = getTranscripts(variantVep, "protein_coding");
-        String key = "exacpli";
-        List<Double> list = unique(
-                transcripts.stream()
-                        .filter(jsonObject -> jsonObject.containsKey(key))
-                        .filter(jsonObject -> altAllele.getBaseString().equals(jsonObject.get("variant_allele")))
-                        .map(jsonObject -> jsonObject.getAsNumber(key).doubleValue())
-                        .collect(Collectors.toList())
-        );
-        if (list.size() > 0) {
-            return list;
-        }
-        return null;
-    }
+	private static List<Double> getPLIByAllele(VariantVep variantVep, Allele altAllele) {
+		List<JSONObject> transcripts = getTranscripts(variantVep, "protein_coding");
+		String key = "exacpli";
+		List<Double> list = unique(
+				transcripts.stream()
+						.filter(jsonObject -> jsonObject.containsKey(key))
+						.filter(jsonObject -> altAllele.getBaseString().equals(jsonObject.get("variant_allele")))
+						.map(jsonObject -> jsonObject.getAsNumber(key).doubleValue())
+						.collect(Collectors.toList())
+		);
+		if (list.size() > 0) {
+			return list;
+		}
+		return null;
+	}
 
 	private static Set<String> getHGMDTags(Record record) {
 		if (record.hgmdData == null)
@@ -1020,6 +1025,27 @@ public class AnfisaConnector implements AutoCloseable {
 				}
 			}
 		}
+	}
+
+	private void createPharmacogenomicsTab(AnfisaResultView view, AnfisaResultFilters filters, Variant variant) {
+		if (!(variant instanceof VariantVCF)) {
+			return;
+		}
+		String variantId = ((VariantVCF) variant).variantContext.getID();
+		if (variantId == null || ".".equals(variantId)) {
+			return;
+		}
+
+		view.pharmacogenomics.notes = pharmGKBConnector.getNotes(variantId);
+		view.pharmacogenomics.pmids = pharmGKBConnector.getPmids(variantId);
+		List<AnfisaResultView.Pharmacogenomics.Item> diseases = pharmGKBConnector.getDiseases(variantId);
+		view.pharmacogenomics.diseases = diseases;
+		List<AnfisaResultView.Pharmacogenomics.Item> chemicals = pharmGKBConnector.getChemicals(variantId);
+		view.pharmacogenomics.chemicals = chemicals;
+
+		//Add filters
+		filters.pharmacogenomicsDiseases = diseases.stream().map(item -> item.value).distinct().toArray(String[]::new);
+		filters.pharmacogenomicsChemicals = chemicals.stream().map(item -> item.value).distinct().toArray(String[]::new);
 	}
 
 	public Conservation buildConservation(AnfisaExecuteContext context) {
@@ -1176,18 +1202,18 @@ public class AnfisaConnector implements AutoCloseable {
 //        return String.join(",", variant.getStrAltAllele());
 //    }
 
-    private static boolean isProbandHasAllele(Variant variant, MCase samples, Allele altAllele) {
-        if (samples == null || variant == null) {
-            return false;
-        }
+	private static boolean isProbandHasAllele(Variant variant, MCase samples, Allele altAllele) {
+		if (samples == null || variant == null) {
+			return false;
+		}
 
-        String probandGenotype = (String) getGenotypes(variant, samples)[0];
-        if (probandGenotype == null) {
-            return false;
-        }
-        Set<String> set1 = Arrays.stream(probandGenotype.split("/")).collect(Collectors.toSet());
-        return set1.contains(altAllele);
-    }
+		String probandGenotype = (String) getGenotypes(variant, samples)[0];
+		if (probandGenotype == null) {
+			return false;
+		}
+		Set<String> set1 = Arrays.stream(probandGenotype.split("/")).collect(Collectors.toSet());
+		return set1.contains(altAllele);
+	}
 
 	private static Integer getMinGQ(Variant variant, MCase samples) {
 		if (variant == null || samples == null) {
@@ -1308,18 +1334,18 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-    public String getLabel(AnfisaExecuteContext context, Allele altAllele) {
-        List<String> genes = getGenes((VariantVep) context.variant);
-        String gene;
-        if (genes.size() == 0) {
-            gene = "None";
-        } else if (genes.size() < 3) {
-            gene = String.join(",", genes);
-        } else {
-            gene = "...";
-        }
+	public String getLabel(AnfisaExecuteContext context, Allele altAllele) {
+		List<String> genes = getGenes((VariantVep) context.variant);
+		String gene;
+		if (genes.size() == 0) {
+			gene = "None";
+		} else if (genes.size() < 3) {
+			gene = String.join(",", genes);
+		} else {
+			gene = "...";
+		}
 
-        String vstr = str(context, altAllele);
+		String vstr = str(context, altAllele);
 
 		return String.format("[%s] %s", gene, vstr);
 	}
@@ -1562,20 +1588,20 @@ public class AnfisaConnector implements AutoCloseable {
 		};
 	}
 
-    public String str(AnfisaExecuteContext context, Allele altAllele) {
-        Variant variant = context.variant;
-        String str = getStrHg19Coordinates(context);
-        if (isSnv(variant)) {
-            return String.format("%s %s>%s",
-                    str,
-                    variant.getRef(),
+	public String str(AnfisaExecuteContext context, Allele altAllele) {
+		Variant variant = context.variant;
+		String str = getStrHg19Coordinates(context);
+		if (isSnv(variant)) {
+			return String.format("%s %s>%s",
+					str,
+					variant.getRef(),
 					altAllele.getBaseString()
-            );
-        } else {
-            VariantType typeVariable = variant.getVariantType();
-            return String.format("%s %s", str, (typeVariable != null) ? typeVariable.toJSON() : "None");
-        }
-    }
+			);
+		} else {
+			VariantType typeVariable = variant.getVariantType();
+			return String.format("%s %s", str, (typeVariable != null) ? typeVariable.toJSON() : "None");
+		}
+	}
 
 	public Position getHg19Coordinates(AnfisaExecuteContext context) {
 		return new Position(

@@ -14,6 +14,7 @@ import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.iterator.vcf.VCFFileIterator;
 import org.forome.annotation.service.database.DatabaseConnectService;
@@ -47,6 +48,7 @@ public class VCFMain {
         LiftoverConnector liftoverConnector = new LiftoverConnector();
         GTFConnector gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
         GTEXConnector gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
+        PharmGKBConnector pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
         EnsemblVepService ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
         AnfisaConnector anfisaConnector = new AnfisaConnector(
                 gnomadConnector,
@@ -56,7 +58,8 @@ public class VCFMain {
                 clinvarConnector,
                 liftoverConnector,
                 gtfConnector,
-                gtexConnector
+                gtexConnector,
+                pharmGKBConnector
         );
 
         Path pathVcf = Paths.get("/home/kris/processtech/tmp/newvcf/HG002_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-22_v.3.3.2_highconf_triophased.vcf");

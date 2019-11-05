@@ -10,6 +10,7 @@ import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.ref.RefConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.service.database.DatabaseConnectService;
@@ -38,6 +39,7 @@ public class AnfisaBaseTest {
 	protected static GTFConnector gtfConnector;
 	protected static RefConnector refConnector;
 	protected static GTEXConnector gtexConnector;
+	protected static PharmGKBConnector pharmGKBConnector;
 	protected static EnsemblVepService ensemblVepService;
 	protected static AnfisaConnector anfisaConnector;
 
@@ -65,6 +67,7 @@ public class AnfisaBaseTest {
 		});
 		refConnector = new RefConnector(databaseConnectService, serviceConfig.refConfigConnector);
 		gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
+		pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
 		ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector, refConnector);
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
@@ -74,7 +77,8 @@ public class AnfisaBaseTest {
 				clinvarConnector,
 				liftoverConnector,
 				gtfConnector,
-				gtexConnector
+				gtexConnector,
+				pharmGKBConnector
 		);
 	}
 

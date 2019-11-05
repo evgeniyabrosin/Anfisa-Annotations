@@ -14,6 +14,7 @@ import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
@@ -77,6 +78,7 @@ public class AnnotationConsole {
     private LiftoverConnector liftoverConnector;
     private GTFConnector gtfConnector;
     private GTEXConnector gtexConnector;
+    private PharmGKBConnector pharmGKBConnector;
     private EnsemblVepService ensemblVepService;
     private AnfisaConnector anfisaConnector;
 
@@ -130,6 +132,7 @@ public class AnnotationConsole {
             liftoverConnector = new LiftoverConnector();
             gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, arguments));
             gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
+            pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
             ensemblVepService = new EnsemblVepExternalService((t, e) -> fail(e, arguments));
             anfisaConnector = new AnfisaConnector(
                     gnomadConnector,
@@ -139,7 +142,8 @@ public class AnnotationConsole {
                     clinvarConnector,
                     liftoverConnector,
                     gtfConnector,
-                    gtexConnector
+                    gtexConnector,
+                    pharmGKBConnector
             );
         } catch (Throwable e) {
             fail(e, arguments);
