@@ -27,6 +27,7 @@ public class ServiceConfig {
     public final ConservationConfigConnector conservationConfigConnector;
     public final RefConfigConnector refConfigConnector;
     public final GTEXConfigConnector gtexConfigConnector;
+    public final PharmGKBConfigConnector pharmGKBConfigConnector;
 
     public final NotificationSlackConfig notificationSlackConfig;
 
@@ -56,6 +57,7 @@ public class ServiceConfig {
         conservationConfigConnector = new ConservationConfigConnector((JSONObject) jConnectors.get("conservation"));
         refConfigConnector = new RefConfigConnector((JSONObject) jConnectors.get("ref"));
         gtexConfigConnector = new GTEXConfigConnector((JSONObject) jConnectors.get("gtex"));
+        pharmGKBConfigConnector = new PharmGKBConfigConnector((JSONObject) jConnectors.get("pharmgkb"));
 
         JSONObject jNotifications = (JSONObject) configFileJson.get("notification");
         if (jNotifications != null) {

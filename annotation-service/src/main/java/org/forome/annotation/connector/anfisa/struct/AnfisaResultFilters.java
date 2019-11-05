@@ -58,6 +58,9 @@ public class AnfisaResultFilters {
 	public String topTissue;
 	public String[] topTissues;
 
+	public String[] pharmacogenomicsDiseases;
+	public String[] pharmacogenomicsChemicals;
+
 	public AnfisaResultFilters() {
 	}
 
@@ -143,6 +146,10 @@ public class AnfisaResultFilters {
 
 		out.put("top_tissue", topTissue);
 		out.put("top_tissues", topTissues);
+
+
+		out.put("pharmacogenomics_diseases", (pharmacogenomicsDiseases != null && pharmacogenomicsDiseases.length != 0) ? pharmacogenomicsDiseases : null);
+		out.put("pharmacogenomics_chemicals", (pharmacogenomicsChemicals != null && pharmacogenomicsChemicals.length != 0) ? pharmacogenomicsChemicals : null);
 
 		return out;
 	}

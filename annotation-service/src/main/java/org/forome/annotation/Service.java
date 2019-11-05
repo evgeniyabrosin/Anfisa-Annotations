@@ -11,6 +11,7 @@ import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.database.DatabaseService;
 import org.forome.annotation.database.entityobject.user.UserReadable;
@@ -81,6 +82,7 @@ public class Service {
     private final LiftoverConnector liftoverConnector;
     private final GTFConnector gtfConnector;
     private final GTEXConnector gtexConnector;
+    private final PharmGKBConnector pharmGKBConnector;
     private final EnsemblVepService ensemblVepService;
     private final AnfisaConnector anfisaConnector;
 
@@ -114,6 +116,7 @@ public class Service {
         this.liftoverConnector = new LiftoverConnector();
         this.gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
         this.gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
+        this.pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
         this.ensemblVepService = new EnsemblVepExternalService(uncaughtExceptionHandler);
 //        this.ensemblVepService = new EnsemblVepInlineService(
 //                sshTunnelService,
@@ -129,7 +132,8 @@ public class Service {
                 clinvarConnector,
                 liftoverConnector,
                 gtfConnector,
-                gtexConnector
+                gtexConnector,
+                pharmGKBConnector
         );
 
         executionQueue.execute(this, new Execution<Void>() {
