@@ -19,7 +19,7 @@ public class AnfisaResultView {
 		public String hgmdHg38;
 		public String[] hgmdTags;
 		public String[] hgmdPhenotypes;
-		public String[] hgmdPmids;
+		public final LinkedHashSet<String> references = new LinkedHashSet<>();
 		public String[] clinVarSubmitters;
 		public String lmmSignificance;
 		public String geneDxSignificance;
@@ -46,7 +46,7 @@ public class AnfisaResultView {
 			if (clinVar != null) {
 				out.put("clinVar", clinVar);
 			}
-			out.put("hgmd_pmids", hgmdPmids);
+			out.put("references", (!references.isEmpty()) ? references : null);
 			out.put("clinVar_variants", clinVarVariants);
 			out.put("clinVar_phenotypes", clinVarPhenotypes);
 			out.put("hgmd", hgmd);

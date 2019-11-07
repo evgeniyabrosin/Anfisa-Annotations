@@ -66,6 +66,7 @@ public class AnfisaResultFilters {
 
 
 	public JSONObject toJSON(AnfisaResultData anfisaResultData,
+							 AnfisaResultView.Databases databases,
 							 AnfisaResultView.Bioinformatics bioinformatics
 	) {
 		JSONObject out = new JSONObject();
@@ -147,9 +148,10 @@ public class AnfisaResultFilters {
 		out.put("top_tissue", topTissue);
 		out.put("top_tissues", topTissues);
 
-
 		out.put("pharmacogenomics_diseases", (pharmacogenomicsDiseases != null && pharmacogenomicsDiseases.length != 0) ? pharmacogenomicsDiseases : null);
 		out.put("pharmacogenomics_chemicals", (pharmacogenomicsChemicals != null && pharmacogenomicsChemicals.length != 0) ? pharmacogenomicsChemicals : null);
+
+		out.put("references", (!databases.references.isEmpty()) ? databases.references : null);
 
 		return out;
 	}

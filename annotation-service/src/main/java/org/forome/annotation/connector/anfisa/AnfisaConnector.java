@@ -903,9 +903,11 @@ public class AnfisaConnector implements AutoCloseable {
 			view.databases.hgmdPhenotypes = record.hgmdData.phenotypes.toArray(new String[record.hgmdData.phenotypes.size()]);
 			if (view.databases.hgmdPhenotypes.length == 0) view.databases.hgmdPhenotypes = null;
 
-			view.databases.hgmdPmids = record.hgmdData.hgmdPmidRows.stream()
-					.map(hgmdPmidRow -> hgmdPmidRow.pmid).map(pmid -> linkToPmid(pmid)).toArray(String[]::new);
-			if (view.databases.hgmdPmids.length == 0) view.databases.hgmdPmids = null;
+			view.databases.references.addAll(
+					record.hgmdData.hgmdPmidRows.stream()
+							.map(hgmdPmidRow -> hgmdPmidRow.pmid)
+							.collect(Collectors.toList())
+			);
 
 			data.hgmdPmids = record.hgmdData.hgmdPmidRows.stream()
 					.map(hgmdPmidRow -> hgmdPmidRow.pmid).toArray(String[]::new);
@@ -1037,7 +1039,8 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 
 		view.pharmacogenomics.notes = pharmGKBConnector.getNotes(variantId);
-		view.pharmacogenomics.pmids = pharmGKBConnector.getPmids(variantId);
+		List<AnfisaResultView.Pharmacogenomics.Item> pmids = pharmGKBConnector.getPmids(variantId);
+		view.pharmacogenomics.pmids = pmids;
 		List<AnfisaResultView.Pharmacogenomics.Item> diseases = pharmGKBConnector.getDiseases(variantId);
 		view.pharmacogenomics.diseases = diseases;
 		List<AnfisaResultView.Pharmacogenomics.Item> chemicals = pharmGKBConnector.getChemicals(variantId);
@@ -1046,6 +1049,11 @@ public class AnfisaConnector implements AutoCloseable {
 		//Add filters
 		filters.pharmacogenomicsDiseases = diseases.stream().map(item -> item.value).distinct().toArray(String[]::new);
 		filters.pharmacogenomicsChemicals = chemicals.stream().map(item -> item.value).distinct().toArray(String[]::new);
+
+		//Добавляем в общий список pmids
+		view.databases.references.addAll(
+				pmids.stream().map(item -> item.value).collect(Collectors.toList())
+		);
 	}
 
 	public Conservation buildConservation(AnfisaExecuteContext context) {
@@ -1197,10 +1205,6 @@ public class AnfisaConnector implements AutoCloseable {
 
 		return ColorCode.code(shape, color);
 	}
-
-//    public String getAltAllelesString(Variant variant) {
-//        return String.join(",", variant.getStrAltAllele());
-//    }
 
 	private static boolean isProbandHasAllele(Variant variant, MCase samples, Allele altAllele) {
 		if (samples == null || variant == null) {
@@ -1628,10 +1632,6 @@ public class AnfisaConnector implements AutoCloseable {
 
 	public boolean isSnv(Variant variant) {
 		return variant.getVariantType() == VariantType.SNV;
-	}
-
-	public String linkToPmid(String pmid) {
-		return String.format("https://www.ncbi.nlm.nih.gov/pubmed/%s", pmid);
 	}
 
 	private static String encodeToAscii(String s) {
