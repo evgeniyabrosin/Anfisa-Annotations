@@ -23,7 +23,7 @@ public class AnfisaResult {
     public JSONObject toJSON() {
         JSONObject out = new JSONObject();
         out.put("_view", view.toJSON());
-        out.put("_filters", filters.toJSON(data, view.bioinformatics));
+        out.put("_filters", filters.toJSON(data, view.databases, view.bioinformatics));
         out.put("__data", data.toJSON());
         out.put("record_type", recordType);
         return out;
