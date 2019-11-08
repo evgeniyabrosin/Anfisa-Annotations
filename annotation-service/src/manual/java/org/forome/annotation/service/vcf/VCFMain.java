@@ -1,3 +1,21 @@
+/*
+ Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+
+ Developed by Vladimir Ulitin and Michael Bouzinier
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+	 http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
 package org.forome.annotation.service.vcf;
 
 import net.minidev.json.JSONObject;
@@ -32,59 +50,59 @@ import java.util.NoSuchElementException;
 
 public class VCFMain {
 
-    private final static Logger log = LoggerFactory.getLogger(Main.class);
+	private final static Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws Exception {
-        ServiceConfig serviceConfig = new ServiceConfig();
-        SSHConnectService sshTunnelService = new SSHConnectService();
-        DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
+	public static void main(String[] args) throws Exception {
+		ServiceConfig serviceConfig = new ServiceConfig();
+		SSHConnectService sshTunnelService = new SSHConnectService();
+		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
 
 //        GnomadConnector gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
-        GnomadConnector gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
-        SpliceAIConnector spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-        ConservationConnector conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
-        HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
-        ClinvarConnector clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
-        LiftoverConnector liftoverConnector = new LiftoverConnector();
-        GTFConnector gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
-        GTEXConnector gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
-        PharmGKBConnector pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
-        EnsemblVepService ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
-        AnfisaConnector anfisaConnector = new AnfisaConnector(
-                gnomadConnector,
-                spliceAIConnector,
-                conservationConnector,
-                hgmdConnector,
-                clinvarConnector,
-                liftoverConnector,
-                gtfConnector,
-                gtexConnector,
-                pharmGKBConnector
-        );
+		GnomadConnector gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
+		SpliceAIConnector spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
+		ConservationConnector conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
+		HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
+		ClinvarConnector clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
+		LiftoverConnector liftoverConnector = new LiftoverConnector();
+		GTFConnector gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
+		GTEXConnector gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
+		PharmGKBConnector pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
+		EnsemblVepService ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
+		AnfisaConnector anfisaConnector = new AnfisaConnector(
+				gnomadConnector,
+				spliceAIConnector,
+				conservationConnector,
+				hgmdConnector,
+				clinvarConnector,
+				liftoverConnector,
+				gtfConnector,
+				gtexConnector,
+				pharmGKBConnector
+		);
 
-        Path pathVcf = Paths.get("/home/kris/processtech/tmp/newvcf/HG002_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-22_v.3.3.2_highconf_triophased.vcf");
-        VCFFileIterator vcfFileIterator = new VCFFileIterator(pathVcf);
+		Path pathVcf = Paths.get("/home/kris/processtech/tmp/newvcf/HG002_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-22_v.3.3.2_highconf_triophased.vcf");
+		VCFFileIterator vcfFileIterator = new VCFFileIterator(pathVcf);
 
-        while (true) {
-            try {
-                VariantVep variant = vcfFileIterator.next();
-                JSONObject vepJson = ensemblVepService.getVepJson(variant, "-").get();
-                variant.setVepJson(vepJson);
-                AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-                List<AnfisaResult> anfisaResults = anfisaConnector.build(anfisaInput, variant);
-                for (AnfisaResult anfisaResult: anfisaResults) {
-                    log.debug("anfisaResult: " + anfisaResult);
-                }
-            } catch (NoSuchElementException e) {
-                break;
-            }
-        }
+		while (true) {
+			try {
+				VariantVep variant = vcfFileIterator.next();
+				JSONObject vepJson = ensemblVepService.getVepJson(variant, "-").get();
+				variant.setVepJson(vepJson);
+				AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
+				List<AnfisaResult> anfisaResults = anfisaConnector.build(anfisaInput, variant);
+				for (AnfisaResult anfisaResult: anfisaResults) {
+					log.debug("anfisaResult: " + anfisaResult);
+				}
+			} catch (NoSuchElementException e) {
+				break;
+			}
+		}
 
-        log.debug("end");
-    }
+		log.debug("end");
+	}
 
-    public static void crash(Throwable e) {
-        log.error("Application crashing ", e);
-        System.exit(1);
-    }
+	public static void crash(Throwable e) {
+		log.error("Application crashing ", e);
+		System.exit(1);
+	}
 }

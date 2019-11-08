@@ -1,3 +1,21 @@
+/*
+ Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+
+ Developed by Vladimir Ulitin and Michael Bouzinier
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+	 http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
 package org.forome.annotation.controller;
 
 import com.google.common.base.Strings;
@@ -37,163 +55,163 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping(value = {"/FormatVcf", "/annotationservice/FormatVcf"})
 public class FormatVcfController {
 
-    private final static Logger log = LoggerFactory.getLogger(FormatVcfController.class);
+	private final static Logger log = LoggerFactory.getLogger(FormatVcfController.class);
 
-    @RequestMapping(value = {"/get"})
-    public CompletableFuture<ResponseEntity> get(HttpServletRequest request) {
-        Service service = Service.getInstance();
+	@RequestMapping(value = {"/get"})
+	public CompletableFuture<ResponseEntity> get(HttpServletRequest request) {
+		Service service = Service.getInstance();
 
-        BuilderAuthContext builderAuthContext = new BuilderAuthContext(service);
-        builderAuthContext.auth(request);
+		BuilderAuthContext builderAuthContext = new BuilderAuthContext(service);
+		builderAuthContext.auth(request);
 
-        String requestId = UUID.randomUUID().toString().toLowerCase();
-        log.debug("FormatVcfController requestId: {}, time: {}", requestId, System.currentTimeMillis());
+		String requestId = UUID.randomUUID().toString().toLowerCase();
+		log.debug("FormatVcfController requestId: {}, time: {}", requestId, System.currentTimeMillis());
 
-        EnsemblVepService ensemblVepService = service.getEnsemblVepService();
-        if (ensemblVepService == null) {
-            throw ExceptionBuilder.buildInvalidOperation("inited");
-        }
+		EnsemblVepService ensemblVepService = service.getEnsemblVepService();
+		if (ensemblVepService == null) {
+			throw ExceptionBuilder.buildInvalidOperation("inited");
+		}
 
-        AnfisaConnector anfisaConnector = service.getAnfisaConnector();
-        if (anfisaConnector == null) {
-            throw ExceptionBuilder.buildInvalidOperation("inited");
-        }
-        Annotator annotator = new Annotator(ensemblVepService, anfisaConnector);
+		AnfisaConnector anfisaConnector = service.getAnfisaConnector();
+		if (anfisaConnector == null) {
+			throw ExceptionBuilder.buildInvalidOperation("inited");
+		}
+		Annotator annotator = new Annotator(ensemblVepService, anfisaConnector);
 
-        FormatAnfisaHttpClient formatAnfisaHttpClient;
-        try {
-            formatAnfisaHttpClient = new FormatAnfisaHttpClient();
-        } catch (IOException e) {
-            throw ExceptionBuilder.buildIOErrorException(e);
-        }
+		FormatAnfisaHttpClient formatAnfisaHttpClient;
+		try {
+			formatAnfisaHttpClient = new FormatAnfisaHttpClient();
+		} catch (IOException e) {
+			throw ExceptionBuilder.buildIOErrorException(e);
+		}
 
-        TempVCFFile tempVCFFile = buildTempVCFFile(request);
+		TempVCFFile tempVCFFile = buildTempVCFFile(request);
 
-        AnnotatorResult annotatorResult = annotator.annotateJson(
-                String.format("%s_wgs", "noname"),
-                null,
-                tempVCFFile.path, null,
-                null,
-                0
-        );
+		AnnotatorResult annotatorResult = annotator.annotateJson(
+				String.format("%s_wgs", "noname"),
+				null,
+				tempVCFFile.path, null,
+				null,
+				0
+		);
 
-        CompletableFuture<ResponseEntity> completableFuture = new CompletableFuture<>();
-        List<JSONObject> ourResults = Collections.synchronizedList(new ArrayList<JSONObject>());
-        annotatorResult.observableAnfisaResult
-                .map(anfisaResult -> {
-                    log.debug("FormatVcfController requestId: {}, 1: {}", requestId, anfisaResult);
-                    return new Object[]{anfisaResult, anfisaResult.toJSON()};
-                })
-                .flatMap(result ->
-                        Observable.fromFuture(formatAnfisaHttpClient.request(((JSONObject) result[1]).toJSONString())
-                                .thenApply(jsonArray -> {
-                                    log.debug("FormatVcfController requestId: {}, 2: {}", requestId, jsonArray);
-                                    return new Object[]{result[0], jsonArray};
-                                }).exceptionally(throwable -> {
-                                    Main.crash(throwable);
-                                    return null;
-                                })
-                        )
-                )
-                .map(objects -> {
-                    AnfisaResult anfisaResult = (AnfisaResult) objects[0];
-                    JSONArray results = (JSONArray) objects[1];
-                    log.debug("FormatVcfController requestId: {}, 3: {}", requestId, results.toJSONString().length());
+		CompletableFuture<ResponseEntity> completableFuture = new CompletableFuture<>();
+		List<JSONObject> ourResults = Collections.synchronizedList(new ArrayList<JSONObject>());
+		annotatorResult.observableAnfisaResult
+				.map(anfisaResult -> {
+					log.debug("FormatVcfController requestId: {}, 1: {}", requestId, anfisaResult);
+					return new Object[]{anfisaResult, anfisaResult.toJSON()};
+				})
+				.flatMap(result ->
+						Observable.fromFuture(formatAnfisaHttpClient.request(((JSONObject) result[1]).toJSONString())
+								.thenApply(jsonArray -> {
+									log.debug("FormatVcfController requestId: {}, 2: {}", requestId, jsonArray);
+									return new Object[]{result[0], jsonArray};
+								}).exceptionally(throwable -> {
+									Main.crash(throwable);
+									return null;
+								})
+						)
+				)
+				.map(objects -> {
+					AnfisaResult anfisaResult = (AnfisaResult) objects[0];
+					JSONArray results = (JSONArray) objects[1];
+					log.debug("FormatVcfController requestId: {}, 3: {}", requestId, results.toJSONString().length());
 
-                    JSONObject out = new JSONObject();
-                    out.put("input", new JSONArray() {{
-                        add(anfisaResult.filters.chromosome);
-                        add(anfisaResult.data.start);
-                        add(anfisaResult.data.end);
-                        add(anfisaResult.data.alt);
-                    }});
-                    out.put("result", new JSONArray() {{
-                        add(results);
-                    }});
-                    return out;
-                })
-                .subscribe(jsonArray -> {
-                    log.debug("FormatVcfController requestId: {}, 4: {}", requestId, jsonArray.toJSONString().length());
-                    ourResults.add(jsonArray);
-                }, throwable -> {
-                    log.error("Exception execute request", throwable);
-                    completableFuture.completeExceptionally(throwable);
-                    tempVCFFile.close();
-                }, () -> {
-                    log.debug("FormatVcfController requestId: {}, 5", requestId);
-                    JSONArray out = new JSONArray();
-                    for (JSONObject jsonObject : ourResults) {
-                        out.add(jsonObject);
-                    }
-                    completableFuture.complete(ResponseBuilder.build(out));
-                    log.debug("FormatVcfController build response, time: {}", System.currentTimeMillis());
-                    tempVCFFile.close();
-                });
-        return completableFuture;
-    }
+					JSONObject out = new JSONObject();
+					out.put("input", new JSONArray() {{
+						add(anfisaResult.filters.chromosome);
+						add(anfisaResult.data.start);
+						add(anfisaResult.data.end);
+						add(anfisaResult.data.alt);
+					}});
+					out.put("result", new JSONArray() {{
+						add(results);
+					}});
+					return out;
+				})
+				.subscribe(jsonArray -> {
+					log.debug("FormatVcfController requestId: {}, 4: {}", requestId, jsonArray.toJSONString().length());
+					ourResults.add(jsonArray);
+				}, throwable -> {
+					log.error("Exception execute request", throwable);
+					completableFuture.completeExceptionally(throwable);
+					tempVCFFile.close();
+				}, () -> {
+					log.debug("FormatVcfController requestId: {}, 5", requestId);
+					JSONArray out = new JSONArray();
+					for (JSONObject jsonObject : ourResults) {
+						out.add(jsonObject);
+					}
+					completableFuture.complete(ResponseBuilder.build(out));
+					log.debug("FormatVcfController build response, time: {}", System.currentTimeMillis());
+					tempVCFFile.close();
+				});
+		return completableFuture;
+	}
 
-    private static class TempVCFFile implements AutoCloseable {
+	private static class TempVCFFile implements AutoCloseable {
 
-        public final VCFFileReader vcfFileReader;
-        public final Path path;
+		public final VCFFileReader vcfFileReader;
+		public final Path path;
 
-        public TempVCFFile(VCFFileReader vcfFileReader, Path path) {
-            this.vcfFileReader = vcfFileReader;
-            this.path = path;
-        }
+		public TempVCFFile(VCFFileReader vcfFileReader, Path path) {
+			this.vcfFileReader = vcfFileReader;
+			this.path = path;
+		}
 
-        @Override
-        public void close() {
-            vcfFileReader.close();
-            try {
-                Files.deleteIfExists(path);
-            } catch (IOException ignore) {
-            }
-        }
-    }
+		@Override
+		public void close() {
+			vcfFileReader.close();
+			try {
+				Files.deleteIfExists(path);
+			} catch (IOException ignore) {
+			}
+		}
+	}
 
-    private static TempVCFFile buildTempVCFFile(HttpServletRequest request) {
-        Path vcfFile = null;
-        try {
-            vcfFile = Files.createTempFile("temp_", ".vcf");
+	private static TempVCFFile buildTempVCFFile(HttpServletRequest request) {
+		Path vcfFile = null;
+		try {
+			vcfFile = Files.createTempFile("temp_", ".vcf");
 
-            String pData = request.getParameter("data");
-            if (!Strings.isNullOrEmpty(pData)) {
-                Files.write(vcfFile, pData.getBytes(StandardCharsets.UTF_8));
-            } else {
-                if (!(request instanceof MultipartHttpServletRequest)) {
-                    throw ExceptionBuilder.buildNotMultipartRequestException();
-                }
-                MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+			String pData = request.getParameter("data");
+			if (!Strings.isNullOrEmpty(pData)) {
+				Files.write(vcfFile, pData.getBytes(StandardCharsets.UTF_8));
+			} else {
+				if (!(request instanceof MultipartHttpServletRequest)) {
+					throw ExceptionBuilder.buildNotMultipartRequestException();
+				}
+				MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 
-                Map.Entry<String, List<MultipartFile>> entry = multipartRequest.getMultiFileMap().entrySet().stream().findFirst().orElse(null);
-                if (entry == null) {
-                    throw ExceptionBuilder.buildFileNotUploadException();
-                }
-                MultipartFile multipartFile = entry.getValue().stream().findFirst().orElse(null);
-                if (multipartFile == null) {
-                    throw ExceptionBuilder.buildFileNotUploadException();
-                }
+				Map.Entry<String, List<MultipartFile>> entry = multipartRequest.getMultiFileMap().entrySet().stream().findFirst().orElse(null);
+				if (entry == null) {
+					throw ExceptionBuilder.buildFileNotUploadException();
+				}
+				MultipartFile multipartFile = entry.getValue().stream().findFirst().orElse(null);
+				if (multipartFile == null) {
+					throw ExceptionBuilder.buildFileNotUploadException();
+				}
 
-                multipartFile.transferTo(vcfFile.toFile());
-            }
+				multipartFile.transferTo(vcfFile.toFile());
+			}
 
-            return new TempVCFFile(
-                    new VCFFileReader(vcfFile, false),
-                    vcfFile
-            );
-        } catch (IOException e) {
-            throw ExceptionBuilder.buildIOErrorException(e);
-        } catch (TribbleException.MalformedFeatureFile e) {
-            throw ExceptionBuilder.buildInvalidVcfFile(e);
-        } catch (Throwable e) {
-            try {
-                if (vcfFile != null) {
-                    Files.deleteIfExists(vcfFile);
-                }
-            } catch (IOException ignore) {
-            }
-            throw e;
-        }
-    }
+			return new TempVCFFile(
+					new VCFFileReader(vcfFile, false),
+					vcfFile
+			);
+		} catch (IOException e) {
+			throw ExceptionBuilder.buildIOErrorException(e);
+		} catch (TribbleException.MalformedFeatureFile e) {
+			throw ExceptionBuilder.buildInvalidVcfFile(e);
+		} catch (Throwable e) {
+			try {
+				if (vcfFile != null) {
+					Files.deleteIfExists(vcfFile);
+				}
+			} catch (IOException ignore) {
+			}
+			throw e;
+		}
+	}
 }

@@ -1,3 +1,21 @@
+/*
+ Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+
+ Developed by Vladimir Ulitin and Michael Bouzinier
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+	 http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
 package org.forome.annotation.controller;
 
 import com.google.common.base.Strings;
@@ -36,153 +54,153 @@ import java.util.concurrent.CompletionException;
 @RequestMapping(value = {"/GetAnfisaData", "/annotationservice/GetAnfisaData", "/GetAnfisaJSON", "/annotationservice/GetAnfisaJSON"})
 public class GetAnfisaJSONController {
 
-    private final static Logger log = LoggerFactory.getLogger(GetAnfisaJSONController.class);
+	private final static Logger log = LoggerFactory.getLogger(GetAnfisaJSONController.class);
 
-    public static class RequestItem {
+	public static class RequestItem {
 
-        public final Chromosome chromosome;
-        public final int start;
-        public final int end;
-        public final String alternative;
+		public final Chromosome chromosome;
+		public final int start;
+		public final int end;
+		public final String alternative;
 
-        public RequestItem(Chromosome chromosome, int start, int end, String alternative) {
-            this.chromosome = chromosome;
-            this.start = start;
-            this.end = end;
-            this.alternative = alternative;
-        }
-    }
+		public RequestItem(Chromosome chromosome, int start, int end, String alternative) {
+			this.chromosome = chromosome;
+			this.start = start;
+			this.end = end;
+			this.alternative = alternative;
+		}
+	}
 
-    @RequestMapping(value = {"", "/"})
-    public CompletableFuture<ResponseEntity> execute(HttpServletRequest request) {
-        Service service = Service.getInstance();
+	@RequestMapping(value = {"", "/"})
+	public CompletableFuture<ResponseEntity> execute(HttpServletRequest request) {
+		Service service = Service.getInstance();
 
-        BuilderAuthContext builderAuthContext = new BuilderAuthContext(service);
-        builderAuthContext.auth(request);
+		BuilderAuthContext builderAuthContext = new BuilderAuthContext(service);
+		builderAuthContext.auth(request);
 
-        log.debug("GetAnfisaJSONController execute, time: {}", System.currentTimeMillis());
+		log.debug("GetAnfisaJSONController execute, time: {}", System.currentTimeMillis());
 
-        String sRequestData = request.getParameter("data");
-        if (Strings.isNullOrEmpty(sRequestData)) {
-            throw ExceptionBuilder.buildInvalidValueException("data");
-        }
+		String sRequestData = request.getParameter("data");
+		if (Strings.isNullOrEmpty(sRequestData)) {
+			throw ExceptionBuilder.buildInvalidValueException("data");
+		}
 
-        EnsemblVepService ensemblVepService = service.getEnsemblVepService();
-        if (ensemblVepService == null) {
-            throw ExceptionBuilder.buildInvalidOperation("inited");
-        }
+		EnsemblVepService ensemblVepService = service.getEnsemblVepService();
+		if (ensemblVepService == null) {
+			throw ExceptionBuilder.buildInvalidOperation("inited");
+		}
 
-        CompletableFuture<JSONArray> future = new CompletableFuture<>();
-        ExecutorServiceUtils.poolExecutor.execute(() -> {
-            try {
-                long t1 = System.currentTimeMillis();
+		CompletableFuture<JSONArray> future = new CompletableFuture<>();
+		ExecutorServiceUtils.poolExecutor.execute(() -> {
+			try {
+				long t1 = System.currentTimeMillis();
 
-                ArrayList<RequestItem> requestItems = parseRequestData(sRequestData);
+				ArrayList<RequestItem> requestItems = parseRequestData(sRequestData);
 
-                List<CompletableFuture<List<AnfisaResult>>> futureAnfisaResults = new ArrayList<>();
-                AnfisaConnector anfisaConnector = service.getAnfisaConnector();
-                for (RequestItem requestItem : requestItems) {
-                    futureAnfisaResults.add(
-                            ensemblVepService.getVepJson(requestItem.chromosome, requestItem.start, requestItem.end, requestItem.alternative)
-                                    .thenApply(vepJson -> {
-                                        VariantVep variantVep = new VariantCustom(requestItem.chromosome, requestItem.start, requestItem.end);
-                                        variantVep.setVepJson(vepJson);
-                                        return anfisaConnector.build(new AnfisaInput.Builder().build(), variantVep);
-                                    })
-                    );
-                }
+				List<CompletableFuture<List<AnfisaResult>>> futureAnfisaResults = new ArrayList<>();
+				AnfisaConnector anfisaConnector = service.getAnfisaConnector();
+				for (RequestItem requestItem : requestItems) {
+					futureAnfisaResults.add(
+							ensemblVepService.getVepJson(requestItem.chromosome, requestItem.start, requestItem.end, requestItem.alternative)
+									.thenApply(vepJson -> {
+										VariantVep variantVep = new VariantCustom(requestItem.chromosome, requestItem.start, requestItem.end);
+										variantVep.setVepJson(vepJson);
+										return anfisaConnector.build(new AnfisaInput.Builder().build(), variantVep);
+									})
+					);
+				}
 
-                CompletableFuture.allOf(futureAnfisaResults.toArray(new CompletableFuture[futureAnfisaResults.size()]))
-                        .thenApply(v -> {
-                            JSONArray results = new JSONArray();
-                            for (int i = 0; i < requestItems.size(); i++) {
-                                RequestItem requestItem = requestItems.get(i);
+				CompletableFuture.allOf(futureAnfisaResults.toArray(new CompletableFuture[futureAnfisaResults.size()]))
+						.thenApply(v -> {
+							JSONArray results = new JSONArray();
+							for (int i = 0; i < requestItems.size(); i++) {
+								RequestItem requestItem = requestItems.get(i);
 
-                                List<AnfisaResult> anfisaResults = futureAnfisaResults.get(i).join();
-                                for (AnfisaResult anfisaResult: anfisaResults) {
-                                    JSONObject result = new JSONObject();
-                                    result.put("input", new JSONArray() {{
-                                        add(requestItem.chromosome);
-                                        add(requestItem.start);
-                                        add(requestItem.end);
-                                        add(requestItem.alternative);
-                                    }});
+								List<AnfisaResult> anfisaResults = futureAnfisaResults.get(i).join();
+								for (AnfisaResult anfisaResult: anfisaResults) {
+									JSONObject result = new JSONObject();
+									result.put("input", new JSONArray() {{
+										add(requestItem.chromosome);
+										add(requestItem.start);
+										add(requestItem.end);
+										add(requestItem.alternative);
+									}});
 
-                                    JSONArray outAnfisaResults = new JSONArray();
-                                    outAnfisaResults.add(anfisaResult.toJSON());
-                                    result.put("result", outAnfisaResults);
+									JSONArray outAnfisaResults = new JSONArray();
+									outAnfisaResults.add(anfisaResult.toJSON());
+									result.put("result", outAnfisaResults);
 
-                                    results.add(result);
-                                }
-                            }
+									results.add(result);
+								}
+							}
 
-                            long t2 = System.currentTimeMillis();
-                            log.debug("GetAnfisaJSONController execute request, size: {}, time: {} ms", requestItems.size(), t2 - t1);
+							long t2 = System.currentTimeMillis();
+							log.debug("GetAnfisaJSONController execute request, size: {}, time: {} ms", requestItems.size(), t2 - t1);
 
-                            future.complete(results);
-                            return null;
-                        })
-                        .exceptionally(ex -> {
-                            Throwable throwable = ex;
-                            if (ex instanceof CompletionException) {
-                                throwable = ex.getCause();
-                            }
-                            log.error("Exception execute request", throwable);
-                            future.completeExceptionally(throwable);
-                            return null;
-                        });
-            } catch (Throwable ex) {
-                log.error("Exception execute request", ex);
-                future.completeExceptionally(ex);
-            }
-        });
+							future.complete(results);
+							return null;
+						})
+						.exceptionally(ex -> {
+							Throwable throwable = ex;
+							if (ex instanceof CompletionException) {
+								throwable = ex.getCause();
+							}
+							log.error("Exception execute request", throwable);
+							future.completeExceptionally(throwable);
+							return null;
+						});
+			} catch (Throwable ex) {
+				log.error("Exception execute request", ex);
+				future.completeExceptionally(ex);
+			}
+		});
 
-        return future
-                .thenApply(out -> {
-                    ResponseEntity responseEntity = ResponseBuilder.build(out);
-                    log.debug("GetAnfisaJSONController build response, time: {}", System.currentTimeMillis());
-                    return responseEntity;
+		return future
+				.thenApply(out -> {
+					ResponseEntity responseEntity = ResponseBuilder.build(out);
+					log.debug("GetAnfisaJSONController build response, time: {}", System.currentTimeMillis());
+					return responseEntity;
 
-                })
-                .exceptionally(throwable -> ResponseBuilder.build(throwable));
-    }
+				})
+				.exceptionally(throwable -> ResponseBuilder.build(throwable));
+	}
 
-    public static ArrayList<RequestItem> parseRequestData(String sRequestData) {
-        ArrayList<RequestItem> requestItems = new ArrayList<>();
-        JSONArray jRequestData;
-        try {
-            jRequestData = (JSONArray) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(sRequestData);
-        } catch (Throwable ex) {
-            throw ExceptionBuilder.buildInvalidValueJsonException("data", ex);
-        }
-        for (Object item : jRequestData) {
-            if (!(item instanceof JSONObject)) {
-                throw ExceptionBuilder.buildInvalidValueException("data");
-            }
-            JSONObject oItem = (JSONObject) item;
+	public static ArrayList<RequestItem> parseRequestData(String sRequestData) {
+		ArrayList<RequestItem> requestItems = new ArrayList<>();
+		JSONArray jRequestData;
+		try {
+			jRequestData = (JSONArray) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(sRequestData);
+		} catch (Throwable ex) {
+			throw ExceptionBuilder.buildInvalidValueJsonException("data", ex);
+		}
+		for (Object item : jRequestData) {
+			if (!(item instanceof JSONObject)) {
+				throw ExceptionBuilder.buildInvalidValueException("data");
+			}
+			JSONObject oItem = (JSONObject) item;
 
-            Chromosome chromosome = Chromosome.of(oItem.getAsString("chromosome"));
+			Chromosome chromosome = Chromosome.of(oItem.getAsString("chromosome"));
 
-            int start = RequestParser.toInteger("start", oItem.getAsString("start"));
+			int start = RequestParser.toInteger("start", oItem.getAsString("start"));
 
-            int end = RequestParser.toInteger("end", oItem.getAsString("end"));
+			int end = RequestParser.toInteger("end", oItem.getAsString("end"));
 
-            String alternative = oItem.getAsString("alternative");
-            if (Strings.isNullOrEmpty(alternative)) {
-                throw ExceptionBuilder.buildInvalidValueException("alternative", alternative, "Description incomplete: please specify alteration (for example, AAC)");
-            }
-            if (alternative.contains(">")) {//TODO Добавить полноценную валидацию на входной параметр
-                throw ExceptionBuilder.buildInvalidValueException("alternative", alternative, "Description incomplete: please specify alteration (for example, AAC)");
-            }
+			String alternative = oItem.getAsString("alternative");
+			if (Strings.isNullOrEmpty(alternative)) {
+				throw ExceptionBuilder.buildInvalidValueException("alternative", alternative, "Description incomplete: please specify alteration (for example, AAC)");
+			}
+			if (alternative.contains(">")) {//TODO Добавить полноценную валидацию на входной параметр
+				throw ExceptionBuilder.buildInvalidValueException("alternative", alternative, "Description incomplete: please specify alteration (for example, AAC)");
+			}
 
-            requestItems.add(new RequestItem(
-                    chromosome,
-                    start,
-                    end,
-                    alternative
-            ));
-        }
+			requestItems.add(new RequestItem(
+					chromosome,
+					start,
+					end,
+					alternative
+			));
+		}
 
-        return requestItems;
-    }
+		return requestItems;
+	}
 }

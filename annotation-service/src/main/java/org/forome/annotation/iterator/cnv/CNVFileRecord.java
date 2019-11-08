@@ -1,30 +1,48 @@
+/*
+ Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+
+ Developed by Vladimir Ulitin and Michael Bouzinier
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+	 http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
 package org.forome.annotation.iterator.cnv;
 
 import org.forome.annotation.struct.Chromosome;
 
 public class CNVFileRecord {
 
-    protected final Chromosome chromosome;
-    protected final int start;
-    protected final int end;
-    protected final String exonNum;
-    protected final String transcript;
-    protected final String[] gts;
-    protected final String[] los;
+	protected final Chromosome chromosome;
+	protected final int start;
+	protected final int end;
+	protected final String exonNum;
+	protected final String transcript;
+	protected final String[] gts;
+	protected final String[] los;
 
-    public CNVFileRecord(
-            Chromosome chromosome,
-            int start, int end,
-            String exonNum,
-            String transcript,
-            String[] gts, String[] los
-    ) {
-        this.chromosome = chromosome;
-        this.start = start;
-        this.end = end;
-        this.exonNum = exonNum;
-        this.transcript = transcript;
-        this.gts = gts;
-        this.los = los;
-    }
+	public CNVFileRecord(
+			Chromosome chromosome,
+			int start, int end,
+			String exonNum,
+			String transcript,
+			String[] gts, String[] los
+	) {
+		this.chromosome = chromosome;
+		this.start = start;
+		this.end = end;
+		this.exonNum = exonNum;
+		this.transcript = transcript;
+		this.gts = gts;
+		this.los = los;
+	}
 }
