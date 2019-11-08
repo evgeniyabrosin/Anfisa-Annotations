@@ -9,9 +9,8 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.forome.annotation.network.exception.NetworkException;
+import org.forome.annotation.network.transport.builder.BuilderHttpConnector;
 import org.forome.annotation.network.transport.builder.HttpBuilderTransport;
-import org.forome.annotation.network.transport.builder.connector.BuilderHttpConnector;
-import org.forome.annotation.network.transport.builder.filter.BuilderFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -48,12 +47,6 @@ public class HttpTransport {
 		applicationContext.register(httpBuilderTransport.getClassWebMvcConfig());
 		context.addServlet(new ServletHolder("default", new DispatcherServlet(applicationContext)), "/");
 
-		//Возможно есть регистрируемые фильтры
-		if (httpBuilderTransport.getFilters() != null) {
-			for (BuilderFilter builderFilter : httpBuilderTransport.getFilters()) {
-				context.addFilter(builderFilter.filterClass, builderFilter.pathSpec, builderFilter.dispatches);
-			}
-		}
 
 		HandlerCollection handlers = new HandlerCollection();
 		handlers.setHandlers(new Handler[]{ context, new DefaultHandler() });

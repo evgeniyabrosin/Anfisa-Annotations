@@ -1,8 +1,6 @@
 package org.forome.annotation.network.transport.builder;
 
 import org.eclipse.jetty.server.handler.ErrorHandler;
-import org.forome.annotation.network.transport.builder.connector.BuilderHttpConnector;
-import org.forome.annotation.network.transport.builder.filter.BuilderFilter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,8 +11,6 @@ public class HttpBuilderTransport {
 
 	private Class classWebMvcConfig;
 	private ErrorHandler errorHandler;
-
-	private Set<BuilderFilter> filters;
 
 	public HttpBuilderTransport(Class classWebMvcConfig) {
 		this.classWebMvcConfig = classWebMvcConfig;
@@ -33,15 +29,6 @@ public class HttpBuilderTransport {
 		return this;
 	}
 
-
-	public HttpBuilderTransport addFilter(BuilderFilter filterItem) {
-		if (filters == null) {
-			filters = new HashSet<BuilderFilter>();
-		}
-		filters.add(filterItem);
-		return this;
-	}
-
 	public Set<BuilderHttpConnector> getBuilderConnectors() {
 		return builderConnectors;
 	}
@@ -54,7 +41,4 @@ public class HttpBuilderTransport {
 		return errorHandler;
 	}
 
-	public Set<BuilderFilter> getFilters() {
-		return filters;
-	}
 }

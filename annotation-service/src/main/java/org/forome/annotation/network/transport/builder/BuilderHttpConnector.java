@@ -1,4 +1,4 @@
-package org.forome.annotation.network.transport.builder.connector;
+package org.forome.annotation.network.transport.builder;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -14,12 +14,6 @@ public class BuilderHttpConnector {
 		this.port = port;
 		this.host = null;
 	}
-
-	public BuilderHttpConnector withHost(String host) {
-		this.host = host;
-		return this;
-	}
-
 
 	public Connector build(Server server) throws NetworkException {
 		ServerConnector connector = new ServerConnector(server);

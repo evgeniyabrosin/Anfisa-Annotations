@@ -3,7 +3,6 @@ package org.forome.annotation.network.transport.spring;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,8 +15,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Duration;
 
 /**
@@ -29,8 +26,6 @@ import java.time.Duration;
 public class SpringConfigurationMvc extends WebMvcConfigurerAdapter {
 
 	private static Duration requestTimeout;
-	private static Path uploadTempDir;
-	private static Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
 
 	@Override
 	public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
@@ -56,23 +51,11 @@ public class SpringConfigurationMvc extends WebMvcConfigurerAdapter {
 		CommonsMultipartResolver commonsMultipartResolver = new CommonsMultipartResolver();
 		commonsMultipartResolver.setDefaultEncoding("utf-8");
 		commonsMultipartResolver.setMaxUploadSize(-1);//Убираем ограничение на размер загружаемых файлов
-		if (uploadTempDir != null) {
-			try {
-				if (!Files.exists(uploadTempDir)) {
-					Files.createDirectories(uploadTempDir);
-				}
-				commonsMultipartResolver.setUploadTempDir(new UrlResource(uploadTempDir.toUri()));
-			} catch (Throwable throwable) {
-				uncaughtExceptionHandler.uncaughtException(Thread.currentThread(), throwable);
-			}
-		}
 		return commonsMultipartResolver;
 	}
 
-	public static void init(Duration requestTimeout, Path uploadTempDir, Thread.UncaughtExceptionHandler uncaughtExceptionHandler) {
+	public static void init(Duration requestTimeout) {
 		SpringConfigurationMvc.requestTimeout = requestTimeout;
-		SpringConfigurationMvc.uploadTempDir = uploadTempDir;
-		SpringConfigurationMvc.uncaughtExceptionHandler = uncaughtExceptionHandler;
 	}
 
 	@ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
