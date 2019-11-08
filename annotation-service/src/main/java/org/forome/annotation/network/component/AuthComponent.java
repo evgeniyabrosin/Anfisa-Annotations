@@ -1,10 +1,10 @@
 package org.forome.annotation.network.component;
 
 import com.infomaximum.database.domainobject.filter.HashFilter;
-import org.forome.annotation.executionqueue.ExecutionTransaction;
-import org.forome.annotation.executionqueue.ReadableResource;
+import com.infomaximum.querypool.QueryTransaction;
+import com.infomaximum.querypool.ReadableResource;
+import com.infomaximum.querypool.ResourceProvider;
 import org.forome.annotation.database.entityobject.user.UserReadable;
-import org.forome.annotation.executionqueue.ResourceProvider;
 
 import java.util.Arrays;
 
@@ -16,7 +16,7 @@ public class AuthComponent {
 		userReadableResource = resources.getReadableResource(UserReadable.class);
 	}
 
-	public UserReadable auth(String login, String password, ExecutionTransaction transaction) {
+	public UserReadable auth(String login, String password, QueryTransaction transaction) {
 		UserReadable user = userReadableResource.find(new HashFilter(UserReadable.FIELD_LOGIN, login), transaction);
 		if (user == null) return null;
 

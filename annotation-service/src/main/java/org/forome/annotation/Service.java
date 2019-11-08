@@ -1,5 +1,6 @@
 package org.forome.annotation;
 
+import com.infomaximum.querypool.*;
 import org.forome.annotation.config.Config;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
@@ -16,7 +17,7 @@ import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.database.DatabaseService;
 import org.forome.annotation.database.entityobject.user.UserReadable;
 import org.forome.annotation.exception.AnnotatorException;
-import org.forome.annotation.executionqueue.*;
+import org.forome.annotation.exception.QueryPoolExceptionBuilder;
 import org.forome.annotation.network.NetworkService;
 import org.forome.annotation.network.component.UserEditableComponent;
 import org.forome.annotation.service.database.DatabaseConnectService;
@@ -65,7 +66,7 @@ public class Service {
     private static Service instance = null;
 
     private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler;
-    private final ExecutionQueue executionQueue;
+    private final QueryPool queryPool;
 
     private final Config config;
     private final ServiceConfig serviceConfig;
@@ -92,7 +93,7 @@ public class Service {
         instance = this;
 
         this.uncaughtExceptionHandler = uncaughtExceptionHandler;
-        this.executionQueue = new ExecutionQueue(uncaughtExceptionHandler);
+        this.queryPool = new QueryPool(new QueryPoolExceptionBuilder() , uncaughtExceptionHandler);
 
         this.config = new Config();
         this.serviceConfig = new ServiceConfig();
@@ -136,7 +137,7 @@ public class Service {
                 pharmGKBConnector
         );
 
-        executionQueue.execute(this, new Execution<Void>() {
+        queryPool.execute(this.databaseService.getDomainObjectSource(), new Query<Void>() {
 
             private ReadableResource<UserReadable> userReadableResource;
             private UserEditableComponent userEditableComponent;
@@ -148,7 +149,7 @@ public class Service {
             }
 
             @Override
-            public Void execute(ExecutionTransaction transaction) throws AnnotatorException {
+            public Void execute(QueryTransaction transaction) throws AnnotatorException {
                 if (!userReadableResource.iterator(transaction).hasNext()) {
                     userEditableComponent.create("admin", "b82nfGl5sdg", transaction);
                 }
@@ -157,8 +158,8 @@ public class Service {
         }).get();
     }
 
-    public ExecutionQueue getExecutionQueue() {
-        return executionQueue;
+    public QueryPool getQueryPool() {
+        return queryPool;
     }
 
     public Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
