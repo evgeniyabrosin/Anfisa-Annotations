@@ -195,6 +195,19 @@ if args.mode == "gtex":
         batch_size = config["gtex.batch_size"],
         filename  = config["gtex.filename"])
     sys.exit()   
+    
+#========================================
+if args.mode == "spliceai":
+    from spliceai import ingestSpliceAI
+    ingestSpliceAI(
+        db_host    = config.get("spliceai.db.host", std_db_host),
+        db_port    = config.get("spliceai.db.port", std_db_port),
+        user       = config.get("spliceai.db.user", std_user),
+        password   = config.get("spliceai.db.password", std_password),
+        database   = config["spliceai.database"],
+        batch_size = config["spliceai.batch_size"],
+        file_list  = config["spliceai.file_list"])
+    sys.exit()
 #========================================
 # More modes to add:
 # gnomad

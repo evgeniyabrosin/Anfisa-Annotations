@@ -24,6 +24,10 @@
     
     "gtex.database":    "gtex",
     "gtex.batch_size":  10000,
-    "gtex.filename":    "?/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_median_tpm.gct.gz"
+    "gtex.filename":    "?/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_median_tpm.gct.gz",
+    
+    "spliceai.database":   "spliceai",
+    "spliceai.batch_size":  1000,
+    "spliceai.file_list":   ["?/*.vcf.gz"]
 }
 
