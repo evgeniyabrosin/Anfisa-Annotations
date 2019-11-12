@@ -21,11 +21,10 @@ package org.forome.annotation.annotator.executor;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.iterator.json.JsonFileIterator;
 import org.forome.annotation.iterator.vcf.VCFFileIterator;
+import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
@@ -51,7 +50,7 @@ public class ThreadExecutor implements AutoCloseable {
 	private final int index;
 
 	private final EnsemblVepService ensemblVepService;
-	private final AnfisaConnector anfisaConnector;
+	private final Processing processing;
 
 	private final String caseSequence;
 	private final MCase samples;
@@ -71,7 +70,7 @@ public class ThreadExecutor implements AutoCloseable {
 	public ThreadExecutor(
 			int index,
 			EnsemblVepService ensemblVepService,
-			AnfisaConnector anfisaConnector,
+			Processing processing,
 			String caseSequence, MCase samples,
 			Path pathVcf, Path pathVepJson,
 			Path cnvFile,
@@ -81,7 +80,7 @@ public class ThreadExecutor implements AutoCloseable {
 		this.index = index;
 
 		this.ensemblVepService = ensemblVepService;
-		this.anfisaConnector = anfisaConnector;
+		this.processing = processing;
 
 		this.caseSequence = caseSequence;
 		this.samples = samples;
@@ -138,15 +137,9 @@ public class ThreadExecutor implements AutoCloseable {
 				Variant variant = source.variant;
 
 				if (variant instanceof VariantVCF && vepJsonIterator != null) {
-					AnfisaInput anfisaInput = new AnfisaInput.Builder()
-							.withSamples(samples)
-							.build();
+					List<ProcessingResult> processingResults = processing.exec(samples, variant);
 
-					List<AnfisaResult> anfisaResults = anfisaConnector.build(
-							anfisaInput,
-							variant
-					);
-					result.future.complete(anfisaResults);
+					result.future.complete(processingResults);
 				} else {
 					String alternative;
 					if (variant instanceof VariantVCF) {
@@ -167,11 +160,8 @@ public class ThreadExecutor implements AutoCloseable {
 							.thenApply(iVepJson -> {
 								((VariantVep) variant).setVepJson(iVepJson);
 
-								AnfisaInput anfisaInput = new AnfisaInput.Builder()
-										.withSamples(samples)
-										.build();
-								List<AnfisaResult> anfisaResults = anfisaConnector.build(anfisaInput, variant);
-								result.future.complete(anfisaResults);
+								List<ProcessingResult> processingResults = processing.exec(samples, variant);
+								result.future.complete(processingResults);
 								return null;
 							})
 							.exceptionally(throwable -> {

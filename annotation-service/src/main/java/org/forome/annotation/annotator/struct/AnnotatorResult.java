@@ -26,7 +26,7 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
+import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
@@ -220,9 +220,9 @@ public class AnnotatorResult {
 	}
 
 	public final Metadata metadata;
-	public final Observable<AnfisaResult> observableAnfisaResult;
+	public final Observable<ProcessingResult> observableAnfisaResult;
 
-	public AnnotatorResult(Metadata metadata, Observable<AnfisaResult> observableAnfisaResult) {
+	public AnnotatorResult(Metadata metadata, Observable<ProcessingResult> observableAnfisaResult) {
 		this.metadata = metadata;
 		this.observableAnfisaResult = observableAnfisaResult;
 	}

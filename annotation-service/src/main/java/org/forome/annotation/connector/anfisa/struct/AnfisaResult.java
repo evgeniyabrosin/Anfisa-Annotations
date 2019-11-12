@@ -25,7 +25,6 @@ public class AnfisaResult {
 	public final AnfisaResultFilters filters;
 	public final AnfisaResultData data;
 	public final AnfisaResultView view;
-	public final String recordType;
 
 	public AnfisaResult(
 			AnfisaResultFilters filters,
@@ -35,7 +34,6 @@ public class AnfisaResult {
 		this.filters = filters;
 		this.data = data;
 		this.view = view;
-		this.recordType = "variant";
 	}
 
 	public JSONObject toJSON() {
@@ -43,7 +41,6 @@ public class AnfisaResult {
 		out.put("_view", view.toJSON());
 		out.put("_filters", filters.toJSON(data, view.databases, view.bioinformatics));
 		out.put("__data", data.toJSON());
-		out.put("record_type", recordType);
 		return out;
 	}
 }

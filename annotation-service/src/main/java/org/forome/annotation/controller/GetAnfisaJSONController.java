@@ -24,12 +24,12 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.Service;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
+import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
@@ -97,27 +97,30 @@ public class GetAnfisaJSONController {
 
 				ArrayList<RequestItem> requestItems = parseRequestData(sRequestData);
 
-				List<CompletableFuture<List<AnfisaResult>>> futureAnfisaResults = new ArrayList<>();
+				List<CompletableFuture<List<ProcessingResult>>> futureProcessingResults = new ArrayList<>();
+
 				AnfisaConnector anfisaConnector = service.getAnfisaConnector();
+				Processing processing = new Processing(anfisaConnector);
+
 				for (RequestItem requestItem : requestItems) {
-					futureAnfisaResults.add(
+					futureProcessingResults.add(
 							ensemblVepService.getVepJson(requestItem.chromosome, requestItem.start, requestItem.end, requestItem.alternative)
 									.thenApply(vepJson -> {
 										VariantVep variantVep = new VariantCustom(requestItem.chromosome, requestItem.start, requestItem.end);
 										variantVep.setVepJson(vepJson);
-										return anfisaConnector.build(new AnfisaInput.Builder().build(), variantVep);
+										return processing.exec(null, variantVep);
 									})
 					);
 				}
 
-				CompletableFuture.allOf(futureAnfisaResults.toArray(new CompletableFuture[futureAnfisaResults.size()]))
+				CompletableFuture.allOf(futureProcessingResults.toArray(new CompletableFuture[futureProcessingResults.size()]))
 						.thenApply(v -> {
 							JSONArray results = new JSONArray();
 							for (int i = 0; i < requestItems.size(); i++) {
 								RequestItem requestItem = requestItems.get(i);
 
-								List<AnfisaResult> anfisaResults = futureAnfisaResults.get(i).join();
-								for (AnfisaResult anfisaResult: anfisaResults) {
+								List<ProcessingResult> processingResults = futureProcessingResults.get(i).join();
+								for (ProcessingResult processingResult: processingResults) {
 									JSONObject result = new JSONObject();
 									result.put("input", new JSONArray() {{
 										add(requestItem.chromosome);
@@ -127,7 +130,7 @@ public class GetAnfisaJSONController {
 									}});
 
 									JSONArray outAnfisaResults = new JSONArray();
-									outAnfisaResults.add(anfisaResult.toJSON());
+									outAnfisaResults.add(processingResult.toJSON());
 									result.put("result", outAnfisaResults);
 
 									results.add(result);

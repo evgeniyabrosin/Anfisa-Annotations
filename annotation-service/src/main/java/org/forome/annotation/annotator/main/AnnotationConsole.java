@@ -34,6 +34,7 @@ import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.forome.annotation.processing.Processing;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
@@ -99,6 +100,7 @@ public class AnnotationConsole {
 	private PharmGKBConnector pharmGKBConnector;
 	private EnsemblVepService ensemblVepService;
 	private AnfisaConnector anfisaConnector;
+	private Processing processing;
 
 	public AnnotationConsole(
 			Path configFile,
@@ -163,6 +165,7 @@ public class AnnotationConsole {
 					gtexConnector,
 					pharmGKBConnector
 			);
+			processing = new Processing(anfisaConnector);
 		} catch (Throwable e) {
 			fail(e, arguments);
 		}
@@ -187,7 +190,7 @@ public class AnnotationConsole {
 				pathVepJson = buildVepJson(vcfFile, pathDirVepJson);
 			}
 
-			Annotator annotator = new Annotator(ensemblVepService, anfisaConnector);
+			Annotator annotator = new Annotator(ensemblVepService, processing);
 			AnnotatorResult annotatorResult = annotator.exec(
 					caseName,
 					casePlatform,
@@ -211,8 +214,8 @@ public class AnnotationConsole {
 			bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
 			annotatorResult.observableAnfisaResult.blockingSubscribe(
-					anfisaResult -> {
-						String out = anfisaResult.toJSON().toJSONString();
+					processingResult -> {
+						String out = processingResult.toJSON().toJSONString();
 						bos.write(out.getBytes(StandardCharsets.UTF_8));
 						bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
@@ -287,7 +290,7 @@ public class AnnotationConsole {
 		}
 	}
 
-	private static Path buildVepJson(Path vcfFile, Path pathDirVepJson) throws IOException, InterruptedException {
+	private static Path buildVepJson(Path vcfFile, Path pathDirVepJson) {
 		String fileNameVcf = vcfFile.getFileName().toString();
 		String fileNameVepJson;
 		if (fileNameVcf.endsWith(".vcf")) {

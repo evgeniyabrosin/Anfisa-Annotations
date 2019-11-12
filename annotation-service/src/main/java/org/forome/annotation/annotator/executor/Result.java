@@ -18,7 +18,7 @@
 
 package org.forome.annotation.annotator.executor;
 
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
+import org.forome.annotation.processing.struct.ProcessingResult;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -26,9 +26,9 @@ import java.util.concurrent.CompletableFuture;
 public class Result {
 
 	public final int position;
-	public final CompletableFuture<List<AnfisaResult>> future;
+	public final CompletableFuture<List<ProcessingResult>> future;
 
-	public Result(int position, CompletableFuture<List<AnfisaResult>> future) {
+	public Result(int position, CompletableFuture<List<ProcessingResult>> future) {
 		this.position = position;
 		this.future = future;
 	}

@@ -42,8 +42,8 @@ import org.forome.annotation.annotator.executor.AnnotatorExecutor;
 import org.forome.annotation.annotator.executor.Result;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.annotator.utils.CaseUtils;
-import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
+import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.struct.mcase.MCase;
@@ -63,13 +63,13 @@ public class Annotator {
 	private static final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 4;
 
 	private final EnsemblVepService ensemblVepService;
-	private final AnfisaConnector anfisaConnector;
+	private final Processing processing;
 
 	public Annotator(
 			EnsemblVepService ensemblVepService,
-			AnfisaConnector anfisaConnector) {
+			Processing processing) {
 		this.ensemblVepService = ensemblVepService;
-		this.anfisaConnector = anfisaConnector;
+		this.processing = processing;
 	}
 
 	public AnnotatorResult exec(
@@ -156,13 +156,13 @@ public class Annotator {
 			int startPosition
 	) {
 		return new AnnotatorResult(
-				AnnotatorResult.Metadata.build(caseSequence, pathVepVcf, samples, anfisaConnector),
+				AnnotatorResult.Metadata.build(caseSequence, pathVepVcf, samples, processing.getAnfisaConnector()),
 				Observable.create(o -> {
 					new Thread(new Runnable() {
 						@Override
 						public void run() {
 							try (AnnotatorExecutor annotatorExecutor = new AnnotatorExecutor(
-									ensemblVepService, anfisaConnector,
+									ensemblVepService, processing,
 									caseSequence, samples,
 									pathVepVcf, pathVepJson,
 									cnvFile,
@@ -172,12 +172,12 @@ public class Annotator {
 								boolean run = true;
 								while (run) {
 									Result result = annotatorExecutor.next();
-									List<AnfisaResult> anfisaResults;
+									List<ProcessingResult> processingResults;
 									try {
-										anfisaResults = result.future.get();
-										if (anfisaResults != null) {
-											for (AnfisaResult anfisaResult : anfisaResults) {
-												o.onNext(anfisaResult);
+										processingResults = result.future.get();
+										if (processingResults != null) {
+											for (ProcessingResult processingResult : processingResults) {
+												o.onNext(processingResult);
 											}
 										} else {
 											run = false;

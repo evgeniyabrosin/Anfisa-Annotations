@@ -132,20 +132,6 @@ public class AnfisaConnector implements AutoCloseable {
 		this.gtfAnfisaBuilder = new GtfAnfisaBuilder(gtfConnector);
 	}
 
-	public List<AnfisaResult> build(
-			AnfisaInput anfisaInput,
-			Variant variant
-	) {
-		List<AnfisaResult> results = new ArrayList<>();
-		for (Allele altAllele : variant.getAltAllele()) {
-			results.add(build(
-					anfisaInput,
-					variant, altAllele
-			));
-		}
-		return results;
-	}
-
 	public AnfisaResult build(
 			AnfisaInput anfisaInput,
 			Variant variant, Allele altAllele

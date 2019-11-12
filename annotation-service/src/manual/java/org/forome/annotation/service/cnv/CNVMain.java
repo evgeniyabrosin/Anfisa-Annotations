@@ -23,7 +23,6 @@ import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
@@ -35,6 +34,8 @@ import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.iterator.cnv.CNVFileIterator;
+import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
@@ -77,6 +78,7 @@ public class CNVMain {
 				gtexConnector,
 				pharmGKBConnector
 		);
+		Processing processing = new Processing(anfisaConnector);
 
 		Path pathVcf = Paths.get("/home/kris/processtech/tmp/_3/cnv.vcf");
 		CNVFileIterator cnvFileIterator = new CNVFileIterator(pathVcf);
@@ -87,9 +89,9 @@ public class CNVMain {
 			variant.setVepJson(vepJson);
 
 			AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-			List<AnfisaResult> anfisaResults = anfisaConnector.build(anfisaInput, variant);
-			for (AnfisaResult anfisaResult: anfisaResults) {
-				log.debug("anfisaResult: " + anfisaResult);
+			List<ProcessingResult> processingResults = processing.exec(null, variant);
+			for (ProcessingResult processingResult: processingResults) {
+				log.debug("processingResult: " + processingResult);
 			}
 		}
 

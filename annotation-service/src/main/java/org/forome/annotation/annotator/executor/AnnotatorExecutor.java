@@ -19,8 +19,8 @@
 package org.forome.annotation.annotator.executor;
 
 import htsjdk.variant.vcf.VCFFileReader;
-import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.processing.Processing;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.mcase.MCase;
 
@@ -36,7 +36,7 @@ public class AnnotatorExecutor implements AutoCloseable {
 
 	public AnnotatorExecutor(
 			EnsemblVepService ensemblVepService,
-			AnfisaConnector anfisaConnector,
+			Processing processing,
 			String caseSequence, MCase mCase,
 			Path pathVcf, Path pathVepJson,
 			Path cnvFile,
@@ -57,7 +57,7 @@ public class AnnotatorExecutor implements AutoCloseable {
 			threadExecutors[i] = new ThreadExecutor(
 					i + 1,
 					ensemblVepService,
-					anfisaConnector,
+					processing,
 					caseSequence, mCase,
 					pathVcf, pathVepJson,
 					cnvFile,

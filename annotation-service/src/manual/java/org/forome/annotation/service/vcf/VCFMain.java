@@ -22,8 +22,6 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
@@ -35,6 +33,8 @@ import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.iterator.vcf.VCFFileIterator;
+import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
@@ -79,6 +79,7 @@ public class VCFMain {
 				gtexConnector,
 				pharmGKBConnector
 		);
+		Processing processing = new Processing(anfisaConnector);
 
 		Path pathVcf = Paths.get("/home/kris/processtech/tmp/newvcf/HG002_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-22_v.3.3.2_highconf_triophased.vcf");
 		VCFFileIterator vcfFileIterator = new VCFFileIterator(pathVcf);
@@ -88,10 +89,10 @@ public class VCFMain {
 				VariantVep variant = vcfFileIterator.next();
 				JSONObject vepJson = ensemblVepService.getVepJson(variant, "-").get();
 				variant.setVepJson(vepJson);
-				AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-				List<AnfisaResult> anfisaResults = anfisaConnector.build(anfisaInput, variant);
-				for (AnfisaResult anfisaResult: anfisaResults) {
-					log.debug("anfisaResult: " + anfisaResult);
+
+				List<ProcessingResult> processingResults = processing.exec(null, variant);
+				for (ProcessingResult processingResult: processingResults) {
+					log.debug("processingResult: " + processingResult);
 				}
 			} catch (NoSuchElementException e) {
 				break;

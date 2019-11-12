@@ -29,12 +29,14 @@ import org.forome.annotation.Service;
 import org.forome.annotation.annotator.Annotator;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.format.FormatAnfisaHttpClient;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
+import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.struct.variant.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -76,7 +78,10 @@ public class FormatVcfController {
 		if (anfisaConnector == null) {
 			throw ExceptionBuilder.buildInvalidOperation("inited");
 		}
-		Annotator annotator = new Annotator(ensemblVepService, anfisaConnector);
+
+		Processing processing = new Processing(anfisaConnector);
+
+		Annotator annotator = new Annotator(ensemblVepService, processing);
 
 		FormatAnfisaHttpClient formatAnfisaHttpClient;
 		try {
@@ -98,15 +103,15 @@ public class FormatVcfController {
 		CompletableFuture<ResponseEntity> completableFuture = new CompletableFuture<>();
 		List<JSONObject> ourResults = Collections.synchronizedList(new ArrayList<JSONObject>());
 		annotatorResult.observableAnfisaResult
-				.map(anfisaResult -> {
-					log.debug("FormatVcfController requestId: {}, 1: {}", requestId, anfisaResult);
-					return new Object[]{anfisaResult, anfisaResult.toJSON()};
+				.map(processingResult -> {
+					log.debug("FormatVcfController requestId: {}, 1: {}", requestId, processingResult);
+					return processingResult;
 				})
-				.flatMap(result ->
-						Observable.fromFuture(formatAnfisaHttpClient.request(((JSONObject) result[1]).toJSONString())
+				.flatMap(processingResult ->
+						Observable.fromFuture(formatAnfisaHttpClient.request(processingResult.toJSON().toJSONString())
 								.thenApply(jsonArray -> {
 									log.debug("FormatVcfController requestId: {}, 2: {}", requestId, jsonArray);
-									return new Object[]{result[0], jsonArray};
+									return new Object[]{processingResult, jsonArray};
 								}).exceptionally(throwable -> {
 									Main.crash(throwable);
 									return null;
@@ -114,16 +119,17 @@ public class FormatVcfController {
 						)
 				)
 				.map(objects -> {
-					AnfisaResult anfisaResult = (AnfisaResult) objects[0];
+					ProcessingResult processingResult = (ProcessingResult) objects[0];
 					JSONArray results = (JSONArray) objects[1];
 					log.debug("FormatVcfController requestId: {}, 3: {}", requestId, results.toJSONString().length());
 
 					JSONObject out = new JSONObject();
+					Variant variant = processingResult.variant;
 					out.put("input", new JSONArray() {{
-						add(anfisaResult.filters.chromosome);
-						add(anfisaResult.data.start);
-						add(anfisaResult.data.end);
-						add(anfisaResult.data.alt);
+						add(variant.chromosome.getChromosome());
+						add(variant.start);
+						add(variant.end);
+						add(processingResult.altAllele.getBaseString());
 					}});
 					out.put("result", new JSONArray() {{
 						add(results);

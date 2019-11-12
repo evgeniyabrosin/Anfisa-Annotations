@@ -24,13 +24,13 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.Main;
 import org.forome.annotation.Service;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.format.FormatAnfisaHttpClient;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
+import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vep.VariantVep;
@@ -80,6 +80,7 @@ public class FormatAnfisaController {
 		if (anfisaConnector == null) {
 			throw ExceptionBuilder.buildInvalidOperation("inited");
 		}
+		Processing processing = new Processing(anfisaConnector);
 
 		CompletableFuture<JSONArray> future = new CompletableFuture<>();
 		ExecutorServiceUtils.poolExecutor.execute(() -> {
@@ -97,12 +98,12 @@ public class FormatAnfisaController {
 									.thenApply(vepJson -> {
 										VariantVep variantVep = new VariantCustom(requestItem.chromosome, requestItem.start, requestItem.end);
 										variantVep.setVepJson(vepJson);
-										return anfisaConnector.build(new AnfisaInput.Builder().build(), variantVep);
+										return processing.exec(null, variantVep);
 									})
-									.thenCompose(anfisaResults -> {
+									.thenCompose(processingResults -> {
 										List<CompletableFuture<JSONArray>> futureItems = new ArrayList<>();
-										for (AnfisaResult anfisaResult: anfisaResults) {
-											JSONObject result = anfisaResult.toJSON();
+										for (ProcessingResult processingResult: processingResults) {
+											JSONObject result = processingResult.toJSON();
 											CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
 													.exceptionally(throwable -> {
 														if (throwable instanceof AnnotatorException) {
