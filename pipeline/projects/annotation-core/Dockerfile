@@ -25,7 +25,7 @@ RUN echo "Etc/UTC" > /etc/timezone \
     && dpkg-reconfigure -f noninteractive tzdata \
     \
     && apt-get update \
-    && apt-get install openjdk-11-jre \
+    && apt-get install -y openjdk-11-jre \
     \
     && mkdir /usr/sbin/forome/ \
     && mkdir /usr/sbin/forome/annotation/ \
