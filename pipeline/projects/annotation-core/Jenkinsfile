@@ -50,7 +50,7 @@ node {
 		}
 
 		stage('Build & Publish docker image') {
-			sh('docker build . -t forome/annotation:develop --file pipline/projects/annotation-core/Dockerfile')
+			sh('docker build . -t forome/annotation:develop --file pipeline/projects/annotation-core/Dockerfile')
 		}
 
 	} catch (Throwable e) {
