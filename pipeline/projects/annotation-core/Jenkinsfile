@@ -32,21 +32,13 @@ node {
 			checkout scm
 		}
 
-		stage('Build: annotattion') {
-			dir('source-annotattion') {
-				dir('Anfisa-Annotations') {
-					git(
-					    url: 'git@github.com:ForomePlatform/Anfisa-Annotations.git',
-						branch: 'master'
-					)
-					dir('annotation-service') {
-                        sh('chmod +x gradlew')
-					    sh('./gradlew clean --refresh-dependencies')
-					    sh('./gradlew build -Pfilename=annotation.jar --refresh-dependencies')
-					    sh('mv build/libs/annotation.jar ../../')
-					}
-				}
-			}
+		stage('Build: annotation') {
+		    dir('annotation-service') {
+                sh('chmod +x gradlew')
+        		sh('./gradlew clean --refresh-dependencies')
+        		sh('./gradlew build -Pfilename=annotation.jar --refresh-dependencies')
+        		sh('mv build/libs/annotation.jar ./')
+        	}
 		}
 
 		stage('Build & Publish docker image') {

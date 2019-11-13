@@ -35,6 +35,6 @@ RUN echo "Etc/UTC" > /etc/timezone \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ADD source-annotattion/annotation.jar /usr/sbin/forome/annotation/jar/
+ADD annotation-service/annotation.jar /usr/sbin/forome/annotation/jar/
 
 CMD ["java", "-cp", "/usr/sbin/forome/annotation/jar/annotation.jar"]
