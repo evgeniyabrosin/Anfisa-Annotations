@@ -39,4 +39,4 @@ RUN echo "Etc/UTC" > /etc/timezone \
 ADD annotation-service/annotation.jar /usr/sbin/forome/annotation/jar/
 
 WORKDIR /data/
-CMD ["java", "-cp", "/usr/sbin/forome/annotation/jar/annotation.jar", "org.forome.annotation.annotator.main.AnnotatorScanInventory", "-config", "/config.json"]
+CMD ["java", "-cp", "/usr/sbin/forome/annotation/jar/annotation.jar", "org.forome.annotation.annotator.main.AnnotatorScanInventory", "-config", "/config.json", "-scan-inventory"]
