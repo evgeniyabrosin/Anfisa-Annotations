@@ -40,13 +40,10 @@ node {
         		sh('mv build/libs/annotation.jar ./')
 
         		env.annotationVersion = sh(script: './gradlew -q getVersion', returnStdout: true).trim()
-        		println "version: ${env.annotationVersion}"
         	}
 		}
 
 		stage('Build & Publish docker image') {
-            println "version: ${env.annotationVersion}"
-
 			sh("docker build . -t forome/annotation:${env.annotationVersion} --file pipeline/projects/annotation-core/Dockerfile")
 		}
 

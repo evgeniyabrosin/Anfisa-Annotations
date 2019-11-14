@@ -30,6 +30,7 @@ RUN echo "Etc/UTC" > /etc/timezone \
     && mkdir /usr/sbin/forome/ \
     && mkdir /usr/sbin/forome/annotation/ \
     && mkdir /usr/sbin/forome/annotation/jar \
+    && mkdir /data/ \
     \
     #Чистим
     && apt-get clean \
@@ -37,4 +38,5 @@ RUN echo "Etc/UTC" > /etc/timezone \
 
 ADD annotation-service/annotation.jar /usr/sbin/forome/annotation/jar/
 
-CMD ["java", "-cp", "/usr/sbin/forome/annotation/jar/annotation.jar"]
+WORKDIR /data/
+CMD ["java", "-cp", "/usr/sbin/forome/annotation/jar/annotation.jar", "org.forome.annotation.annotator.main.AnnotatorScanInventory", "-config", "/config.json"]
