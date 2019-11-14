@@ -39,7 +39,7 @@ node {
         		sh('./gradlew build -Pfilename=annotation.jar --refresh-dependencies')
         		sh('mv build/libs/annotation.jar ./')
 
-        		def version = sh(script: './gradlew -q printVersion', returnStdout: true).trim()
+        		def version = sh(script: './gradlew -q getVersion', returnStdout: true).trim()
         		println "version: ${version}"
         	}
 		}
