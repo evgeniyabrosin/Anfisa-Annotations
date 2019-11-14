@@ -40,6 +40,10 @@ import java.util.regex.Pattern;
 
 public class Inventory {
 
+	public static final Pattern PATTERN_FILE_INVENTORY = Pattern.compile(
+			"^(.*?)[.]cfg$"
+	);
+
 	public final String caseName;
 	public final CasePlatform casePlatform;
 

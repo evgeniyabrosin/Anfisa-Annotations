@@ -41,6 +41,8 @@ public class ParserArgument {
 
 	public static final String OPTION_FILE_INVENTORY = "inventory";
 
+	public static final String OPTION_SCAN_FILE_INVENTORY = "scan-inventory";
+
 	public final Arguments arguments;
 
 	public ParserArgument(String[] args) throws InterruptedException {
@@ -64,6 +66,13 @@ public class ParserArgument {
 						.hasArg(true)
 						.optionalArg(false)
 						.desc("Absolute path to inventory file")
+						.build())
+
+				.addOption(Option.builder()
+						.longOpt(OPTION_SCAN_FILE_INVENTORY)
+						.hasArg(false)
+						.optionalArg(false)
+						.desc("Enable scan file inventory")
 						.build())
 
 				.addOption(Option.builder()
@@ -121,6 +130,8 @@ public class ParserArgument {
 
 			if (cmd.hasOption(OPTION_VERSION)) {
 				arguments = new ArgumentsVersion(cmd);
+			} else if (cmd.hasOption(OPTION_SCAN_FILE_INVENTORY)) {
+				arguments = new ArgumentsScanInventory(cmd);
 			} else if (cmd.hasOption(OPTION_FILE_INVENTORY)) {
 				arguments = new ArgumentsInventory(cmd);
 			} else {
