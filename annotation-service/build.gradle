@@ -122,3 +122,9 @@ dependencies {
 
     test_integrationCompile 'org.apache.httpcomponents:httpclient:4.5.2'
 }
+
+task getVersion{
+    doLast {
+        print project.version
+    }
+}
