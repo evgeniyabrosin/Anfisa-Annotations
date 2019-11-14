@@ -39,15 +39,15 @@ node {
         		sh('./gradlew build -Pfilename=annotation.jar --refresh-dependencies')
         		sh('mv build/libs/annotation.jar ./')
 
-        		def version = sh(script: './gradlew -q getVersion', returnStdout: true).trim()
-        		println "version: ${version}"
+        		env.annotationVersion = sh(script: './gradlew -q getVersion', returnStdout: true).trim()
+        		println "version: ${env.annotationVersion}"
         	}
 		}
 
 		stage('Build & Publish docker image') {
-            println "version: ${version}"
+            println "version: ${env.annotationVersion}"
 
-			sh("docker build . -t forome/annotation:${version} --file pipeline/projects/annotation-core/Dockerfile")
+			sh("docker build . -t forome/annotation:${env.annotationVersion} --file pipeline/projects/annotation-core/Dockerfile")
 		}
 
 	} catch (Throwable e) {
