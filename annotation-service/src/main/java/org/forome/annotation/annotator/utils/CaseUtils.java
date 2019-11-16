@@ -46,7 +46,7 @@ public class CaseUtils {
 	 * sample['affected']  = (int(affected) == 2)
 	 */
 	public static MCase parseFamFile(InputStream isFam, InputStream isFamSampleName, InputStream isCohorts) throws IOException, ParseException {
-		SortedMap<String, Sample> samples = new TreeMap<>();
+		LinkedHashMap<String, Sample> samples = new LinkedHashMap<>();
 
 		Map<String, String> sampleNameMap = new HashMap<>();
 		if (isFamSampleName != null) {
