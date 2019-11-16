@@ -44,7 +44,9 @@ node {
 		}
 
 		stage('Build & Publish docker image') {
-			sh("docker build . -t docker.forome.org/forome/annotation:${env.annotationVersion} --file pipeline/projects/annotation-core/Dockerfile")
+			def image = "${params.DOCKERHUB}/forome/annotation:${env.annotationVersion}";
+			sh("docker build . -t ${image} --file pipeline/projects/annotation-core/Dockerfile")
+			sh("docker push ${image}")
 		}
 
 	} catch (Throwable e) {
