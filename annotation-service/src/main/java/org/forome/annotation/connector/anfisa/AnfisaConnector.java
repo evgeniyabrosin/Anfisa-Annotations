@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import htsjdk.variant.variantcontext.CommonInfo;
 import htsjdk.variant.variantcontext.Genotype;
-import htsjdk.variant.variantcontext.GenotypeType;
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -238,7 +237,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 		createGeneralTab(context, data, filters, view, vepJson, variant, anfisaInput.samples, altAllele);
 		createQualityTab(view, variant, anfisaInput.samples);
-		createGnomadTab(context, variant.chromosome.getChar(), variant, anfisaInput.samples, vepJson, view, altAllele);
+		createGnomadTab(context, variant.chromosome.getChar(), variant, anfisaInput.samples, view, altAllele);
 		createDatabasesTab((VariantVep) variant, record, data, view);
 		createPredictionsTab((VariantVep) variant, vepJson, view);
 		createBioinformaticsTab(gtfAnfisaResult, context, data, view);
@@ -713,7 +712,7 @@ public class AnfisaConnector implements AutoCloseable {
 		String mother = samples.samples.get(probandId).mother;
 		String father = samples.samples.get(probandId).father;
 		List<htsjdk.variant.variantcontext.Allele> alleles = variantContext.getAlleles();
-		for (Sample sample : getSortedSamples(samples, variant)) {
+		for (Sample sample : getSortedSamples(samples)) {
 			String s = sample.id;
 			JSONObject q_s = new JSONObject();
 			if (s.equals(probandId)) {
@@ -753,16 +752,9 @@ public class AnfisaConnector implements AutoCloseable {
 	 * 1) Proband, if exists
 	 * 2) Mother, if exists
 	 * 3) Father, if exists
-	 * 4) All samples alphabetically, that have variant (type in {htsjdk.variant.variantcontext.GenotypeType.HET, HOM_VAR})
-	 * 5) All samples alphabetically, with no call (type in {NO_CALL, UNAVAILABLE, MIXED})
-	 * 6) All homo ref samples alphabetically (type = HOM_REF)
+	 * 4) ...
 	 */
-	private static List<Sample> getSortedSamples(MCase samples, Variant variant) {
-		if (!(variant instanceof VariantVCF)) {
-			return new ArrayList<>(samples.samples.values());
-		}
-		VariantContext variantContext = ((VariantVCF) variant).variantContext;
-
+	private static List<Sample> getSortedSamples(MCase samples) {
 		List<Sample> result = new ArrayList<>();
 		List<Sample> pool = new ArrayList<>(samples.samples.values());
 
@@ -786,39 +778,12 @@ public class AnfisaConnector implements AutoCloseable {
 			pool.remove(father);
 		}
 
-		if (variant instanceof VariantVCF) {
-			//4) All samples alphabetically, that have variant (type in {htsjdk.variant.variantcontext.GenotypeType.HET, HOM_VAR})
-			List<Sample> samples4 = pool.stream().filter(sample -> {
-				GenotypeType genotypeType = variantContext.getGenotype(sample.id).getType();
-				return (genotypeType == GenotypeType.HET || genotypeType == GenotypeType.HOM_VAR);
-			}).sorted(Comparator.comparing(o -> o.id)).collect(Collectors.toList());
-			result.addAll(samples4);
-			pool.removeAll(samples4);
-
-			//5) All samples alphabetically, with no call (type in {NO_CALL, UNAVAILABLE, MIXED})
-			List<Sample> samples5 = pool.stream().filter(sample -> {
-				GenotypeType genotypeType = variantContext.getGenotype(sample.id).getType();
-				return (genotypeType == GenotypeType.NO_CALL || genotypeType == GenotypeType.UNAVAILABLE || genotypeType == GenotypeType.MIXED);
-			}).sorted(Comparator.comparing(o -> o.id)).collect(Collectors.toList());
-			result.addAll(samples5);
-			pool.removeAll(samples5);
-
-			//6) All homo ref samples alphabetically (type = HOM_REF)
-			List<Sample> samples6 = pool.stream().filter(sample -> {
-				GenotypeType genotypeType = variantContext.getGenotype(sample.id).getType();
-				return (genotypeType == GenotypeType.HOM_REF);
-			}).sorted(Comparator.comparing(o -> o.id)).collect(Collectors.toList());
-			result.addAll(samples6);
-			pool.removeAll(samples6);
-		}
-		//Добавляем оставшихся
-		Collections.sort(pool, Comparator.comparing(o -> o.id));
 		result.addAll(pool);
 
 		return result;
 	}
 
-	private void createGnomadTab(AnfisaExecuteContext context, String chromosome, Variant variant, MCase samples, JSONObject json, AnfisaResultView view, Allele altAllele) {
+	private void createGnomadTab(AnfisaExecuteContext context, String chromosome, Variant variant, MCase samples, AnfisaResultView view, Allele altAllele) {
 		Double gnomadAf = context.gnomadAfFam;
 		if (gnomadAf != null && Math.abs(gnomadAf) > 0.000001D) {
 			AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();

@@ -19,9 +19,9 @@
 package org.forome.annotation.struct.mcase;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 
 public class MCase {
 
@@ -37,10 +37,10 @@ public class MCase {
 
 	public static class Builder {
 
-		private SortedMap<String, Sample> samples;
+		private LinkedHashMap<String, Sample> samples;
 		private List<Cohort> cohorts;
 
-		public Builder(SortedMap<String, Sample> samples, List<Cohort> cohorts) {
+		public Builder(LinkedHashMap<String, Sample> samples, List<Cohort> cohorts) {
 			this.samples = samples;
 			this.cohorts = cohorts;
 		}
@@ -53,7 +53,7 @@ public class MCase {
 			if (samples == null || samples.isEmpty()) {
 				return null;
 			}
-			Sample proband = samples.get(samples.firstKey());
+			Sample proband = samples.values().iterator().next();
 
 			//Validation
 			for (Map.Entry<String, Sample> entry : samples.entrySet()) {

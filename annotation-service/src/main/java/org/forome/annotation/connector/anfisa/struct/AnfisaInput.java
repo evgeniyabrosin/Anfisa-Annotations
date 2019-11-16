@@ -21,7 +21,7 @@ package org.forome.annotation.connector.anfisa.struct;
 import org.forome.annotation.struct.mcase.MCase;
 
 import java.util.Collections;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 public class AnfisaInput {
 
@@ -36,7 +36,7 @@ public class AnfisaInput {
 		private MCase samples;
 
 		public Builder() {
-			this.samples = new MCase.Builder(new TreeMap<>(), Collections.emptyList()).build();
+			this.samples = new MCase.Builder(new LinkedHashMap<>(), Collections.emptyList()).build();
 		}
 
 		public Builder withSamples(MCase samples) {
