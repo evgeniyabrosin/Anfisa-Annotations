@@ -1,3 +1,9 @@
 query {
     record_type
+    _filters {
+        chromosome
+        fs
+        qd
+        mq
+    }
 }

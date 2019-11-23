@@ -24,6 +24,9 @@ import graphql.GraphQL;
 import graphql.annotations.AnnotationsSchemaCreator;
 import graphql.schema.GraphQLSchema;
 import net.minidev.json.JSONObject;
+import net.minidev.json.JSONStyle;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
 import org.apache.commons.io.IOUtils;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
@@ -58,9 +61,11 @@ public class Processing {
 				.query(GRecord.class)
 				.build();
 
-		graphQL = GraphQL.newGraphQL(graphQLSchema).build();
+		graphQL = GraphQL
+				.newGraphQL(graphQLSchema)
+				.build();
 
-		try (InputStream inputStream= getClass().getClassLoader().getResourceAsStream("graphql/annotator/default.graphql")) {
+		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("graphql/annotator/default.graphql")) {
 			graphQLQuery = IOUtils.toString(inputStream, "utf8");
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
@@ -111,9 +116,17 @@ public class Processing {
 			throw new RuntimeException();
 		}
 
-		result.merge(
-				new JSONObject(graphQLExecutionResult.getData())
-		);
+		//TODO Ulitin V. удалить временный костыль, введен из-за проблем мержинга данных
+		JSONObject graphQLResult;
+		try {
+			graphQLResult = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(
+					new JSONObject(graphQLExecutionResult.getData()).toJSONString(JSONStyle.MAX_COMPRESS)
+			);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+
+		result.merge(graphQLResult);
 
 		return new ProcessingResult(
 				variant, altAllele,

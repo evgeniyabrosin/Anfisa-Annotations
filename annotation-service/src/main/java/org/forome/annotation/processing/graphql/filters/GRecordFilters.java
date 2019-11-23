@@ -20,16 +20,61 @@ package org.forome.annotation.processing.graphql.filters;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
+import htsjdk.variant.variantcontext.CommonInfo;
+import htsjdk.variant.variantcontext.VariantContext;
+import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.vcf.VariantVCF;
+import org.forome.annotation.utils.MathUtils;
 
 @GraphQLName("record_filters")
 public class GRecordFilters {
 
-	public GRecordFilters() {
+	public final Variant variant;
+
+	public GRecordFilters(Variant variant) {
+		this.variant = variant;
 	}
 
 	@GraphQLField
 	@GraphQLName("chromosome")
 	public String getChromosome() {
-		return "variant";
+		return variant.chromosome.getChromosome();
 	}
+
+	@GraphQLField
+	@GraphQLName("fs")
+	public double getFS() {
+		if (variant instanceof VariantVCF) {
+			VariantContext variantContext = ((VariantVCF) variant).variantContext;
+			CommonInfo commonInfo = variantContext.getCommonInfo();
+			return MathUtils.toPrimitiveDouble(commonInfo.getAttribute("FS"));
+		} else {
+			return 0;
+		}
+	}
+
+	@GraphQLField
+	@GraphQLName("qd")
+	public double getQD() {
+		if (variant instanceof VariantVCF) {
+			VariantContext variantContext = ((VariantVCF) variant).variantContext;
+			CommonInfo commonInfo = variantContext.getCommonInfo();
+			return MathUtils.toPrimitiveDouble(commonInfo.getAttribute("QD"));
+		} else {
+			return 0;
+		}
+	}
+
+	@GraphQLField
+	@GraphQLName("mq")
+	public double getMG() {
+		if (variant instanceof VariantVCF) {
+			VariantContext variantContext = ((VariantVCF) variant).variantContext;
+			CommonInfo commonInfo = variantContext.getCommonInfo();
+			return MathUtils.toPrimitiveDouble(commonInfo.getAttribute("MQ"));
+		} else {
+			return 0;
+		}
+	}
+
 }
