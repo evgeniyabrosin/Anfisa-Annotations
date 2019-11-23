@@ -16,37 +16,44 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.graphql;
+package org.forome.annotation.processing.graphql.view.general.transcript;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
-import graphql.schema.DataFetchingEnvironment;
-import org.forome.annotation.processing.graphql.filters.GRecordFilters;
-import org.forome.annotation.processing.graphql.view.GRecordView;
-import org.forome.annotation.processing.struct.GContext;
-import org.forome.annotation.struct.variant.Variant;
 
-@GraphQLName("query")
-public class GRecord {
+@GraphQLName("record_view_general_transcript")
+public class GRecordViewGeneralTranscript {
 
-	@GraphQLField
-	@GraphQLName("_filters")
-	public static GRecordFilters getGRecordFilters(DataFetchingEnvironment env) {
-		Variant variant = ((GContext) env.getContext()).variant;
-		return new GRecordFilters(variant);
+	public final String id;
+	public final String gene;
+	public final String transcriptAnnotation;
+
+	public GRecordViewGeneralTranscript(
+			String id,
+			String gene,
+			String transcriptAnnotation
+	) {
+		this.id = id;
+		this.gene = gene;
+		this.transcriptAnnotation = transcriptAnnotation;
 	}
 
 	@GraphQLField
-	@GraphQLName("_view")
-	public static GRecordView getGRecordView(DataFetchingEnvironment env) {
-		Variant variant = ((GContext) env.getContext()).variant;
-		return new GRecordView(variant);
+	@GraphQLName("id")
+	public String getId() {
+		return id;
 	}
 
 	@GraphQLField
-	@GraphQLName("record_type")
-	public static String getRecordType() {
-		return "variant";
+	@GraphQLName("gene")
+	public String getGene() {
+		return gene;
 	}
+
+	@GraphQLField
+	@GraphQLName("transcript_annotation")
+	public String getTranscriptAnnotation() {
+		return transcriptAnnotation;
+	}
+
 }
-
