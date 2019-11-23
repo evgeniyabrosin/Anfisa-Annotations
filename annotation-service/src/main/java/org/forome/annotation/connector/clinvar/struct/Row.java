@@ -22,6 +22,7 @@ public class Row {
 
 	public final long start;
 	public final long end;
+	public final String type;
 	public final String referenceAllele;
 	public final String alternateAllele;
 	public final String rcvAccession;
@@ -34,6 +35,7 @@ public class Row {
 	public Row(
 			long start,
 			long end,
+			String type,
 			String referenceAllele,
 			String alternateAllele,
 			String rcvAccession,
@@ -45,6 +47,7 @@ public class Row {
 	) {
 		this.start = start;
 		this.end = end;
+		this.type = type;
 		this.referenceAllele = referenceAllele;
 		this.alternateAllele = alternateAllele;
 		this.rcvAccession = rcvAccession;
