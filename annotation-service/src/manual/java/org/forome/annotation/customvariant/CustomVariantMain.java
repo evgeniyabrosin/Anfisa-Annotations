@@ -22,28 +22,34 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
-import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
 import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.old.GnomadConnectorOld;
+import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class VariantMain {
+public class CustomVariantMain {
 
 	private final static Logger log = LoggerFactory.getLogger(Main.class);
 
@@ -57,10 +63,13 @@ public class VariantMain {
 	private final ClinvarConnector clinvarConnector;
 	private final LiftoverConnector liftoverConnector;
 	private final GTFConnector gtfConnector;
+	private final GTEXConnector gtexConnector;
+	private final PharmGKBConnector pharmGKBConnector;
 	private final EnsemblVepService ensemblVepService;
 	private final AnfisaConnector anfisaConnector;
+	private final Processing processing;
 
-	public VariantMain() throws Exception {
+	public CustomVariantMain() throws Exception {
 		serviceConfig = new ServiceConfig();
 		sshTunnelService = new SSHConnectService();
 		databaseConnectService = new DatabaseConnectService(sshTunnelService);
@@ -73,6 +82,8 @@ public class VariantMain {
 		clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 		liftoverConnector = new LiftoverConnector();
 		gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
+		gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
+		pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
 		ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
@@ -81,28 +92,37 @@ public class VariantMain {
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,
-				gtfConnector
+				gtfConnector,
+				gtexConnector,
+				pharmGKBConnector
 		);
+		processing = new Processing(anfisaConnector);
 	}
 
-	private AnfisaResult build(VariantCustom variant, String alternative) throws ExecutionException, InterruptedException {
+	private List<ProcessingResult> build(VariantCustom variant, String alternative) throws ExecutionException, InterruptedException {
 		JSONObject vepJson = ensemblVepService.getVepJson(variant, alternative).get();
 		variant.setVepJson(vepJson);
 
-		AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-		return anfisaConnector.build(anfisaInput, variant);
+		return processing.exec(
+				new MCase.Builder(new LinkedHashMap<>(), Collections.emptyList()).build(),
+				variant
+		);
 	}
 
 	public static void main(String[] args) throws Exception {
-		VariantMain variantMain = new VariantMain();
+		try {
+			CustomVariantMain variantMain = new CustomVariantMain();
 
-		AnfisaResult anfisaResult = variantMain.build(
-				new VariantCustom(Chromosome.of("11"), 2466481, 2466480), "AC"
-		);
-		log.debug("result: " + anfisaResult.toJSON());
+			List<ProcessingResult> processingResults = variantMain.build(
+					new VariantCustom(Chromosome.of("11"), 2466481, 2466480), "AC"
+			);
+			log.debug("result: " + processingResults);
+
+			System.exit(0);
+		} catch (Throwable e) {
+			crash(e);
+		}
 	}
-
-
 
 	public static void crash(Throwable e) {
 		log.error("Application crashing ", e);

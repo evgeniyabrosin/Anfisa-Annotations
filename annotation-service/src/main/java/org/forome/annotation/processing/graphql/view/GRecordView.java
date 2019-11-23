@@ -16,37 +16,26 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.graphql;
+package org.forome.annotation.processing.graphql.view;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
-import graphql.schema.DataFetchingEnvironment;
-import org.forome.annotation.processing.graphql.filters.GRecordFilters;
-import org.forome.annotation.processing.graphql.view.GRecordView;
-import org.forome.annotation.processing.struct.GContext;
+import org.forome.annotation.processing.graphql.view.general.GRecordViewGeneral;
 import org.forome.annotation.struct.variant.Variant;
 
-@GraphQLName("query")
-public class GRecord {
+@GraphQLName("record_view")
+public class GRecordView {
 
-	@GraphQLField
-	@GraphQLName("_filters")
-	public static GRecordFilters getGRecordFilters(DataFetchingEnvironment env) {
-		Variant variant = ((GContext) env.getContext()).variant;
-		return new GRecordFilters(variant);
+	public final Variant variant;
+
+	public GRecordView(Variant variant) {
+		this.variant = variant;
 	}
 
 	@GraphQLField
-	@GraphQLName("_view")
-	public static GRecordView getGRecordView(DataFetchingEnvironment env) {
-		Variant variant = ((GContext) env.getContext()).variant;
-		return new GRecordView(variant);
+	@GraphQLName("general")
+	public GRecordViewGeneral getGeneral() {
+		return new GRecordViewGeneral(variant);
 	}
 
-	@GraphQLField
-	@GraphQLName("record_type")
-	public static String getRecordType() {
-		return "variant";
-	}
 }
-

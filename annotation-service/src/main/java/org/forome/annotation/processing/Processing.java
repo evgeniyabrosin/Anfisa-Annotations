@@ -120,7 +120,7 @@ public class Processing {
 		JSONObject graphQLResult;
 		try {
 			graphQLResult = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(
-					new JSONObject(graphQLExecutionResult.getData()).toJSONString(JSONStyle.MAX_COMPRESS)
+					new JSONObject(graphQLExecutionResult.getData()).toJSONString(JSONStyle.NO_COMPRESS)
 			);
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
