@@ -54,6 +54,7 @@ import org.forome.annotation.struct.variant.cnv.VariantCNV;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.AppVersion;
+import org.forome.annotation.utils.MathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,8 +195,6 @@ public class AnfisaConnector implements AutoCloseable {
 				.filter(o -> (o instanceof Number))
 				.map(o -> ((Number) o).longValue())
 				.min(Long::compareTo).orElse(0L);
-
-		filters.chromosome = variant.chromosome.getChromosome();
 
 		data.assemblyName = vepJson.getAsString("assembly_name");
 		data.end = variant.end;
@@ -428,11 +427,6 @@ public class AnfisaConnector implements AutoCloseable {
 		filters.probandGq = getProbandGQ(variant, samples);
 		if (variant != null && variant instanceof VariantVCF) {
 			VariantContext variantContext = ((VariantVCF) variant).variantContext;
-
-			CommonInfo commonInfo = variantContext.getCommonInfo();
-			filters.qd = toPrimitiveDouble(commonInfo.getAttribute("QD"));
-			filters.fs = toPrimitiveDouble(commonInfo.getAttribute("FS"));
-			filters.mq = toDouble(commonInfo.getAttribute("MQ"));
 
 			if (variantContext.isFiltered()) {
 				filters.filters = new ArrayList<>(variantContext.getFilters());
@@ -693,12 +687,12 @@ public class AnfisaConnector implements AutoCloseable {
 
 		JSONObject q_all = new JSONObject();
 		q_all.put("title", "All");
-		q_all.put("strand_odds_ratio", toDouble(commonInfo.getAttribute("SOR")));
-		q_all.put("mq", toDouble(commonInfo.getAttribute("MQ")));
+		q_all.put("strand_odds_ratio", MathUtils.toDouble(commonInfo.getAttribute("SOR")));
+		q_all.put("mq", MathUtils.toDouble(commonInfo.getAttribute("MQ")));
 
 		q_all.put("variant_call_quality", variantContext.getPhredScaledQual());
-		q_all.put("qd", toDouble(commonInfo.getAttribute("QD")));
-		q_all.put("fs", toDouble(commonInfo.getAttribute("FS")));
+		q_all.put("qd", MathUtils.toDouble(commonInfo.getAttribute("QD")));
+		q_all.put("fs", MathUtils.toDouble(commonInfo.getAttribute("FS")));
 		q_all.put("ft", (commonInfo.isFiltered())
 				? commonInfo.getFilters().stream().collect(Collectors.toList())
 				: Lists.newArrayList("PASS")
@@ -1878,26 +1872,6 @@ public class AnfisaConnector implements AutoCloseable {
 			}
 		}
 		return result;
-	}
-
-	private static Double toDouble(Object value) {
-		if (value == null) return null;
-		if (value instanceof Number) {
-			return ((Number) value).doubleValue();
-		} else if (value instanceof String) {
-			return Double.parseDouble((String) value);
-		} else {
-			throw new RuntimeException("Not support type");
-		}
-	}
-
-	private static double toPrimitiveDouble(Object value) {
-		Double p = toDouble(value);
-		if (p == null) {
-			return 0;
-		} else {
-			return p;
-		}
 	}
 
 	@Override

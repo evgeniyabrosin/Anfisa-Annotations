@@ -20,9 +20,20 @@ package org.forome.annotation.processing.graphql;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
+import graphql.schema.DataFetchingEnvironment;
+import org.forome.annotation.processing.graphql.filters.GRecordFilters;
+import org.forome.annotation.processing.struct.GContext;
+import org.forome.annotation.struct.variant.Variant;
 
 @GraphQLName("query")
 public class GRecord {
+
+	@GraphQLField
+	@GraphQLName("_filters")
+	public static GRecordFilters getGRecordFilters(DataFetchingEnvironment env) {
+		Variant variant = ((GContext) env.getContext()).variant;
+		return new GRecordFilters(variant);
+	}
 
 	@GraphQLField
 	@GraphQLName("record_type")

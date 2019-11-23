@@ -30,8 +30,6 @@ import java.util.Optional;
 
 public class AnfisaResultFilters {
 
-	public String chromosome;
-	public double fs;
 	public Long severity;
 	public List<String> has_variant = new ArrayList<>();
 	public Integer minGq;
@@ -43,8 +41,6 @@ public class AnfisaResultFilters {
 	public Double gnomadAfPb;
 	public Double gnomadDbExomesAf;
 	public Double gnomadDbGenomesAf;
-	public double qd;
-	public Double mq;
 	public List<String> filters;
 
 	public Boolean clinvarBenign;
@@ -88,9 +84,6 @@ public class AnfisaResultFilters {
 							 AnfisaResultView.Bioinformatics bioinformatics
 	) {
 		JSONObject out = new JSONObject();
-		if (chromosome != null) {
-			out.put("chromosome", chromosome);
-		}
 		if (gnomadPopmax != null) {
 			out.put("gnomad_popmax", gnomadPopmax.group.name());
 			out.put("gnomad_popmax_af", gnomadPopmax.af);
@@ -110,8 +103,6 @@ public class AnfisaResultFilters {
 		out.put("min_gq", minGq);
 		out.put("dist_from_exon", distFromExon);
 		out.put("proband_gq", probandGq);
-		out.put("fs", fs);
-		out.put("qd", qd);
 
 		if (clinvarBenign != null) {
 			out.put("clinvar_benign", clinvarBenign);
@@ -121,9 +112,6 @@ public class AnfisaResultFilters {
 		}
 		if (hgmdBenign != null) {
 			out.put("hgmd_benign", hgmdBenign);
-		}
-		if (mq != null) {
-			out.put("mq", mq);
 		}
 		if (filters != null) {
 			out.put("filters", filters);
