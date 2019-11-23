@@ -51,6 +51,7 @@ import org.forome.annotation.struct.mcase.Sample;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
+import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.AppVersion;
@@ -338,7 +339,7 @@ public class AnfisaConnector implements AutoCloseable {
 		if (isSnv(variant)) {
 			clinvarResults = clinvarConnector.getData(_chromosome, variant.start, variant.end, variant.getStrAltAllele());
 		} else {
-			clinvarResults = clinvarConnector.getExpandedData(_chromosome, variant.start);
+			clinvarResults = clinvarConnector.getExpandedData(variant);
 		}
 		record.clinvarResults = clinvarResults;
 		if (!clinvarResults.isEmpty()) {
@@ -1693,6 +1694,8 @@ public class AnfisaConnector implements AutoCloseable {
 		} else if (variant instanceof VariantCNV) {
 			callers = new LinkedHashSet();
 			callers.add("CNV");
+		} else if (variant instanceof VariantCustom) {
+			callers = new LinkedHashSet();
 		} else {
 			throw new RuntimeException("Not support variant: " + variant);
 		}
