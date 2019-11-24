@@ -17,10 +17,6 @@
 FROM debian:buster
 MAINTAINER Vladimir A. Ulitin <v.ulitin@mobin.me>
 
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
-
 RUN echo "Etc/UTC" > /etc/timezone \
     && dpkg-reconfigure -f noninteractive tzdata \
     \
@@ -35,6 +31,10 @@ RUN echo "Etc/UTC" > /etc/timezone \
     #Чистим
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
 
 ADD annotation-service/annotation.jar /usr/sbin/forome/annotation/jar/
 
