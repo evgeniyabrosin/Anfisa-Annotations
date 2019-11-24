@@ -36,7 +36,6 @@ public class VariantVCF extends VariantVep {
 	public VariantVCF(VariantContext variantContext) {
 		super(
 				Chromosome.of(variantContext.getContig()),
-				getStart(variantContext),
 				getEnd(variantContext)
 		);
 		this.variantContext = variantContext;

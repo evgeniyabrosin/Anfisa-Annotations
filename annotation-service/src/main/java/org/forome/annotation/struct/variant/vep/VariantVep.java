@@ -33,8 +33,8 @@ public abstract class VariantVep extends Variant {
 
 	private JSONObject vepJson;
 
-	public VariantVep(Chromosome chromosome, int start, int end) {
-		super(chromosome, start, end);
+	public VariantVep(Chromosome chromosome, int end) {
+		super(chromosome, end);
 	}
 
 	public JSONObject getVepJson() {
@@ -43,6 +43,11 @@ public abstract class VariantVep extends Variant {
 
 	public void setVepJson(JSONObject vepJson) {
 		this.vepJson = vepJson;
+	}
+
+	@Override
+	public int getStart() {
+		return vepJson.getAsNumber("start").intValue();
 	}
 
 	@Override

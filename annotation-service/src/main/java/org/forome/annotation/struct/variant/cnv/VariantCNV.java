@@ -34,13 +34,16 @@ public class VariantCNV extends VariantVep {
 
 	public static final String COPY_NUMBER_VARIATION = "copy_number_variation";
 
+	private final int cnvStart;
+
 	public final List<String> exonNums;
 
 	public final Map<String, GenotypeCNV> genotypes;
 	public final List<String> transcripts;
 
 	public VariantCNV(Chromosome chromosome, int start, int end, List<String> exonNums, List<String> transcripts, List<GenotypeCNV> genotypes) {
-		super(chromosome, start, end);
+		super(chromosome, end);
+		this.cnvStart = start;
 		genotypes.forEach(genotypeCNV -> genotypeCNV.setVariantCNV(this));
 		this.exonNums = exonNums;
 		this.transcripts = Collections.unmodifiableList(transcripts);
@@ -48,6 +51,15 @@ public class VariantCNV extends VariantVep {
 				genotypes.stream()
 						.collect(Collectors.toMap(item -> item.sampleName, item -> item))
 		);
+	}
+
+	@Override
+	public int getStart() {
+		if (getVepJson() == null) {
+			return cnvStart;
+		} else {
+			return super.getStart();
+		}
 	}
 
 	@Override
@@ -87,7 +99,7 @@ public class VariantCNV extends VariantVep {
 	public String getId() {
 		return new StringBuilder()
 				.append(chromosome.getChar()).append('_')
-				.append(start).append('_')
+				.append(getStart()).append('_')
 				.append(getRef()).append("/-")
 				.toString();
 	}

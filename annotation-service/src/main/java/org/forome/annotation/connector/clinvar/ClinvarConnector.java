@@ -127,7 +127,7 @@ public class ClinvarConnector implements AutoCloseable {
 		try (Connection connection = databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
 				try (ResultSet resultSet = statement.executeQuery(String.format(
-						QUERY_BASE, variant.chromosome.getChar(), variant.start
+						QUERY_BASE, variant.chromosome.getChar(), variant.getStart()
 				))) {
 					while (resultSet.next()) {
 						Row row = _build(resultSet);
