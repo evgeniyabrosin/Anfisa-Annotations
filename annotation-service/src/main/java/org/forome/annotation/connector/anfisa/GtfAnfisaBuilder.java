@@ -66,8 +66,8 @@ public class GtfAnfisaBuilder {
             GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distance = null;
             for (int index = 0; index < transcriptRows.size(); index++) {
                 GTFTranscriptRow transcriptRow = transcriptRows.get(index);
-                if (transcriptRow.start <= variant.start && variant.end <= transcriptRow.end) {
-                    int minDist = Math.min(variant.start - transcriptRow.start, transcriptRow.end - variant.end);
+                if (transcriptRow.start <= variant.getStart() && variant.end <= transcriptRow.end) {
+                    int minDist = Math.min(variant.getStart() - transcriptRow.start, transcriptRow.end - variant.end);
                     if (distance == null || distance.dist > minDist) {
                         distance = new GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary(
                                 minDist, "exon", index, transcriptRows.size()
@@ -95,8 +95,8 @@ public class GtfAnfisaBuilder {
         //списку и в конечном итоге это вляет на значение поля region - судя по всему это потенциальный баг и
         //необходима консультация с Михаилом
         List<Integer> pos = new ArrayList<>();
-        pos.add(variant.start);
-        if (variant.start != variant.end) {
+        pos.add(variant.getStart());
+        if (variant.getStart() != variant.end) {
             pos.add(variant.end);
         }
 

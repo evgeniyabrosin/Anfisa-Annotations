@@ -20,7 +20,7 @@ public class RefConnector implements AutoCloseable {
     }
 
     public String getRef(Variant variant) {
-        return refDataConnector.getRef(variant.chromosome, variant.start, variant.end);
+        return refDataConnector.getRef(variant.chromosome, variant.getStart(), variant.end);
     }
 
     public String getRef(Chromosome chromosome, int start, int end) {

@@ -55,14 +55,14 @@ class Source {
                         String.format("Not equals chromosome, vcf %s and vep.json %s", variantContext.getContig(), vepJson)
                 );
             }
-            if (VariantVCF.getStart(variantContext) != vepJson.getAsNumber("start").intValue()) {
-                throw new RuntimeException(
-                        String.format("Not equals start, vcf: %s, vep.json: %s, input: %s",
-                                VariantVCF.getStart(variantContext), vepJson.getAsNumber("start"),
-                                vepJson.getAsString("input")
-                        )
-                );
-            }
+//            if (VariantVCF.getStart(variantContext) != vepJson.getAsNumber("start").intValue()) {
+//                throw new RuntimeException(
+//                        String.format("Not equals start, vcf: %s, vep.json: %s, input: %s",
+//                                VariantVCF.getStart(variantContext), vepJson.getAsNumber("start"),
+//                                vepJson.getAsString("input")
+//                        )
+//                );
+//            }
             if (VariantVCF.getEnd(variantContext) != vepJson.getAsNumber("end").intValue()) {
                 throw new RuntimeException(
                         String.format("Not equals end, vcf: %s, vep.json: %s, input: %s",

@@ -81,7 +81,7 @@ public class EnsemblVepInlineService implements EnsemblVepService {
 
     @Override
     public CompletableFuture<JSONObject> getVepJson(Variant variant, String reference, String alternative) {
-        return getVepJson(variant.chromosome, variant.start, variant.end, reference, alternative);
+        return getVepJson(variant.chromosome, variant.getStart(), variant.end, reference, alternative);
     }
 
     @Override

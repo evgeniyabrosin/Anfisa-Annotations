@@ -177,7 +177,7 @@ public class AnfisaConnector implements AutoCloseable {
 		data.regulatoryFeatureConsequences = (JSONArray) vepJson.get("regulatory_feature_consequences");
 		data.motifFeatureConsequences = (JSONArray) vepJson.get("motif_feature_consequences");
 		data.intergenicConsequences = (JSONArray) vepJson.get("intergenic_consequences");
-		data.start = variant.start;
+		data.start = variant.getStart();
 		data.mostSevereConsequence = variant.getMostSevereConsequence();
 		data.alleleString = getAlleleString(variant);
 		data.seqRegionName = vepJson.getAsString("seq_region_name");
@@ -291,7 +291,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 	private void callHgmd(Record record, AnfisaExecuteContext anfisaExecuteContext, AnfisaResultFilters filters, AnfisaResultData data) {
 		Variant variant = anfisaExecuteContext.variant;
-		List<String> accNums = hgmdConnector.getAccNum(variant.chromosome.getChar(), variant.start, variant.end);
+		List<String> accNums = hgmdConnector.getAccNum(variant.chromosome.getChar(), variant.getStart(), variant.end);
 		if (accNums.size() > 0) {
 			HgmdConnector.Data hgmdData = hgmdConnector.getDataForAccessionNumbers(accNums);
 			record.hgmdData = hgmdData;
@@ -311,7 +311,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 		List<ClinvarResult> clinvarResults;
 		if (isSnv(variant)) {
-			clinvarResults = clinvarConnector.getData(_chromosome, variant.start, variant.end, variant.getStrAltAllele());
+			clinvarResults = clinvarConnector.getData(_chromosome, variant.getStart(), variant.end, variant.getStrAltAllele());
 		} else {
 			clinvarResults = clinvarConnector.getExpandedData(variant);
 		}
@@ -385,7 +385,7 @@ public class AnfisaConnector implements AutoCloseable {
 			filters.clinvarTrustedBenign = Optional.ofNullable(benign);
 		}
 
-		ClinvarVariantSummary clinvarVariantSummary = clinvarConnector.getDataVariantSummary(chromosome, variant.start, variant.end);
+		ClinvarVariantSummary clinvarVariantSummary = clinvarConnector.getDataVariantSummary(chromosome, variant.getStart(), variant.end);
 		if (clinvarVariantSummary != null) {
 			view.databases.clinvarReviewStatus = clinvarVariantSummary.reviewStatus.text;
 			filters.clinvarReviewStatus = clinvarVariantSummary.reviewStatus;
@@ -406,7 +406,7 @@ public class AnfisaConnector implements AutoCloseable {
 				.map(alt ->
 						BeaconConnector.getUrl(
 								variant.chromosome.getChar(),
-								variant.start,
+								variant.getStart(),
 								variant.getRef(), alt
 						)
 				)
@@ -505,7 +505,7 @@ public class AnfisaConnector implements AutoCloseable {
 		try {
 			return gnomadConnector.request(
 					variant.chromosome.getChar(),
-					Math.min(variant.start, variant.end),
+					Math.min(variant.getStart(), variant.end),
 					variant.getRef(), alt
 			).get();
 		} catch (InterruptedException e) {
@@ -834,11 +834,11 @@ public class AnfisaConnector implements AutoCloseable {
 	}
 
 	private static int lowest_coord(Variant variant) {
-		return Math.min(variant.start, variant.end);
+		return Math.min(variant.getStart(), variant.end);
 	}
 
 	private static int highest_coord(Variant variant) {
-		return Math.max(variant.start, variant.end);
+		return Math.max(variant.getStart(), variant.end);
 	}
 
 	private static List<Double> getPLIByAllele(VariantVep variantVep, String allele) {
@@ -1077,7 +1077,7 @@ public class AnfisaConnector implements AutoCloseable {
 	private Position<Integer> getHg38Coordinates(AnfisaExecuteContext context) {
 		Chromosome chromosome = context.variant.chromosome;
 		return liftoverConnector.toHG38(chromosome, new Position<Integer>(
-				context.variant.start,
+				context.variant.getStart(),
 				context.variant.end
 		));
 	}
@@ -1570,7 +1570,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 	public Position getHg19Coordinates(AnfisaExecuteContext context) {
 		return new Position(
-				context.variant.start,
+				context.variant.getStart(),
 				context.variant.end
 		);
 	}

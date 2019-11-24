@@ -9,14 +9,14 @@ import java.util.stream.Collectors;
 public abstract class Variant {
 
     public final Chromosome chromosome;
-    public final int start;
     public final int end;
 
-    public Variant(Chromosome chromosome, int start, int end) {
+    public Variant(Chromosome chromosome, int end) {
         this.chromosome = chromosome;
-        this.start = start;
         this.end = end;
     }
+
+    public abstract int getStart();
 
     public abstract VariantType getVariantType();
 
