@@ -37,21 +37,21 @@ public class CNVFileIteratorTest {
 		VariantCNV variant1 = cnvFileIterator.next();
 		Assert.assertNotNull(variant1);
 		Assert.assertEquals(Chromosome.of("9"), variant1.chromosome);
-		Assert.assertEquals(140772677, variant1.start);
+		Assert.assertEquals(140772677, variant1.getStart());
 		Assert.assertEquals(140777187, variant1.end);
 
 
 		VariantCNV variant2 = cnvFileIterator.next();
 		Assert.assertNotNull(variant2);
 		Assert.assertEquals(Chromosome.of("9"), variant2.chromosome);
-		Assert.assertEquals(140772688, variant2.start);
+		Assert.assertEquals(140772688, variant2.getStart());
 		Assert.assertEquals(140777198, variant2.end);
 
 
 		VariantCNV variant3 = cnvFileIterator.next();
 		Assert.assertNotNull(variant3);
 		Assert.assertEquals(Chromosome.of("10"), variant3.chromosome);
-		Assert.assertEquals(140772688, variant3.start);
+		Assert.assertEquals(140772688, variant3.getStart());
 		Assert.assertEquals(140777198, variant3.end);
 
 
