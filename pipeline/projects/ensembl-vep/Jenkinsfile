@@ -23,7 +23,7 @@ node {
 		stage('init') {
 			echo 'Initializing...'
 
-			def docker = tool name: 'docker-17.09.0-ce'
+			def docker = tool name: 'docker-19.03.4'
 			env.PATH = "${docker}:${env.PATH}"
 		}
 
