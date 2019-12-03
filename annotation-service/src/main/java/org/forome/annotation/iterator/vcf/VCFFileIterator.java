@@ -26,12 +26,16 @@ import org.forome.annotation.iterator.cnv.CNVFileIterator;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.struct.variant.vep.VariantVep;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 public class VCFFileIterator implements AutoCloseable {
+
+    private final static Logger log = LoggerFactory.getLogger(VCFFileIterator.class);
 
 	private final VCFFileReader vcfFileReader;
 	private final CloseableIterator<VariantContext> vcfFileReaderIterator;
@@ -63,7 +67,13 @@ public class VCFFileIterator implements AutoCloseable {
 	public VariantVep next() throws NoSuchElementException {
 		while (true) {
 			if (vcfFileReaderIterator.hasNext()) {
-				VariantContext variantContext = vcfFileReaderIterator.next();
+				VariantContext variantContext;
+				try {
+					variantContext = vcfFileReaderIterator.next();
+				} catch (Throwable e) {
+					log.warn("Invalid variant, ignored", e);
+					continue;
+				}
 				if (Chromosome.CHR_M == Chromosome.of(variantContext.getContig())) {
 					continue;//Игнорируем митохондрии
 				}
