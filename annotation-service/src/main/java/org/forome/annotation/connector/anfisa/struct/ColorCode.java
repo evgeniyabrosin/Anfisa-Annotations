@@ -115,15 +115,17 @@ public class ColorCode {
 		throw new IllegalArgumentException(stringValue(shape, color));
 	}
 
-	private static final ImmutableMap<String, ImmutableMap<String, Integer>>
-			inSilicoPredictions = new ImmutableMap.Builder()
-			.put(
-					"polyphen_prediction", ImmutableMap.of(
-							"benign", 10,
-							"possibly_damaging", 20,
-							"probably_damaging", 20,
-							"damaging", 30
-					))
+    private static final ImmutableMap<String, ImmutableMap<String, Integer>>
+            inSilicoPredictions = new ImmutableMap.Builder()
+/*        Polyphen is now considered obsolete and is replaced by polyphen 2
+            .put(
+                    "polyphen_prediction", ImmutableMap.of(
+                            "benign", 10,
+                            "possibly_damaging", 20,
+                            "probably_damaging", 20,
+                            "damaging", 30
+                    ))
+*/
 
 			.put(
 					"polyphen2_hvar_pred", ImmutableMap.of(
