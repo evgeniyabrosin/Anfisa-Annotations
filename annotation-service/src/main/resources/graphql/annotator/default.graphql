@@ -1,0 +1,18 @@
+{
+    record_type
+    _filters {
+        chromosome
+        fs
+        qd
+        mq
+    }
+    _view {
+        general {
+            transcripts {
+                id
+                gene
+                transcript_annotation
+            }
+        }
+    }
+}

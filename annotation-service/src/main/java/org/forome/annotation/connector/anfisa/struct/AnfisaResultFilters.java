@@ -1,3 +1,21 @@
+/*
+ Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+
+ Developed by Vladimir Ulitin and Michael Bouzinier
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+	 http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
 package org.forome.annotation.connector.anfisa.struct;
 
 import net.minidev.json.JSONArray;
@@ -12,8 +30,6 @@ import java.util.Optional;
 
 public class AnfisaResultFilters {
 
-	public String chromosome;
-	public double fs;
 	public Long severity;
 	public List<String> has_variant = new ArrayList<>();
 	public Integer minGq;
@@ -25,8 +41,6 @@ public class AnfisaResultFilters {
 	public Double gnomadAfPb;
 	public Double gnomadDbExomesAf;
 	public Double gnomadDbGenomesAf;
-	public double qd;
-	public Double mq;
 	public List<String> filters;
 
 	public Boolean clinvarBenign;
@@ -38,7 +52,7 @@ public class AnfisaResultFilters {
 	public String spliceAltering;
 	public Float spliceAiDsmax;
 
-	public List<String> alts;
+	public String alt;
 
 	public Integer numClinvarSubmitters;
 
@@ -50,20 +64,26 @@ public class AnfisaResultFilters {
 
 	public Float cnvLO;
 
-	public HashMap<String, HashMap<String, Float>> cohort = new HashMap<>();
+	/**
+	 * Список таких когорт, для которых, этот вариант есть хотя бы у одного сэмпла из когорты.
+	 */
+	public String[] cohortHasVariant;
 
+	public String topTissue;
+	public String[] topTissues;
+
+	public String[] pharmacogenomicsDiseases;
+	public String[] pharmacogenomicsChemicals;
 
 	public AnfisaResultFilters() {
 	}
 
 
 	public JSONObject toJSON(AnfisaResultData anfisaResultData,
+							 AnfisaResultView.Databases databases,
 							 AnfisaResultView.Bioinformatics bioinformatics
 	) {
 		JSONObject out = new JSONObject();
-		if (chromosome != null) {
-			out.put("chromosome", chromosome);
-		}
 		if (gnomadPopmax != null) {
 			out.put("gnomad_popmax", gnomadPopmax.group.name());
 			out.put("gnomad_popmax_af", gnomadPopmax.af);
@@ -83,8 +103,6 @@ public class AnfisaResultFilters {
 		out.put("min_gq", minGq);
 		out.put("dist_from_exon", distFromExon);
 		out.put("proband_gq", probandGq);
-		out.put("fs", fs);
-		out.put("qd", qd);
 
 		if (clinvarBenign != null) {
 			out.put("clinvar_benign", clinvarBenign);
@@ -94,9 +112,6 @@ public class AnfisaResultFilters {
 		}
 		if (hgmdBenign != null) {
 			out.put("hgmd_benign", hgmdBenign);
-		}
-		if (mq != null) {
-			out.put("mq", mq);
 		}
 		if (filters != null) {
 			out.put("filters", filters);
@@ -115,7 +130,7 @@ public class AnfisaResultFilters {
 		out.put("gerp_rs", (bioinformatics.conservation != null) ? bioinformatics.conservation.gerpRS : null);
 
 		out.put("ref", anfisaResultData.ref);
-		out.put("alts", alts);
+		out.put("alt", alt);
 
 		out.put("num_clinvar_submitters", numClinvarSubmitters);
 
@@ -134,7 +149,16 @@ public class AnfisaResultFilters {
 
 		out.put("cnv_lo", cnvLO);
 
-		out.put("cohort", cohort);
+		out.put("cohort_has_variant", cohortHasVariant);
+
+		out.put("top_tissue", topTissue);
+		out.put("top_tissues", topTissues);
+
+		out.put("pharmacogenomics_diseases", (pharmacogenomicsDiseases != null && pharmacogenomicsDiseases.length != 0) ? pharmacogenomicsDiseases : null);
+		out.put("pharmacogenomics_chemicals", (pharmacogenomicsChemicals != null && pharmacogenomicsChemicals.length != 0) ? pharmacogenomicsChemicals : null);
+
+		out.put("references", (!databases.references.isEmpty()) ? databases.references : null);
+
 		return out;
 	}
 }

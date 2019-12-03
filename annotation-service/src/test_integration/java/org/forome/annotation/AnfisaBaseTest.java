@@ -1,3 +1,21 @@
+/*
+ Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+
+ Developed by Vladimir Ulitin and Michael Bouzinier
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+	 http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
 package org.forome.annotation;
 
 import org.forome.annotation.config.ServiceConfig;
@@ -6,9 +24,11 @@ import org.forome.annotation.connector.clinvar.ClinvarConnector;
 import org.forome.annotation.connector.conservation.ConservationConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnector;
 import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.connector.gtex.GTEXConnector;
 import org.forome.annotation.connector.gtf.GTFConnector;
 import org.forome.annotation.connector.hgmd.HgmdConnector;
 import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.ref.RefConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.service.database.DatabaseConnectService;
@@ -36,6 +56,8 @@ public class AnfisaBaseTest {
 	protected static LiftoverConnector liftoverConnector;
 	protected static GTFConnector gtfConnector;
 	protected static RefConnector refConnector;
+	protected static GTEXConnector gtexConnector;
+	protected static PharmGKBConnector pharmGKBConnector;
 	protected static EnsemblVepService ensemblVepService;
 	protected static AnfisaConnector anfisaConnector;
 
@@ -62,6 +84,8 @@ public class AnfisaBaseTest {
 			Assert.fail();
 		});
 		refConnector = new RefConnector(databaseConnectService, serviceConfig.refConfigConnector);
+		gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
+		pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
 		ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector, refConnector);
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
@@ -70,7 +94,9 @@ public class AnfisaBaseTest {
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,
-				gtfConnector
+				gtfConnector,
+				gtexConnector,
+				pharmGKBConnector
 		);
 	}
 

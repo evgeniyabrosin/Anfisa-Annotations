@@ -1,3 +1,21 @@
+/*
+ Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+
+ Developed by Vladimir Ulitin and Michael Bouzinier
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+	 http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
 package org.forome.annotation.connector.anfisa;
 
 import net.minidev.json.JSONObject;
@@ -66,8 +84,8 @@ public class GtfAnfisaBuilder {
             GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distance = null;
             for (int index = 0; index < transcriptRows.size(); index++) {
                 GTFTranscriptRow transcriptRow = transcriptRows.get(index);
-                if (transcriptRow.start <= variant.start && variant.end <= transcriptRow.end) {
-                    int minDist = Math.min(variant.start - transcriptRow.start, transcriptRow.end - variant.end);
+                if (transcriptRow.start <= variant.getStart() && variant.end <= transcriptRow.end) {
+                    int minDist = Math.min(variant.getStart() - transcriptRow.start, transcriptRow.end - variant.end);
                     if (distance == null || distance.dist > minDist) {
                         distance = new GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary(
                                 minDist, "exon", index, transcriptRows.size()
@@ -95,8 +113,8 @@ public class GtfAnfisaBuilder {
         //списку и в конечном итоге это вляет на значение поля region - судя по всему это потенциальный баг и
         //необходима консультация с Михаилом
         List<Integer> pos = new ArrayList<>();
-        pos.add(variant.start);
-        if (variant.start != variant.end) {
+        pos.add(variant.getStart());
+        if (variant.getStart() != variant.end) {
             pos.add(variant.end);
         }
 
