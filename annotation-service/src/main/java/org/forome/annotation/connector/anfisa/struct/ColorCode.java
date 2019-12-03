@@ -99,6 +99,7 @@ public class ColorCode {
 
     private static final ImmutableMap<String, ImmutableMap<String, Integer>>
             inSilicoPredictions = new ImmutableMap.Builder()
+/*        Polyphen is now considered obsolete and is replaced by polyphen 2
             .put(
                     "polyphen_prediction", ImmutableMap.of(
                             "benign", 10,
@@ -106,6 +107,7 @@ public class ColorCode {
                             "probably_damaging", 20,
                             "damaging", 30
                     ))
+*/
 
             .put(
                     "polyphen2_hvar_pred", ImmutableMap.of(
