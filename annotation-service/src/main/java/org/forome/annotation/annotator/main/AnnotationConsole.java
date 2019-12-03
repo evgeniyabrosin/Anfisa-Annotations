@@ -239,10 +239,16 @@ public class AnnotationConsole {
 	}
 
 	private void fail(Throwable e, Supplier<String> arguments) {
-		try {
-			Files.deleteIfExists(outFile);
-		} catch (Throwable e1) {
-			log.error("Exception clear file: " + outFile, e);
+		if (Files.exists(outFile)) {
+			String newFileName = new StringBuilder()
+					.append(outFile.getFileName().toString())
+					.append("_invalid_").append(timeStart.toEpochMilli())
+					.toString();
+			try {
+				Files.move(outFile, outFile.getParent().resolve(newFileName));
+			} catch (Throwable e1) {
+				log.error("Exception clear file: " + outFile, e);
+			}
 		}
 		sendNotification(e, arguments);
 		Main.crash(e);

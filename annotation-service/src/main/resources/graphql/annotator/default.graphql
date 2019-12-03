@@ -11,7 +11,7 @@
             transcripts {
                 id
                 gene
-                transcript_annotation
+                transcript_annotations
             }
         }
     }
