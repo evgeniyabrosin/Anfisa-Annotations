@@ -64,27 +64,21 @@ public class VCFFileIterator implements AutoCloseable {
 		}
 	}
 
-	public VariantVep next() throws NoSuchElementException {
-		while (true) {
-			if (vcfFileReaderIterator.hasNext()) {
-				VariantContext variantContext;
-				try {
-					variantContext = vcfFileReaderIterator.next();
-				} catch (Throwable e) {
-					log.warn("Invalid variant, ignored", e);
-					continue;
-				}
-				if (Chromosome.CHR_M == Chromosome.of(variantContext.getContig())) {
-					continue;//Игнорируем митохондрии
-				}
-				return new VariantVCF(variantContext);
-			} else if (cnvFileIterator != null && cnvFileIterator.hasNext()) {
-				return cnvFileIterator.next();
-			} else {
-				throw new NoSuchElementException();
-			}
-		}
-	}
+    public VariantVep next() throws NoSuchElementException {
+        while (true) {
+            if (vcfFileReaderIterator.hasNext()) {
+                VariantContext variantContext = vcfFileReaderIterator.next();
+                if (Chromosome.CHR_M == Chromosome.of(variantContext.getContig())) {
+                    continue;//Игнорируем митохондрии
+                }
+                return new VariantVCF(variantContext);
+            } else if (cnvFileIterator != null && cnvFileIterator.hasNext()) {
+                return cnvFileIterator.next();
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+    }
 
 	@Override
 	public void close() {
