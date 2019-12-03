@@ -2,7 +2,6 @@ import argparse
 import glob
 import json
 import os
-import sys
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -26,18 +25,25 @@ if __name__ == '__main__':
     if (args.input):
         input_file = args.input
     else:
-        vcfs = glob.glob(os.path.join(working_dir, "*{}*vcf*".format(case)))
+        vcfs = glob.glob(os.path.join(working_dir, "*vcf*".format(case)))
         vcfs = sorted([vcf for vcf in vcfs if not vcf.endswith('idx')])
         if len(vcfs) == 0:
             raise Exception("No VCF files are found in {}".format(working_dir))
+        elif len(vcfs) == 1:
+            input_file = os.path.basename(vcfs[0])
         elif len(vcfs) == 2 and vcfs[1] == vcfs[0] + ".gz":
             input_file = os.path.basename(vcfs[0])
-        elif len(vcfs) > 1:
-            raise Exception(
-                "Ambiguos VCF files are in {}: {}".format(working_dir,
-                                                          ", ".join(vcfs)))
         else:
-            input_file = os.path.basename(vcfs[0])
+            vcfs = glob.glob(os.path.join(working_dir, "*{}*vcf*".format(case)))
+            vcfs = sorted([vcf for vcf in vcfs if not vcf.endswith('idx')])
+            if len(vcfs) == 2 and vcfs[1] == vcfs[0] + ".gz":
+                input_file = os.path.basename(vcfs[0])
+            elif len(vcfs) > 1:
+                raise Exception(
+                    "Ambiguos VCF files are in {}: {}".format(working_dir,
+                                                              ", ".join(vcfs)))
+            else:
+                input_file = os.path.basename(vcfs[0])
 
     x = input_file.lower().split('.')[0].split('_')
     if ('wgs' in x):
@@ -61,6 +67,8 @@ if __name__ == '__main__':
     working_dir = args.dir
     case_id = "{}_{}".format(case, platform)
     fam_file = "{}.fam".format(case)
+    if (not os.path.exists(os.path.join(working_dir, fam_file))):
+        raise Exception("Fam file does is not found: {}".format(fam_file))
 
     patient_ids_file = os.path.join(working_dir, "samples-{}.csv".format(case))
     if (not os.path.exists(patient_ids_file)):
@@ -99,8 +107,13 @@ if __name__ == '__main__':
         config["vep-json"] = "${DIR}/" + vep_json
     if "cnv" in config:
         cnv_file = config["cnv"]
+        cnv_file = cnv_file.replace("${DIR}/", working_dir)
         if (not os.path.isfile(cnv_file)):
+            print("Warning: no CNV file: {}".format(cnv_file))
             del config["cnv"]
+    if "docs" in config and not os.path.isdir(os.path.join(working_dir, "docs")):
+        print("Warning: DOCs directory not found")
+        del config["docs"]
 
     inventory = os.path.join(working_dir, "{}.cfg".format(case_id))
 
