@@ -44,6 +44,8 @@ node {
 		}
 
 		stage('Build & Publish docker image') {
+			sh("echo -n \"${params.DOCKERHUB_PASSWORD}\" | docker login --username ${params.DOCKERHUB_LOGIN} --password-stdin ${params.DOCKERHUB}")
+
 			def image = "${params.DOCKERHUB}/forome/annotation:${env.annotationVersion}";
 			sh("docker build . -t ${image} --file pipeline/projects/annotation-core/Dockerfile")
 			sh("docker push ${image}")

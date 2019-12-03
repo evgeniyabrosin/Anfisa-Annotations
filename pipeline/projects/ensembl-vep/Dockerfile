@@ -1,7 +1,7 @@
 ###################################################
 # Stage 1 - docker container to build ensembl-vep #
 ###################################################
-FROM debian:buster as builder
+FROM ubuntu:18.04 as builder
 
 # Update aptitude and install some required packages
 # a lot of them are required for Bio::DB::BigFile
@@ -80,7 +80,7 @@ RUN make && rm -f Makefile *.c
 ###################################################
 # Stage 2 - docker container to build ensembl-vep #
 ###################################################
-FROM debian:buster
+FROM ubuntu:18.04
 
 # Update aptitude and install some required packages
 # a lot of them are required for Bio::DB::BigFile
