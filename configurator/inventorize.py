@@ -107,7 +107,7 @@ if __name__ == '__main__':
         config["vep-json"] = "${DIR}/" + vep_json
     if "cnv" in config:
         cnv_file = config["cnv"]
-        cnv_file = cnv_file.replace("${DIR}/", working_dir)
+        cnv_file = cnv_file.replace("${DIR}", working_dir)
         if (not os.path.isfile(cnv_file)):
             print("Warning: no CNV file: {}".format(cnv_file))
             del config["cnv"]
