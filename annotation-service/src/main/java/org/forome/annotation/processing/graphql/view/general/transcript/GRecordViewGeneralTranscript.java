@@ -21,21 +21,23 @@ package org.forome.annotation.processing.graphql.view.general.transcript;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 
+import java.util.List;
+
 @GraphQLName("record_view_general_transcript")
 public class GRecordViewGeneralTranscript {
 
 	public final String id;
 	public final String gene;
-	public final String transcriptAnnotation;
+	public final List<String> transcriptAnnotations;
 
 	public GRecordViewGeneralTranscript(
 			String id,
 			String gene,
-			String transcriptAnnotation
+			List<String> transcriptAnnotations
 	) {
 		this.id = id;
 		this.gene = gene;
-		this.transcriptAnnotation = transcriptAnnotation;
+		this.transcriptAnnotations = transcriptAnnotations;
 	}
 
 	@GraphQLField
@@ -51,9 +53,9 @@ public class GRecordViewGeneralTranscript {
 	}
 
 	@GraphQLField
-	@GraphQLName("transcript_annotation")
-	public String getTranscriptAnnotation() {
-		return transcriptAnnotation;
+	@GraphQLName("transcript_annotations")
+	public List<String> getTranscriptAnnotation() {
+		return transcriptAnnotations;
 	}
 
 }

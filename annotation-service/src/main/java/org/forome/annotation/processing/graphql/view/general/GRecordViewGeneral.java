@@ -28,6 +28,7 @@ import org.forome.annotation.struct.variant.vep.VariantVep;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @GraphQLName("record_view_general")
 public class GRecordViewGeneral {
@@ -50,7 +51,7 @@ public class GRecordViewGeneral {
 				transcripts.add(new GRecordViewGeneralTranscript(
 						jTranscript.getAsString("transcript_id"),
 						jTranscript.getAsString("gene_symbol"),
-						null
+						((JSONArray)jTranscript.get("consequence_terms")).stream().map(o -> (String)o).collect(Collectors.toList())
 				));
 			}
 			return transcripts;
