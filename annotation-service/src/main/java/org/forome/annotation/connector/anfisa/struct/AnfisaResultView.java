@@ -162,7 +162,8 @@ public class AnfisaResultView {
         public String probandGenotype;
         public String maternalGenotype;
         public String paternalGenotype;
-        public String canonicalAnnotation;
+//        public String canonicalAnnotation;
+        public List<String> canonicalAnnotation = new ArrayList<>();
         public String alt;
         public String ref;
         public List<String> cposWorst = new ArrayList<>();
