@@ -32,6 +32,8 @@ public enum VariantType {
 	/** Insertion of novel sequence relative to the reference */
 	INS("insertion"),
 
+	SUBSTITUTION("substitution"),
+
 	/** Copy number variable region */
 	CNV("CNV: deletion");
 

@@ -1139,26 +1139,29 @@ public class AnfisaConnector implements AutoCloseable {
 			return ColorCode.code(shape, ColorCode.Color.RED);
 		}
 
-		int best = 100;
-		int worst = 0;
+		int minValue = 100;
+		int maxValue = 0;
 		for (String tool : ColorCode.allInSilicoTools()) {
 			List<String> rawValues = getFromTranscriptsList(variantVep, tool);
 			for (String rawValue : rawValues) {
 				int value = ColorCode.inSilicoPrediction(tool, rawValue);
 				if (value == 0)
 					continue;
-				if (value > worst)
-					worst = value;
-				if (value < best)
-					best = value;
+				if (value > maxValue)
+					maxValue = value;
+				if (value < minValue)
+					minValue = value;
 			}
 		}
 
-		if (best >= 30) {
+		if (minValue > maxValue) {
+			return null;
+		}
+		if (minValue >= 30) {
 			color = ColorCode.Color.RED;
-		} else if (worst <= 10) {
+		} else if (maxValue <= 10) {
 			color = ColorCode.Color.GREEN;
-		} else if (best < 100) {
+		} else if (minValue < 100) {
 			color = ColorCode.Color.YELLOW;
 		} else if (shape == ColorCode.Shape.CROSS) {
 			return ColorCode.code(shape, ColorCode.Color.YELLOW);
