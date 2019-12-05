@@ -158,6 +158,9 @@ ENV LANG $LANG_VAR
 USER vep
 ENV PERL5LIB $PERL5LIB_TMP
 
+COPY /external_resources/homo_sapiens_merged_vep_98_GRCh37.tar.gz /opt/vep-cache/
+RUN tar xzvf /opt/vep-cache/gunzip homo_sapiens_merged_vep_98_GRCh37.tar.gz -C /opt/vep-cache/
+
 # Final steps
 WORKDIR $OPT_SRC/ensembl-vep
 # Update bash profile
