@@ -57,8 +57,10 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("invalid_credentials");
 	}
 
-	public static AnnotatorException buildInvalidVepJsonException(Throwable cause) {
-		return EXCEPTION_FACTORY.build("operation_error", cause);
+	public static AnnotatorException buildInvalidVepJsonException(String value, Throwable cause) {
+		return EXCEPTION_FACTORY.build("operation_error", null, new HashMap<String, Object>() {{
+			put("value", value);
+		}}, cause);
 	}
 
 	public static AnnotatorException buildLargeVcfFile(int maxSize) {
@@ -127,11 +129,11 @@ public class ExceptionBuilder {
 		return buildInvalidValueInventoryException(fieldName, null);
 	}
 
-    public static AnnotatorException buildInvalidValueInventoryException(String fieldName, String comment) {
-        return EXCEPTION_FACTORY.build("invalid_value_inventory", comment, new HashMap<String, Object>() {{
-            put("field_name", fieldName);
-        }}, null);
-    }
+	public static AnnotatorException buildInvalidValueInventoryException(String fieldName, String comment) {
+		return EXCEPTION_FACTORY.build("invalid_value_inventory", comment, new HashMap<String, Object>() {{
+			put("field_name", fieldName);
+		}}, null);
+	}
 
 	public static AnnotatorException buildInvalidOperation(String comment) {
 		return EXCEPTION_FACTORY.build("invalid_operation", comment);

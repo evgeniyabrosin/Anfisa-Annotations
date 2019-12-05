@@ -18,81 +18,82 @@ import java.util.zip.GZIPInputStream;
 
 public class JsonFileIterator implements Iterator<JSONObject>, AutoCloseable {
 
-    private final InputStream inputStream;
-    private final BufferedReader bufferedReader;
+	private final InputStream inputStream;
+	private final BufferedReader bufferedReader;
 
-    private JSONObject nextValue;
+	private JSONObject nextValue;
 
-    public JsonFileIterator(Path pathVepJson) {
-        this(getInputStream(pathVepJson), pathVepJson.getFileName().toString().endsWith(".gz"));
-    }
+	public JsonFileIterator(Path pathVepJson) {
+		this(getInputStream(pathVepJson), pathVepJson.getFileName().toString().endsWith(".gz"));
+	}
 
-    public JsonFileIterator(InputStream inputStream, boolean gzip) {
-        this.inputStream = inputStream;
-        if (gzip) {
-            try {
-                this.bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
-            } catch (IOException e) {
-                throw ExceptionBuilder.buildIOErrorException(e);
-            }
-        } else {
-            this.bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        }
+	public JsonFileIterator(InputStream inputStream, boolean gzip) {
+		this.inputStream = inputStream;
+		if (gzip) {
+			try {
+				this.bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
+			} catch (IOException e) {
+				throw ExceptionBuilder.buildIOErrorException(e);
+			}
+		} else {
+			this.bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+		}
 
-        nextValue = readNextValue();
-    }
+		nextValue = readNextValue();
+	}
 
-    @Override
-    public boolean hasNext() {
-        return (nextValue != null);
-    }
+	@Override
+	public boolean hasNext() {
+		return (nextValue != null);
+	}
 
-    @Override
-    public JSONObject next() {
-        if (nextValue == null) {
-            throw new NoSuchElementException();
-        }
+	@Override
+	public JSONObject next() {
+		if (nextValue == null) {
+			throw new NoSuchElementException();
+		}
 
-        JSONObject value = nextValue;
-        while (true) {
-            nextValue = readNextValue();
-            if (nextValue != null
-                    && Chromosome.CHR_M == Chromosome.of(nextValue.getAsString("seq_region_name"))
-            ) {
-                continue;//Игнорируем митохондрии
-            }
-            break;
-        }
+		JSONObject value = nextValue;
+		while (true) {
+			nextValue = readNextValue();
+			if (nextValue != null
+					&& Chromosome.CHR_M == Chromosome.of(nextValue.getAsString("seq_region_name"))
+			) {
+				continue;//Игнорируем митохондрии
+			}
+			break;
+		}
 
-        return value;
-    }
+		return value;
+	}
 
-    private JSONObject readNextValue() {
-        try {
-            String line = bufferedReader.readLine();
-            if (line == null) {
-                return null;
-            } else {
-                return (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(line);
-            }
-        } catch (IOException e) {
-            throw ExceptionBuilder.buildIOErrorException(e);
-        } catch (ParseException e) {
-            throw ExceptionBuilder.buildInvalidVepJsonException(e);
-        }
-    }
+	private JSONObject readNextValue() {
+		String line = null;
+		try {
+			line = bufferedReader.readLine();
+			if (line == null) {
+				return null;
+			} else {
+				return (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(line);
+			}
+		} catch (IOException e) {
+			throw ExceptionBuilder.buildIOErrorException(e);
+		} catch (ParseException e) {
+			throw ExceptionBuilder.buildInvalidVepJsonException(line, e);
+		}
+	}
 
-    @Override
-    public void close() throws IOException {
-        bufferedReader.close();
-        inputStream.close();
-    }
+	@Override
+	public void close() throws IOException {
+		bufferedReader.close();
+		inputStream.close();
+	}
 
-    private static InputStream getInputStream(Path file) {
-        try {
-            return Files.newInputStream(file);
-        } catch (IOException e) {
-            throw ExceptionBuilder.buildIOErrorException(e);
-        }
-    }
+	private static InputStream getInputStream(Path file) {
+		try {
+			return Files.newInputStream(file);
+		} catch (IOException e) {
+			throw ExceptionBuilder.buildIOErrorException(e);
+		}
+	}
 }
