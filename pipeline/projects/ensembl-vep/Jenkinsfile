@@ -34,6 +34,8 @@ node {
 
 		stage('Build link from external resources') {
             sh("ln -s /external_resources/homo_sapiens_merged_vep_98_GRCh37.tar.gz pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz")
+            sh("pwd pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz")
+            sh("ls -l pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz")
         }
 
 		stage('Build & Publish docker image') {
