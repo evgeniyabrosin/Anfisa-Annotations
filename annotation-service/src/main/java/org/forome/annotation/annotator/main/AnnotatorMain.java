@@ -18,6 +18,7 @@
 
 package org.forome.annotation.annotator.main;
 
+import org.forome.annotation.annotator.AnnotationConsole;
 import org.forome.annotation.annotator.main.argument.*;
 import org.forome.annotation.inventory.Inventory;
 import org.forome.annotation.logback.LogbackConfigure;

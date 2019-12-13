@@ -18,6 +18,7 @@
 
 package org.forome.annotation.annotator.main;
 
+import org.forome.annotation.annotator.AnnotationConsole;
 import org.forome.annotation.annotator.main.argument.ArgumentsScanInventory;
 import org.forome.annotation.annotator.main.argument.ParserArgument;
 import org.forome.annotation.inventory.Inventory;
