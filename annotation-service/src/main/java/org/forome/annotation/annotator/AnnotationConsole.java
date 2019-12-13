@@ -1,26 +1,25 @@
 /*
- Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *
+ *  Developed by Vladimir Ulitin and Michael Bouzinier
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ * 	 http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
- Developed by Vladimir Ulitin and Michael Bouzinier
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-	 http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-*/
-
-package org.forome.annotation.annotator.main;
+package org.forome.annotation.annotator;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.forome.annotation.Main;
-import org.forome.annotation.annotator.Annotator;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
@@ -46,9 +45,7 @@ import org.forome.annotation.utils.RuntimeExec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,6 +54,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class AnnotationConsole {
@@ -71,8 +69,8 @@ public class AnnotationConsole {
 
 	private final Path pathCohorts;
 
-	private final Path vcfFile;
-	private final Path vepJsonFile;
+	private final Path inputVcfFile;
+	private final Path inputVepJsonFile;
 
 	private final Path cnvFile;
 
@@ -121,8 +119,8 @@ public class AnnotationConsole {
 
 		this.pathCohorts = pathCohorts;
 
-		this.vcfFile = vcfFile;
-		this.vepJsonFile = vepJsonFile;
+		this.inputVcfFile = vcfFile;
+		this.inputVepJsonFile = vepJsonFile;
 
 		this.cnvFile = cnvFile;
 
@@ -144,16 +142,16 @@ public class AnnotationConsole {
 			sshTunnelService = new SSHConnectService();
 			databaseConnectService = new DatabaseConnectService(sshTunnelService);
 //            gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
-			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
+			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, null, arguments));
 			spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 			conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
 			hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 			clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 			liftoverConnector = new LiftoverConnector();
-			gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, arguments));
+			gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, null, arguments));
 			gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
 			pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
-			ensemblVepService = new EnsemblVepExternalService((t, e) -> fail(e, arguments));
+			ensemblVepService = new EnsemblVepExternalService((t, e) -> fail(e, null, arguments));
 			anfisaConnector = new AnfisaConnector(
 					gnomadConnector,
 					spliceAIConnector,
@@ -167,27 +165,39 @@ public class AnnotationConsole {
 			);
 			processing = new Processing(anfisaConnector);
 		} catch (Throwable e) {
-			fail(e, arguments);
+			fail(e, null, arguments);
 		}
 	}
 
 	public void execute() {
+		Path vcfFile = null;
 		try {
 			log.info("Version: {}", AppVersion.getVersion());
 			log.info("Input caseName: {}", caseName);
 			log.info("Input famFile: {}", famFile);
 			log.info("Input cohortFile: {}", pathCohorts);
-			log.info("Input vepVcfFile: {}", vcfFile);
+			log.info("Input vepVcfFile: {}", inputVcfFile);
 			log.info("Input start position: {}", startPosition);
-			log.info("Input vepJsonFile: {}", vepJsonFile);
+			log.info("Input vepJsonFile: {}", inputVepJsonFile);
 			log.info("Input cnvFile: {}", cnvFile);
 
-			Path pathVepJson;
-			if (vepJsonFile != null) {
-				pathVepJson = vepJsonFile;
+			if (!inputVcfFile.getFileName().toString().endsWith(".gz")) {
+				vcfFile = inputVcfFile;
+			} else {
+				Path pathDir = outFile.getParent();
+				log.info("unpacking vcf file: {}...", inputVcfFile);
+				vcfFile = gunzipVcfFile(inputVcfFile, pathDir);
+				log.info("unpacking vcf file: {}... complete", inputVcfFile);
+			}
+			Path finalVcfFile = vcfFile;
+
+			//Билдим при необходимости vep-json
+			Path vepJson;
+			if (inputVepJsonFile != null) {
+				vepJson = inputVepJsonFile;
 			} else {
 				Path pathDirVepJson = outFile.getParent();
-				pathVepJson = buildVepJson(vcfFile, pathDirVepJson);
+				vepJson = buildVepJson(vcfFile, pathDirVepJson);
 			}
 
 			Annotator annotator = new Annotator(ensemblVepService, processing);
@@ -198,7 +208,7 @@ public class AnnotationConsole {
 					patientIdsFile,
 					pathCohorts,
 					vcfFile,
-					pathVepJson,
+					vepJson,
 					cnvFile,
 					startPosition
 			);
@@ -223,22 +233,23 @@ public class AnnotationConsole {
 							log.debug("progress (count): {}", count.get());
 						}
 					},
-					e -> fail(e, arguments),
+					e -> fail(e, finalVcfFile, arguments),
 					() -> {
 						log.debug("progress completed");
 						bos.close();
 						os.close();
 						anfisaConnector.close();
+						clear(finalVcfFile);
 						sendNotification(null, arguments);
 						System.exit(0);
 					}
 			);
 		} catch (Throwable e) {
-			fail(e, arguments);
+			fail(e, vcfFile, arguments);
 		}
 	}
 
-	private void fail(Throwable e, Supplier<String> arguments) {
+	private void fail(Throwable e,  Path vcfFile, Supplier<String> arguments) {
 		if (Files.exists(outFile)) {
 			String newFileName = new StringBuilder()
 					.append(outFile.getFileName().toString())
@@ -250,8 +261,20 @@ public class AnnotationConsole {
 				log.error("Exception clear file: " + outFile, e);
 			}
 		}
+		clear(vcfFile);
 		sendNotification(e, arguments);
 		Main.crash(e);
+	}
+
+	private void clear(Path vcfFile) {
+		try {
+			if (vcfFile != null && !Files.isSameFile(inputVcfFile, vcfFile)) {
+				log.info("clear tmp file: {}", vcfFile);
+				Files.deleteIfExists(vcfFile);
+			}
+		} catch (IOException e) {
+			log.error("Exception clears", e);
+		}
 	}
 
 	private void sendNotification(Throwable throwable, Supplier<String> arguments) {
@@ -296,6 +319,37 @@ public class AnnotationConsole {
 		}
 	}
 
+	private static Path gunzipVcfFile(Path vcfFile, Path pathDir) throws IOException {
+		if (!vcfFile.getFileName().toString().endsWith(".vcf.gz")) {
+			throw new RuntimeException("VcfFile is not *.vcf.gz" + vcfFile.toAbsolutePath());
+		}
+
+		String fileNameVcfFile = vcfFile.getFileName().toString();
+		String s = fileNameVcfFile.substring(0, fileNameVcfFile.length() - ".vcf.gz".length());
+		fileNameVcfFile = s + ".vcf";
+		int i = 0;
+		while (Files.exists(pathDir.resolve(fileNameVcfFile))) {
+			fileNameVcfFile = String.format("%s(%s).vcf", s, ++i);
+		}
+		Path pathVcfFile = pathDir.resolve(fileNameVcfFile).toAbsolutePath();
+
+		try (FileInputStream fis = new FileInputStream(vcfFile.toFile())) {
+			try(GZIPInputStream gis = new GZIPInputStream(fis)) {
+				try(FileOutputStream fos = new FileOutputStream(pathVcfFile.toFile())) {
+					byte[] buffer = new byte[1024];
+					int len;
+					while((len = gis.read(buffer)) != -1){
+						fos.write(buffer, 0, len);
+					}
+				} catch (Throwable e) {
+					Files.deleteIfExists(pathVcfFile);
+					throw e;
+				}
+			}
+		}
+		return pathVcfFile;
+	}
+
 	private static Path buildVepJson(Path vcfFile, Path pathDirVepJson) {
 		String fileNameVcf = vcfFile.getFileName().toString();
 		String fileNameVepJson;
@@ -314,7 +368,7 @@ public class AnnotationConsole {
 		String cmd = new StringBuilder("/db/vep-93/ensembl-vep/vep ")
 				.append("--buffer_size 50000 ")
 				.append("--cache --dir /db/data/vep/cache --dir_cache /db/data/vep/cache ")
-				.append("--fork 6 ")
+				.append("--fork 4 ")
 				.append("--uniprot --hgvs --symbol --numbers --domains --regulatory --canonical --protein --biotype --tsl --appris --gene_phenotype --variant_class ")
 				.append("--fasta /db/data/vep/cache/homo_sapiens/93_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz ")
 				.append("--force_overwrite ")

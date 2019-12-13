@@ -86,8 +86,9 @@ public class JsonFileIterator implements Iterator<JSONObject>, AutoCloseable {
 	}
 
 	private JSONObject readNextValue() {
+		String line = null;
 		try {
-			String line = bufferedReader.readLine();
+			line = bufferedReader.readLine();
 			if (line == null) {
 				return null;
 			} else {
@@ -96,7 +97,7 @@ public class JsonFileIterator implements Iterator<JSONObject>, AutoCloseable {
 		} catch (IOException e) {
 			throw ExceptionBuilder.buildIOErrorException(e);
 		} catch (ParseException e) {
-			throw ExceptionBuilder.buildInvalidVepJsonException(e);
+			throw ExceptionBuilder.buildInvalidVepJsonException(line, e);
 		}
 	}
 

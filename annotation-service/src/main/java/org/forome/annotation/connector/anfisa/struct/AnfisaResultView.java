@@ -162,34 +162,35 @@ public class AnfisaResultView {
 		}
 	}
 
-	public class General {
-		public String probandGenotype;
-		public String maternalGenotype;
-		public String paternalGenotype;
-		public String canonicalAnnotation;
-		public String alt;
-		public String ref;
-		public List<String> cposWorst = new ArrayList<>();
-		public List<String> cposCanonical = new ArrayList<>();
-		public List<String> cposOther = new ArrayList<>();
-		public List<String> spliceRegion;
-		public String[] genes;
-		public String worstAnnotation;
-		public List<String> refseqTranscriptWorst = new ArrayList<>();
-		public List<String> ensemblTranscriptsWorst = new ArrayList<>();
-		public List<String> refseqTranscriptCanonical = new ArrayList<>();
-		public List<String> ensemblTranscriptsCanonical = new ArrayList<>();
-		public List<String> geneSplicer;
-		public List<String> pposWorst = new ArrayList<>();
-		public List<String> pposCanonical = new ArrayList<>();
-		public List<String> pposOther = new ArrayList<>();
-		public String hg38;
-		public String hg19;
-		public List<String> variantExonWorst = new ArrayList<>();
-		public List<String> variantIntronWorst = new ArrayList<>();
-		public List<String> variantExonCanonical = new ArrayList<>();
-		public List<String> variantIntronCanonical = new ArrayList<>();
-		public Optional<String> spliceAltering;
+    public class General {
+        public String probandGenotype;
+        public String maternalGenotype;
+        public String paternalGenotype;
+//        public String canonicalAnnotation;
+        public List<String> canonicalAnnotation = new ArrayList<>();
+        public String alt;
+        public String ref;
+        public List<String> cposWorst = new ArrayList<>();
+        public List<String> cposCanonical = new ArrayList<>();
+        public List<String> cposOther = new ArrayList<>();
+        public List<String> spliceRegion;
+        public String[] genes;
+        public String worstAnnotation;
+        public List<String> refseqTranscriptWorst = new ArrayList<>();
+        public List<String> ensemblTranscriptsWorst = new ArrayList<>();
+        public List<String> refseqTranscriptCanonical = new ArrayList<>();
+        public List<String> ensemblTranscriptsCanonical = new ArrayList<>();
+        public List<String> geneSplicer;
+        public List<String> pposWorst = new ArrayList<>();
+        public List<String> pposCanonical = new ArrayList<>();
+        public List<String> pposOther = new ArrayList<>();
+        public String hg38;
+        public String hg19;
+        public List<String> variantExonWorst = new ArrayList<>();
+        public List<String> variantIntronWorst = new ArrayList<>();
+        public List<String> variantExonCanonical = new ArrayList<>();
+        public List<String> variantIntronCanonical = new ArrayList<>();
+        public Optional<String> spliceAltering;
 
 		/**
 		 * Содержится набор органов на которые с большой вероятностью вляет затронутый ген

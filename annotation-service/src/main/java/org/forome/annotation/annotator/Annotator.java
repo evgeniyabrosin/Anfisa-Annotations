@@ -78,7 +78,7 @@ public class Annotator {
 			Path pathFam,
 			Path pathFamSampleName,
 			Path pathCohorts,
-			Path pathVepVcf,
+			Path pathVcf,
 			Path pathVepJson,
 			Path cnvFile,
 			int startPosition
@@ -90,11 +90,11 @@ public class Annotator {
 			throw new IllegalArgumentException("Bad name fam file: " + pathFam.toAbsolutePath());
 		}
 
-		if (!Files.exists(pathVepVcf)) {
-			throw new RuntimeException("Vcf file is not exists: " + pathVepVcf.toAbsolutePath());
+		if (!Files.exists(pathVcf)) {
+			throw new RuntimeException("Vcf file is not exists: " + pathVcf.toAbsolutePath());
 		}
-		if (!pathVepVcf.getFileName().toString().endsWith(".vcf")) {
-			throw new IllegalArgumentException("Bad name vcf file (Need *.vcf): " + pathVepVcf.toAbsolutePath());
+		if (!pathVcf.getFileName().toString().endsWith(".vcf")) {
+			throw new IllegalArgumentException("Bad name vcf file (Need *.vcf): " + pathVcf.toAbsolutePath());
 		}
 
 		if (pathVepJson != null) {
@@ -117,7 +117,7 @@ public class Annotator {
 					isFam,
 					isFamSampleName,
 					isCohorts,
-					pathVepVcf,
+					pathVcf,
 					pathVepJson,
 					cnvFile,
 					startPosition
