@@ -18,6 +18,7 @@
 
 package org.forome.annotation.annotator.struct;
 
+import com.google.common.base.Strings;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderLine;
@@ -40,7 +41,9 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,14 +70,13 @@ public class AnnotatorResult {
 
 			public final List<DatabaseConnector.Metadata> metadataDatabases;
 
-			private final Map<String, String> toolGatks;
-			private final Map<String, String> toolBcfs;
+			private final String toolGatksCombineVariants;
+			private final String toolGatksApplyRecalibration;
+			private final String bcftoolsAnnotateVersion;
 
 			public Versions(Path pathVepVcf, AnfisaConnector anfisaConnector) {
 				annotations = AppVersion.getVersionFormat();
 				annotationsBuild = AppVersion.getVersion();
-				toolGatks = new HashMap<String, String>();
-				toolBcfs = new HashMap<String, String>();
 				if (pathVepVcf != null) {
 					VCFFileReader vcfFileReader = new VCFFileReader(pathVepVcf, false);
 					VCFHeader vcfHeader = vcfFileReader.getFileHeader();
@@ -102,7 +104,9 @@ public class AnnotatorResult {
 						if (!matcher.matches()) {
 							throw new RuntimeException("Not support format GATK version: " + hlGatkCV.getValue());
 						}
-						toolGatks.put("combine_variants", matcher.group(2));
+						toolGatksCombineVariants = matcher.group(2);
+					} else {
+						toolGatksCombineVariants = null;
 					}
 					VCFHeaderLine hlGatkAR = vcfHeader.getMetaDataLine("GATKCommandLine.ApplyRecalibration");
 					if (hlGatkAR != null) {
@@ -110,17 +114,24 @@ public class AnnotatorResult {
 						if (!matcher.matches()) {
 							throw new RuntimeException("Not support format GATK version: " + hlGatkAR.getValue());
 						}
-						toolGatks.put("apply_recalibration", matcher.group(2));
+						toolGatksApplyRecalibration = matcher.group(2);
+					} else {
+						toolGatksApplyRecalibration = null;
 					}
 
 					VCFHeaderLine hlBCFAnnotateVersion = vcfHeader.getMetaDataLine("bcftools_annotateVersion");
 					if (hlBCFAnnotateVersion != null) {
-						toolBcfs.put("annotate", hlBCFAnnotateVersion.getValue());
+						bcftoolsAnnotateVersion = hlBCFAnnotateVersion.getValue();
+					} else {
+						bcftoolsAnnotateVersion = null;
 					}
 				} else {
 					pipeline = null;
 					reference = null;
 					pipelineDate = null;
+					toolGatksApplyRecalibration = null;
+					toolGatksCombineVariants = null;
+					bcftoolsAnnotateVersion = null;
 				}
 
 				metadataDatabases = new ArrayList<>();
@@ -136,7 +147,9 @@ public class AnnotatorResult {
 
 			private JSONObject toJSON() {
 				JSONObject out = new JSONObject();
-				out.put("pipeline_date", (pipelineDate != null) ? DATE_TIME_FORMATTER.format(pipelineDate) : null);
+				if (pipelineDate!=null) {
+					out.put("pipeline_date", DATE_TIME_FORMATTER.format(pipelineDate));
+				}
 				out.put("annotations_date", DATE_TIME_FORMATTER.format(Instant.now()));
 				out.put("pipeline", pipeline);
 				out.put("annotations", annotations);
@@ -155,11 +168,14 @@ public class AnnotatorResult {
 					}
 					out.put(metadata.product, value.toString());
 				}
-				if (!toolGatks.isEmpty()) {
-					out.put("gatk", toolGatks);
+				if (!Strings.isNullOrEmpty(toolGatksApplyRecalibration)) {
+					out.put("gatks_apply_recalibration", toolGatksApplyRecalibration);
 				}
-				if (!toolBcfs.isEmpty()) {
-					out.put("bcftools", toolBcfs);
+				if (!Strings.isNullOrEmpty(toolGatksCombineVariants)) {
+					out.put("gatks_combine_variants", toolGatksCombineVariants);
+				}
+				if (!Strings.isNullOrEmpty(bcftoolsAnnotateVersion)) {
+					out.put("bcftools_annotate_version", bcftoolsAnnotateVersion);
 				}
 				return out;
 			}
