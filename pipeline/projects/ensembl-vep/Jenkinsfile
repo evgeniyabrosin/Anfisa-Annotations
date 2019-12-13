@@ -32,11 +32,15 @@ node {
 			checkout scm
 		}
 
+		stage('Build link from external resources') {
+            sh("ln -s /external_resources/homo_sapiens_merged_vep_98_GRCh37.tar.gz pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz")
+        }
+
 		stage('Build & Publish docker image') {
 		    sh("echo -n \"${params.DOCKERHUB_PASSWORD}\" | docker login --username ${params.DOCKERHUB_LOGIN} --password-stdin ${params.DOCKERHUB}")
 
 			def image = "${params.DOCKERHUB}/forome/ensembl-vep:latest";
-			sh("docker build . -t ${image} --file pipeline/projects/ensembl-vep/Dockerfile")
+			sh("tar -czh . | docker build - -t ${image} --file pipeline/projects/ensembl-vep/Dockerfile")
 			sh("docker push ${image}")
 		}
 
