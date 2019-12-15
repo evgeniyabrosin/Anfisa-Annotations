@@ -39,9 +39,11 @@ node {
 		stage('Build & Publish docker image') {
 		    sh("echo -n \"${params.DOCKERHUB_PASSWORD}\" | docker login --username ${params.DOCKERHUB_LOGIN} --password-stdin ${params.DOCKERHUB}")
 
+            def dockerPushArgs = "${params.DOCKERPUSHARGS}";
+
 			def image = "${params.DOCKERHUB}/forome/ensembl-vep:latest";
 			sh("tar -czh . | docker build - -t ${image} --file pipeline/projects/ensembl-vep/Dockerfile")
-			sh("docker push ${image}")
+			sh("docker push ${dockerPushArgs} ${image}")
 		}
 
 	} catch (Throwable e) {
