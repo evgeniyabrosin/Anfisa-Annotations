@@ -37,7 +37,7 @@ node {
         }
 
 		stage('Build & Publish docker image') {
-			def image = "${params.DOCKERHUB}/forome/ensembl-vep:release_98";
+			def image = "${params.DOCKERHUB}/forome/ensembl-vep:98";
 			sh("tar -czh . | docker build - -t ${image} --file pipeline/projects/ensembl-vep/Dockerfile")
 			sh("docker push ${image}")
 		}
