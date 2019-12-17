@@ -17,6 +17,8 @@
 FROM docker.forome.org/forome/ensembl-vep:98
 MAINTAINER Vladimir A. Ulitin <v.ulitin@mobin.me>
 
+USER root
+
 RUN echo "Etc/UTC" > /etc/timezone \
     && dpkg-reconfigure -f noninteractive tzdata \
     \
