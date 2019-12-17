@@ -19,8 +19,6 @@ MAINTAINER Vladimir A. Ulitin <v.ulitin@mobin.me>
 
 USER root
 
-export DEBIAN_FRONTEND=noninteractive
-
 RUN apt-get update \
     \
     #Set timezone
