@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:buster
+FROM docker.forome.org/forome/ensembl-vep:98
 MAINTAINER Vladimir A. Ulitin <v.ulitin@mobin.me>
 
 RUN echo "Etc/UTC" > /etc/timezone \
