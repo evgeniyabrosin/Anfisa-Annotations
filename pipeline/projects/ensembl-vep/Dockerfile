@@ -178,10 +178,11 @@ RUN apt-get update \
     && cd /opt/ \
     && git clone https://github.com/nh13/pbgzip.git \
     && cd /opt/pbgzip/ \
-    && autogen.sh \
+    && ./autogen.sh \
     && ./configure \
     && make \
     && make install \
+    \
     && cd /opt/vep-cache/homo_sapiens/ \
     && zcat Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz | pbgzip -c > Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz \
     && rm Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz \
