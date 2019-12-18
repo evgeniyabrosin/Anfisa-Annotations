@@ -33,7 +33,11 @@ node {
 		}
 
 		stage('Build link from external resources') {
+		    // ftp://ftp.ensembl.org/pub/release-98/variation/indexed_vep_cache/homo_sapiens_merged_vep_98_GRCh37.tar.gz
             sh("ln -s /external_resources/homo_sapiens_merged_vep_98_GRCh37.tar.gz pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz")
+
+            //ftp://ftp.ensembl.org/pub/release-98/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
+            sh("ln -s /external_resources/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz pipeline/projects/ensembl-vep/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz")
         }
 
 		stage('Build & Publish docker image') {
