@@ -158,9 +158,6 @@ ENV LANG $LANG_VAR
 USER vep
 ENV PERL5LIB $PERL5LIB_TMP
 
-ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz /opt/vep-cache/
-COPY pipeline/projects/ensembl-vep/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz /opt/vep-cache/homo_sapiens/
-
 # Final steps
 WORKDIR $OPT_SRC/ensembl-vep
 # Update bash profile
@@ -169,3 +166,52 @@ RUN echo >> $OPT/.profile && \
     echo export PATH >> $OPT/.profile && \
     # Run INSTALL.pl and remove the ensemb-vep tests and travis
     ./INSTALL.pl -a a -l -n && rm -rf t travisci .travis.yml
+
+
+#Добавляем ресурсы
+ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz /opt/vep-cache/
+COPY pipeline/projects/ensembl-vep/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz /opt/vep-cache/homo_sapiens/Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz
+
+USER root
+RUN apt-get update \
+    && apt-get -y install git autotools-dev automake wget \
+    && cd /opt/ \
+    && git clone https://github.com/nh13/pbgzip.git \
+    && cd /opt/pbgzip/ \
+    && autogen.sh \
+    && ./configure \
+    && make \
+    && make install \
+    && cd /opt/vep-cache/homo_sapiens/ \
+    && zcat Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz | pbgzip -c > Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz \
+    && rm Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz
+    \
+    # Ставим плагины
+    && mkdir -p /opt/vep-cache/Plugins
+        && cd /opt/vep-cache/Plugins/ \
+    \
+    # Плагин ExACpLI
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/ExACpLI.pm \
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/ExACpLI_values.txt \
+    \
+    # Плагин MaxEntScan
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/MaxEntScan.pm \
+    && wget http://hollywood.mit.edu/burgelab/maxent/download/fordownload.tar.gz \
+    && tar xvzf fordownload.tar.gz \
+    && rm fordownload.tar.gz \
+    \
+    # Плагин LoFtool.pm
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/LoFtool.pm \
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/LoFtool_scores.txt \
+    \
+    # Плагин dbNSFP
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/dbNSFP.pm \
+    \
+    # Плагин SpliceRegion
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/SpliceRegion.pm \
+    \
+    # Все чистим
+    && apt-get autoremove -y git autotools-dev automake wget \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* /var/cache/debconf /tmp/* /var/tmp/* \
+    && apt-get clean
