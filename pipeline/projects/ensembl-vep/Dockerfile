@@ -184,10 +184,10 @@ RUN apt-get update \
     && make install \
     && cd /opt/vep-cache/homo_sapiens/ \
     && zcat Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz | pbgzip -c > Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz \
-    && rm Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz
+    && rm Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz \
     \
     # Ставим плагины
-    && mkdir -p /opt/vep-cache/Plugins
+    && mkdir -p /opt/vep-cache/Plugins \
         && cd /opt/vep-cache/Plugins/ \
     \
     # Плагин ExACpLI
