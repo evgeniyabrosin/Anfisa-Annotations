@@ -178,6 +178,7 @@ RUN apt-get update \
     && cd /opt/ \
     && git clone https://github.com/nh13/pbgzip.git \
     && cd /opt/pbgzip/ \
+    && chmod +x autogen.sh \
     && ./autogen.sh \
     && ./configure \
     && make \
@@ -189,7 +190,7 @@ RUN apt-get update \
     \
     # Ставим плагины
     && mkdir -p /opt/vep-cache/Plugins \
-        && cd /opt/vep-cache/Plugins/ \
+    && cd /opt/vep-cache/Plugins/ \
     \
     # Плагин ExACpLI
     && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/ExACpLI.pm \
