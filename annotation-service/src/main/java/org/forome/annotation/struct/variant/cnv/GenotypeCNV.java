@@ -69,4 +69,9 @@ public class GenotypeCNV extends Genotype {
 		return variantCNV.getAllele(gts[0]) + "/" + variantCNV.getAllele(gts[1]);
 	}
 
+	@Override
+	public Integer getGQ() {
+		return null;
+	}
+
 }

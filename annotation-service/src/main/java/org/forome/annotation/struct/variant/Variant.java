@@ -20,6 +20,7 @@ package org.forome.annotation.struct.variant;
 
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.mcase.Sample;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +38,10 @@ public abstract class Variant {
 	public abstract int getStart();
 
     public abstract VariantType getVariantType();
+
+	public Genotype getGenotype(Sample sample) {
+		return getGenotype(sample.id);
+	}
 
 	public abstract Genotype getGenotype(String sample);
 

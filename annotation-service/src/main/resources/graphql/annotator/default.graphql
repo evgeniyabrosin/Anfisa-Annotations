@@ -5,6 +5,8 @@
         fs
         qd
         mq
+        min_gq
+        severity
     }
     _view {
         general {
