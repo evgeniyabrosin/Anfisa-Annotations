@@ -173,7 +173,7 @@ ENV BRANCH release/98
 
 #Добавляем ресурсы
 ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz /opt/vep-cache/
-COPY pipeline/projects/ensembl-vep/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz /opt/vep-cache/homo_sapiens/Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz
+COPY pipeline/projects/ensembl-vep/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz /opt/vep-cache/homo_sapiens/Homo_sapiens.GRCh37.75.dna.primary_assembly.tmp.fa.gz
 
 USER root
 RUN apt-get update \
@@ -188,8 +188,8 @@ RUN apt-get update \
     && make install \
     \
     && cd /opt/vep-cache/homo_sapiens/ \
-    && zcat Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz | pbgzip -c > Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz \
-    && rm Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz \
+    && zcat Homo_sapiens.GRCh37.75.dna.primary_assembly.tmp.fa.gz | pbgzip -c > Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz \
+    && rm Homo_sapiens.GRCh37.75.dna.primary_assembly.tmp.fa.gz \
     \
     # Ставим плагины
     && mkdir -p /opt/vep-cache/Plugins \
