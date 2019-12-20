@@ -44,7 +44,7 @@ node {
 
 		stage('Build & Publish docker image') {
 			def image = "${params.DOCKERHUB}/forome/ensembl-vep:98.GRCh37";
-			sh("tar -czh . | docker build - -t ${image} --build-arg FILE_MERGE_VEP=${fileMergeVep} --build-arg FILE_FASTA=$PfileFasta} --file pipeline/projects/ensembl-vep/Dockerfile")
+			sh("tar -czh . | docker build - -t ${image} --build-arg FILE_MERGE_VEP=${fileMergeVep} --build-arg FILE_FASTA=$fileFasta} --file pipeline/projects/ensembl-vep/Dockerfile")
 			sh("docker push ${image}")
 		}
 
