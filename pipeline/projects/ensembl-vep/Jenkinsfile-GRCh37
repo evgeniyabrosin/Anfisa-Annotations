@@ -38,9 +38,6 @@ node {
 
             // ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
             sh("ln -s /external_resources/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz pipeline/projects/ensembl-vep/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz")
-
-            //ftp://ftp.ensembl.org/pub/release-98/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
-            //sh("ln -s /external_resources/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz pipeline/projects/ensembl-vep/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz")
         }
 
 		stage('Build & Publish docker image') {

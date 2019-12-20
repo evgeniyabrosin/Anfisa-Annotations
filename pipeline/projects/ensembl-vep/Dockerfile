@@ -170,10 +170,14 @@ RUN echo >> $OPT/.profile && \
 #############################################################
 
 ENV BRANCH release/98
+ARG FILE_MERGE_VEP
+ARG FILE_FASTA
 
 #Добавляем ресурсы
-ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz /opt/vep-cache/
-COPY pipeline/projects/ensembl-vep/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz /opt/vep-cache/homo_sapiens/Homo_sapiens.GRCh37.75.dna.primary_assembly.tmp.fa.gz
+ADD ${FILE_HOMO_SAPIENS_MERGE_VEP} /opt/vep-cache/
+#ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz /opt/vep-cache/
+COPY ${FILE_FASTA} /opt/vep-cache/homo_sapiens/Homo_sapiens.primary_assembly.tmp.fa.gz
+#COPY pipeline/projects/ensembl-vep/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz /opt/vep-cache/homo_sapiens/Homo_sapiens.GRCh37.75.dna.primary_assembly.tmp.fa.gz
 
 USER root
 RUN apt-get update \
@@ -188,8 +192,8 @@ RUN apt-get update \
     && make install \
     \
     && cd /opt/vep-cache/homo_sapiens/ \
-    && zcat Homo_sapiens.GRCh37.75.dna.primary_assembly.tmp.fa.gz | pbgzip -c > Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz \
-    && rm Homo_sapiens.GRCh37.75.dna.primary_assembly.tmp.fa.gz \
+    && zcat Homo_sapiens.primary_assembly.tmp.fa.gz | pbgzip -c > $(basename "$FILE_FASTA") \
+    && rm Homo_sapiens.primary_assembly.tmp.fa.gz \
     \
     # Ставим плагины
     && mkdir -p /opt/vep-cache/Plugins \
