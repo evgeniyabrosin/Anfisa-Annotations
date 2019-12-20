@@ -157,7 +157,6 @@ public class AnfisaConnector implements AutoCloseable {
 		GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant);
 		callQuality(filters, variant, anfisaInput.samples);
 
-		filters.severity = getSeverity(variant);
 		filters.alt = altAllele.getBaseString();
 
 		Sample proband = anfisaInput.samples.proband;
@@ -424,7 +423,6 @@ public class AnfisaConnector implements AutoCloseable {
 	}
 
 	private static void callQuality(AnfisaResultFilters filters, Variant variant, MCase samples) {
-		filters.minGq = getMinGQ(variant, samples);
 		filters.probandGq = getProbandGQ(variant, samples);
 		if (variant != null && variant instanceof VariantVCF) {
 			VariantContext variantContext = ((VariantVCF) variant).variantContext;
@@ -748,7 +746,7 @@ public class AnfisaConnector implements AutoCloseable {
 				q_s.put("allelic_depth", oGenotype.getAnyAttribute("AD"));
 			}
 			q_s.put("read_depth", oGenotype.getAnyAttribute("DP"));
-			q_s.put("genotype_quality", getVariantGQ(variant, sample));
+			q_s.put("genotype_quality", variant.getGenotype(sample).getGQ());
 			q_s.put("genotype", type + ":" + gt);
 			view.qualitySamples.add(q_s);
 		}
@@ -1198,49 +1196,11 @@ public class AnfisaConnector implements AutoCloseable {
 		return set1.contains(altAllele);
 	}
 
-	private static Integer getMinGQ(Variant variant, MCase samples) {
-		if (variant == null || samples == null) {
-			return null;
-		}
-
-		Integer GQ = null;
-		for (Sample s : samples.samples.values()) {
-			Integer gq = getVariantGQ(variant, s);
-			if (gq != null && gq != 0) {
-				if (GQ == null || gq < GQ) {
-					GQ = gq;
-				}
-			}
-		}
-		return GQ;
-	}
-
 	private static Integer getProbandGQ(Variant variant, MCase samples) {
 		if (samples == null || variant == null) {
 			return null;
 		}
-		return getVariantGQ(variant, samples.proband);
-	}
-
-	private static Integer getVariantGQ(Variant variant, Sample s) {
-		if (variant == null || !(variant instanceof VariantVCF)) {
-			return null;
-		}
-		VariantContext variantContext = ((VariantVCF) variant).variantContext;
-
-		int valie = variantContext.getGenotype(s.id).getGQ();
-		return (valie != -1) ? valie : null;
-	}
-
-	private Long getSeverity(Variant variant) {
-		String csq = variant.getMostSevereConsequence();
-		int n = AnfisaVariant.SEVERITY.size();
-		for (int s = 0; s < n; s++) {
-			if (AnfisaVariant.SEVERITY.get(s).contains(csq)) {
-				return Long.valueOf(n - s - 2);
-			}
-		}
-		return null;
+		return variant.getGenotype(samples.proband).getGQ();
 	}
 
 	private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, VariantVep variantVep, Kind kind) {

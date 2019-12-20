@@ -22,6 +22,9 @@ import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import htsjdk.variant.variantcontext.CommonInfo;
 import htsjdk.variant.variantcontext.VariantContext;
+import org.forome.annotation.connector.anfisa.struct.AnfisaVariant;
+import org.forome.annotation.struct.mcase.MCase;
+import org.forome.annotation.struct.mcase.Sample;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.utils.MathUtils;
@@ -29,9 +32,11 @@ import org.forome.annotation.utils.MathUtils;
 @GraphQLName("record_filters")
 public class GRecordFilters {
 
+	public final MCase mCase;
 	public final Variant variant;
 
-	public GRecordFilters(Variant variant) {
+	public GRecordFilters(MCase mCase, Variant variant) {
+		this.mCase = mCase;
 		this.variant = variant;
 	}
 
@@ -67,7 +72,7 @@ public class GRecordFilters {
 
 	@GraphQLField
 	@GraphQLName("mq")
-	public double getMG() {
+	public double getMQ() {
 		if (variant instanceof VariantVCF) {
 			VariantContext variantContext = ((VariantVCF) variant).variantContext;
 			CommonInfo commonInfo = variantContext.getCommonInfo();
@@ -76,5 +81,39 @@ public class GRecordFilters {
 			return 0;
 		}
 	}
+
+	@GraphQLField
+	@GraphQLName("min_gq")
+	public Integer getMinGQ() {
+		if (mCase == null) {
+			return null;
+		}
+
+		Integer GQ = null;
+		for (Sample sample : mCase.samples.values()) {
+			Integer gq = variant.getGenotype(sample).getGQ();
+			if (gq != null && gq != 0) {
+				if (GQ == null || gq < GQ) {
+					GQ = gq;
+				}
+			}
+		}
+		return GQ;
+	}
+
+
+	@GraphQLField
+	@GraphQLName("severity")
+	public Long getSeverity() {
+		String csq = variant.getMostSevereConsequence();
+		int n = AnfisaVariant.SEVERITY.size();
+		for (int s = 0; s < n; s++) {
+			if (AnfisaVariant.SEVERITY.get(s).contains(csq)) {
+				return Long.valueOf(n - s - 2);
+			}
+		}
+		return null;
+	}
+
 
 }

@@ -30,4 +30,6 @@ public abstract class Genotype {
 
 	public abstract String getGenotypeString();
 
+	public abstract Integer getGQ();
+
 }

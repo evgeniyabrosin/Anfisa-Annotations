@@ -24,6 +24,7 @@ import graphql.schema.DataFetchingEnvironment;
 import org.forome.annotation.processing.graphql.filters.GRecordFilters;
 import org.forome.annotation.processing.graphql.view.GRecordView;
 import org.forome.annotation.processing.struct.GContext;
+import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
 
 @GraphQLName("query")
@@ -32,8 +33,10 @@ public class GRecord {
 	@GraphQLField
 	@GraphQLName("_filters")
 	public static GRecordFilters getGRecordFilters(DataFetchingEnvironment env) {
-		Variant variant = ((GContext) env.getContext()).variant;
-		return new GRecordFilters(variant);
+		GContext gContext = env.getContext();
+		Variant variant = gContext.variant;
+		MCase mCase = gContext.mCase;
+		return new GRecordFilters(mCase, variant);
 	}
 
 	@GraphQLField

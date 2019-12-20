@@ -67,6 +67,12 @@ public class GenotypeVCF extends Genotype {
 	}
 
 	@Override
+	public Integer getGQ(){
+		int value = vcfGenotype.getGQ();
+		return (value != -1) ? value : null;
+	}
+
+	@Override
 	public String getGenotypeString() {
 		if (vcfGenotype.isCalled()) {
 			return vcfGenotype.getGenotypeString();
