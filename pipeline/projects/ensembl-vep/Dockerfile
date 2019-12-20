@@ -174,7 +174,7 @@ ARG FILE_MERGE_VEP
 ARG FILE_FASTA
 
 #Добавляем ресурсы
-ADD ${FILE_HOMO_SAPIENS_MERGE_VEP} /opt/vep-cache/
+ADD ${FILE_MERGE_VEP} /opt/vep-cache/
 #ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz /opt/vep-cache/
 COPY ${FILE_FASTA} /opt/vep-cache/homo_sapiens/Homo_sapiens.primary_assembly.tmp.fa.gz
 #COPY pipeline/projects/ensembl-vep/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz /opt/vep-cache/homo_sapiens/Homo_sapiens.GRCh37.75.dna.primary_assembly.tmp.fa.gz
