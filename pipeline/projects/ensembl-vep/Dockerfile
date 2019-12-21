@@ -51,7 +51,7 @@ RUN apt-get update \
             && unzip dbNSFP.zip \
             && head -n1 dbNSFP3.5a_variant.chr1 > h \
             && cat dbNSFP3.5a_variant.chr* | grep -v ^#chr | awk '$8 != "."' | sort -k8,8 -k9,9n - | cat h - | bgzip -c > /opt/vep-cache/dbNSFP.gz \
-            && cd /opt/vep-cache/
+            && cd /opt/vep-cache/ \
             && tabix -s 8 -b 9 -e 9 dbNSFP.gz \
         ; else \
             echo Argument is $DBNSFP_VERSION \
