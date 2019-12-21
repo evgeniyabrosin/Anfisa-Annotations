@@ -7,8 +7,8 @@ ENV BRANCH release/98
 ARG DBNSFP_VERSION
 
 #Add resources
-ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep.tar.gz /opt/vep-cache/
-COPY pipeline/projects/ensembl-vep/Homo_sapiens.dna.primary_assembly.fa.gz /tmp/
+#ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep.tar.gz /opt/vep-cache/
+#COPY pipeline/projects/ensembl-vep/Homo_sapiens.dna.primary_assembly.fa.gz /tmp/
 COPY pipeline/projects/ensembl-vep/dbNSFP.zip /tmp/
 
 RUN apt-get update \
