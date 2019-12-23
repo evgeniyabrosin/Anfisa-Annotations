@@ -1,0 +1,55 @@
+/*
+ Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+
+ Developed by Vladimir Ulitin <v.ulitin@mobin.me>
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+	 http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+*/
+
+node {
+
+	try {
+		stage('init') {
+			echo 'Initializing...'
+
+			def docker = tool name: 'docker-17.09.0-ce'
+			env.PATH = "${docker}:${env.PATH}"
+		}
+
+		stage('clean workspace & checkout') {
+			deleteDir()
+			checkout scm
+		}
+
+		stage('Build link from external resources') {
+		    // ftp://ftp.ensembl.org/pub/release-98/variation/indexed_vep_cache/homo_sapiens_merged_vep_98_GRCh37.tar.gz
+            sh("ln -s /external_resources/homo_sapiens_merged_vep_98_GRCh37.tar.gz pipeline/projects/ensembl-vep/homo_sapiens_merged_vep.tar.gz")
+
+            // ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
+            sh("ln -s /external_resources/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz pipeline/projects/ensembl-vep/Homo_sapiens.dna.primary_assembly.fa.gz")
+
+            // ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv3.5a.zip
+            sh("ln -s /external_resources/dbNSFPv3.5a.zip pipeline/projects/ensembl-vep/dbNSFP.zip")
+        }
+
+		stage('Build & Publish docker image') {
+			def image = "${params.DOCKERHUB}/forome/ensembl-vep:98.GRCh37";
+			sh("tar -czh . | docker build - -t ${image} --build-arg DBNSFP_VERSION=3.5a --file pipeline/projects/ensembl-vep/Dockerfile")
+			sh("docker push ${image}")
+		}
+
+	} catch (Throwable e) {
+		throw e
+	}
+
+}

@@ -1,4 +1,73 @@
 ###################################################
+# Prepare resource and add to build               #
+###################################################
+FROM debian:buster as resources
+
+ENV BRANCH release/98
+ARG DBNSFP_VERSION
+
+#Add resources
+ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep.tar.gz /opt/vep-cache/
+COPY pipeline/projects/ensembl-vep/Homo_sapiens.dna.primary_assembly.fa.gz /tmp/
+COPY pipeline/projects/ensembl-vep/dbNSFP.zip /tmp/
+
+RUN apt-get update \
+    && apt-get -y install build-essential zlib1g-dev libbz2-dev git autotools-dev automake wget tabix \
+    && cd /opt/ \
+    && git clone https://github.com/nh13/pbgzip.git \
+    && cd /opt/pbgzip/ \
+    && chmod +x autogen.sh \
+    && ./autogen.sh \
+    && ./configure \
+    && make \
+    && make install \
+    \
+    && mkdir -p /opt/vep-cache/homo_sapiens/ \
+    && zcat /tmp/Homo_sapiens.dna.primary_assembly.fa.gz | pbgzip -c > /opt/vep-cache/homo_sapiens/Homo_sapiens.dna.primary_assembly.fa.gz \
+    && rm /tmp/Homo_sapiens.dna.primary_assembly.fa.gz \
+    \
+    # Ставим плагины
+    && mkdir -p /opt/vep-cache/Plugins \
+    && cd /opt/vep-cache/Plugins/ \
+    \
+    # Плагин ExACpLI
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/ExACpLI.pm \
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/ExACpLI_values.txt \
+    \
+    # Плагин MaxEntScan
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/MaxEntScan.pm \
+    && wget http://hollywood.mit.edu/burgelab/maxent/download/fordownload.tar.gz \
+    && tar xvzf fordownload.tar.gz \
+    && rm fordownload.tar.gz \
+    \
+    # Плагин LoFtool.pm
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/LoFtool.pm \
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/LoFtool_scores.txt \
+    \
+    # Плагин dbNSFP
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/dbNSFP.pm \
+    && if [ "$DBNSFP_VERSION" = "3.5a" ] \
+        ; then \
+            cd /tmp/ \
+            && unzip dbNSFP.zip \
+            && head -n1 dbNSFP3.5a_variant.chr1 > h \
+            && cat dbNSFP3.5a_variant.chr* | grep -v ^#chr | awk '$8 != "."' | sort -k8,8 -k9,9n - | cat h - | bgzip -c > /opt/vep-cache/dbNSFP.gz \
+            && cd /opt/vep-cache/ \
+            && tabix -s 8 -b 9 -e 9 dbNSFP.gz \
+        ; else \
+            echo Argument is $DBNSFP_VERSION \
+        ; fi \
+    \
+    # Плагин SpliceRegion
+    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/SpliceRegion.pm \
+    \
+    # Все чистим
+    && apt-get autoremove -y git autotools-dev automake wget \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* /var/cache/debconf /tmp/* /var/tmp/* \
+    && apt-get clean
+
+###################################################
 # Stage 1 - docker container to build ensembl-vep #
 ###################################################
 FROM ubuntu:18.04 as builder
@@ -167,56 +236,7 @@ RUN echo >> $OPT/.profile && \
     # Run INSTALL.pl and remove the ensemb-vep tests and travis
     ./INSTALL.pl -a a -l -n && rm -rf t travisci .travis.yml
 
-#############################################################
-
-ENV BRANCH release/98
-
-#Добавляем ресурсы
-ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep_98_GRCh37.tar.gz /opt/vep-cache/
-COPY pipeline/projects/ensembl-vep/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz /opt/vep-cache/homo_sapiens/Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz
-
-USER root
-RUN apt-get update \
-    && apt-get -y install git autotools-dev automake wget \
-    && cd /opt/ \
-    && git clone https://github.com/nh13/pbgzip.git \
-    && cd /opt/pbgzip/ \
-    && chmod +x autogen.sh \
-    && ./autogen.sh \
-    && ./configure \
-    && make \
-    && make install \
-    \
-    && cd /opt/vep-cache/homo_sapiens/ \
-    && zcat Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz | pbgzip -c > Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz \
-    && rm Homo_sapiens.GRCh38.dna.primary_assembly.tmp.fa.gz \
-    \
-    # Ставим плагины
-    && mkdir -p /opt/vep-cache/Plugins \
-    && cd /opt/vep-cache/Plugins/ \
-    \
-    # Плагин ExACpLI
-    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/ExACpLI.pm \
-    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/ExACpLI_values.txt \
-    \
-    # Плагин MaxEntScan
-    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/MaxEntScan.pm \
-    && wget http://hollywood.mit.edu/burgelab/maxent/download/fordownload.tar.gz \
-    && tar xvzf fordownload.tar.gz \
-    && rm fordownload.tar.gz \
-    \
-    # Плагин LoFtool.pm
-    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/LoFtool.pm \
-    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/LoFtool_scores.txt \
-    \
-    # Плагин dbNSFP
-    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/dbNSFP.pm \
-    \
-    # Плагин SpliceRegion
-    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/SpliceRegion.pm \
-    \
-    # Все чистим
-    && apt-get autoremove -y git autotools-dev automake wget \
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/* /var/cache/debconf /tmp/* /var/tmp/* \
-    && apt-get clean
+###################################################
+# Copy resource                                   #
+###################################################
+COPY --chown=vep:vep --from=resources /opt/vep-cache/ /opt/vep-cache/
