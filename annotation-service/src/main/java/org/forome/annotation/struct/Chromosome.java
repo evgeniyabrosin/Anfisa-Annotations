@@ -19,6 +19,7 @@
 package org.forome.annotation.struct;
 
 import com.google.common.base.Strings;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 
 public enum Chromosome {
@@ -47,8 +48,7 @@ public enum Chromosome {
 	CHR_22("22"),
 	CHR_23("23"),
 	CHR_X("X"),
-	CHR_Y("Y"),
-	CHR_M("M");
+	CHR_Y("Y");
 
 	private final String value;
 
@@ -88,16 +88,25 @@ public enum Chromosome {
 		if (value.startsWith("CHR")) {
 			value = value.substring("CHR".length());
 		}
-		if ("MT".equals(str)) {
-			value = "M";
-		}
 
-		for (Chromosome chromosome: Chromosome.values()) {
+		for (Chromosome chromosome : Chromosome.values()) {
 			if (value.equals(chromosome.getChar())) {
 				return chromosome;
 			}
 		}
 
 		throw ExceptionBuilder.buildInvalidChromosome(str);
+	}
+
+	public static boolean isChromosome(String str) {
+		try {
+			Chromosome.of(str);
+			return true;
+		} catch (AnnotatorException e) {
+			if (ExceptionBuilder.CODE_INVALID_CHROMOSOME.equals(e.getCode())) {
+				return false;
+			}
+			throw e;
+		}
 	}
 }

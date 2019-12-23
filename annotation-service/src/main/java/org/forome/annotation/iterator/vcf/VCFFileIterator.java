@@ -35,7 +35,7 @@ import java.util.NoSuchElementException;
 
 public class VCFFileIterator implements AutoCloseable {
 
-    private final static Logger log = LoggerFactory.getLogger(VCFFileIterator.class);
+	private final static Logger log = LoggerFactory.getLogger(VCFFileIterator.class);
 
 	private final VCFFileReader vcfFileReader;
 	private final CloseableIterator<VariantContext> vcfFileReaderIterator;
@@ -64,21 +64,21 @@ public class VCFFileIterator implements AutoCloseable {
 		}
 	}
 
-    public VariantVep next() throws NoSuchElementException {
-        while (true) {
-            if (vcfFileReaderIterator.hasNext()) {
-                VariantContext variantContext = vcfFileReaderIterator.next();
-                if (Chromosome.CHR_M == Chromosome.of(variantContext.getContig())) {
-                    continue;//Игнорируем митохондрии
-                }
-                return new VariantVCF(variantContext);
-            } else if (cnvFileIterator != null && cnvFileIterator.hasNext()) {
-                return cnvFileIterator.next();
-            } else {
-                throw new NoSuchElementException();
-            }
-        }
-    }
+	public VariantVep next() throws NoSuchElementException {
+		while (true) {
+			if (vcfFileReaderIterator.hasNext()) {
+				VariantContext variantContext = vcfFileReaderIterator.next();
+				if (!Chromosome.isChromosome(variantContext.getContig())) {
+					continue;//Игнорируем непонятные хромосомы
+				}
+				return new VariantVCF(variantContext);
+			} else if (cnvFileIterator != null && cnvFileIterator.hasNext()) {
+				return cnvFileIterator.next();
+			} else {
+				throw new NoSuchElementException();
+			}
+		}
+	}
 
 	@Override
 	public void close() {
