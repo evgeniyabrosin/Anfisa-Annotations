@@ -12,7 +12,7 @@ COPY pipeline/projects/ensembl-vep/Homo_sapiens.dna.primary_assembly.fa.gz /tmp/
 COPY pipeline/projects/ensembl-vep/dbNSFP.zip /tmp/
 
 RUN apt-get update \
-    && apt-get -y install build-essential zlib1g-dev libbz2-dev git autotools-dev automake wget tabix \
+    && apt-get -y install build-essential zlib1g-dev libbz2-dev git autotools-dev automake wget unzip tabix \
     && cd /opt/ \
     && git clone https://github.com/nh13/pbgzip.git \
     && cd /opt/pbgzip/ \
