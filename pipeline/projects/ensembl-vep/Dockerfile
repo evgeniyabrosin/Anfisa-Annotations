@@ -24,7 +24,7 @@ RUN apt-get update \
     \
     && mkdir -p /opt/vep-cache/homo_sapiens/ \
     && zcat /tmp/Homo_sapiens.dna.primary_assembly.fa.gz | pbgzip -c > /opt/vep-cache/homo_sapiens/Homo_sapiens.dna.primary_assembly.fa.gz \
-    && rm /tmp/Homo_sapiens.primary_assembly.tmp.fa.gz \
+    && rm /tmp/Homo_sapiens.dna.primary_assembly.fa.gz \
     \
     # Ставим плагины
     && mkdir -p /opt/vep-cache/Plugins \
