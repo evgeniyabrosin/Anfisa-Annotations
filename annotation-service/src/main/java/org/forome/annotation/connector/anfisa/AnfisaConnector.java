@@ -422,7 +422,7 @@ public class AnfisaConnector implements AutoCloseable {
 			CommonInfo commonInfo = variantContext.getCommonInfo();
 			filters.qd = toPrimitiveDouble(commonInfo.getAttribute("QD"));
 			filters.fs = toPrimitiveDouble(commonInfo.getAttribute("FS"));
-			filters.mq = toDouble(commonInfo.getAttribute("MQ"));
+			filters.mq = getVariantMQ(commonInfo);
 
 			if (variantContext.isFiltered()) {
 				filters.filters = new ArrayList<>(variantContext.getFilters());
@@ -432,6 +432,13 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
+	private static Double getVariantMQ(CommonInfo commonInfo) {
+		Object oMQAttribute = commonInfo.getAttribute("MQ");
+		if ("nan".equals(oMQAttribute)) {//В кейсе ipm0001 встретилась такая ситуация
+			oMQAttribute = null;
+		}
+		return toDouble(oMQAttribute);
+	}
 
 	private void callGnomAD(AnfisaExecuteContext context, Variant variant, MCase samples, JSONObject response, AnfisaResultFilters filters) {
 		Double af = null;
@@ -664,7 +671,7 @@ public class AnfisaConnector implements AutoCloseable {
 		JSONObject q_all = new JSONObject();
 		q_all.put("title", "All");
 		q_all.put("strand_odds_ratio", toDouble(commonInfo.getAttribute("SOR")));
-		q_all.put("mq", toDouble(commonInfo.getAttribute("MQ")));
+		q_all.put("mq", getVariantMQ(commonInfo));
 
 		q_all.put("variant_call_quality", variantContext.getPhredScaledQual());
 		q_all.put("qd", toDouble(commonInfo.getAttribute("QD")));
