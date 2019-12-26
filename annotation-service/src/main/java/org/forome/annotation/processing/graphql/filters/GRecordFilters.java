@@ -76,7 +76,11 @@ public class GRecordFilters {
 		if (variant instanceof VariantVCF) {
 			VariantContext variantContext = ((VariantVCF) variant).variantContext;
 			CommonInfo commonInfo = variantContext.getCommonInfo();
-			return MathUtils.toPrimitiveDouble(commonInfo.getAttribute("MQ"));
+			Object oMQAttribute = commonInfo.getAttribute("MQ");
+			if ("nan".equals(oMQAttribute)) {//В кейсе ipm0001 встретилась такая ситуация
+				return 0;
+			}
+			return MathUtils.toDouble(oMQAttribute);
 		} else {
 			return 0;
 		}
