@@ -435,14 +435,6 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private static Double getVariantMQ(CommonInfo commonInfo) {
-		Object oMQAttribute = commonInfo.getAttribute("MQ");
-		if ("nan".equals(oMQAttribute)) {//В кейсе ipm0001 встретилась такая ситуация
-			oMQAttribute = null;
-		}
-		return MathUtils.toDouble(oMQAttribute);
-	}
-
 	private void callGnomAD(AnfisaExecuteContext context, Variant variant, MCase samples, AnfisaResultFilters filters, Allele altAllele) {
 		Double af = null;
 		Double _af = null;
@@ -693,6 +685,13 @@ public class AnfisaConnector implements AutoCloseable {
 		};
 	}
 
+	private static Double getVariantMQ(CommonInfo commonInfo) {
+		Object oMQAttribute = commonInfo.getAttribute("MQ");
+		if ("nan".equals(oMQAttribute)) {//В кейсе ipm0001 встретилась такая ситуация
+			oMQAttribute = null;
+		}
+		return MathUtils.toDouble(oMQAttribute);
+	}
 
 	private void createQualityTab(AnfisaResultView view, Variant variant, MCase samples) {
 		if (variant == null || !(variant instanceof VariantVCF)) {
@@ -706,7 +705,7 @@ public class AnfisaConnector implements AutoCloseable {
 		JSONObject q_all = new JSONObject();
 		q_all.put("title", "All");
 		q_all.put("strand_odds_ratio", MathUtils.toDouble(commonInfo.getAttribute("SOR")));
-		q_all.put("mq", MathUtils.toDouble(commonInfo.getAttribute("MQ")));
+		q_all.put("mq", getVariantMQ(commonInfo));
 
 		q_all.put("variant_call_quality", variantContext.getPhredScaledQual());
 		q_all.put("qd", MathUtils.toDouble(commonInfo.getAttribute("QD")));
