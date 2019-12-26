@@ -90,7 +90,9 @@ public class CaseUtils {
 				if (line.startsWith("#")) {
 					continue;
 				}
-				String[] sl = line.split("\t");
+				String[] sl = Arrays.stream(
+						line.split("\\s+")
+				).filter(s -> !s.isEmpty()).toArray(String[]::new);
 
 				String id = sl[1];
 				String name = sampleNameMap.getOrDefault(id, id);
