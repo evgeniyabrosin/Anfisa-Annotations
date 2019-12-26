@@ -435,6 +435,13 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
+	private static Double getVariantMQ(CommonInfo commonInfo) {
+		Object oMQAttribute = commonInfo.getAttribute("MQ");
+		if ("nan".equals(oMQAttribute)) {//В кейсе ipm0001 встретилась такая ситуация
+			oMQAttribute = null;
+		}
+		return MathUtils.toDouble(oMQAttribute);
+	}
 
 	private void callGnomAD(AnfisaExecuteContext context, Variant variant, MCase samples, AnfisaResultFilters filters, Allele altAllele) {
 		Double af = null;
