@@ -236,6 +236,7 @@ public class AnnotationConsole {
 					e -> fail(e, finalVcfFile, arguments),
 					() -> {
 						log.debug("progress completed");
+						log.debug("conservation statistics: {}", conservationConnector.getStatistics());
 						bos.close();
 						os.close();
 						anfisaConnector.close();
