@@ -24,6 +24,8 @@ node {
 
 			def docker = tool name: 'docker-17.09.0-ce'
 			env.PATH = "${docker}:${env.PATH}"
+
+			System.setProperty("org.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL", "3800")
 		}
 
 		stage('clean workspace & checkout') {
