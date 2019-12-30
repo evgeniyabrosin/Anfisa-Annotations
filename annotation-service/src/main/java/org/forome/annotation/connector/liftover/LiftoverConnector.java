@@ -27,31 +27,31 @@ import java.io.*;
 
 public class LiftoverConnector implements AutoCloseable {
 
-	private final File fileSample;
-	private final LiftOver liftOver;
+	private final File fileSampleHg19toHg38;
+	private final LiftOver liftOverHg19toHg38;
 
 	public LiftoverConnector() throws IOException {
 		try (InputStream inputFileSample = getClass().getClassLoader().getResourceAsStream("hg19ToHg38.over.chain.gz")) {
-			fileSample = File.createTempFile("hg19ToHg38-", ".over.chain.gz");
-			try (OutputStream out = new FileOutputStream(fileSample)) {
+			fileSampleHg19toHg38 = File.createTempFile("hg19ToHg38-", ".over.chain.gz");
+			try (OutputStream out = new FileOutputStream(fileSampleHg19toHg38)) {
 				int read;
 				byte[] bytes = new byte[1024];
 				while ((read = inputFileSample.read(bytes)) != -1) {
 					out.write(bytes, 0, read);
 				}
 			}
-			fileSample.deleteOnExit();
+			fileSampleHg19toHg38.deleteOnExit();
 		}
 
-		liftOver = new LiftOver(fileSample);
-		liftOver.setShouldLogFailedIntervalsBelowThreshold(false);
+		liftOverHg19toHg38 = new LiftOver(fileSampleHg19toHg38);
+		liftOverHg19toHg38.setShouldLogFailedIntervalsBelowThreshold(false);
 	}
 
 	public Position<Integer> toHG38(Chromosome chromosome, Position<Integer> position) {
 		int start = Math.min(position.start, position.end);
 		int end = Math.max(position.start, position.end);
 
-		Interval interval = liftOver.liftOver(new Interval(
+		Interval interval = liftOverHg19toHg38.liftOver(new Interval(
 				chromosome.toString(),
 				start,
 				end
@@ -68,7 +68,7 @@ public class LiftoverConnector implements AutoCloseable {
 	@Override
 	public void close() {
 		try {
-			fileSample.delete();
+			fileSampleHg19toHg38.delete();
 		} catch (Throwable ignore) {
 		}
 	}

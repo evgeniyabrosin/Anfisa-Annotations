@@ -18,29 +18,67 @@
 
 package org.forome.annotation.service.database;
 
+import com.infomaximum.database.exception.DatabaseException;
+import com.infomaximum.database.utils.TypeConvert;
+import com.infomaximum.rocksdb.RocksDBProvider;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
+import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.service.ssh.struct.SSHConnect;
+import org.rocksdb.*;
+import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DatabaseConnectService implements AutoCloseable {
 
 	private final static Logger log = LoggerFactory.getLogger(DatabaseConnectService.class);
 
-	private final SSHConnectService sshTunnelService;
+	private final RocksDB rocksDB;
+	private final Map<String, ColumnFamilyHandle> columnFamilies;
 
+	private final SSHConnectService sshTunnelService;
 	private final Map<String, ComboPooledDataSource> dataSources;
 
-	public DatabaseConnectService(SSHConnectService sshTunnelService) {
+	public DatabaseConnectService(SSHConnectService sshTunnelService, DatabaseConfig databaseConfig) throws DatabaseException {
 		this.sshTunnelService = sshTunnelService;
 		this.dataSources = new HashMap<>();
+
+		Path pathDatabase = databaseConfig.path;
+		try (DBOptions options = buildOptions(pathDatabase)) {
+			List<ColumnFamilyDescriptor> columnFamilyDescriptors = getColumnFamilyDescriptors(pathDatabase);
+
+			List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>();
+			rocksDB = RocksDB.openReadOnly(options, pathDatabase.toString(), columnFamilyDescriptors, columnFamilyHandles);
+
+			columnFamilies = new HashMap<>();
+			for (int i = 0; i < columnFamilyDescriptors.size(); i++) {
+				String columnFamilyName = TypeConvert.unpackString(columnFamilyDescriptors.get(i).getName());
+				ColumnFamilyHandle columnFamilyHandle = columnFamilyHandles.get(i);
+				columnFamilies.put(columnFamilyName, columnFamilyHandle);
+			}
+		} catch (RocksDBException e) {
+			throw new DatabaseException(e);
+		}
+	}
+
+	public RocksDB getRocksDB() {
+		return rocksDB;
+	}
+
+	public ColumnFamilyHandle getColumnFamily(String name) {
+		return columnFamilies.get(name);
 	}
 
 	public ComboPooledDataSource getDataSource(DatabaseConfigConnector databaseConfigConnector) throws Exception {
@@ -118,5 +156,37 @@ public class DatabaseConnectService implements AutoCloseable {
 		for (ComboPooledDataSource dataSource : dataSources.values()) {
 			dataSource.close();
 		}
+	}
+
+	private static DBOptions buildOptions(Path pathDatabase) throws RocksDBException {
+		final String optionsFilePath = pathDatabase.toString() + ".ini";
+
+		DBOptions options = new DBOptions();
+		if (Files.exists(Paths.get(optionsFilePath))) {
+			final List<ColumnFamilyDescriptor> ignoreDescs = new ArrayList<>();
+			OptionsUtil.loadOptionsFromFile(optionsFilePath, Env.getDefault(), options, ignoreDescs, false);
+		} else {
+			options
+					.setInfoLogLevel(InfoLogLevel.WARN_LEVEL)
+					.setMaxTotalWalSize(100L * SizeUnit.MB);
+		}
+
+		return options.setCreateIfMissing(true);
+	}
+
+	private static List<ColumnFamilyDescriptor> getColumnFamilyDescriptors(Path pathDatabase) throws RocksDBException {
+		List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
+
+		try (Options options = new Options()) {
+			for (byte[] columnFamilyName : RocksDB.listColumnFamilies(options, pathDatabase.toString())) {
+				columnFamilyDescriptors.add(new ColumnFamilyDescriptor(columnFamilyName));
+			}
+		}
+
+		if (columnFamilyDescriptors.isEmpty()) {
+			columnFamilyDescriptors.add(new ColumnFamilyDescriptor(TypeConvert.pack(RocksDBProvider.DEFAULT_COLUMN_FAMILY)));
+		}
+
+		return columnFamilyDescriptors;
 	}
 }

@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.forome'
-version '0.6.0.23'
+version '0.6.0.24'
 
 sourceCompatibility = 1.8
 
@@ -19,11 +19,17 @@ sourceSets {
             srcDirs "src/main/resources"
         }
     }
+    make_database {
+        java.srcDir 'src/make_database/java'
+        resources.srcDirs = main.resources.srcDirs + "src/make_database/resources"
+        compileClasspath += main.output
+        runtimeClasspath += main.output
+    }
     test {
         java.srcDir 'src/test/java'
         resources.srcDirs = main.resources.srcDirs + "src/test/resources"
-        compileClasspath += main.output
-        runtimeClasspath += main.output
+        compileClasspath += main.output + make_database.output
+        runtimeClasspath += main.output + make_database.output
     }
     test_integration {
         java.srcDir 'src/test_integration/java'
@@ -32,24 +38,27 @@ sourceSets {
                 "src/test/resources",
                 "src/test_integration/resources"
         ]
-        compileClasspath += main.output + test.output
-        runtimeClasspath += main.output + test.output
+        compileClasspath += main.output + make_database.output + test.output
+        runtimeClasspath += main.output + make_database.output + test.output
     }
     test_perfomance {
         java.srcDir 'src/test_perfomance/java'
         resources.srcDirs = test_integration.resources.srcDirs + "src/test_perfomance/resources"
-        compileClasspath += main.output + test.output + test_integration.output
-        runtimeClasspath += main.output + test.output + test_integration.output
+        compileClasspath += main.output + make_database.output + test.output + test_integration.output
+        runtimeClasspath += main.output + make_database.output + test.output + test_integration.output
     }
     manual {
         java.srcDir 'src/manual/java'
         resources.srcDirs = test_perfomance.resources.srcDirs + "src/manual/resources"
-        compileClasspath += main.output + test.output + test_integration.output + test_perfomance.output
-        runtimeClasspath += main.output + test.output + test_integration.output + test_perfomance.output
+        compileClasspath += main.output + make_database.output + test.output + test_integration.output + test_perfomance.output
+        runtimeClasspath += main.output + make_database.output + test.output + test_integration.output + test_perfomance.output
     }
 }
 
 configurations {
+    make_databaseCompile.extendsFrom compile
+    make_databaseRuntime.extendsFrom runtime
+
     test_integrationCompile.extendsFrom testCompile
     test_integrationRuntime.extendsFrom testRuntime
 
@@ -62,14 +71,28 @@ configurations {
 
 jar {
     archiveName = project.hasProperty('filename') ? filename : (rootProject.name + '_v.' + project.version + '.jar')
-    from {
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
+
+    if (project.hasProperty('make_database')) {
+        from files(sourceSets.make_database.output)
+        from {
+            configurations.make_databaseCompile.collect {
+                it.isDirectory() ? it : zipTree(it)
+            }
+            configurations.make_databaseRuntime.collect {
+                it.isDirectory() ? it : zipTree(it)
+            }
         }
-        configurations.runtime.collect {
-            it.isDirectory() ? it : zipTree(it)
+    } else {
+        from {
+            configurations.compile.collect {
+                it.isDirectory() ? it : zipTree(it)
+            }
+            configurations.runtime.collect {
+                it.isDirectory() ? it : zipTree(it)
+            }
         }
     }
+
     manifest {
         attributes(
                 'Main-Class': 'org.forome.annotation.Main',

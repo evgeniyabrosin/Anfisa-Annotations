@@ -30,17 +30,17 @@ public class Conservation {
     public final Double priPhyloP;
     public final Double mamPhyloP;
     public final Double verPhyloP;
-    public final Double gerpRS;
+    public final Float gerpRS;
     private final Double gerpRSpval;
-    public final Double gerpN;
+    public final Float gerpN;
     public final Double gerpS;
 
     public Conservation(
             Double priPhCons, Double mamPhCons,
             Double verPhCons, Double priPhyloP,
             Double mamPhyloP, Double verPhyloP,
-            Double gerpRS, Double gerpRSpval,
-            Double gerpN, Double gerpS
+            Float gerpRS, Double gerpRSpval,
+            Float gerpN, Double gerpS
     ) {
         this.priPhCons = priPhCons;
         this.mamPhCons = mamPhCons;

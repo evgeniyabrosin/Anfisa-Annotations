@@ -55,7 +55,7 @@ public class CNVMain {
 	public static void main(String[] args) throws Exception {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		SSHConnectService sshTunnelService = new SSHConnectService();
-		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
+		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 //        GnomadConnector gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 		GnomadConnector gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 		SpliceAIConnector spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);

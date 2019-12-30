@@ -140,7 +140,7 @@ public class AnnotationConsole {
 			}
 
 			sshTunnelService = new SSHConnectService();
-			databaseConnectService = new DatabaseConnectService(sshTunnelService);
+			databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 //            gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
 			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, null, arguments));
 			spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);

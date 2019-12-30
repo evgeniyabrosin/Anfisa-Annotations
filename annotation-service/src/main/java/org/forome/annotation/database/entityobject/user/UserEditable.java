@@ -19,7 +19,7 @@
 package org.forome.annotation.database.entityobject.user;
 
 import com.infomaximum.database.domainobject.DomainObjectEditable;
-import org.forome.annotation.utils.Random;
+import org.forome.annotation.utils.RandomUtils;
 
 public class UserEditable extends UserReadable implements DomainObjectEditable {
 
@@ -35,7 +35,7 @@ public class UserEditable extends UserReadable implements DomainObjectEditable {
 		byte[] salt = null;
 		if (password != null) {
 			salt = new byte[16];
-			Random.secureRandom.nextBytes(salt);
+			RandomUtils.SECURE_RANDOM.nextBytes(salt);
 		}
 		set(FIELD_SALT, salt);
 		set(FIELD_PASSWORD_HASH, getSaltyPasswordHash(password, salt));
