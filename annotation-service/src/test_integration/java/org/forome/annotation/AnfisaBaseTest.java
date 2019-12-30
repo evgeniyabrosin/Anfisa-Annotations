@@ -65,7 +65,7 @@ public class AnfisaBaseTest {
 	public static void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		sshTunnelService = new SSHConnectService();
-		databaseConnectService = new DatabaseConnectService(sshTunnelService);
+		databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 //		gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> {
 //			log.error("Fail", e);
 //			Assert.fail();

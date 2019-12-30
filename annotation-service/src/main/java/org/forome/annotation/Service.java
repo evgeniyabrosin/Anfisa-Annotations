@@ -116,7 +116,7 @@ public class Service {
 		this.config = new Config();
 		this.serviceConfig = new ServiceConfig();
 		this.sshTunnelService = new SSHConnectService();
-		this.databaseConnectService = new DatabaseConnectService(sshTunnelService);
+		this.databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 		this.databaseService = new DatabaseService(this);
 		this.networkService = new NetworkService(arguments.port, uncaughtExceptionHandler);
 

@@ -36,7 +36,7 @@ public class GTFBaseTest {
 	public void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		SSHConnectService sshTunnelService = new SSHConnectService();
-		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
+		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 
 		gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
 			log.error("Fail", e);

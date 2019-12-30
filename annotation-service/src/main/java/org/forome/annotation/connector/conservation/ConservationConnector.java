@@ -20,12 +20,20 @@ package org.forome.annotation.connector.conservation;
 
 import org.forome.annotation.config.connector.ConservationConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
+import org.forome.annotation.connector.conservation.struct.BatchConservation;
 import org.forome.annotation.connector.conservation.struct.Conservation;
+import org.forome.annotation.connector.conservation.struct.ConservationItem;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
 import org.forome.annotation.utils.Statistics;
+import org.forome.annotation.utils.packer.PackBatchConservation;
+import org.forome.annotation.utils.packer.PackInterval;
+import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,15 +47,20 @@ public class ConservationConnector implements AutoCloseable {
 
 	private final static Logger log = LoggerFactory.getLogger(ConservationConnector.class);
 
-	private final DatabaseConnector databaseConnector;
+	public static final String COLUMN_FAMILY_NAME = "conservation";
+
+	public final DatabaseConnector databaseConnector;
 	private final Statistics statistics;
+
+	private final RocksDB rocksDB;
+	private final ColumnFamilyHandle columnFamilyHandle;
 
 	public class GerpData {
 
-		public final Double gerpN;
-		public final Double gerpRS;
+		public final Float gerpN;
+		public final Float gerpRS;
 
-		public GerpData(Double gerpN, Double gerpRS) {
+		public GerpData(Float gerpN, Float gerpRS) {
 			this.gerpN = gerpN;
 			this.gerpRS = gerpRS;
 		}
@@ -59,6 +72,9 @@ public class ConservationConnector implements AutoCloseable {
 	) throws Exception {
 		this.databaseConnector = new DatabaseConnector(databaseConnectService, conservationConfigConnector);
 		this.statistics = new Statistics();
+
+		this.rocksDB = databaseConnectService.getRocksDB();
+		this.columnFamilyHandle = databaseConnectService.getColumnFamily(COLUMN_FAMILY_NAME);
 	}
 
 	public List<DatabaseConnector.Metadata> getMetadata() {
@@ -129,7 +145,8 @@ public class ConservationConnector implements AutoCloseable {
 		Double gerpRSpval = null;
 		Double gerpS = null;
 
-		GerpData gerpData = getGerpDataFromMysql(chromosome, pHG19);
+//		GerpData gerpData = getGerpDataFromMysql(chromosome, pHG19);
+		GerpData gerpData = getGerpDataFromRocksDB(chromosome, pHG19);
 
 		try (Connection connection = databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
@@ -152,8 +169,8 @@ public class ConservationConnector implements AutoCloseable {
 				}
 
 				if (gerpData != null || success) {
-					Double gerpRS = (gerpData != null) ? gerpData.gerpRS : null;
-					Double gerpN = (gerpData != null) ? gerpData.gerpN : null;
+					Float gerpRS = (gerpData != null) ? gerpData.gerpRS : null;
+					Float gerpN = (gerpData != null) ? gerpData.gerpN : null;
 					return new Conservation(
 							priPhCons, mamPhCons,
 							verPhCons, priPhyloP,
@@ -195,8 +212,8 @@ public class ConservationConnector implements AutoCloseable {
 			try (Statement statement = connection.createStatement()) {
 				try (ResultSet resultSet = statement.executeQuery(sqlFromGerp)) {
 					if (resultSet.next()) {
-						Double gerpN = (Double) resultSet.getObject("GerpN");
-						Double gerpRS = (Double) resultSet.getObject("GerpRS");
+						Float gerpN = (Float) resultSet.getObject("GerpN");
+						Float gerpRS = (Float) resultSet.getObject("GerpRS");
 						return new GerpData(gerpN, gerpRS);
 					} else {
 						return null;
@@ -204,6 +221,63 @@ public class ConservationConnector implements AutoCloseable {
 				}
 			}
 		} catch (SQLException ex) {
+			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+		} finally {
+			statistics.addTime(System.nanoTime() - t1);
+		}
+	}
+
+	private GerpData getGerpDataFromRocksDB(Chromosome chromosome, Position<Integer> pHG19) {
+		long t1 = System.nanoTime();
+
+		try {
+
+			int minPosition;
+			int maxPosition;
+			if (pHG19.start <= pHG19.end) {
+				minPosition = pHG19.start;
+				maxPosition = pHG19.end;
+			} else {
+				//Инсерция
+				minPosition = pHG19.end;
+				maxPosition = pHG19.start;
+			}
+
+			int ks = minPosition / PackInterval.DEFAULT_SIZE;
+			int ke = maxPosition / PackInterval.DEFAULT_SIZE;
+
+			Float maxGerpN = null;
+			Float maxGerpRS = null;
+			for (int k = ks; k <= ke; k++) {
+				Interval interval = new Interval(
+						chromosome,
+						k * PackInterval.DEFAULT_SIZE,
+						k * PackInterval.DEFAULT_SIZE + PackInterval.DEFAULT_SIZE - 1
+				);
+				byte[] bytes = rocksDB.get(
+						columnFamilyHandle,
+						new PackInterval(PackInterval.DEFAULT_SIZE).toByteArray(interval)
+				);
+				if (bytes == null) continue;
+				BatchConservation batchConservation = PackBatchConservation.fromByteArray(interval, bytes);
+
+				for (int position = minPosition; position <= maxPosition; position++) {
+					ConservationItem item = batchConservation.getConservation(position);
+					if (maxGerpN == null || maxGerpN < item.gerpN) {
+						maxGerpN = item.gerpN;
+					}
+					if (maxGerpRS == null || maxGerpRS < item.gerpRS) {
+						maxGerpRS = item.gerpRS;
+					}
+				}
+			}
+
+			if (maxGerpN != null || maxGerpRS != null) {
+				return new GerpData(maxGerpN, maxGerpRS);
+			} else {
+				return null;
+			}
+		} catch (RocksDBException ex) {
 			throw ExceptionBuilder.buildExternalDatabaseException(ex);
 		} finally {
 			statistics.addTime(System.nanoTime() - t1);

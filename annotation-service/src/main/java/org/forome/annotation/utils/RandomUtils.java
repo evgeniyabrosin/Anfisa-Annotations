@@ -19,7 +19,12 @@
 package org.forome.annotation.utils;
 
 import java.security.SecureRandom;
+import java.util.Random;
 
-public class Random {
-	public static final SecureRandom secureRandom = new SecureRandom();
+public class RandomUtils {
+
+	public static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+	public static final Random RANDOM = new Random();
+
 }

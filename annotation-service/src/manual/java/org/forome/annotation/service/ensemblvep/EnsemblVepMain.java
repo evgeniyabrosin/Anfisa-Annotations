@@ -50,7 +50,7 @@ public class EnsemblVepMain {
 	public static void main(String[] args) throws Exception {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		SSHConnectService sshTunnelService = new SSHConnectService();
-		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
+		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 
 		try (EnsemblVepService ensemblVepService = new EnsemblVepInlineService(
 				sshTunnelService,

@@ -35,7 +35,7 @@ public class SpliceAIBaseTest {
 	public void init() throws Throwable {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		SSHConnectService sshTunnelService = new SSHConnectService();
-		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService);
+		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 
 		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 	}

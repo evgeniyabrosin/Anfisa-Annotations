@@ -72,7 +72,7 @@ public class CustomVariantMain {
 	public CustomVariantMain() throws Exception {
 		serviceConfig = new ServiceConfig();
 		sshTunnelService = new SSHConnectService();
-		databaseConnectService = new DatabaseConnectService(sshTunnelService);
+		databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 
 		gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 //      gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));

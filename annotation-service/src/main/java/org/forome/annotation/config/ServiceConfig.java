@@ -21,6 +21,7 @@ package org.forome.annotation.config;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.config.connector.*;
+import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.ensemblvep.EnsemblVepConfig;
 import org.forome.annotation.config.frontend.FrontendConfig;
 import org.forome.annotation.config.notification.NotificationSlackConfig;
@@ -34,6 +35,8 @@ import java.nio.file.StandardOpenOption;
 public class ServiceConfig {
 
 	public final FrontendConfig frontendConfig;
+
+	public final DatabaseConfig databaseConfig;
 
 	public final EnsemblVepConfig ensemblVepConfigConnector;
 
@@ -63,6 +66,8 @@ public class ServiceConfig {
 		}
 
 		frontendConfig = new FrontendConfig((JSONObject) configFileJson.get("frontend"));
+
+		databaseConfig = new DatabaseConfig((JSONObject) configFileJson.get("database"));
 
 		ensemblVepConfigConnector = new EnsemblVepConfig((JSONObject) configFileJson.get("ensembl-vep"));
 
