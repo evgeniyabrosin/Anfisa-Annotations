@@ -19,25 +19,15 @@
 package org.forome.annotation.makedatabase.conservation;
 
 import org.forome.annotation.connector.conservation.ConservationConnector;
-import org.forome.annotation.connector.conservation.struct.BatchConservation;
 import org.forome.annotation.connector.conservation.struct.ConservationItem;
 import org.forome.annotation.makedatabase.MakeDatabase;
 import org.forome.annotation.makedatabase.main.argument.ArgumentsMakeConservation;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Interval;
-import org.forome.annotation.utils.packer.PackBatchConservation;
-import org.forome.annotation.utils.packer.PackInterval;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.Transaction;
-import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 
 public class MakeConservation extends MakeDatabase {
@@ -58,6 +48,7 @@ public class MakeConservation extends MakeDatabase {
 		}
 		ColumnFamilyHandle columnFamilyHandle = createColumnFamily(ConservationConnector.COLUMN_FAMILY_NAME);
 
+		/*
 		for (Chromosome chromosome : Chromosome.values()) {
 
 			Transaction transaction = rocksDB.beginTransaction(new WriteOptions());
@@ -130,6 +121,7 @@ public class MakeConservation extends MakeDatabase {
 			transaction.commit();
 			transaction.close();
 		}
+		*/
 
 		rocksDB.compactRange(columnFamilyHandle);
 	}

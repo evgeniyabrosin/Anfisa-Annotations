@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer;
+package org.forome.annotation.utils.packer.packbatchconservation;
 
 
 import org.forome.annotation.connector.conservation.struct.BatchConservation;
@@ -24,6 +24,7 @@ import org.forome.annotation.connector.conservation.struct.ConservationItem;
 import org.forome.annotation.struct.Interval;
 
 import java.nio.ByteBuffer;
+import java.util.LinkedHashSet;
 
 public class PackBatchConservation {
 
@@ -39,6 +40,44 @@ public class PackBatchConservation {
 	 * @return
 	 */
 	public static byte[] toByteArray(BatchConservation value) {
+		//Собраем значения которые нам необходимо упаковать
+		short[] packValues = new short[value.items.length * 2];
+		for (int i = 0; i < value.items.length; i++) {
+			ConservationItem item = value.items[i];
+
+			short sGerpN;
+			short sGerpRS;
+			if (item == null) {
+				sGerpN = 0;
+				sGerpRS = 0;
+			} else {
+				if (item.gerpN > 31 || item.gerpN < -31) {
+					throw new IllegalStateException();
+				}
+				if (item.gerpRS > 31 || item.gerpRS < -31) {
+					throw new IllegalStateException();
+				}
+				sGerpN = (short) (item.gerpN * 1000);
+				sGerpRS = (short) (item.gerpRS * 1000);
+			}
+
+			packValues[i*2]=sGerpN;
+			packValues[i*2+1]=sGerpRS;
+		}
+
+		LinkedHashSet<Short> dictionary = new LinkedHashSet<>();
+		for (short s: packValues) {
+			dictionary.add(s);
+		}
+
+
+
+
+
+
+
+
+
 		int size = value.interval.end - value.interval.start + 1;
 
 		byte[] bytes = new byte[(4 + 4) * size];

@@ -61,7 +61,7 @@ public class EnsemblVepHttpClient implements Closeable {
 
 	private static String HOST = "grch37.rest.ensembl.org";
 
-	private static int MAX_REQUEST_IN_SECOND = 15;
+	private static int MAX_REQUEST_IN_SECOND = 10;
 	private static long REQUEST_PAUSE = 1000L / MAX_REQUEST_IN_SECOND;
 
 	private final RequestConfig requestConfig;

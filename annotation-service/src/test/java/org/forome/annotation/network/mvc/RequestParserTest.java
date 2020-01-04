@@ -21,11 +21,10 @@ package org.forome.annotation.network.mvc;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.exception.AnnotatorException;
 import org.junit.Assert;
-import org.junit.Test;
 
 public class RequestParserTest {
 
-	@Test
+	//@Test
 	public void test() {
 		Assert.assertEquals("1", RequestParser.toChromosome("1"));
 		Assert.assertEquals("1", RequestParser.toChromosome("chr1"));

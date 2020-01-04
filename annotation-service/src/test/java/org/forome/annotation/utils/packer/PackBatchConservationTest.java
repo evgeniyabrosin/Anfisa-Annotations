@@ -23,6 +23,7 @@ import org.forome.annotation.connector.conservation.struct.BatchConservation;
 import org.forome.annotation.connector.conservation.struct.ConservationItem;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
+import org.forome.annotation.utils.packer.packbatchconservation.PackBatchConservation;
 import org.junit.Assert;
 import org.junit.Test;
 

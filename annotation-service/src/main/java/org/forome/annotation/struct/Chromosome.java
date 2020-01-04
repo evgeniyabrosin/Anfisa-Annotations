@@ -19,40 +19,66 @@
 package org.forome.annotation.struct;
 
 import com.google.common.base.Strings;
-import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 
-public enum Chromosome {
+import java.util.Objects;
 
-	CHR_1("1"),
-	CHR_2("2"),
-	CHR_3("3"),
-	CHR_4("4"),
-	CHR_5("5"),
-	CHR_6("6"),
-	CHR_7("7"),
-	CHR_8("8"),
-	CHR_9("9"),
-	CHR_10("10"),
-	CHR_11("11"),
-	CHR_12("12"),
-	CHR_13("13"),
-	CHR_14("14"),
-	CHR_15("15"),
-	CHR_16("16"),
-	CHR_17("17"),
-	CHR_18("18"),
-	CHR_19("19"),
-	CHR_20("20"),
-	CHR_21("21"),
-	CHR_22("22"),
-	CHR_23("23"),
-	CHR_X("X"),
-	CHR_Y("Y");
+public class Chromosome {
+
+	public static final Chromosome CHR_1 = new Chromosome("1");
+
+	public static final Chromosome CHR_2 = new Chromosome("2");
+
+	public static final Chromosome CHR_3 = new Chromosome("3");
+
+	public static final Chromosome CHR_4 = new Chromosome("4");
+
+	public static final Chromosome CHR_5 = new Chromosome("5");
+
+	public static final Chromosome CHR_6 = new Chromosome("6");
+
+	public static final Chromosome CHR_7 = new Chromosome("7");
+
+	public static final Chromosome CHR_8 = new Chromosome("8");
+
+	public static final Chromosome CHR_9 = new Chromosome("9");
+
+	public static final Chromosome CHR_10 = new Chromosome("10");
+
+	public static final Chromosome CHR_11 = new Chromosome("11");
+
+	public static final Chromosome CHR_12 = new Chromosome("12");
+
+	public static final Chromosome CHR_13 = new Chromosome("13");
+
+	public static final Chromosome CHR_14 = new Chromosome("14");
+
+	public static final Chromosome CHR_15 = new Chromosome("15");
+
+	public static final Chromosome CHR_16 = new Chromosome("16");
+
+	public static final Chromosome CHR_17 = new Chromosome("17");
+
+	public static final Chromosome CHR_18 = new Chromosome("18");
+
+	public static final Chromosome CHR_19 = new Chromosome("19");
+
+	public static final Chromosome CHR_20 = new Chromosome("20");
+
+	public static final Chromosome CHR_21 = new Chromosome("21");
+
+	public static final Chromosome CHR_22 = new Chromosome("22");
+
+	public static final Chromosome CHR_23 = new Chromosome("23");
+
+	public static final Chromosome CHR_X = new Chromosome("X");
+
+	public static final Chromosome CHR_Y = new Chromosome("Y");
+
 
 	private final String value;
 
-	Chromosome(String value) {
+	private Chromosome(String value) {
 		this.value = value;
 	}
 
@@ -89,24 +115,49 @@ public enum Chromosome {
 			value = value.substring("CHR".length());
 		}
 
-		for (Chromosome chromosome : Chromosome.values()) {
-			if (value.equals(chromosome.getChar())) {
-				return chromosome;
-			}
-		}
-
-		throw ExceptionBuilder.buildInvalidChromosome(str);
+		return new Chromosome(value);
 	}
 
-	public static boolean isChromosome(String str) {
-		try {
-			Chromosome.of(str);
-			return true;
-		} catch (AnnotatorException e) {
-			if (ExceptionBuilder.CODE_INVALID_CHROMOSOME.equals(e.getCode())) {
-				return false;
-			}
-			throw e;
-		}
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Chromosome that = (Chromosome) o;
+		return Objects.equals(value, that.value);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(value);
+	}
+
+	public static boolean isSupportChromosome(String str) {
+		Chromosome chromosome = Chromosome.of(str);
+		if (CHR_1.equals(chromosome)) return true;
+		if (CHR_2.equals(chromosome)) return true;
+		if (CHR_3.equals(chromosome)) return true;
+		if (CHR_4.equals(chromosome)) return true;
+		if (CHR_5.equals(chromosome)) return true;
+		if (CHR_6.equals(chromosome)) return true;
+		if (CHR_7.equals(chromosome)) return true;
+		if (CHR_8.equals(chromosome)) return true;
+		if (CHR_9.equals(chromosome)) return true;
+		if (CHR_10.equals(chromosome)) return true;
+		if (CHR_11.equals(chromosome)) return true;
+		if (CHR_12.equals(chromosome)) return true;
+		if (CHR_13.equals(chromosome)) return true;
+		if (CHR_14.equals(chromosome)) return true;
+		if (CHR_15.equals(chromosome)) return true;
+		if (CHR_16.equals(chromosome)) return true;
+		if (CHR_17.equals(chromosome)) return true;
+		if (CHR_18.equals(chromosome)) return true;
+		if (CHR_19.equals(chromosome)) return true;
+		if (CHR_20.equals(chromosome)) return true;
+		if (CHR_21.equals(chromosome)) return true;
+		if (CHR_22.equals(chromosome)) return true;
+		if (CHR_23.equals(chromosome)) return true;
+		if (CHR_X.equals(chromosome)) return true;
+		if (CHR_Y.equals(chromosome)) return true;
+		return false;
 	}
 }

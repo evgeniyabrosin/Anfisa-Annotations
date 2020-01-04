@@ -16,21 +16,18 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer;
+package org.forome.annotation.utils.packer.packbatchconservation;
 
-import org.junit.Test;
+import java.nio.ByteBuffer;
 
-public class PackChromosomeTest {
+public interface Packaging {
 
-	@Test
-	public void test() {
-		/*
-		for (Chromosome chromosome: Chromosome.values()) {
-			byte b = PackChromosome.toByte(chromosome);
-			Assert.assertEquals(
-					chromosome, PackChromosome.fromByte(b)
-			);
-		}
-		*/
-	}
+	byte getFlag();
+
+	int getByteSize();
+
+	ByteBuffer toByteArray(short[] values);
+
+	short[] fromByteArray(ByteBuffer byteBuffer);
 }
+

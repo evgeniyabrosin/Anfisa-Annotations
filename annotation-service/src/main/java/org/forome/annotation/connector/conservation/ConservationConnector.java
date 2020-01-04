@@ -29,8 +29,8 @@ import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
 import org.forome.annotation.utils.Statistics;
-import org.forome.annotation.utils.packer.PackBatchConservation;
 import org.forome.annotation.utils.packer.PackInterval;
+import org.forome.annotation.utils.packer.packbatchconservation.PackBatchConservation;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -145,8 +145,8 @@ public class ConservationConnector implements AutoCloseable {
 		Double gerpRSpval = null;
 		Double gerpS = null;
 
-//		GerpData gerpData = getGerpDataFromMysql(chromosome, pHG19);
-		GerpData gerpData = getGerpDataFromRocksDB(chromosome, pHG19);
+		GerpData gerpData = getGerpDataFromMysql(chromosome, pHG19);
+//		GerpData gerpData = getGerpDataFromRocksDB(chromosome, pHG19);
 
 		try (Connection connection = databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
@@ -212,8 +212,12 @@ public class ConservationConnector implements AutoCloseable {
 			try (Statement statement = connection.createStatement()) {
 				try (ResultSet resultSet = statement.executeQuery(sqlFromGerp)) {
 					if (resultSet.next()) {
-						Float gerpN = (Float) resultSet.getObject("GerpN");
-						Float gerpRS = (Float) resultSet.getObject("GerpRS");
+						Double dGerpN = (Double) resultSet.getObject("GerpN");
+						Float gerpN = (dGerpN == null)?null:dGerpN.floatValue();
+
+						Double dGerpRS = (Double) resultSet.getObject("GerpN");
+						Float gerpRS = (dGerpRS == null)?null:dGerpRS.floatValue();
+
 						return new GerpData(gerpN, gerpRS);
 					} else {
 						return null;

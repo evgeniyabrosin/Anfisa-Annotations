@@ -75,7 +75,7 @@ public class JsonFileIterator implements Iterator<JSONObject>, AutoCloseable {
 		while (true) {
 			nextValue = readNextValue();
 			if (nextValue != null
-					&& !Chromosome.isChromosome(nextValue.getAsString("seq_region_name"))
+					&& !Chromosome.isSupportChromosome(nextValue.getAsString("seq_region_name"))
 			) {
 				continue;//Игнорируем неподдерживаемые хромосомы
 			}

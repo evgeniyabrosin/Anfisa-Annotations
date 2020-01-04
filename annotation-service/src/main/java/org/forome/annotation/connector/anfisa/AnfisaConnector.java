@@ -180,12 +180,15 @@ public class AnfisaConnector implements AutoCloseable {
 					label = entry.getKey();
 				}
 
-				int zyg = variant.getGenotype(entry.getValue().id).hasVariant();
-				data.zygosity.put(entry.getKey(), zyg);
-				int modified_zygosity = (!variant.chromosome.getChar().equals("X") || sex == 2 || (zyg == 0)) ? zyg : 2;
-				filters.altZygosity.put(entry.getKey(), modified_zygosity);
-				if (zyg > 0) {
-					filters.has_variant.add(label);
+				org.forome.annotation.struct.variant.Genotype genotype = variant.getGenotype(entry.getValue().id);
+				if (genotype != null) {
+					int zyg = genotype.hasVariant();
+					data.zygosity.put(entry.getKey(), zyg);
+					int modified_zygosity = (!variant.chromosome.getChar().equals("X") || sex == 2 || (zyg == 0)) ? zyg : 2;
+					filters.altZygosity.put(entry.getKey(), modified_zygosity);
+					if (zyg > 0) {
+						filters.has_variant.add(label);
+					}
 				}
 			}
 		}
@@ -292,7 +295,9 @@ public class AnfisaConnector implements AutoCloseable {
 		int countAf = 0;
 		int countAf2 = 0;
 		for (Sample sample : samples) {
-			int zyg = variant.getGenotype(sample.id).hasVariant();
+			org.forome.annotation.struct.variant.Genotype genotype = variant.getGenotype(sample.id);
+			if (genotype == null) continue;
+			int zyg = genotype.hasVariant();
 			if (zyg > 0) {
 				countAf++;
 			}
@@ -562,13 +567,13 @@ public class AnfisaConnector implements AutoCloseable {
 
 		view.general.worstAnnotation = data.mostSevereConsequence;
 		List<String> consequenceTerms = getFromCanonicalTranscript((VariantVep) variant, "consequence_terms");
-		sortConsequences (consequenceTerms);
+		sortConsequences(consequenceTerms);
 
 		if (variant instanceof VariantCNV) {
 //			view.general.canonicalAnnotation = VariantCNV.COPY_NUMBER_VARIATION;
-			view.general.canonicalAnnotation.add (VariantCNV.COPY_NUMBER_VARIATION);
+			view.general.canonicalAnnotation.add(VariantCNV.COPY_NUMBER_VARIATION);
 		} else {
-            view.general.canonicalAnnotation.addAll (consequenceTerms);
+			view.general.canonicalAnnotation.addAll(consequenceTerms);
 /*
 			String canonicalAnnotation = getMostSevere(consequenceTerms);
 			if (consequenceTerms.size() > 1) {
@@ -590,15 +595,15 @@ public class AnfisaConnector implements AutoCloseable {
 		view.general.ensemblTranscriptsWorst = getFromTranscripts(transcripts, "transcript_id", "Ensembl");
 
 		transcripts = getCanonicalTranscripts((VariantVep) variant);
-		if (view.general.canonicalAnnotation.size () > 1) {
-            view.general.refseqTranscriptCanonical = getCsqFromTranscripts (transcripts, "RefSeq");
-            view.general.ensemblTranscriptsCanonical = getCsqFromTranscripts (transcripts, "Ensembl");
-        }   else {
-            view.general.refseqTranscriptCanonical =
-                getFromTranscripts (transcripts, "transcript_id", "RefSeq");
-            view.general.ensemblTranscriptsCanonical =
-                getFromTranscripts (transcripts, "transcript_id", "Ensembl");
-        }
+		if (view.general.canonicalAnnotation.size() > 1) {
+			view.general.refseqTranscriptCanonical = getCsqFromTranscripts(transcripts, "RefSeq");
+			view.general.ensemblTranscriptsCanonical = getCsqFromTranscripts(transcripts, "Ensembl");
+		} else {
+			view.general.refseqTranscriptCanonical =
+					getFromTranscripts(transcripts, "transcript_id", "RefSeq");
+			view.general.ensemblTranscriptsCanonical =
+					getFromTranscripts(transcripts, "transcript_id", "Ensembl");
+		}
 
 		view.general.variantExonWorst = getFromWorstTranscript((VariantVep) variant, "exon");
 		view.general.variantIntronWorst = getFromWorstTranscript((VariantVep) variant, "intron");
@@ -1206,7 +1211,11 @@ public class AnfisaConnector implements AutoCloseable {
 		if (samples == null || variant == null) {
 			return null;
 		}
-		return variant.getGenotype(samples.proband).getGQ();
+		org.forome.annotation.struct.variant.Genotype genotype = variant.getGenotype(samples.proband);
+		if (genotype == null) {
+			return null;
+		}
+		return genotype.getGQ();
 	}
 
 	private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, VariantVep variantVep, Kind kind) {
@@ -1425,15 +1434,15 @@ public class AnfisaConnector implements AutoCloseable {
 		);
 	}
 
-    private static List<String> getCsqFromTranscripts(List<JSONObject> transcripts, String source) {
-   		return unique(
-   				transcripts.stream()
-   						.filter(jsonObject -> source.equals(jsonObject.getAsString("source")))
-   						.map(jsonObject -> String.format ("%s: %s", jsonObject.getAsString ("transcript_id"),
-                               jsonObject.getAsString ("consequence_terms")))
-   						.collect(Collectors.toList())
-   		);
-   	}
+	private static List<String> getCsqFromTranscripts(List<JSONObject> transcripts, String source) {
+		return unique(
+				transcripts.stream()
+						.filter(jsonObject -> source.equals(jsonObject.getAsString("source")))
+						.map(jsonObject -> String.format("%s: %s", jsonObject.getAsString("transcript_id"),
+								jsonObject.getAsString("consequence_terms")))
+						.collect(Collectors.toList())
+		);
+	}
 
 	private static List<String> getFromTranscripts(VariantVep variantVep, String key, String type) {
 		if ("all".equals(type)) {
@@ -1605,8 +1614,11 @@ public class AnfisaConnector implements AutoCloseable {
 			return new Object[]{ null, null, null, null };
 		}
 		String probandId = proband.id;
-		String probandGenotype = variant.getGenotype(probandId).getGenotypeString();
-		if (probandGenotype == null) {
+		org.forome.annotation.struct.variant.Genotype gProband = variant.getGenotype(probandId);
+		String probandGenotype;
+		if (gProband != null && gProband.getGenotypeString() != null) {
+			probandGenotype = gProband.getGenotypeString();
+		} else {
 			probandGenotype = empty;
 		}
 
@@ -1632,7 +1644,9 @@ public class AnfisaConnector implements AutoCloseable {
 		String finalMaternalGenotype = maternalGenotype;
 		String finalPaternalGenotype = paternalGenotype;
 		List<String> otherGenotypes = samples.samples.keySet().stream()
-				.map(iSample -> variant.getGenotype(iSample).getGenotypeString())
+				.map(iSample -> variant.getGenotype(iSample))
+				.filter(genotype -> genotype != null)
+				.map(genotype -> genotype.getGenotypeString())
 				.filter(gtBases -> gtBases != null)
 				.filter(gtBases -> !gtBases.equals(finalProbandGenotype))
 				.filter(gtBases -> !gtBases.equals(finalMaternalGenotype))
@@ -1652,13 +1666,13 @@ public class AnfisaConnector implements AutoCloseable {
 		return null;
 	}
 
-    private static void sortConsequences (List<String> consequenceTerms) {
-	    consequenceTerms.sort ((o1, o2) -> {
-            int i1 = AnfisaVariant.CONSEQUENCES.indexOf (o1);
-            int i2 = AnfisaVariant.CONSEQUENCES.indexOf (o2);
-            return i1 - i2;
-        });
-   	}
+	private static void sortConsequences(List<String> consequenceTerms) {
+		consequenceTerms.sort((o1, o2) -> {
+			int i1 = AnfisaVariant.CONSEQUENCES.indexOf(o1);
+			int i2 = AnfisaVariant.CONSEQUENCES.indexOf(o2);
+			return i1 - i2;
+		});
+	}
 
 	private static LinkedHashSet<String> getRawCallers(VariantContext variantContext) {
 		LinkedHashSet<String> callers = new LinkedHashSet<>();

@@ -33,6 +33,8 @@ public interface EnsemblVepService extends Closeable {
 
 	CompletableFuture<JSONObject> getVepJson(Chromosome chromosome, int start, int end, String alternative);
 
+	CompletableFuture<JSONObject> getVepJson(String id);
+
 	void close();
 
 }
