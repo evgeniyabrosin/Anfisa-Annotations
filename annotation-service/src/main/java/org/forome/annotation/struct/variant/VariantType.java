@@ -35,7 +35,10 @@ public enum VariantType {
 	SUBSTITUTION("substitution"),
 
 	/** Copy number variable region */
-	CNV("CNV: deletion");
+	CNV("CNV: deletion"),
+
+	TANDEM_REPEAT("tandem_repeat");
+
 
 	private final String jsonValue;
 

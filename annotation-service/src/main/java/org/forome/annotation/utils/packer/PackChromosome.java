@@ -32,11 +32,13 @@ public class PackChromosome {
 		} else if (value == BYTE_CHR_Y) {
 			return Chromosome.CHR_Y;
 		} else {
+			/**
 			for (Chromosome chromosome: Chromosome.values()) {
 				if (value == Byte.parseByte(chromosome.getChar())) {
 					return chromosome;
 				}
 			}
+			 */
 		}
 		throw new IllegalArgumentException();
 	}

@@ -16,21 +16,32 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer;
+package org.forome.annotation.utils.packer.packbatchconservation;
 
-import org.junit.Test;
+import java.nio.ByteBuffer;
 
-public class PackChromosomeTest {
+class PackagingWithoutCompression implements Packaging {
 
-	@Test
-	public void test() {
-		/*
-		for (Chromosome chromosome: Chromosome.values()) {
-			byte b = PackChromosome.toByte(chromosome);
-			Assert.assertEquals(
-					chromosome, PackChromosome.fromByte(b)
-			);
-		}
-		*/
+	public PackagingWithoutCompression() {
+	}
+
+	@Override
+	public byte getFlag() {
+		return 0;
+	}
+
+	@Override
+	public int getByteSize() {
+		return 0;
+	}
+
+	@Override
+	public ByteBuffer toByteArray(short[] values) {
+		return null;
+	}
+
+	@Override
+	public short[] fromByteArray(ByteBuffer byteBuffer) {
+		return new short[0];
 	}
 }

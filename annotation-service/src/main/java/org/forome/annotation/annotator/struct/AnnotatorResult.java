@@ -147,7 +147,7 @@ public class AnnotatorResult {
 
 			private JSONObject toJSON() {
 				JSONObject out = new JSONObject();
-				if (pipelineDate!=null) {
+				if (pipelineDate != null) {
 					out.put("pipeline_date", DATE_TIME_FORMATTER.format(pipelineDate));
 				}
 				out.put("annotations_date", DATE_TIME_FORMATTER.format(Instant.now()));

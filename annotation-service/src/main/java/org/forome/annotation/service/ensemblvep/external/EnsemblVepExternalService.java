@@ -54,6 +54,12 @@ public class EnsemblVepExternalService implements EnsemblVepService {
 	}
 
 	@Override
+	public CompletableFuture<JSONObject> getVepJson(String id) {
+		String endpoint = String.format("/vep/human/id/%s?hgvs=true&canonical=true&merged=true&protein=true&variant_class=true", id);
+		return ensemblVepHttpClient.request(endpoint).thenApply(jsonArray -> (JSONObject) jsonArray.get(0));
+	}
+
+	@Override
 	public void close() {
 		ensemblVepHttpClient.close();
 	}

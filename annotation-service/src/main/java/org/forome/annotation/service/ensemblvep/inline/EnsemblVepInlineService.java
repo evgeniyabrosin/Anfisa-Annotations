@@ -108,6 +108,11 @@ public class EnsemblVepInlineService implements EnsemblVepService {
 		return getVepJson(chromosome, start, end, reference, alternative);
 	}
 
+	@Override
+	public CompletableFuture<JSONObject> getVepJson(String id) {
+		throw new RuntimeException();
+	}
+
 	private CompletableFuture<JSONObject> getVepJson(Chromosome chromosome, int start, int end, String reference, String alternative) {
 		String request = buildRequest(chromosome, start, end, reference, alternative);
 		synchronized (this) {

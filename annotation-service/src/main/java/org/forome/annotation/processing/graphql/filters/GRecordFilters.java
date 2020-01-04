@@ -25,6 +25,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.forome.annotation.connector.anfisa.struct.AnfisaVariant;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
+import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.utils.MathUtils;
@@ -95,7 +96,9 @@ public class GRecordFilters {
 
 		Integer GQ = null;
 		for (Sample sample : mCase.samples.values()) {
-			Integer gq = variant.getGenotype(sample).getGQ();
+			Genotype genotype = variant.getGenotype(sample);
+			if (genotype == null) continue;
+			Integer gq = genotype.getGQ();
 			if (gq != null && gq != 0) {
 				if (GQ == null || gq < GQ) {
 					GQ = gq;
@@ -118,6 +121,5 @@ public class GRecordFilters {
 		}
 		return null;
 	}
-
 
 }
