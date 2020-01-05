@@ -22,8 +22,8 @@ import java.util.Map;
 
 public class ClinvarResult {
 
-	public final long start;
-	public final long end;
+	public final int start;
+	public final int end;
 	public final String referenceAllele;
 	public final String alternateAllele;
 	public final String variationID;
@@ -35,8 +35,8 @@ public class ClinvarResult {
 	public final Map<String, String> submitters;
 
 	public ClinvarResult(
-			long start,
-			long end,
+			int start,
+			int end,
 			String referenceAllele,
 			String alternateAllele,
 			String variationID,

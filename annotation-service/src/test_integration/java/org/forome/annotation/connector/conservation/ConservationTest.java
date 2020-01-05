@@ -21,7 +21,7 @@ package org.forome.annotation.connector.conservation;
 import org.forome.annotation.AnfisaBaseTest;
 import org.forome.annotation.connector.conservation.struct.Conservation;
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
+import org.forome.annotation.struct.Interval;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -39,9 +39,9 @@ public class ConservationTest extends AnfisaBaseTest {
 	public void testSimple() {
 		//chr1:16378047 G>T rs35351345 4.48
 		Chromosome chr1 = Chromosome.of("1");
-		Position<Integer> pos1 = new Position<>(16378047);
-		Position<Integer> hgmdHG38_1 = liftoverConnector.toHG38(chr1, pos1);
-		Conservation conservation1 = conservationConnector.getConservation(chr1, pos1, hgmdHG38_1, "G", "T");
+		Interval pos1 = new Interval(chr1, 16378047);
+		Interval hgmdHG38_1 = liftoverConnector.toHG38(pos1);
+		Conservation conservation1 = conservationConnector.getConservation(pos1, hgmdHG38_1, "G", "T");
 		assertDouble(0.183d, conservation1.priPhCons);
 		assertDouble(0.999d, conservation1.mamPhCons);
 		assertDouble(1d, conservation1.verPhCons);
@@ -55,9 +55,9 @@ public class ConservationTest extends AnfisaBaseTest {
 
 		//chr4:55593464 A>C rs3822214 1.82
 		Chromosome chr2 = Chromosome.of("4");
-		Position<Integer> pos2 = new Position<>(55593464);
-		Position<Integer> hgmdHG38_2 = liftoverConnector.toHG38(chr2, pos2);
-		Conservation conservation2 = conservationConnector.getConservation(chr2, pos2, hgmdHG38_2, "A", "C");
+		Interval pos2 = new Interval(chr2, 55593464);
+		Interval hgmdHG38_2 = liftoverConnector.toHG38(pos2);
+		Conservation conservation2 = conservationConnector.getConservation(pos2, hgmdHG38_2, "A", "C");
 		assertDouble(0.935d, conservation2.priPhCons);
 		assertDouble(1d, conservation2.mamPhCons);
 		assertDouble(0.778d, conservation2.verPhCons);
@@ -71,9 +71,9 @@ public class ConservationTest extends AnfisaBaseTest {
 
 		//chr9:139092481 G>C rs190916587 0.34
 		Chromosome chr3 = Chromosome.of("9");
-		Position<Integer> pos3 = new Position<>(139092481);
-		Position<Integer> hgmdHG38_3 = liftoverConnector.toHG38(chr3, pos3);
-		Conservation conservation3 = conservationConnector.getConservation(chr3, pos3, hgmdHG38_3, "G", "C");
+		Interval pos3 = new Interval(chr3, 139092481);
+		Interval hgmdHG38_3 = liftoverConnector.toHG38(pos3);
+		Conservation conservation3 = conservationConnector.getConservation(pos3, hgmdHG38_3, "G", "C");
 		assertDouble(0.99d, conservation3.priPhCons);
 		assertDouble(0.993d, conservation3.mamPhCons);
 		assertDouble(0.038d, conservation3.verPhCons);
@@ -87,9 +87,9 @@ public class ConservationTest extends AnfisaBaseTest {
 
 		//chr13:86369589 A>G rs199516562 5.86
 		Chromosome chr4 = Chromosome.of("13");
-		Position<Integer> pos4 = new Position<>(86369589);
-		Position<Integer> hgmdHG38_4 = liftoverConnector.toHG38(chr4, pos4);
-		Conservation conservation4 = conservationConnector.getConservation(chr4, pos4, hgmdHG38_4, "A", "G");
+		Interval pos4 = new Interval(chr4, 86369589);
+		Interval hgmdHG38_4 = liftoverConnector.toHG38(pos4);
+		Conservation conservation4 = conservationConnector.getConservation(pos4, hgmdHG38_4, "A", "G");
 		assertDouble(0.617d, conservation4.priPhCons);
 		assertDouble(1d, conservation4.mamPhCons);
 		assertDouble(1d, conservation4.verPhCons);
@@ -103,16 +103,16 @@ public class ConservationTest extends AnfisaBaseTest {
 
 		//chr2:21266774 GGCAGCGCCA>G rs17240441
 		Chromosome chr5 = Chromosome.of("2");
-		Position<Integer> pos5 = new Position<>(21266774);
-		Position<Integer> hgmdHG38_5 = liftoverConnector.toHG38(chr5, pos5);
-		Conservation conservation5 = conservationConnector.getConservation(chr5, pos5, hgmdHG38_5, "GGCAGCGCCA", "G");
+		Interval pos5 = new Interval(chr5, 21266774);
+		Interval hgmdHG38_5 = liftoverConnector.toHG38(pos5);
+		Conservation conservation5 = conservationConnector.getConservation(pos5, hgmdHG38_5, "GGCAGCGCCA", "G");
 		Assert.assertEquals(null, conservation5);//Вычисляются только однобуквенные и инсерции
 
 		//chr1:175949371 A>AACC
 		Chromosome chr7 = Chromosome.of("1");
-		Position<Integer> pos7 = new Position<>(175949371);
-		Position<Integer> hgmdHG38_7 = liftoverConnector.toHG38(chr7, pos7);
-		Conservation conservation7 = conservationConnector.getConservation(chr7, pos7, hgmdHG38_7, "A", "AACC");
+		Interval pos7 = new Interval(chr7, 175949371);
+		Interval hgmdHG38_7 = liftoverConnector.toHG38(pos7);
+		Conservation conservation7 = conservationConnector.getConservation(pos7, hgmdHG38_7, "A", "AACC");
 		assertFloat(2.37f, conservation7.gerpRS);//Проверяем на внешнем ресурсе
 	}
 
@@ -120,17 +120,17 @@ public class ConservationTest extends AnfisaBaseTest {
 	public void testMulti() {
 		//chr2:55863360 T>TA rs35916020
 		Chromosome chr1 = Chromosome.of("2");
-		Position<Integer> pos1 = new Position<>(55863361, 55863360);
-		Position<Integer> hgmdHG38_1 = liftoverConnector.toHG38(chr1, pos1);
-		Conservation conservation1 = conservationConnector.getConservation(chr1, pos1, hgmdHG38_1, "T", "TA");
+		Interval pos1 = new Interval(chr1, 55863361, 55863360);
+		Interval hgmdHG38_1 = liftoverConnector.toHG38(pos1);
+		Conservation conservation1 = conservationConnector.getConservation(pos1, hgmdHG38_1, "T", "TA");
 		assertFloat(-0.868f, conservation1.gerpRS);//Проверяем на внешнем ресурсе
 
 		//chr1:120681278 A>AT  rs201956187
 		//Проверяем ситуацию когда координаты hg38 - вычислить не удалось
 		Chromosome chr2 = Chromosome.of("1");
-		Position<Integer> pos2 = new Position<>(120681279, 120681278);
-		Position<Integer> hgmdHG38_2 = liftoverConnector.toHG38(chr2, pos2);
-		Conservation conservation2 = conservationConnector.getConservation(chr2, pos2, hgmdHG38_2, "A", "AT");
+		Interval pos2 = new Interval(chr2, 120681279, 120681278);
+		Interval hgmdHG38_2 = liftoverConnector.toHG38(pos2);
+		Conservation conservation2 = conservationConnector.getConservation(pos2, hgmdHG38_2, "A", "AT");
 		Assert.assertEquals(null, conservation2.priPhCons);
 		Assert.assertEquals(null, conservation2.mamPhCons);
 		Assert.assertEquals(null, conservation2.verPhCons);

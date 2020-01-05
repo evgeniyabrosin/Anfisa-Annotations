@@ -44,7 +44,7 @@ import org.forome.annotation.connector.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
+import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
@@ -350,7 +350,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 			String[] variants = clinvarResults.stream().map(clinvarResult -> {
 				return String.format("%s %s>%s",
-						vstr(chromosome.getChromosome(), new Position(clinvarResult.start, clinvarResult.end)),
+						vstr(new Interval(chromosome, clinvarResult.start, clinvarResult.end)),
 						clinvarResult.referenceAllele, clinvarResult.alternateAllele
 				);
 			}).toArray(String[]::new);
@@ -1042,22 +1042,19 @@ public class AnfisaConnector implements AutoCloseable {
 	}
 
 	public Conservation buildConservation(AnfisaExecuteContext context) {
-		AnfisaInput anfisaInput = context.anfisaInput;
 		Variant variant = context.variant;
-		JSONObject vepJson = context.vepJson;
-		Chromosome chromosome = variant.chromosome;
 		String ref = variant.getRef();
 		List<String> alts = variant.getStrAltAllele();
 		if (alts.size() > 1) {
 			return null;
 		}
 		String alt = alts.get(0);
-		Position hgmdHG19 = getHg19Coordinates(context);
-		Position hgmdHG38 = getHg38Coordinates(context);
+		Interval hgmdHG19 = getHg19Coordinates(context);
+		Interval hgmdHG38 = getHg38Coordinates(context);
 		if (hgmdHG38 == null) {
 			return null;
 		}
-		return conservationConnector.getConservation(chromosome, hgmdHG19, hgmdHG38, ref, alt);
+		return conservationConnector.getConservation(hgmdHG19, hgmdHG38, ref, alt);
 	}
 
 	private static Map<String, Float> list_dsmax(AnfisaResultData data) {
@@ -1096,7 +1093,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 	private String getStrHg38Coordinates(AnfisaExecuteContext context) {
 		Chromosome chromosome = context.variant.chromosome;
-		Position<Integer> positionHg38 = getHg38Coordinates(context);
+		Interval positionHg38 = getHg38Coordinates(context);
 
 		if (positionHg38 == null) {
 			return String.format("%s:None", chromosome.toString());
@@ -1109,12 +1106,15 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private Position<Integer> getHg38Coordinates(AnfisaExecuteContext context) {
+	private Interval getHg38Coordinates(AnfisaExecuteContext context) {
 		Chromosome chromosome = context.variant.chromosome;
-		return liftoverConnector.toHG38(chromosome, new Position<Integer>(
-				context.variant.getStart(),
-				context.variant.end
-		));
+		return liftoverConnector.toHG38(
+				new Interval(
+						chromosome,
+						context.variant.getStart(),
+						context.variant.end
+				)
+		);
 	}
 
 	public ColorCode.Code getColorCode(VariantVep variantVep, AnfisaResultData data, Record record, AnfisaResultFilters filters) {
@@ -1571,26 +1571,26 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	public Position getHg19Coordinates(AnfisaExecuteContext context) {
-		return new Position(
+	public Interval getHg19Coordinates(AnfisaExecuteContext context) {
+		return new Interval(
+				context.variant.chromosome,
 				context.variant.getStart(),
 				context.variant.end
 		);
 	}
 
 	public String getStrHg19Coordinates(AnfisaExecuteContext context) {
-		Position hg19Coordinates = getHg19Coordinates(context);
+		Interval hg19Coordinates = getHg19Coordinates(context);
 		return vstr(
-				context.variant.chromosome.getChromosome(),
 				hg19Coordinates
 		);
 	}
 
-	public String vstr(String c, Position hg19Coordinates) {
+	public String vstr(Interval hg19Coordinates) {
 		if (hg19Coordinates.isSingle()) {
-			return String.format("%s:%s", c, hg19Coordinates.start);
+			return String.format("%s:%s", hg19Coordinates.chromosome.getChromosome(), hg19Coordinates.start);
 		} else {
-			return String.format("%s:%s-%s", c, hg19Coordinates.start, hg19Coordinates.end);
+			return String.format("%s:%s-%s", hg19Coordinates.chromosome.getChromosome(), hg19Coordinates.start, hg19Coordinates.end);
 		}
 	}
 

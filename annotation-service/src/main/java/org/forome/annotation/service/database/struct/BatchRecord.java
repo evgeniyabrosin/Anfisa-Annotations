@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,32 +16,21 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer.packbatchconservation;
+package org.forome.annotation.service.database.struct;
 
-import java.nio.ByteBuffer;
+import org.forome.annotation.struct.Interval;
+import org.forome.annotation.struct.Position;
 
-class PackagingWithoutCompression implements Packaging {
+public class BatchRecord {
 
-	public PackagingWithoutCompression() {
+	public Interval interval;
+
+	public BatchRecord(Interval interval) {
+		this.interval = interval;
 	}
 
-	@Override
-	public byte getFlag() {
-		return 0;
+	public Record getRecord(Position position) {
+		return new Record(position);
 	}
 
-	@Override
-	public int getByteSize() {
-		return 0;
-	}
-
-	@Override
-	public ByteBuffer toByteArray(short[] values) {
-		return null;
-	}
-
-	@Override
-	public short[] fromByteArray(ByteBuffer byteBuffer) {
-		return new short[0];
-	}
 }

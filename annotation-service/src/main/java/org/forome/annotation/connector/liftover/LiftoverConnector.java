@@ -19,9 +19,7 @@
 package org.forome.annotation.connector.liftover;
 
 import htsjdk.samtools.liftover.LiftOver;
-import htsjdk.samtools.util.Interval;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
+import org.forome.annotation.struct.Interval;
 
 import java.io.*;
 
@@ -47,21 +45,21 @@ public class LiftoverConnector implements AutoCloseable {
 		liftOverHg19toHg38.setShouldLogFailedIntervalsBelowThreshold(false);
 	}
 
-	public Position<Integer> toHG38(Chromosome chromosome, Position<Integer> position) {
-		int start = Math.min(position.start, position.end);
-		int end = Math.max(position.start, position.end);
+	public Interval toHG38(Interval intervalHg19) {
+		int start = Math.min(intervalHg19.start, intervalHg19.end);
+		int end = Math.max(intervalHg19.start, intervalHg19.end);
 
-		Interval interval = liftOverHg19toHg38.liftOver(new Interval(
-				chromosome.toString(),
+		htsjdk.samtools.util.Interval interval = liftOverHg19toHg38.liftOver(new htsjdk.samtools.util.Interval(
+				intervalHg19.chromosome.toString(),
 				start,
 				end
 		));
 		if (interval == null) return null;
 
-		if (position.start <= position.end) {
-			return new Position<>(interval.getStart(), interval.getEnd());
+		if (intervalHg19.start <= intervalHg19.end) {
+			return new Interval(intervalHg19.chromosome, interval.getStart(), interval.getEnd());
 		} else {
-			return new Position<>(interval.getEnd(), interval.getStart());
+			return new Interval(intervalHg19.chromosome, interval.getEnd(), interval.getStart());
 		}
 	}
 

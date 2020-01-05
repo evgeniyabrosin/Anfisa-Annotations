@@ -16,26 +16,21 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer;
+package org.forome.annotation.service.database.struct.packer;
 
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Interval;
 import org.junit.Assert;
+import org.junit.Test;
 
-public class PackIntervalTest {
+public class PackChromosomeTest {
 
-	//@Test
+	@Test
 	public void test() {
-		int sizePack = PackInterval.DEFAULT_SIZE;
-		PackInterval packInterval = new PackInterval(sizePack);
-
-		Chromosome chromosome = Chromosome.CHR_1;
-		for (int k = 0; k < 2489082; k += 49000) {
-			Interval iExpected = new Interval(chromosome, k * sizePack, k * sizePack + sizePack - 1);
-			byte[] bytes = packInterval.toByteArray(iExpected);
-			Interval iActual = packInterval.fromByteArray(bytes);
-
-			Assert.assertEquals(iExpected, iActual);
+		for (Chromosome chromosome: Chromosome.CHROMOSOMES) {
+			byte b = PackChromosome.toByte(chromosome);
+			Assert.assertEquals(
+					chromosome, PackChromosome.fromByte(b)
+			);
 		}
 	}
 }

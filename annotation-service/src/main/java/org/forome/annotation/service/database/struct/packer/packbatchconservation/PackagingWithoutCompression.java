@@ -16,7 +16,32 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer;
+package org.forome.annotation.service.database.struct.packer.packbatchconservation;
 
-public class PackBatch {
+import java.nio.ByteBuffer;
+
+class PackagingWithoutCompression implements Packaging {
+
+	public PackagingWithoutCompression() {
+	}
+
+	@Override
+	public byte getFlag() {
+		return 0;
+	}
+
+	@Override
+	public int getByteSize() {
+		return 0;
+	}
+
+	@Override
+	public ByteBuffer toByteArray(short[] values) {
+		return null;
+	}
+
+	@Override
+	public short[] fromByteArray(ByteBuffer byteBuffer) {
+		return new short[0];
+	}
 }

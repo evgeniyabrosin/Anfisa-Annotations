@@ -27,10 +27,18 @@ public class Interval {
 	public final int start;
 	public final int end;
 
+	public Interval(Chromosome chromosome, int position) {
+		this(chromosome, position, position);
+	}
+
 	public Interval(Chromosome chromosome, int start, int end) {
 		this.chromosome = chromosome;
 		this.start = start;
 		this.end = end;
+	}
+
+	public boolean isSingle() {
+		return start == end;
 	}
 
 	@Override

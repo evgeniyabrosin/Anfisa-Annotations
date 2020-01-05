@@ -179,8 +179,8 @@ public class ClinvarConnector implements AutoCloseable {
 	}
 
 	private static Row _build(ResultSet resultSet) throws SQLException {
-		long start = resultSet.getLong("Start");
-		long end = resultSet.getLong("Stop");
+		int start = (int) resultSet.getLong("Start");
+		int end = (int) resultSet.getLong("Stop");
 		String type = resultSet.getString("Type");
 		String referenceAllele = resultSet.getString("ReferenceAllele");
 		String alternateAllele = resultSet.getString("AlternateAllele");

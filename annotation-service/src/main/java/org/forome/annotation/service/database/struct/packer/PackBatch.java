@@ -16,21 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer;
+package org.forome.annotation.service.database.struct.packer;
 
-import org.junit.Test;
-
-public class PackChromosomeTest {
-
-	@Test
-	public void test() {
-		/*
-		for (Chromosome chromosome: Chromosome.values()) {
-			byte b = PackChromosome.toByte(chromosome);
-			Assert.assertEquals(
-					chromosome, PackChromosome.fromByte(b)
-			);
-		}
-		*/
-	}
+public class PackBatch {
 }
