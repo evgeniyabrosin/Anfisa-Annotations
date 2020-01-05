@@ -89,85 +89,6 @@ public class CustomInputMain {
 	private static AnfisaConnector anfisaConnector;
 	private static Processing processing;
 
-	//Добавлена запись SNV:C>A в строчку 1625
-	//Добавлена запись SNV:A>G в строчку 4103
-	//Добавлена запись SNV:A>G в строчку 4523
-	//Добавлена запись SNV:A>G в строчку 4526
-	//Добавлена запись SNV:A>G в строчку 4529
-	//Добавлена запись SNV:A>G в строчку 4532
-	//Добавлена запись SNV:A>G в строчку 4535
-	//Добавлена запись SNV:A>G в строчку 4538
-	//Добавлена запись SNV:A>G в строчку 4541
-	//Добавлена запись SNV:A>G в строчку 4544
-	//Добавлена запись SNV:A>G в строчку 4547
-	//Добавлена запись SNV:A>G в строчку 4550
-	//Добавлена запись SNV:A>G в строчку 4553
-	//Добавлена запись SNV:A>G в строчку 4556
-	//Добавлена запись SNV:A>G в строчку 4559
-	//Добавлена запись SNV:A>G в строчку 4562
-	//Добавлена запись SNV:A>G в строчку 9290
-	//Добавлена запись SNV:A>G в строчку 9293
-	//Добавлена запись SNV:A>G в строчку 9296
-	//Добавлена запись SNV:A>G в строчку 9305
-	//Добавлена запись SNV:A>G в строчку 9317
-	//Добавлена запись SNV:A>G в строчку 9323
-	//Добавлена запись SNV:A>G в строчку 9326
-	//Добавлена запись SNV:A>G в строчку 9329
-	//Добавлена запись SNV:A>G в строчку 9332
-	//Добавлена запись SNV:A>G в строчку 9338
-	//Добавлена запись SNV:A>G в строчку 9347
-
-	//remove
-	//rs77858094
-	//rs869099722
-	//rs879948252
-	//rs879948765
-	//rs879952187
-	//rs879968555
-	//rs879980213
-	//rs879982376
-	//rs879988072
-	//rs879991269
-	//rs879994526
-	//rs879995258
-	//rs880001009
-
-
-
-	//rs1555556975
-	//rs1555556976
-	//rs1555556994
-	//rs1555556995
-	//rs1555556999
-	//rs1555557000
-	//rs1555557002
-	//rs1555557009
-	//rs1555557016
-	//rs1555557022
-	//rs1555557023
-	//rs1555557031
-	//rs1555557058
-	//rs1555557060
-	//rs1555557063
-	//rs1555557067
-	//rs1555557069
-	//rs1555557079
-	//rs1555557099
-	//rs1555557100
-	//rs1555557107
-	//rs1555557108
-	//rs1555557112
-	//rs1555557114
-	//rs1555557148
-	//rs1567711730
-
-
-
-
-	//Error parse response, endpoint: /vep/human/id/rs879982376?hgvs=true&canonical=true&merged=true&protein=true&variant_class=true response: '{"error":"Length of reference allele (A length 1) does not match co-ordinates 21312641-21312643 on line 1"}', code=external_service_error
-	//Error parse response, endpoint: /vep/human/id/rs1555556975?hgvs=true&canonical=true&merged=true&protein=true&variant_class=true response: '{"error":"No variant found with ID 'rs1555556975'"}', code=external_service_error
-
-
 	public static void main(String[] args) {
 		Options options = new Options()
 
@@ -324,14 +245,12 @@ public class CustomInputMain {
 				requestIds.add(l0);
 			}
 
-//			String id1 = requestIds.keySet().iterator().next();
-//			GetAnfisaJSONController.RequestItem requestItem1 = requestIds.get(id1);
-//
-//			ensemblVepService.getVepJson(id1)
+//			ensemblVepService.getVepJson(requestIds.get(0))
 //					.thenApply(vepJson -> {
 //						log.debug("id: {}", vepJson);
 //						return null;
 //					});
+//			GetAnfisaJSONController.RequestItem requestItem1 = requestItems.get(0);
 //			ensemblVepService.getVepJson(requestItem1.chromosome, requestItem1.start, requestItem1.end, requestItem1.alternative)
 //					.thenApply(vepJson -> {
 //						log.debug("region: {}", vepJson);
@@ -353,7 +272,7 @@ public class CustomInputMain {
 									try {
 										Chromosome chromosome = Chromosome.of(vepJson.getAsString("seq_region_name"));
 										int start = Integer.parseInt(vepJson.getAsString("start"));
-										int end	= Integer.parseInt(vepJson.getAsString("end"));
+										int end = Integer.parseInt(vepJson.getAsString("end"));
 
 										VariantVep variantVep = new VariantCustom(chromosome, start, end);
 										variantVep.setVepJson(vepJson);
@@ -379,8 +298,6 @@ public class CustomInputMain {
 			*/
 
 
-
-
 			OutputStream os = new GZIPOutputStream(Files.newOutputStream(Paths.get("KCNJ12_anfisa.json.gz")));
 			BufferedOutputStream bos = new BufferedOutputStream(os);
 
@@ -393,19 +310,19 @@ public class CustomInputMain {
 			try {
 				for (int i = 0; i < futureProcessingResults.size(); i++) {
 					List<ProcessingResult> processingResults;
-					try {
-						processingResults = futureProcessingResults.get(i).join();
-						for (ProcessingResult processingResult : processingResults) {
+//					try {
+					processingResults = futureProcessingResults.get(i).join();
+					for (ProcessingResult processingResult : processingResults) {
 
-							String out = processingResult.toJSON().toJSONString();
-							bos.write(out.getBytes(StandardCharsets.UTF_8));
-							bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+						String out = processingResult.toJSON().toJSONString();
+						bos.write(out.getBytes(StandardCharsets.UTF_8));
+						bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
-							log.debug("Processing {}/{}", i+1, futureProcessingResults.size());
-						}
-					} catch (Throwable e) {
-						log.error("Exception ", e);
+						log.debug("Processing {}/{}", i + 1, futureProcessingResults.size());
 					}
+//					} catch (Throwable e) {
+//						log.error("Exception ", e);
+//					}
 				}
 				bos.flush();
 				bos.close();
