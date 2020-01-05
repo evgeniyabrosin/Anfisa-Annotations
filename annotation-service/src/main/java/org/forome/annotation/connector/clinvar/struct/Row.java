@@ -20,8 +20,8 @@ package org.forome.annotation.connector.clinvar.struct;
 
 public class Row {
 
-	public final long start;
-	public final long end;
+	public final int start;
+	public final int end;
 	public final String type;
 	public final String referenceAllele;
 	public final String alternateAllele;
@@ -33,8 +33,8 @@ public class Row {
 	public final String phenotypeList;
 
 	public Row(
-			long start,
-			long end,
+			int start,
+			int end,
 			String type,
 			String referenceAllele,
 			String alternateAllele,

@@ -20,7 +20,7 @@ package org.forome.annotation.connector.liftover;
 
 import org.forome.annotation.AnfisaBaseTest;
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
+import org.forome.annotation.struct.Interval;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,7 +42,7 @@ public class LiftoverTest extends AnfisaBaseTest {
 		 * Если длина мутации первышает 10 позиций (base pairs), то мы такие мутации переводить в 38-ю сборку не будем
 		 */
 		Assert.assertEquals(null, liftoverConnector.toHG38(
-				Chromosome.of("1"), new Position<Integer>(120681279, 120681278)
+				 new Interval(Chromosome.of("1"), 120681279, 120681278)
 		));
 
 	}

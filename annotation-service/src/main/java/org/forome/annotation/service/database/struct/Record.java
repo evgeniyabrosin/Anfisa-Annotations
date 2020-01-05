@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,18 +16,15 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer.packbatchconservation;
+package org.forome.annotation.service.database.struct;
 
-import java.nio.ByteBuffer;
+import org.forome.annotation.struct.Position;
 
-public interface Packaging {
+public class Record {
 
-	byte getFlag();
+	public final Position position;
 
-	int getByteSize();
-
-	ByteBuffer toByteArray(short[] values);
-
-	short[] fromByteArray(ByteBuffer byteBuffer);
+	public Record(Position position) {
+		this.position = position;
+	}
 }
-

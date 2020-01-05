@@ -211,10 +211,6 @@ public class CustomInputMain {
 				}
 				l++;
 
-//				if ("SNV".equals(l2[0])) {
-//					throw new RuntimeException("bad line: " + lines.get(i));
-//				}
-
 				Chromosome chromosome = Chromosome.of(l2[0]);
 				int start = Integer.parseInt(l2[1]);
 				int end;
@@ -227,10 +223,6 @@ public class CustomInputMain {
 				} else {
 					throw new RuntimeException();
 				}
-
-//				if (l < 34000) {
-//					continue;
-//				}
 
 				for (String alt : alts) {
 					GetAnfisaJSONController.RequestItem requestItem = new GetAnfisaJSONController.RequestItem(
@@ -310,19 +302,19 @@ public class CustomInputMain {
 			try {
 				for (int i = 0; i < futureProcessingResults.size(); i++) {
 					List<ProcessingResult> processingResults;
-//					try {
-					processingResults = futureProcessingResults.get(i).join();
-					for (ProcessingResult processingResult : processingResults) {
+					try {
+						processingResults = futureProcessingResults.get(i).join();
+						for (ProcessingResult processingResult : processingResults) {
 
-						String out = processingResult.toJSON().toJSONString();
-						bos.write(out.getBytes(StandardCharsets.UTF_8));
-						bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+							String out = processingResult.toJSON().toJSONString();
+							bos.write(out.getBytes(StandardCharsets.UTF_8));
+							bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
-						log.debug("Processing {}/{}", i + 1, futureProcessingResults.size());
+							log.debug("Processing {}/{}", i + 1, futureProcessingResults.size());
+						}
+					} catch (Throwable e) {
+						log.error("Exception ", e);
 					}
-//					} catch (Throwable e) {
-//						log.error("Exception ", e);
-//					}
 				}
 				bos.flush();
 				bos.close();

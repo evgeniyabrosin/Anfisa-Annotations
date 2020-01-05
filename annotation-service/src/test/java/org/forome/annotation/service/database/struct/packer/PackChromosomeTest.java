@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer;
+package org.forome.annotation.service.database.struct.packer;
 
 import org.forome.annotation.struct.Chromosome;
 import org.junit.Assert;

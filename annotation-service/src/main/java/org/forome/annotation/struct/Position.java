@@ -18,40 +18,24 @@
 
 package org.forome.annotation.struct;
 
-import java.util.Objects;
+public class Position {
 
-public class Position<T> {
+	public final Chromosome chromosome;
 
-	public final T start;
-	public final T end;
+	public final int value;
 
-	public Position(T position) {
-		this(position, position);
-	}
-
-	public Position(T start, T end) {
-		if (start == null) throw new IllegalArgumentException();
-		if (end == null) throw new IllegalArgumentException();
-
-		this.start = start;
-		this.end = end;
-	}
-
-	public boolean isSingle() {
-		return Objects.equals(start, end);
+	public Position(Chromosome chromosome, int value) {
+		this.chromosome = chromosome;
+		this.value = value;
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sBuilder = new StringBuilder()
-				.append("Position(");
-		if (isSingle()) {
-			sBuilder.append(start);
-		} else {
-			sBuilder.append("start: ").append(start);
-			sBuilder.append(", end: ").append(end);
-		}
-		sBuilder.append(')');
-		return sBuilder.toString();
+		return new StringBuilder()
+				.append("Position(")
+				.append("chr: ").append(chromosome.getChar())
+				.append(", value: ").append(value)
+				.append(')')
+				.toString();
 	}
 }

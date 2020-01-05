@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer;
+package org.forome.annotation.service.database.struct.packer;
 
 import com.google.common.primitives.Ints;
 import org.forome.annotation.struct.Chromosome;

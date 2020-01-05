@@ -16,14 +16,14 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer;
+package org.forome.annotation.service.database.struct.packer;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.forome.annotation.connector.conservation.struct.BatchConservation;
 import org.forome.annotation.connector.conservation.struct.ConservationItem;
+import org.forome.annotation.service.database.struct.packer.packbatchconservation.PackBatchConservation;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
-import org.forome.annotation.utils.packer.packbatchconservation.PackBatchConservation;
 import org.junit.Assert;
 import org.junit.Test;
 

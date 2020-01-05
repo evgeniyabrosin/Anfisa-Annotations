@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer.packbatchconservation;
+package org.forome.annotation.service.database.struct.packer.packbatchconservation;
 
 
 import org.forome.annotation.connector.conservation.struct.BatchConservation;

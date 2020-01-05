@@ -16,38 +16,27 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.packer;
+package org.forome.annotation.service.database.struct.packer;
 
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Interval;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class PackChromosome {
+public class PackIntervalTest {
 
-	private static final byte BYTE_CHR_X = 24;
+	@Test
+	public void test() {
+		int sizePack = PackInterval.DEFAULT_SIZE;
+		PackInterval packInterval = new PackInterval(sizePack);
 
-	private static final byte BYTE_CHR_Y = 25;
+		Chromosome chromosome = Chromosome.CHR_1;
+		for (int k = 0; k < 2489082; k += 49000) {
+			Interval iExpected = new Interval(chromosome, k * sizePack, k * sizePack + sizePack - 1);
+			byte[] bytes = packInterval.toByteArray(iExpected);
+			Interval iActual = packInterval.fromByteArray(bytes);
 
-	public static Chromosome fromByte(byte value) {
-		if (value == BYTE_CHR_X) {
-			return Chromosome.CHR_X;
-		} else if (value == BYTE_CHR_Y) {
-			return Chromosome.CHR_Y;
-		} else {
-			for (Chromosome chromosome: Chromosome.CHROMOSOMES) {
-				if (value == Byte.parseByte(chromosome.getChar())) {
-					return chromosome;
-				}
-			}
-		}
-		throw new IllegalArgumentException();
-	}
-
-	public static byte toByte(Chromosome value) {
-		if (value == Chromosome.CHR_X) {
-			return BYTE_CHR_X;
-		} else if (value == Chromosome.CHR_Y) {
-			return BYTE_CHR_Y;
-		} else {
-			return Byte.parseByte(value.getChar());
+			Assert.assertEquals(iExpected, iActual);
 		}
 	}
 }
