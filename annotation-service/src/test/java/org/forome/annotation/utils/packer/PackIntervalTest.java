@@ -21,10 +21,11 @@ package org.forome.annotation.utils.packer;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
 import org.junit.Assert;
+import org.junit.Test;
 
 public class PackIntervalTest {
 
-	//@Test
+	@Test
 	public void test() {
 		int sizePack = PackInterval.DEFAULT_SIZE;
 		PackInterval packInterval = new PackInterval(sizePack);

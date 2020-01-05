@@ -18,19 +18,19 @@
 
 package org.forome.annotation.utils.packer;
 
+import org.forome.annotation.struct.Chromosome;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class PackChromosomeTest {
 
 	@Test
 	public void test() {
-		/*
-		for (Chromosome chromosome: Chromosome.values()) {
+		for (Chromosome chromosome: Chromosome.CHROMOSOMES) {
 			byte b = PackChromosome.toByte(chromosome);
 			Assert.assertEquals(
 					chromosome, PackChromosome.fromByte(b)
 			);
 		}
-		*/
 	}
 }
