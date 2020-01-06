@@ -21,6 +21,7 @@ package org.forome.annotation.service.database.struct.packer;
 import org.apache.commons.lang3.RandomUtils;
 import org.forome.annotation.connector.conservation.struct.BatchConservation;
 import org.forome.annotation.connector.conservation.struct.ConservationItem;
+import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.service.database.struct.packer.packbatchconservation.PackBatchConservation;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
@@ -31,12 +32,12 @@ public class PackBatchConservationTest {
 
 	@Test
 	public void test() {
-		Interval interval = new Interval(Chromosome.CHR_1, 0, PackInterval.DEFAULT_SIZE - 1);
+		Interval interval = new Interval(Chromosome.CHR_1, 0, BatchRecord.DEFAULT_SIZE - 1);
 
 		for (int t = 0; t < 10000; t++) {
 
 			//generate
-			ConservationItem[] expectedItems = new ConservationItem[PackInterval.DEFAULT_SIZE];
+			ConservationItem[] expectedItems = new ConservationItem[BatchRecord.DEFAULT_SIZE];
 			for (int i = 0; i < expectedItems.length; i++) {
 				expectedItems[i] = new ConservationItem(
 						RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f,

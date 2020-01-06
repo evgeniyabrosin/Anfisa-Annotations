@@ -18,6 +18,7 @@
 
 package org.forome.annotation.service.database.struct.packer;
 
+import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
 import org.junit.Assert;
@@ -27,7 +28,7 @@ public class PackIntervalTest {
 
 	@Test
 	public void test() {
-		int sizePack = PackInterval.DEFAULT_SIZE;
+		int sizePack = BatchRecord.DEFAULT_SIZE;
 		PackInterval packInterval = new PackInterval(sizePack);
 
 		Chromosome chromosome = Chromosome.CHR_1;

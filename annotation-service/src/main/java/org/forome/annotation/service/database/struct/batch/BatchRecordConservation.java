@@ -16,21 +16,35 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.struct;
+package org.forome.annotation.service.database.struct.batch;
 
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
+import org.forome.annotation.utils.bits.ShortBits;
 
-public class BatchRecord {
+public class BatchRecordConservation {
 
-	public Interval interval;
+	private final Interval interval;
+	private final byte[] bytes;
+	private final int offsetBytes;
 
-	public BatchRecord(Interval interval) {
+	protected BatchRecordConservation(Interval interval, byte[] bytes, int offsetBytes) {
 		this.interval = interval;
+		this.bytes = bytes;
+		this.offsetBytes = offsetBytes;
 	}
 
-	public Record getRecord(Position position) {
-		return new Record(position);
+	public float getGerpN(Position position) {
+		int ioffset = offsetBytes + (position.value - interval.start) * 2;
+		return (float) ShortBits.fromByteArray(bytes, ioffset) / 1000.0f;
 	}
 
+	public float getGerpRS(Position position) {
+		int ioffset = offsetBytes + (position.value - interval.start) * 2 + 2;
+		return (float) ShortBits.fromByteArray(bytes, ioffset) / 1000.0f;
+	}
+
+	protected int getLengthBytes() {
+		return (2 + 2) * (interval.end - interval.start + 1);
+	}
 }

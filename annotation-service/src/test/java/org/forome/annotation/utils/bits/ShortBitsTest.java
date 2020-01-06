@@ -16,15 +16,19 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.struct;
+package org.forome.annotation.utils.bits;
 
-import org.forome.annotation.struct.Position;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class Record {
+public class ShortBitsTest {
 
-	public final Position position;
-
-	public Record(Position position) {
-		this.position = position;
+	@Test
+	public void test() {
+		for (short value = Short.MIN_VALUE; value < Short.MAX_VALUE; value++) {
+			byte[] bytes = ShortBits.toByteArray(value);
+			short actual = ShortBits.fromByteArray(bytes, 0);
+			Assert.assertEquals(value, actual);
+		}
 	}
 }

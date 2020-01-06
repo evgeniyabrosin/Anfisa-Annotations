@@ -70,9 +70,9 @@ configurations {
 }
 
 jar {
-    archiveName = project.hasProperty('filename') ? filename : (rootProject.name + '_v.' + project.version + '.jar')
-
     if (project.hasProperty('make_database')) {
+        archiveName = project.hasProperty('filename') ? filename : (rootProject.name + '_v.' + project.version + '-full.jar')
+
         from files(sourceSets.make_database.output)
         from {
             configurations.make_databaseCompile.collect {
@@ -83,6 +83,8 @@ jar {
             }
         }
     } else {
+        archiveName = project.hasProperty('filename') ? filename : (rootProject.name + '_v.' + project.version + '.jar')
+
         from {
             configurations.compile.collect {
                 it.isDirectory() ? it : zipTree(it)

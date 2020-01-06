@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,14 +16,18 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.makedatabase.main.argument;
+package org.forome.annotation.utils.bits;
 
-import org.apache.commons.cli.CommandLine;
+public class ShortBits {
 
-public class ArgumentsMakeConservation extends ArgumentsMake {
-
-	public ArgumentsMakeConservation(CommandLine cmd) {
-		super(cmd);
+	public static short fromByteArray(byte[] bytes, int offset) {
+		return (short) ((bytes[offset] << 8) | (bytes[offset + 1] & 0xff));
 	}
 
+	public static byte[] toByteArray(short value) {
+		byte[] bytes = new byte[2];
+		bytes[0] = (byte) (value >> 8);
+		bytes[1] = (byte) (value);
+		return bytes;
+	}
 }

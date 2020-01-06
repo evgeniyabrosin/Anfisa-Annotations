@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -18,110 +18,143 @@
 
 package org.forome.annotation.makedatabase;
 
-import com.infomaximum.database.exception.DatabaseException;
-import com.infomaximum.database.utils.TypeConvert;
-import com.infomaximum.rocksdb.RocksDBProvider;
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.connector.conservation.ConservationConnector;
+import org.forome.annotation.connector.conservation.struct.ConservationItem;
 import org.forome.annotation.makedatabase.main.argument.ArgumentsMake;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ssh.SSHConnectService;
-import org.rocksdb.*;
-import org.rocksdb.util.SizeUnit;
+import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.RocksDBException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.sql.SQLException;
 
-public class MakeDatabase implements AutoCloseable  {
 
-	protected final ServiceConfig serviceConfig;
+public class MakeDatabase implements AutoCloseable {
+
+	private final static Logger log = LoggerFactory.getLogger(MakeDatabase.class);
+
 	protected final DatabaseConnectService databaseConnectService;
 
-	public final Path pathDatabase;
+	private final DatabaseConnector databaseConnect;
 
-	public final OptimisticTransactionDB rocksDB;
-	private final ConcurrentMap<String, ColumnFamilyHandle> columnFamilies;
+	private final ConservationConnector conservationConnector;
 
 	public MakeDatabase(ArgumentsMake argumentsMake) throws Exception {
-		serviceConfig = new ServiceConfig(argumentsMake.config);
+		ServiceConfig serviceConfig = new ServiceConfig(argumentsMake.config);
 
 		SSHConnectService sshTunnelService = new SSHConnectService();
 		databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 
-		pathDatabase = argumentsMake.database.toAbsolutePath();
+		Path pathRocksDB = argumentsMake.database.toAbsolutePath();
 
-		try (DBOptions options = buildOptions()) {
-			List<ColumnFamilyDescriptor> columnFamilyDescriptors = getColumnFamilyDescriptors();
+		this.databaseConnect = new DatabaseConnector(databaseConnectService, pathRocksDB);
 
-			List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>();
-			rocksDB = OptimisticTransactionDB.open(options, pathDatabase.toString(), columnFamilyDescriptors, columnFamilyHandles);
+		conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
+	}
 
-			columnFamilies = new ConcurrentHashMap<>();
-			for (int i = 0; i < columnFamilyDescriptors.size(); i++) {
-				String columnFamilyName = TypeConvert.unpackString(columnFamilyDescriptors.get(i).getName());
-				ColumnFamilyHandle columnFamilyHandle = columnFamilyHandles.get(i);
-				columnFamilies.put(columnFamilyName, columnFamilyHandle);
+	public void build() throws RocksDBException, SQLException {
+		if (databaseConnect.getColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD) != null) {
+			databaseConnect.dropColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
+		}
+		ColumnFamilyHandle columnFamilyRecord = databaseConnect.createColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
+
+
+
+
+
+		/*
+		for (Chromosome chromosome : Chromosome.values()) {
+
+			Transaction transaction = rocksDB.beginTransaction(new WriteOptions());
+
+			try (Connection connection = conservationConnector.databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+
+					//Ищем начальную позицию
+					int ks;
+					try (ResultSet resultSet = statement.executeQuery(
+							String.format("select min(Pos) from conservation.GERP where Chrom = '%s'", chromosome.getChar())
+					)) {
+						if (!resultSet.next()) {
+							throw new RuntimeException();
+						}
+						ks = resultSet.getInt(1) / PackInterval.DEFAULT_SIZE;
+					}
+
+					//Ищем конечную позицию
+					int ke;
+					try (ResultSet resultSet = statement.executeQuery(
+							String.format("select max(Pos) from conservation.GERP where Chrom = '%s'", chromosome.getChar())
+					)) {
+						if (!resultSet.next()) {
+							throw new RuntimeException();
+						}
+						ke = resultSet.getInt(1) / PackInterval.DEFAULT_SIZE;
+					}
+
+					for (int k = ks; k <= ke; k++) {
+						int start = k * PackInterval.DEFAULT_SIZE;
+						int end = start + PackInterval.DEFAULT_SIZE - 1;
+
+						ConservationItem[] items = new ConservationItem[PackInterval.DEFAULT_SIZE];
+
+						String sql = String.format("select * from conservation.GERP where Chrom = '%s' and Pos >= %s and Pos <= %s order by Pos asc",
+								chromosome.getChar(), start, end
+						);
+						try (ResultSet resultSet = statement.executeQuery(sql)) {
+							while (resultSet.next()) {
+								int iPos = resultSet.getInt("Pos");
+								float gerpN = resultSet.getFloat("GerpN");
+								float gerpRS = resultSet.getFloat("GerpRS");
+								items[iPos - start] = new ConservationItem(gerpN, gerpRS);
+							}
+						}
+
+						//Если пакет не пустой, то записываем в базу
+						if (!isEmptyConservationItem(items)) {
+
+							Interval interval = new Interval(chromosome, start, end);
+							BatchConservation batchConservation = new BatchConservation(interval, items);
+
+							transaction.put(
+									columnFamilyHandle,
+									new PackInterval(PackInterval.DEFAULT_SIZE).toByteArray(interval),
+									PackBatchConservation.toByteArray(batchConservation)
+							);
+						}
+
+						if (start % 1000000 == 0) {
+							log.debug("Write interval, chr: {}, pos: {}", chromosome, start);
+						}
+					}
+				}
 			}
-		} catch (RocksDBException e) {
-			throw new DatabaseException(e);
+
+			log.debug("Transaction commit...");
+
+			transaction.commit();
+			transaction.close();
 		}
-	}
+		*/
 
-	public ColumnFamilyHandle getColumnFamily(String name) {
-		return columnFamilies.get(name);
-	}
-
-	public ColumnFamilyHandle createColumnFamily(String name) throws RocksDBException {
-		ColumnFamilyDescriptor columnFamilyDescriptor = new ColumnFamilyDescriptor(name.getBytes(StandardCharsets.UTF_8));
-		ColumnFamilyHandle columnFamilyHandle = rocksDB.createColumnFamily(columnFamilyDescriptor);
-		columnFamilies.put(name, columnFamilyHandle);
-		return columnFamilyHandle;
-	}
-
-	public void dropColumnFamily(String name) throws RocksDBException {
-		rocksDB.dropColumnFamily(getColumnFamily(name));
-		columnFamilies.remove(name);
-	}
-
-	private DBOptions buildOptions() throws RocksDBException {
-		final String optionsFilePath = pathDatabase.toString() + ".ini";
-
-		DBOptions options = new DBOptions();
-		if (Files.exists(Paths.get(optionsFilePath))) {
-			final List<ColumnFamilyDescriptor> ignoreDescs = new ArrayList<>();
-			OptionsUtil.loadOptionsFromFile(optionsFilePath, Env.getDefault(), options, ignoreDescs, false);
-		} else {
-			options
-					.setInfoLogLevel(InfoLogLevel.WARN_LEVEL)
-					.setMaxTotalWalSize(100L * SizeUnit.MB);
-		}
-
-		return options.setCreateIfMissing(true);
-	}
-
-	private List<ColumnFamilyDescriptor> getColumnFamilyDescriptors() throws RocksDBException {
-		List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
-
-		try (Options options = new Options()) {
-			for (byte[] columnFamilyName : RocksDB.listColumnFamilies(options, pathDatabase.toString())) {
-				columnFamilyDescriptors.add(new ColumnFamilyDescriptor(columnFamilyName));
-			}
-		}
-
-		if (columnFamilyDescriptors.isEmpty()) {
-			columnFamilyDescriptors.add(new ColumnFamilyDescriptor(TypeConvert.pack(RocksDBProvider.DEFAULT_COLUMN_FAMILY)));
-		}
-
-		return columnFamilyDescriptors;
+		databaseConnect.rocksDB.compactRange(columnFamilyRecord);
 	}
 
 	@Override
 	public void close() {
-		rocksDB.close();
+		databaseConnectService.close();
+	}
+
+	private static boolean isEmptyConservationItem(ConservationItem[] items) {
+		for (ConservationItem item : items) {
+			if (item == null) continue;
+			if (Math.abs(item.gerpN) > 0.00000001d) return false;
+			if (Math.abs(item.gerpRS) > 0.00000001d) return false;
+		}
+		return true;
 	}
 }

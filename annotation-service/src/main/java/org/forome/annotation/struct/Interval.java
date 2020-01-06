@@ -20,6 +20,11 @@ package org.forome.annotation.struct;
 
 import java.util.Objects;
 
+/**
+ * При использовании этого класса принято соглашения, что границы входят в наш интервал,
+ * т.е. при start: 2 и end: 4, мы имеет 3 позиции: 2, 3, 4,
+ * за исключением инсерций, в этой ситуации, расположение межд этими интервалами
+ */
 public class Interval {
 
 	public final Chromosome chromosome;
@@ -32,6 +37,10 @@ public class Interval {
 	}
 
 	public Interval(Chromosome chromosome, int start, int end) {
+		if (start > end && start - 1 != end) {
+			throw new IllegalArgumentException();
+		}
+
 		this.chromosome = chromosome;
 		this.start = start;
 		this.end = end;
@@ -41,14 +50,22 @@ public class Interval {
 		return start == end;
 	}
 
+	public int getMin() {
+		return Math.min(start, end);
+	}
+
+	public int getMax() {
+		return Math.max(start, end);
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		Interval interval = (Interval) o;
-		return start == interval.start &&
-				end == interval.end &&
-				chromosome == interval.chromosome;
+		return chromosome == interval.chromosome &&
+				start == interval.start &&
+				end == interval.end;
 	}
 
 	@Override

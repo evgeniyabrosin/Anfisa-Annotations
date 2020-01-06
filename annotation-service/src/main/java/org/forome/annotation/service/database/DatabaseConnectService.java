@@ -25,8 +25,14 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
 import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
+import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.database.struct.batch.BatchRecord;
+import org.forome.annotation.service.database.struct.packer.PackInterval;
+import org.forome.annotation.service.database.struct.record.Record;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.service.ssh.struct.SSHConnect;
+import org.forome.annotation.struct.Interval;
+import org.forome.annotation.struct.Position;
 import org.rocksdb.*;
 import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
@@ -44,6 +50,8 @@ import java.util.Map;
 public class DatabaseConnectService implements AutoCloseable {
 
 	private final static Logger log = LoggerFactory.getLogger(DatabaseConnectService.class);
+
+	public static final String COLUMN_FAMILY_RECORD = "record";
 
 	private final RocksDB rocksDB;
 	private final Map<String, ColumnFamilyHandle> columnFamilies;
@@ -79,6 +87,27 @@ public class DatabaseConnectService implements AutoCloseable {
 
 	public ColumnFamilyHandle getColumnFamily(String name) {
 		return columnFamilies.get(name);
+	}
+
+	public Record getRecord(Position position) {
+		int k = position.value / BatchRecord.DEFAULT_SIZE;
+		Interval interval = new Interval(
+				position.chromosome,
+				k * BatchRecord.DEFAULT_SIZE,
+				k * BatchRecord.DEFAULT_SIZE + BatchRecord.DEFAULT_SIZE - 1
+		);
+		try {
+			byte[] bytes = rocksDB.get(
+					getColumnFamily(COLUMN_FAMILY_RECORD),
+					new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(interval)
+			);
+			if (bytes == null) return null;
+
+			BatchRecord batchRecord = new BatchRecord(interval, bytes);
+			return batchRecord.getRecord(position);
+		} catch (RocksDBException ex) {
+			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+		}
 	}
 
 	public ComboPooledDataSource getDataSource(DatabaseConfigConnector databaseConfigConnector) throws Exception {
@@ -138,7 +167,7 @@ public class DatabaseConnectService implements AutoCloseable {
 
 	private static String getKeyDataSource(DatabaseConfigConnector databaseConfigConnector) {
 		StringBuilder builderKey = new StringBuilder();
-		if (databaseConfigConnector.sshTunnelConfig!=null) {
+		if (databaseConfigConnector.sshTunnelConfig != null) {
 			SshTunnelConfig sshTunnelConfig = databaseConfigConnector.sshTunnelConfig;
 			String keySSHConnect = SSHConnectService.getKeySSHConnect(
 					sshTunnelConfig.host, sshTunnelConfig.port, sshTunnelConfig.user
