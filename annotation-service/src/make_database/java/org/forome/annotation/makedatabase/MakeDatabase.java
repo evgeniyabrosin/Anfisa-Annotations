@@ -20,16 +20,24 @@ package org.forome.annotation.makedatabase;
 
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.connector.conservation.ConservationConnector;
-import org.forome.annotation.connector.conservation.struct.ConservationItem;
+import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.makedatabase.main.argument.ArgumentsMake;
+import org.forome.annotation.makedatabase.makesourcedata.conservation.MakeConservation;
+import org.forome.annotation.makedatabase.makesourcedata.conservation.MakeConservationBuild;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.database.struct.batch.BatchRecord;
+import org.forome.annotation.service.database.struct.packer.PackInterval;
 import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Interval;
 import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.OptimisticTransactionDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 
 
@@ -39,9 +47,13 @@ public class MakeDatabase implements AutoCloseable {
 
 	protected final DatabaseConnectService databaseConnectService;
 
-	private final DatabaseConnector databaseConnect;
+	private final MakeDatabaseConnector makeDatabaseConnector;
+	private final OptimisticTransactionDB rocksDB;
 
-	private final ConservationConnector conservationConnector;
+	public final LiftoverConnector liftoverConnector;
+	public final ConservationConnector conservationConnector;
+
+	public final MakeConservation makeConservation;
 
 	public MakeDatabase(ArgumentsMake argumentsMake) throws Exception {
 		ServiceConfig serviceConfig = new ServiceConfig(argumentsMake.config);
@@ -49,99 +61,59 @@ public class MakeDatabase implements AutoCloseable {
 		SSHConnectService sshTunnelService = new SSHConnectService();
 		databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 
-		Path pathRocksDB = argumentsMake.database.toAbsolutePath();
+		this.makeDatabaseConnector = new MakeDatabaseConnector(databaseConnectService, argumentsMake.database.toAbsolutePath());
+		this.rocksDB = makeDatabaseConnector.rocksDB;
 
-		this.databaseConnect = new DatabaseConnector(databaseConnectService, pathRocksDB);
+		this.liftoverConnector = new LiftoverConnector();
+		this.conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
 
-		conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
+		this.makeConservation = new MakeConservation(this);
 	}
 
-	public void build() throws RocksDBException, SQLException {
-		if (databaseConnect.getColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD) != null) {
-			databaseConnect.dropColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
+	public void build() throws RocksDBException, SQLException, IOException {
+
+
+		//Заливаем данные
+		if (makeDatabaseConnector.getColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD) != null) {
+			makeDatabaseConnector.dropColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
 		}
-		ColumnFamilyHandle columnFamilyRecord = databaseConnect.createColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
+		ColumnFamilyHandle columnFamilyRecord = makeDatabaseConnector.createColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
+		for (Chromosome chromosome : Chromosome.CHROMOSOMES) {
+			int ks = getMinPosition(chromosome) / BatchRecord.DEFAULT_SIZE;
+			int ke = getMaxPosition(chromosome) / BatchRecord.DEFAULT_SIZE;
+			for (int k = ks; k <= ke; k++) {
+				int start = k * BatchRecord.DEFAULT_SIZE;
+				int end = start + BatchRecord.DEFAULT_SIZE - 1;
+				Interval interval = new Interval(chromosome, start, end);
 
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
 
+				//Упаковываем conservation
+				MakeConservationBuild conservation = makeConservation.getBatchRecord(interval);
+				os.write(conservation.build());
 
+				if (!conservation.isEmpty()) {
+					rocksDB.put(
+							columnFamilyRecord,
+							new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(interval),
+							os.toByteArray()
+					);
+				}
 
-
-		/*
-		for (Chromosome chromosome : Chromosome.values()) {
-
-			Transaction transaction = rocksDB.beginTransaction(new WriteOptions());
-
-			try (Connection connection = conservationConnector.databaseConnector.createConnection()) {
-				try (Statement statement = connection.createStatement()) {
-
-					//Ищем начальную позицию
-					int ks;
-					try (ResultSet resultSet = statement.executeQuery(
-							String.format("select min(Pos) from conservation.GERP where Chrom = '%s'", chromosome.getChar())
-					)) {
-						if (!resultSet.next()) {
-							throw new RuntimeException();
-						}
-						ks = resultSet.getInt(1) / PackInterval.DEFAULT_SIZE;
-					}
-
-					//Ищем конечную позицию
-					int ke;
-					try (ResultSet resultSet = statement.executeQuery(
-							String.format("select max(Pos) from conservation.GERP where Chrom = '%s'", chromosome.getChar())
-					)) {
-						if (!resultSet.next()) {
-							throw new RuntimeException();
-						}
-						ke = resultSet.getInt(1) / PackInterval.DEFAULT_SIZE;
-					}
-
-					for (int k = ks; k <= ke; k++) {
-						int start = k * PackInterval.DEFAULT_SIZE;
-						int end = start + PackInterval.DEFAULT_SIZE - 1;
-
-						ConservationItem[] items = new ConservationItem[PackInterval.DEFAULT_SIZE];
-
-						String sql = String.format("select * from conservation.GERP where Chrom = '%s' and Pos >= %s and Pos <= %s order by Pos asc",
-								chromosome.getChar(), start, end
-						);
-						try (ResultSet resultSet = statement.executeQuery(sql)) {
-							while (resultSet.next()) {
-								int iPos = resultSet.getInt("Pos");
-								float gerpN = resultSet.getFloat("GerpN");
-								float gerpRS = resultSet.getFloat("GerpRS");
-								items[iPos - start] = new ConservationItem(gerpN, gerpRS);
-							}
-						}
-
-						//Если пакет не пустой, то записываем в базу
-						if (!isEmptyConservationItem(items)) {
-
-							Interval interval = new Interval(chromosome, start, end);
-							BatchConservation batchConservation = new BatchConservation(interval, items);
-
-							transaction.put(
-									columnFamilyHandle,
-									new PackInterval(PackInterval.DEFAULT_SIZE).toByteArray(interval),
-									PackBatchConservation.toByteArray(batchConservation)
-							);
-						}
-
-						if (start % 1000000 == 0) {
-							log.debug("Write interval, chr: {}, pos: {}", chromosome, start);
-						}
-					}
+				if (start % 10000 == 0) {
+					log.debug("Write, chromosome: {}, position: {}", chromosome, start);
 				}
 			}
-
-			log.debug("Transaction commit...");
-
-			transaction.commit();
-			transaction.close();
 		}
-		*/
+		makeDatabaseConnector.rocksDB.compactRange(columnFamilyRecord);
+	}
 
-		databaseConnect.rocksDB.compactRange(columnFamilyRecord);
+	private int getMinPosition(Chromosome chromosome) throws SQLException {
+		return makeConservation.getMinPosition(chromosome);
+	}
+
+	private int getMaxPosition(Chromosome chromosome) throws SQLException {
+		return makeConservation.getMaxPosition(chromosome);
 	}
 
 	@Override
@@ -149,12 +121,4 @@ public class MakeDatabase implements AutoCloseable {
 		databaseConnectService.close();
 	}
 
-	private static boolean isEmptyConservationItem(ConservationItem[] items) {
-		for (ConservationItem item : items) {
-			if (item == null) continue;
-			if (Math.abs(item.gerpN) > 0.00000001d) return false;
-			if (Math.abs(item.gerpRS) > 0.00000001d) return false;
-		}
-		return true;
-	}
 }

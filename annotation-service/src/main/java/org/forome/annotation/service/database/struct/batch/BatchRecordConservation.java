@@ -18,6 +18,7 @@
 
 package org.forome.annotation.service.database.struct.batch;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
 import org.forome.annotation.utils.bits.ShortBits;
@@ -28,19 +29,20 @@ public class BatchRecordConservation {
 	private final byte[] bytes;
 	private final int offsetBytes;
 
-	protected BatchRecordConservation(Interval interval, byte[] bytes, int offsetBytes) {
+	@VisibleForTesting
+	public BatchRecordConservation(Interval interval, byte[] bytes, int offsetBytes) {
 		this.interval = interval;
 		this.bytes = bytes;
 		this.offsetBytes = offsetBytes;
 	}
 
 	public float getGerpN(Position position) {
-		int ioffset = offsetBytes + (position.value - interval.start) * 2;
+		int ioffset = offsetBytes + (position.value - interval.start) * 4;
 		return (float) ShortBits.fromByteArray(bytes, ioffset) / 1000.0f;
 	}
 
 	public float getGerpRS(Position position) {
-		int ioffset = offsetBytes + (position.value - interval.start) * 2 + 2;
+		int ioffset = offsetBytes + (position.value - interval.start) * 4 + 2;
 		return (float) ShortBits.fromByteArray(bytes, ioffset) / 1000.0f;
 	}
 

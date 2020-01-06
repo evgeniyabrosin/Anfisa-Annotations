@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,23 +16,15 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.connector.conservation.struct;
+package org.forome.annotation.makedatabase.makesourcedata;
 
-import org.forome.annotation.struct.Interval;
+import org.forome.annotation.struct.Chromosome;
 
-public class BatchConservation {
+import java.sql.SQLException;
 
-	public final Interval interval;
-	public final ConservationItem[] items;
+public interface MakeSourceData {
 
-	public BatchConservation(Interval interval, ConservationItem[] items) {
-		this.interval = interval;
-		this.items = items;
-	}
+	int getMinPosition(Chromosome chromosome) throws SQLException;
 
-	public ConservationItem getConservation(int position) {
-		int index = position - interval.start;
-		return items[index];
-	}
-
+	int getMaxPosition(Chromosome chromosome) throws SQLException;
 }

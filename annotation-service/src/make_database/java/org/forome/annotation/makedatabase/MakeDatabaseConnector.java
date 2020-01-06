@@ -34,16 +34,16 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class DatabaseConnector implements AutoCloseable {
+public class MakeDatabaseConnector implements AutoCloseable {
 
-	protected final DatabaseConnectService databaseConnectService;
+	public final DatabaseConnectService databaseConnectService;
 
 	public final Path pathRocksDB;
 
 	public final OptimisticTransactionDB rocksDB;
 	private final ConcurrentMap<String, ColumnFamilyHandle> columnFamilies;
 
-	public DatabaseConnector(DatabaseConnectService databaseConnectService, Path pathRocksDB) throws Exception {
+	public MakeDatabaseConnector(DatabaseConnectService databaseConnectService, Path pathRocksDB) throws Exception {
 		this.databaseConnectService = databaseConnectService;
 		this.pathRocksDB = pathRocksDB;
 
