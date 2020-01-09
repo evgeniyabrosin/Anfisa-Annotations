@@ -135,8 +135,8 @@ public class ConservationConnector implements AutoCloseable {
 		Double gerpRSpval = null;
 		Double gerpS = null;
 
-//		GerpData gerpData = getGerpDataFromMysql(pHG19);
-		GerpData gerpData = getGerpDataFromRocksDB(pHG19);
+		GerpData gerpData = getGerpDataFromMysql(pHG19);
+		//GerpData gerpData = getGerpDataFromRocksDB(pHG19);
 
 		try (Connection connection = databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
