@@ -31,7 +31,7 @@ import org.apache.commons.io.IOUtils;
 import org.forome.annotation.connector.anfisa.AnfisaConnector;
 import org.forome.annotation.connector.anfisa.struct.AnfisaInput;
 import org.forome.annotation.connector.anfisa.struct.AnfisaResult;
-import org.forome.annotation.processing.graphql.GRecord;
+import org.forome.annotation.processing.graphql.record.GRecord;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.struct.Allele;
@@ -54,7 +54,7 @@ public class Processing {
 
 	private final String graphQLQuery;
 
-	public Processing(AnfisaConnector anfisaConnector) {
+	public Processing(AnfisaConnector anfisaConnector, TypeQuery typeQuery) {
 		this.anfisaConnector = anfisaConnector;
 
 		GraphQLSchema graphQLSchema = AnnotationsSchemaCreator.newAnnotationsSchema()
@@ -65,7 +65,7 @@ public class Processing {
 				.newGraphQL(graphQLSchema)
 				.build();
 
-		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("graphql/annotator/default.graphql")) {
+		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("graphql/annotator/" + typeQuery.fileNameGraphQLQuery)) {
 			graphQLQuery = IOUtils.toString(inputStream, "utf8");
 		} catch (Throwable e) {
 			throw new RuntimeException(e);

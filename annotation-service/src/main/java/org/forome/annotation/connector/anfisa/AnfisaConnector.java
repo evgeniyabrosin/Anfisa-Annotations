@@ -48,6 +48,7 @@ import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
+import org.forome.annotation.struct.mcase.Sex;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
@@ -168,7 +169,7 @@ public class AnfisaConnector implements AutoCloseable {
 			filters.altZygosity = new HashMap<>();
 			for (Map.Entry<String, Sample> entry : anfisaInput.samples.samples.entrySet()) {
 				String name = entry.getValue().name;
-				int sex = entry.getValue().sex;
+				Sex sex = entry.getValue().sex;
 				String label;
 				if (entry.getKey().equals(probandId)) {
 					label = String.format("proband [%s]", name);
@@ -184,7 +185,7 @@ public class AnfisaConnector implements AutoCloseable {
 				if (genotype != null) {
 					int zyg = genotype.hasVariant();
 					data.zygosity.put(entry.getKey(), zyg);
-					int modified_zygosity = (!variant.chromosome.getChar().equals("X") || sex == 2 || (zyg == 0)) ? zyg : 2;
+					int modified_zygosity = (!variant.chromosome.equals(Chromosome.CHR_X) || sex == Sex.FEMALE || (zyg == 0)) ? zyg : 2;
 					filters.altZygosity.put(entry.getKey(), modified_zygosity);
 					if (zyg > 0) {
 						filters.has_variant.add(label);
@@ -428,7 +429,6 @@ public class AnfisaConnector implements AutoCloseable {
 	}
 
 	private static void callQuality(AnfisaResultFilters filters, Variant variant, MCase samples) {
-		filters.probandGq = getProbandGQ(variant, samples);
 		if (variant != null && variant instanceof VariantVCF) {
 			VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
@@ -509,7 +509,7 @@ public class AnfisaConnector implements AutoCloseable {
 	private GnomadResult getGnomadResult(Variant variant, Allele altAllele) {
 		try {
 			return gnomadConnector.request(
-					variant.chromosome.getChar(),
+					variant.chromosome,
 					Math.min(variant.getStart(), variant.end),
 					variant.getRef(), altAllele.getBaseString()
 			).get();
@@ -560,10 +560,12 @@ public class AnfisaConnector implements AutoCloseable {
 		view.general.pposCanonical = pPosTpl[1];
 		view.general.pposOther = pPosTpl[2];
 
-		Object[] gGenotypes = getGenotypes(variant, samples);
-		view.general.probandGenotype = (String) gGenotypes[0];
-		view.general.maternalGenotype = (String) gGenotypes[1];
-		view.general.paternalGenotype = (String) gGenotypes[2];
+		Genotypes gGenotypes = getGenotypes(variant, samples);
+		if (gGenotypes != null) {
+			view.general.probandGenotype = gGenotypes.probandGenotype;
+			view.general.maternalGenotype = gGenotypes.maternalGenotype;
+			view.general.paternalGenotype = gGenotypes.paternalGenotype;
+		}
 
 		view.general.worstAnnotation = data.mostSevereConsequence;
 		List<String> consequenceTerms = getFromCanonicalTranscript((VariantVep) variant, "consequence_terms");
@@ -977,7 +979,6 @@ public class AnfisaConnector implements AutoCloseable {
 		AnfisaInput anfisaInput = anfisaExecuteContext.anfisaInput;
 		Variant variant = anfisaExecuteContext.variant;
 
-		view.bioinformatics.zygosity = getZygosity(variant, anfisaInput.samples);
 		view.bioinformatics.inheritedFrom = inherited_from(variant, anfisaInput.samples);
 		view.bioinformatics.distFromExonCanonical = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.CANONICAL);
 		view.bioinformatics.distFromExonWorst = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.WORST);
@@ -1194,28 +1195,17 @@ public class AnfisaConnector implements AutoCloseable {
 		return ColorCode.code(shape, color);
 	}
 
-	private static boolean isProbandHasAllele(Variant variant, MCase samples, Allele altAllele) {
-		if (samples == null || variant == null) {
+	private static boolean isProbandHasAllele(Variant variant, MCase mCase, Allele altAllele) {
+		if (mCase == null || mCase.proband == null) {
 			return false;
 		}
 
-		String probandGenotype = (String) getGenotypes(variant, samples)[0];
+		String probandGenotype = variant.getGenotype(mCase.proband).getGenotypeString();
 		if (probandGenotype == null) {
 			return false;
 		}
 		Set<String> set1 = Arrays.stream(probandGenotype.split("/")).collect(Collectors.toSet());
 		return set1.contains(altAllele);
-	}
-
-	private static Integer getProbandGQ(Variant variant, MCase samples) {
-		if (samples == null || variant == null) {
-			return null;
-		}
-		org.forome.annotation.struct.variant.Genotype genotype = variant.getGenotype(samples.proband);
-		if (genotype == null) {
-			return null;
-		}
-		return genotype.getGQ();
 	}
 
 	private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, VariantVep variantVep, Kind kind) {
@@ -1607,11 +1597,11 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private static Object[] getGenotypes(Variant variant, MCase samples) {
+	public static Genotypes getGenotypes(Variant variant, MCase samples) {
 		String empty = "Can not be determined";
 		Sample proband = samples.proband;
 		if (proband == null) {
-			return new Object[]{ null, null, null, null };
+			return null;
 		}
 		String probandId = proband.id;
 		org.forome.annotation.struct.variant.Genotype gProband = variant.getGenotype(probandId);
@@ -1654,7 +1644,7 @@ public class AnfisaConnector implements AutoCloseable {
 				.distinct()
 				.collect(Collectors.toList());
 
-		return new Object[]{ probandGenotype, maternalGenotype, paternalGenotype, otherGenotypes };
+		return new Genotypes(probandGenotype, maternalGenotype, paternalGenotype, otherGenotypes);
 	}
 
 	private static String getMostSevere(List<String> consequenceTerms) {
@@ -1713,10 +1703,14 @@ public class AnfisaConnector implements AutoCloseable {
 			throw new RuntimeException("Not support variant: " + variant);
 		}
 
-		Object[] genotypes = getGenotypes(variant, samples);
-		String probandGenotype = (String) genotypes[0];
-		String maternalGenotype = (String) genotypes[1];
-		String paternalGenotype = (String) genotypes[2];
+		Genotypes genotypes = getGenotypes(variant, samples);
+		if (genotypes == null) {
+			return callers;
+		}
+
+		String probandGenotype = genotypes.probandGenotype;
+		String maternalGenotype = genotypes.maternalGenotype;
+		String paternalGenotype = genotypes.paternalGenotype;
 		if (probandGenotype == null || maternalGenotype == null || paternalGenotype == null) {
 			return callers;
 		}
@@ -1784,44 +1778,20 @@ public class AnfisaConnector implements AutoCloseable {
 		return result;
 	}
 
-	private static String getZygosity(Variant variant, MCase samples) {
-		if (samples == null || variant == null) {
+	private static String inherited_from(Variant variant, MCase mCase) {
+		if (mCase == null) {
 			return null;
 		}
 
-		String chr = variant.chromosome.getChar();
-
-		String genotype = (String) getGenotypes(variant, samples)[0];
-		if (genotype == null) {
+		Genotypes genotypes = getGenotypes(variant, mCase);
+		if (genotypes == null) {
 			return null;
 		}
-		List<String> set1 = Arrays.stream(genotype.split("/")).distinct().collect(Collectors.toList());
+		String probandGenotype = genotypes.probandGenotype;
+		String maternalGenotype = genotypes.maternalGenotype;
+		String paternalGenotype = genotypes.paternalGenotype;
 
-		if ("X".equals(chr.toUpperCase()) && proband_sex(samples) == 1) {
-			return "X-linked";
-		}
-		if (set1.size() == 1) {
-			return "Homozygous";
-		}
-		if (set1.size() == 2) {
-			return "Heterozygous";
-		}
-		return "Unknown";
-	}
-
-	private static String inherited_from(Variant variant, MCase samples) {
-		if (samples == null || variant == null) {
-			return null;
-		}
-
-		Object[] genotypes = getGenotypes(variant, samples);
-		String probandGenotype = (String) genotypes[0];
-		String maternalGenotype = (String) genotypes[1];
-		String paternalGenotype = (String) genotypes[2];
-
-		String chr = variant.chromosome.getChar();
-
-		if ("X".equals(chr.toUpperCase()) && proband_sex(samples) == 1) {
+		if (variant.chromosome.equals(Chromosome.CHR_X) && mCase.proband.sex == Sex.MALE) {
 			if (probandGenotype.equals(maternalGenotype)) {
 				return "Mother";
 			} else {
@@ -1844,13 +1814,6 @@ public class AnfisaConnector implements AutoCloseable {
 			return "Father";
 		}
 		return "Inconclusive";
-	}
-
-	private static Integer proband_sex(MCase samples) {
-		if (samples == null) {
-			return null;
-		}
-		return samples.proband.sex;
 	}
 
 	private static <T> List<T> unique(List<T> lst) {

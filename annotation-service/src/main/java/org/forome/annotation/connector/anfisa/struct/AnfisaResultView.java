@@ -239,7 +239,7 @@ public class AnfisaResultView {
 
 	public static class Bioinformatics {
 
-		public String zygosity;
+//		public String zygosity;
 		public String inheritedFrom;
 		public List<Object> distFromExonWorst = new ArrayList<>();
 		public List<Object> distFromExonCanonical = new ArrayList<>();
@@ -277,7 +277,7 @@ public class AnfisaResultView {
 		private JSONObject toJSON() {
 			JSONObject out = new JSONObject();
 			out.put("human_splicing_finder", humanSplicingFinder);
-			out.put("zygosity", zygosity);
+//			out.put("zygosity", zygosity);
 			out.put("dist_from_exon_worst", distFromExonWorst);
 			out.put("called_by", calledBy);
 			out.put("max_ent_scan", maxEntScan);

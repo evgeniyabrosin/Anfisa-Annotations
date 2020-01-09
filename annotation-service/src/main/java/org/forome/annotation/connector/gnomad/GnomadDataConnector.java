@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.struct.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +66,7 @@ public class GnomadDataConnector implements Closeable {
     }
 
     public List<Result> getData(
-            String chromosome,
+            Chromosome chromosome,
             long position,
             String ref,
             String alt,
@@ -107,7 +108,7 @@ public class GnomadDataConnector implements Closeable {
 
         try (Connection connection = databaseConnector.createConnection()) {
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(String.format(sql, chromosome, position, ref, alt));
+            ResultSet resultSet = statement.executeQuery(String.format(sql, chromosome.getChar(), position, ref, alt));
             boolean isEmptyResultSet = !resultSet.next();
 
             if (!exact && isEmptyResultSet && ref != null && alt != null) {
@@ -116,7 +117,7 @@ public class GnomadDataConnector implements Closeable {
 
                 statement = connection.createStatement();
                 resultSet = statement.executeQuery(
-                        String.format(base_sql, chromosome, position - 1)
+                        String.format(base_sql, chromosome.getChar(), position - 1)
                 );
             }
 

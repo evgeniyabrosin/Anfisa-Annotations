@@ -1,0 +1,24 @@
+{
+    record_type
+    _filters {
+        chromosome
+        fs
+        qd
+        mq
+        min_gq
+        severity
+        proband_gq
+    }
+    _view {
+        general {
+            transcripts {
+                id
+                gene
+                transcript_annotations
+            }
+        }
+        bioinformatics {
+            zygosity
+        }
+    }
+}

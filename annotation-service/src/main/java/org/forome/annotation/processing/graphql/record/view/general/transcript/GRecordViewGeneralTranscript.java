@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.graphql.view.general.transcript;
+package org.forome.annotation.processing.graphql.record.view.general.transcript;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;

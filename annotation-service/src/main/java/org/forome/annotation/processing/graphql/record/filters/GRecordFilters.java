@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.graphql.filters;
+package org.forome.annotation.processing.graphql.record.filters;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
@@ -120,6 +120,19 @@ public class GRecordFilters {
 			}
 		}
 		return null;
+	}
+
+	@GraphQLField
+	@GraphQLName("proband_gq")
+	public Integer getProbandGQ() {
+		if (mCase == null) {
+			return null;
+		}
+		Genotype genotype = variant.getGenotype(mCase.proband);
+		if (genotype == null) {
+			return null;
+		}
+		return genotype.getGQ();
 	}
 
 }

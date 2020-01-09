@@ -29,6 +29,7 @@ import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
+import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,12 +55,12 @@ public class GetGnomAdDataController {
 
 	public static class RequestItem {
 
-		public final String chromosome;
+		public final Chromosome chromosome;
 		public final long position;
 		public final String reference;
 		public final String alternative;
 
-		public RequestItem(String chromosome, long position, String reference, String alternative) {
+		public RequestItem(Chromosome chromosome, long position, String reference, String alternative) {
 			this.chromosome = chromosome;
 			this.position = position;
 			this.reference = reference;
@@ -162,7 +163,7 @@ public class GetGnomAdDataController {
 			}
 			JSONObject oItem = (JSONObject) item;
 
-			String chromosome = RequestParser.toChromosome(oItem.getAsString("chromosome"));
+			Chromosome chromosome = Chromosome.of(oItem.getAsString("chromosome"));
 
 			long position = RequestParser.toLong("position", oItem.getAsString("position"));
 

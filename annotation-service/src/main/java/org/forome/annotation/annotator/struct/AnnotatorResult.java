@@ -31,6 +31,7 @@ import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
+import org.forome.annotation.struct.mcase.Sex;
 import org.forome.annotation.utils.AppVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,7 +202,11 @@ public class AnnotatorResult {
 			out.put("case", caseSequence);
 			out.put("record_type", recordType);
 			out.put("versions", versions.toJSON());
-			out.put("proband", mCase.proband.id);
+			if (mCase.proband != null) {
+				out.put("proband", mCase.proband.id);
+			} else {
+				out.put("proband", null);
+			}
 			out.put("samples", new JSONObject() {{
 				for (Sample sample : mCase.samples.values()) {
 					put(sample.name, build(sample));
@@ -228,7 +233,15 @@ public class AnnotatorResult {
 			out.put("name", sample.name);
 			out.put("family", sample.family);
 			out.put("father", sample.father);
-			out.put("sex", sample.sex);
+			if (sample.sex == Sex.UNKNOWN) {
+				out.put("sex", 0);
+			} else if (sample.sex == Sex.MALE) {
+				out.put("sex", 1);
+			} else if (sample.sex == Sex.FEMALE) {
+				out.put("sex", 2);
+			} else {
+				throw new RuntimeException("Unknown sex: " + sample.sex);
+			}
 			out.put("mother", sample.mother);
 			out.put("id", sample.id);
 			return out;
