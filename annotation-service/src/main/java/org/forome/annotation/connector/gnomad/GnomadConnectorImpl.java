@@ -25,6 +25,7 @@ import org.forome.annotation.connector.gnomad.struct.GnamadGroup;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 import org.forome.annotation.matcher.SequenceMatcher;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,7 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
     }
 
     @Override
-    public CompletableFuture<GnomadResult> request(String chromosome, long position, String reference, String alternative) {
+    public CompletableFuture<GnomadResult> request(Chromosome chromosome, long position, String reference, String alternative) {
         CompletableFuture<GnomadResult> future = new CompletableFuture();
         threadPoolGnomadExecutor.submit(() -> {
             try {
@@ -87,7 +88,7 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
         return gnomadDataConnector.getMetadata();
     }
 
-    private GnomadResult syncRequest(String chromosome, long position, String reference, String alternative) throws Exception {
+    private GnomadResult syncRequest(Chromosome chromosome, long position, String reference, String alternative) throws Exception {
         List<GnomadDataConnector.Result> exomes = gnomadDataConnector.getData(
                 chromosome, position, reference, alternative, "e", false
         );

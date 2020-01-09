@@ -25,6 +25,7 @@ import net.minidev.json.parser.ParseException;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
+import org.forome.annotation.struct.mcase.Sex;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -99,7 +100,7 @@ public class CaseUtils {
 				String family = sl[0];
 				String father = sl[2];
 				String mother = sl[3];
-				int sex = Integer.parseInt(sl[4]);
+				int isex = Integer.parseInt(sl[4]);
 				boolean affected = Integer.parseInt(sl[5]) == 2;
 
 				Cohort cohort = null;
@@ -114,6 +115,17 @@ public class CaseUtils {
 							break;
 						}
 					}
+				}
+
+				Sex sex;
+				if (isex == 0 ) {
+					sex = Sex.UNKNOWN;
+				} else if (isex == 1 ) {
+					sex = Sex.MALE;
+				} else if (isex == 2 ) {
+					sex = Sex.FEMALE;
+				} else {
+					throw new RuntimeException("Unknown sex: " + isex);
 				}
 
 				Sample sample = new Sample(id, name, family, father, mother, sex, affected, cohort);

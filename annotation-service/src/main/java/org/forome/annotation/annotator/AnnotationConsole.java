@@ -34,6 +34,7 @@ import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
@@ -163,7 +164,7 @@ public class AnnotationConsole {
 					gtexConnector,
 					pharmGKBConnector
 			);
-			processing = new Processing(anfisaConnector);
+			processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 		} catch (Throwable e) {
 			fail(e, null, arguments);
 		}

@@ -26,6 +26,7 @@ import org.forome.annotation.connector.gnomad.struct.GnamadGroup;
 import org.forome.annotation.connector.gnomad.struct.GnomadResult;
 import org.forome.annotation.matcher.SequenceMatcher;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +75,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         return gnomadDataConnector.getMetadata();
     }
 
-    public CompletableFuture<GnomadResult> request(String chromosome, long position, String reference, String alternative) {
+    public CompletableFuture<GnomadResult> request(Chromosome chromosome, long position, String reference, String alternative) {
         CompletableFuture<GnomadResult> future = new CompletableFuture();
         threadPoolGnomadExecutor.submit(() -> {
             try {
@@ -87,7 +88,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         return future;
     }
 
-    private GnomadResult syncRequest(String chromosome, long position, String reference, String alternative) throws Exception {
+    private GnomadResult syncRequest(Chromosome chromosome, long position, String reference, String alternative) throws Exception {
         List<GnomadDataConnectorOld.Result> exomes = gnomadDataConnector.getData(
                 chromosome, position, reference, alternative, "e", false
         );
@@ -257,8 +258,8 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         return hom;
     }
 
-    private static Long countHem(String chromosome, List<GnomadDataConnectorOld.Result> items) {
-        if ("X".equals(chromosome.toUpperCase())) {
+    private static Long countHem(Chromosome chromosome, List<GnomadDataConnectorOld.Result> items) {
+        if (chromosome.equals(Chromosome.CHR_X)) {
             return countAC(items, "Male");
         }
         return null;

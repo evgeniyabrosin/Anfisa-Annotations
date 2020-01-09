@@ -30,6 +30,7 @@ import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
@@ -80,7 +81,7 @@ public class FormatAnfisaController {
 		if (anfisaConnector == null) {
 			throw ExceptionBuilder.buildInvalidOperation("inited");
 		}
-		Processing processing = new Processing(anfisaConnector);
+		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 
 		CompletableFuture<JSONArray> future = new CompletableFuture<>();
 		ExecutorServiceUtils.poolExecutor.execute(() -> {

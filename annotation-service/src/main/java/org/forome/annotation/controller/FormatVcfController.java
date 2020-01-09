@@ -34,6 +34,7 @@ import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.variant.Variant;
@@ -79,7 +80,7 @@ public class FormatVcfController {
 			throw ExceptionBuilder.buildInvalidOperation("inited");
 		}
 
-		Processing processing = new Processing(anfisaConnector);
+		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 
 		Annotator annotator = new Annotator(ensemblVepService, processing);
 

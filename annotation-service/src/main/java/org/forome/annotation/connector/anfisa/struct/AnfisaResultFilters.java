@@ -31,7 +31,6 @@ import java.util.Optional;
 public class AnfisaResultFilters {
 
 	public List<String> has_variant = new ArrayList<>();
-	public Integer probandGq;
 	public long distFromExon;
 	public GnomadResult.Popmax gnomadPopmax;
 	public GnomadResult.Popmax gnomadRawPopmax;
@@ -98,7 +97,6 @@ public class AnfisaResultFilters {
 		out.put("gnomad_db_genomes_af", gnomadDbGenomesAf);
 		out.put("has_variant", new JSONArray());
 		out.put("dist_from_exon", distFromExon);
-		out.put("proband_gq", probandGq);
 
 		if (clinvarBenign != null) {
 			out.put("clinvar_benign", clinvarBenign);

@@ -33,6 +33,7 @@ import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
@@ -96,7 +97,7 @@ public class CustomVariantMain {
 				gtexConnector,
 				pharmGKBConnector
 		);
-		processing = new Processing(anfisaConnector);
+		processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 	}
 
 	private List<ProcessingResult> build(VariantCustom variant, String alternative) throws ExecutionException, InterruptedException {

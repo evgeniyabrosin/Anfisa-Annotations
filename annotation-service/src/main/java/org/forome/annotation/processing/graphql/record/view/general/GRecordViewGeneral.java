@@ -16,13 +16,13 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.graphql.view.general;
+package org.forome.annotation.processing.graphql.record.view.general;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.processing.graphql.view.general.transcript.GRecordViewGeneralTranscript;
+import org.forome.annotation.processing.graphql.record.view.general.transcript.GRecordViewGeneralTranscript;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 

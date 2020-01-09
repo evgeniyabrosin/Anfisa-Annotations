@@ -35,6 +35,7 @@ import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
@@ -158,7 +159,7 @@ public class CustomInputMain {
 					gtexConnector,
 					pharmGKBConnector
 			);
-			processing = new Processing(anfisaConnector);
+			processing = new Processing(anfisaConnector, TypeQuery.WIDE_HG19);
 
 
 			//Парсим файл
@@ -251,9 +252,9 @@ public class CustomInputMain {
 
 
 			LinkedHashMap<String, Sample> samples = new LinkedHashMap<>();
-			samples.put("KCNJ12", new Sample(
-					"KCNJ12", "KCNJ12", "", "0", "0", 0, true, null
-			));
+//			samples.put("KCNJ12", new Sample(
+//					"KCNJ12", "KCNJ12", "", "0", "0", 0, true, null
+//			));
 			MCase mCase = new MCase.Builder(samples, Collections.emptyList()).build();
 
 			List<CompletableFuture<List<ProcessingResult>>> futureProcessingResults = new ArrayList<>();

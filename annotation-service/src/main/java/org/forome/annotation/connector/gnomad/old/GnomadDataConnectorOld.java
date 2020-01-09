@@ -23,6 +23,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.connector.DatabaseConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.struct.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,12 +129,12 @@ public class GnomadDataConnectorOld implements Closeable {
     }
 
     public List<Result> getData(
-            String chromosome,
+            Chromosome chromosome,
             long position,
             String ref,
             String alt,
             String fromWhat,
-            boolean exact) throws Exception {
+            boolean exact) {
 
         String base_sql = String.format(
                 "SELECT %s FROM %s WHERE CHROM = '%%s' and POS = %%s",
@@ -170,7 +171,7 @@ public class GnomadDataConnectorOld implements Closeable {
 
         try (Connection connection = databaseConnector.createConnection()) {
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(String.format(sql, chromosome, position, ref, alt));
+            ResultSet resultSet = statement.executeQuery(String.format(sql, chromosome.getChar(), position, ref, alt));
             boolean isEmptyResultSet = !resultSet.next();
 
             if (!exact && isEmptyResultSet && ref != null && alt != null) {
@@ -179,7 +180,7 @@ public class GnomadDataConnectorOld implements Closeable {
 
                 statement = connection.createStatement();
                 resultSet = statement.executeQuery(
-                        String.format(base_sql, chromosome, position - 1)
+                        String.format(base_sql, chromosome.getChar(), position - 1)
                 );
             }
 

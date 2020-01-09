@@ -34,6 +34,7 @@ import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.iterator.vcf.VCFFileIterator;
 import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
@@ -79,7 +80,7 @@ public class VCFMain {
 				gtexConnector,
 				pharmGKBConnector
 		);
-		Processing processing = new Processing(anfisaConnector);
+		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 
 		Path pathVcf = Paths.get("/home/kris/processtech/tmp/newvcf/HG002_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-22_v.3.3.2_highconf_triophased.vcf");
 		VCFFileIterator vcfFileIterator = new VCFFileIterator(pathVcf);

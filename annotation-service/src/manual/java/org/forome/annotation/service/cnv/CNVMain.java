@@ -35,6 +35,7 @@ import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.iterator.cnv.CNVFileIterator;
 import org.forome.annotation.processing.Processing;
+import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
@@ -78,7 +79,7 @@ public class CNVMain {
 				gtexConnector,
 				pharmGKBConnector
 		);
-		Processing processing = new Processing(anfisaConnector);
+		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 
 		Path pathVcf = Paths.get("/home/kris/processtech/tmp/_3/cnv.vcf");
 		CNVFileIterator cnvFileIterator = new CNVFileIterator(pathVcf);
