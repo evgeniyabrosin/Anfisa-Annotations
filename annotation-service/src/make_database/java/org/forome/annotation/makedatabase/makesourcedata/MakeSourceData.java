@@ -16,15 +16,15 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.struct;
+package org.forome.annotation.makedatabase.makesourcedata;
 
-import org.forome.annotation.struct.Position;
+import org.forome.annotation.struct.Chromosome;
 
-public class Record {
+import java.sql.SQLException;
 
-	public final Position position;
+public interface MakeSourceData {
 
-	public Record(Position position) {
-		this.position = position;
-	}
+	int getMinPosition(Chromosome chromosome) throws SQLException;
+
+	int getMaxPosition(Chromosome chromosome) throws SQLException;
 }

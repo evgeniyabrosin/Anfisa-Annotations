@@ -16,21 +16,43 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.struct;
+package org.forome.annotation.service.database.struct.batch;
 
+import org.forome.annotation.service.database.struct.record.Record;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
 
 public class BatchRecord {
 
-	public Interval interval;
+	public static final int DEFAULT_SIZE = 100;
 
-	public BatchRecord(Interval interval) {
+	public final Interval interval;
+	protected final byte[] bytes;
+
+	public final BatchRecordConservation batchRecordConservation;
+
+	public BatchRecord(Interval interval, byte[] bytes) {
 		this.interval = interval;
+		this.bytes = bytes;
+
+		int offset = 0;
+		this.batchRecordConservation = new BatchRecordConservation(interval, bytes, offset);
+		offset += batchRecordConservation.getLengthBytes();
+
 	}
 
 	public Record getRecord(Position position) {
-		return new Record(position);
+		if (!interval.chromosome.equals(position.chromosome)) {
+			throw new IllegalArgumentException();
+		}
+		if (position.value < interval.getMin()) {
+			throw new IllegalArgumentException();
+		}
+		if (position.value > interval.getMax()) {
+			throw new IllegalArgumentException();
+		}
+
+		return new Record(this, position);
 	}
 
 }

@@ -52,7 +52,7 @@ public class ParserArgument {
 		try {
 			CommandLine cmd = new DefaultParser().parse(options, args);
 
-			arguments = new ArgumentsMakeConservation(cmd);
+			arguments = new ArgumentsMake(cmd);
 		} catch (Throwable ex) {
 			getLazyLogger().error("Exception: ", ex);
 			new HelpFormatter().printHelp("", options);

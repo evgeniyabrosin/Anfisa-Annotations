@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,23 +16,19 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.connector.conservation.struct;
+package org.forome.annotation.utils.bits;
 
-import org.forome.annotation.struct.Interval;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class BatchConservation {
+public class ShortBitsTest {
 
-	public final Interval interval;
-	public final ConservationItem[] items;
-
-	public BatchConservation(Interval interval, ConservationItem[] items) {
-		this.interval = interval;
-		this.items = items;
+	@Test
+	public void test() {
+		for (short value = Short.MIN_VALUE; value < Short.MAX_VALUE; value++) {
+			byte[] bytes = ShortBits.toByteArray(value);
+			short actual = ShortBits.fromByteArray(bytes, 0);
+			Assert.assertEquals(value, actual);
+		}
 	}
-
-	public ConservationItem getConservation(int position) {
-		int index = position - interval.start;
-		return items[index];
-	}
-
 }

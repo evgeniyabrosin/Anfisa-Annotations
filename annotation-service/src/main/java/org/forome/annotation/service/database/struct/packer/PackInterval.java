@@ -19,17 +19,16 @@
 package org.forome.annotation.service.database.struct.packer;
 
 import com.google.common.primitives.Ints;
+import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
 
 public class PackInterval {
 
-	public static final int DEFAULT_SIZE = 100;
-
 	public int size;
 
 	public PackInterval() {
-		this(DEFAULT_SIZE);
+		this(BatchRecord.DEFAULT_SIZE);
 	}
 
 	public PackInterval(int size) {

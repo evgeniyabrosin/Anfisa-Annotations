@@ -18,27 +18,25 @@
 
 package org.forome.annotation.makedatabase.main;
 
-import org.forome.annotation.makedatabase.conservation.MakeConservation;
+import org.forome.annotation.makedatabase.MakeDatabase;
 import org.forome.annotation.makedatabase.main.argument.Arguments;
-import org.forome.annotation.makedatabase.main.argument.ArgumentsMakeConservation;
+import org.forome.annotation.makedatabase.main.argument.ArgumentsMake;
 import org.forome.annotation.makedatabase.main.argument.ParserArgument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MakeDatabaseMain {
+public class MainMakeDatabase {
 
-	private final static Logger log = LoggerFactory.getLogger(MakeDatabaseMain.class);
+	private final static Logger log = LoggerFactory.getLogger(MainMakeDatabase.class);
 
 	public static void main(String[] args) throws Exception {
 		try {
 			ParserArgument argumentParser = new ParserArgument(args);
 			Arguments arguments = argumentParser.arguments;
 
-			if (arguments instanceof ArgumentsMakeConservation) {
-				ArgumentsMakeConservation argumentsMakeConservation = (ArgumentsMakeConservation) arguments;
-				try (MakeConservation makeConservation = new MakeConservation(argumentsMakeConservation)) {
-					makeConservation.build();
-				}
+			ArgumentsMake argumentsMake = (ArgumentsMake) arguments;
+			try (MakeDatabase makeConservation = new MakeDatabase(argumentsMake)) {
+				makeConservation.build();
 			}
 
 			System.exit(0);

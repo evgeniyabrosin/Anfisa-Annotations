@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -18,110 +18,107 @@
 
 package org.forome.annotation.makedatabase;
 
-import com.infomaximum.database.exception.DatabaseException;
-import com.infomaximum.database.utils.TypeConvert;
-import com.infomaximum.rocksdb.RocksDBProvider;
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.connector.conservation.ConservationConnector;
+import org.forome.annotation.connector.liftover.LiftoverConnector;
 import org.forome.annotation.makedatabase.main.argument.ArgumentsMake;
+import org.forome.annotation.makedatabase.makesourcedata.conservation.MakeConservation;
+import org.forome.annotation.makedatabase.makesourcedata.conservation.MakeConservationBuild;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.database.struct.batch.BatchRecord;
+import org.forome.annotation.service.database.struct.packer.PackInterval;
 import org.forome.annotation.service.ssh.SSHConnectService;
-import org.rocksdb.*;
-import org.rocksdb.util.SizeUnit;
+import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Interval;
+import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.OptimisticTransactionDB;
+import org.rocksdb.RocksDBException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.sql.SQLException;
 
-public class MakeDatabase implements AutoCloseable  {
 
-	protected final ServiceConfig serviceConfig;
+public class MakeDatabase implements AutoCloseable {
+
+	private final static Logger log = LoggerFactory.getLogger(MakeDatabase.class);
+
 	protected final DatabaseConnectService databaseConnectService;
 
-	public final Path pathDatabase;
+	private final MakeDatabaseConnector makeDatabaseConnector;
+	private final OptimisticTransactionDB rocksDB;
 
-	public final OptimisticTransactionDB rocksDB;
-	private final ConcurrentMap<String, ColumnFamilyHandle> columnFamilies;
+	public final LiftoverConnector liftoverConnector;
+	public final ConservationConnector conservationConnector;
+
+	public final MakeConservation makeConservation;
 
 	public MakeDatabase(ArgumentsMake argumentsMake) throws Exception {
-		serviceConfig = new ServiceConfig(argumentsMake.config);
+		ServiceConfig serviceConfig = new ServiceConfig(argumentsMake.config);
 
 		SSHConnectService sshTunnelService = new SSHConnectService();
 		databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 
-		pathDatabase = argumentsMake.database.toAbsolutePath();
+		this.makeDatabaseConnector = new MakeDatabaseConnector(databaseConnectService, argumentsMake.database.toAbsolutePath());
+		this.rocksDB = makeDatabaseConnector.rocksDB;
 
-		try (DBOptions options = buildOptions()) {
-			List<ColumnFamilyDescriptor> columnFamilyDescriptors = getColumnFamilyDescriptors();
+		this.liftoverConnector = new LiftoverConnector();
+		this.conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
 
-			List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>();
-			rocksDB = OptimisticTransactionDB.open(options, pathDatabase.toString(), columnFamilyDescriptors, columnFamilyHandles);
+		this.makeConservation = new MakeConservation(this);
+	}
 
-			columnFamilies = new ConcurrentHashMap<>();
-			for (int i = 0; i < columnFamilyDescriptors.size(); i++) {
-				String columnFamilyName = TypeConvert.unpackString(columnFamilyDescriptors.get(i).getName());
-				ColumnFamilyHandle columnFamilyHandle = columnFamilyHandles.get(i);
-				columnFamilies.put(columnFamilyName, columnFamilyHandle);
-			}
-		} catch (RocksDBException e) {
-			throw new DatabaseException(e);
+	public void build() throws RocksDBException, SQLException, IOException {
+
+
+		//Заливаем данные
+		if (makeDatabaseConnector.getColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD) != null) {
+			makeDatabaseConnector.dropColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
 		}
-	}
+		ColumnFamilyHandle columnFamilyRecord = makeDatabaseConnector.createColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
+		for (Chromosome chromosome : Chromosome.CHROMOSOMES) {
+			int ks = getMinPosition(chromosome) / BatchRecord.DEFAULT_SIZE;
+			int ke = getMaxPosition(chromosome) / BatchRecord.DEFAULT_SIZE;
+			for (int k = ks; k <= ke; k++) {
+				int start = k * BatchRecord.DEFAULT_SIZE;
+				int end = start + BatchRecord.DEFAULT_SIZE - 1;
+				Interval interval = new Interval(chromosome, start, end);
 
-	public ColumnFamilyHandle getColumnFamily(String name) {
-		return columnFamilies.get(name);
-	}
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-	public ColumnFamilyHandle createColumnFamily(String name) throws RocksDBException {
-		ColumnFamilyDescriptor columnFamilyDescriptor = new ColumnFamilyDescriptor(name.getBytes(StandardCharsets.UTF_8));
-		ColumnFamilyHandle columnFamilyHandle = rocksDB.createColumnFamily(columnFamilyDescriptor);
-		columnFamilies.put(name, columnFamilyHandle);
-		return columnFamilyHandle;
-	}
+				//Упаковываем conservation
+				MakeConservationBuild conservation = makeConservation.getBatchRecord(interval);
+				os.write(conservation.build());
 
-	public void dropColumnFamily(String name) throws RocksDBException {
-		rocksDB.dropColumnFamily(getColumnFamily(name));
-		columnFamilies.remove(name);
-	}
+				if (!conservation.isEmpty()) {
+					rocksDB.put(
+							columnFamilyRecord,
+							new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(interval),
+							os.toByteArray()
+					);
+				}
 
-	private DBOptions buildOptions() throws RocksDBException {
-		final String optionsFilePath = pathDatabase.toString() + ".ini";
-
-		DBOptions options = new DBOptions();
-		if (Files.exists(Paths.get(optionsFilePath))) {
-			final List<ColumnFamilyDescriptor> ignoreDescs = new ArrayList<>();
-			OptionsUtil.loadOptionsFromFile(optionsFilePath, Env.getDefault(), options, ignoreDescs, false);
-		} else {
-			options
-					.setInfoLogLevel(InfoLogLevel.WARN_LEVEL)
-					.setMaxTotalWalSize(100L * SizeUnit.MB);
-		}
-
-		return options.setCreateIfMissing(true);
-	}
-
-	private List<ColumnFamilyDescriptor> getColumnFamilyDescriptors() throws RocksDBException {
-		List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
-
-		try (Options options = new Options()) {
-			for (byte[] columnFamilyName : RocksDB.listColumnFamilies(options, pathDatabase.toString())) {
-				columnFamilyDescriptors.add(new ColumnFamilyDescriptor(columnFamilyName));
+				if (start % 10000 == 0) {
+					log.debug("Write, chromosome: {}, position: {}", chromosome, start);
+				}
 			}
 		}
+		makeDatabaseConnector.rocksDB.compactRange(columnFamilyRecord);
+	}
 
-		if (columnFamilyDescriptors.isEmpty()) {
-			columnFamilyDescriptors.add(new ColumnFamilyDescriptor(TypeConvert.pack(RocksDBProvider.DEFAULT_COLUMN_FAMILY)));
-		}
+	private int getMinPosition(Chromosome chromosome) throws SQLException {
+		return makeConservation.getMinPosition(chromosome);
+	}
 
-		return columnFamilyDescriptors;
+	private int getMaxPosition(Chromosome chromosome) throws SQLException {
+		return makeConservation.getMaxPosition(chromosome);
 	}
 
 	@Override
 	public void close() {
-		rocksDB.close();
+		databaseConnectService.close();
 	}
+
 }

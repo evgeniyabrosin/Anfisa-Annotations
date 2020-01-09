@@ -16,32 +16,17 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.struct.packer.packbatchconservation;
+package org.forome.annotation.struct;
 
-import java.nio.ByteBuffer;
+public enum Assembly {
 
-class PackagingWithoutCompression implements Packaging {
+	/**
+	 * HG19
+	 */
+	GRCh37,
 
-	public PackagingWithoutCompression() {
-	}
-
-	@Override
-	public byte getFlag() {
-		return 0;
-	}
-
-	@Override
-	public int getByteSize() {
-		return 0;
-	}
-
-	@Override
-	public ByteBuffer toByteArray(short[] values) {
-		return null;
-	}
-
-	@Override
-	public short[] fromByteArray(ByteBuffer byteBuffer) {
-		return new short[0];
-	}
+	/**
+	 * HG38
+	 */
+	GRCh38
 }

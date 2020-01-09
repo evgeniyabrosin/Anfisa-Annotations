@@ -20,6 +20,7 @@ package org.forome.annotation.connector.liftover;
 
 import htsjdk.samtools.liftover.LiftOver;
 import org.forome.annotation.struct.Interval;
+import org.forome.annotation.struct.Position;
 
 import java.io.*;
 
@@ -27,6 +28,9 @@ public class LiftoverConnector implements AutoCloseable {
 
 	private final File fileSampleHg19toHg38;
 	private final LiftOver liftOverHg19toHg38;
+
+	private final File fileSampleHg38toHg19;
+	private final LiftOver liftOverHg38toHg19;
 
 	public LiftoverConnector() throws IOException {
 		try (InputStream inputFileSample = getClass().getClassLoader().getResourceAsStream("hg19ToHg38.over.chain.gz")) {
@@ -40,9 +44,22 @@ public class LiftoverConnector implements AutoCloseable {
 			}
 			fileSampleHg19toHg38.deleteOnExit();
 		}
-
 		liftOverHg19toHg38 = new LiftOver(fileSampleHg19toHg38);
 		liftOverHg19toHg38.setShouldLogFailedIntervalsBelowThreshold(false);
+
+		try (InputStream inputFileSample = getClass().getClassLoader().getResourceAsStream("hg38ToHg19.over.chain.gz")) {
+			fileSampleHg38toHg19 = File.createTempFile("hg38ToHg19-", ".over.chain.gz");
+			try (OutputStream out = new FileOutputStream(fileSampleHg38toHg19)) {
+				int read;
+				byte[] bytes = new byte[1024];
+				while ((read = inputFileSample.read(bytes)) != -1) {
+					out.write(bytes, 0, read);
+				}
+			}
+			fileSampleHg38toHg19.deleteOnExit();
+		}
+		liftOverHg38toHg19 = new LiftOver(fileSampleHg38toHg19);
+		liftOverHg38toHg19.setShouldLogFailedIntervalsBelowThreshold(false);
 	}
 
 	public Interval toHG38(Interval intervalHg19) {
@@ -63,10 +80,24 @@ public class LiftoverConnector implements AutoCloseable {
 		}
 	}
 
+	public Position toHG19(Position positionHg38) {
+		htsjdk.samtools.util.Interval interval = liftOverHg38toHg19.liftOver(new htsjdk.samtools.util.Interval(
+				positionHg38.chromosome.toString(),
+				positionHg38.value,
+				positionHg38.value
+		));
+		if (interval == null) return null;
+		return new Position(positionHg38.chromosome, interval.getStart());
+	}
+
 	@Override
 	public void close() {
 		try {
 			fileSampleHg19toHg38.delete();
+		} catch (Throwable ignore) {
+		}
+		try {
+			fileSampleHg38toHg19.delete();
 		} catch (Throwable ignore) {
 		}
 	}

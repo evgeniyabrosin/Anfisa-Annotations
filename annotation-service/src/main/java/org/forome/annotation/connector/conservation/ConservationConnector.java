@@ -20,18 +20,14 @@ package org.forome.annotation.connector.conservation;
 
 import org.forome.annotation.config.connector.ConservationConfigConnector;
 import org.forome.annotation.connector.DatabaseConnector;
-import org.forome.annotation.connector.conservation.struct.BatchConservation;
 import org.forome.annotation.connector.conservation.struct.Conservation;
-import org.forome.annotation.connector.conservation.struct.ConservationItem;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.service.database.struct.packer.PackInterval;
-import org.forome.annotation.service.database.struct.packer.packbatchconservation.PackBatchConservation;
+import org.forome.annotation.service.database.struct.record.Record;
+import org.forome.annotation.service.database.struct.record.RecordConservation;
 import org.forome.annotation.struct.Interval;
+import org.forome.annotation.struct.Position;
 import org.forome.annotation.utils.Statistics;
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +41,10 @@ public class ConservationConnector implements AutoCloseable {
 
 	private final static Logger log = LoggerFactory.getLogger(ConservationConnector.class);
 
-	public static final String COLUMN_FAMILY_NAME = "conservation";
+	private final DatabaseConnectService databaseConnectService;
 
 	public final DatabaseConnector databaseConnector;
 	private final Statistics statistics;
-
-	private final RocksDB rocksDB;
-	private final ColumnFamilyHandle columnFamilyHandle;
 
 	public class GerpData {
 
@@ -68,11 +61,10 @@ public class ConservationConnector implements AutoCloseable {
 			DatabaseConnectService databaseConnectService,
 			ConservationConfigConnector conservationConfigConnector
 	) throws Exception {
+		this.databaseConnectService = databaseConnectService;
+
 		this.databaseConnector = new DatabaseConnector(databaseConnectService, conservationConfigConnector);
 		this.statistics = new Statistics();
-
-		this.rocksDB = databaseConnectService.getRocksDB();
-		this.columnFamilyHandle = databaseConnectService.getColumnFamily(COLUMN_FAMILY_NAME);
 	}
 
 	public List<DatabaseConnector.Metadata> getMetadata() {
@@ -144,7 +136,7 @@ public class ConservationConnector implements AutoCloseable {
 		Double gerpS = null;
 
 		GerpData gerpData = getGerpDataFromMysql(pHG19);
-//		GerpData gerpData = getGerpDataFromRocksDB(chromosome, pHG19);
+		//GerpData gerpData = getGerpDataFromRocksDB(pHG19);
 
 		try (Connection connection = databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
@@ -211,10 +203,10 @@ public class ConservationConnector implements AutoCloseable {
 				try (ResultSet resultSet = statement.executeQuery(sqlFromGerp)) {
 					if (resultSet.next()) {
 						Double dGerpN = (Double) resultSet.getObject("GerpN");
-						Float gerpN = (dGerpN == null)?null:dGerpN.floatValue();
+						Float gerpN = (dGerpN == null) ? null : dGerpN.floatValue();
 
 						Double dGerpRS = (Double) resultSet.getObject("GerpRS");
-						Float gerpRS = (dGerpRS == null)?null:dGerpRS.floatValue();
+						Float gerpRS = (dGerpRS == null) ? null : dGerpRS.floatValue();
 
 						return new GerpData(gerpN, gerpRS);
 					} else {
@@ -245,32 +237,21 @@ public class ConservationConnector implements AutoCloseable {
 				maxPosition = pHG19.start;
 			}
 
-			int ks = minPosition / PackInterval.DEFAULT_SIZE;
-			int ke = maxPosition / PackInterval.DEFAULT_SIZE;
-
 			Float maxGerpN = null;
 			Float maxGerpRS = null;
-			for (int k = ks; k <= ke; k++) {
-				Interval interval = new Interval(
+			for (int pos = minPosition; pos <= maxPosition; pos++) {
+				Position position = new Position(
 						pHG19.chromosome,
-						k * PackInterval.DEFAULT_SIZE,
-						k * PackInterval.DEFAULT_SIZE + PackInterval.DEFAULT_SIZE - 1
+						pos
 				);
-				byte[] bytes = rocksDB.get(
-						columnFamilyHandle,
-						new PackInterval(PackInterval.DEFAULT_SIZE).toByteArray(interval)
-				);
-				if (bytes == null) continue;
-				BatchConservation batchConservation = PackBatchConservation.fromByteArray(interval, bytes);
+				Record record = databaseConnectService.getRecord(position);
+				RecordConservation recordConservation = record.getRecordConservation();
 
-				for (int position = minPosition; position <= maxPosition; position++) {
-					ConservationItem item = batchConservation.getConservation(position);
-					if (maxGerpN == null || maxGerpN < item.gerpN) {
-						maxGerpN = item.gerpN;
-					}
-					if (maxGerpRS == null || maxGerpRS < item.gerpRS) {
-						maxGerpRS = item.gerpRS;
-					}
+				if (maxGerpN == null || maxGerpN < recordConservation.getGerpN()) {
+					maxGerpN = recordConservation.getGerpN();
+				}
+				if (maxGerpRS == null || maxGerpRS < recordConservation.getGerpRS()) {
+					maxGerpRS = recordConservation.getGerpRS();
 				}
 			}
 
@@ -279,8 +260,6 @@ public class ConservationConnector implements AutoCloseable {
 			} else {
 				return null;
 			}
-		} catch (RocksDBException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
 		} finally {
 			statistics.addTime(System.nanoTime() - t1);
 		}

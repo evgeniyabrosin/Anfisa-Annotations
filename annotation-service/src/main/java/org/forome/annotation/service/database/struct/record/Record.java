@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,7 +16,22 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.struct.packer;
+package org.forome.annotation.service.database.struct.record;
 
-public class PackBatch {
+import org.forome.annotation.service.database.struct.batch.BatchRecord;
+import org.forome.annotation.struct.Position;
+
+public class Record {
+
+	private final BatchRecord batchRecord;
+	public final Position position;
+
+	public Record(BatchRecord batchRecord, Position position) {
+		this.batchRecord = batchRecord;
+		this.position = position;
+	}
+
+	public RecordConservation getRecordConservation() {
+		return new RecordConservation(this, batchRecord.batchRecordConservation);
+	}
 }
