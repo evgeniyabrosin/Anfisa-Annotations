@@ -91,7 +91,7 @@ public class DatabaseConnectService implements AutoCloseable {
 
 	public Record getRecord(Position position) {
 		int k = position.value / BatchRecord.DEFAULT_SIZE;
-		Interval interval = new Interval(
+		Interval interval = Interval.of(
 				position.chromosome,
 				k * BatchRecord.DEFAULT_SIZE,
 				k * BatchRecord.DEFAULT_SIZE + BatchRecord.DEFAULT_SIZE - 1

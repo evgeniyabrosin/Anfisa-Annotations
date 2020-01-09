@@ -74,9 +74,9 @@ public class LiftoverConnector implements AutoCloseable {
 		if (interval == null) return null;
 
 		if (intervalHg19.start <= intervalHg19.end) {
-			return new Interval(intervalHg19.chromosome, interval.getStart(), interval.getEnd());
+			return Interval.of(intervalHg19.chromosome, interval.getStart(), interval.getEnd());
 		} else {
-			return new Interval(intervalHg19.chromosome, interval.getEnd(), interval.getStart());
+			return Interval.ofWithoutValidation(intervalHg19.chromosome, interval.getEnd(), interval.getStart());
 		}
 	}
 

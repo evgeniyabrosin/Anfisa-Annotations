@@ -350,7 +350,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 			String[] variants = clinvarResults.stream().map(clinvarResult -> {
 				return String.format("%s %s>%s",
-						vstr(new Interval(chromosome, clinvarResult.start, clinvarResult.end)),
+						vstr(Interval.of(chromosome, clinvarResult.start, clinvarResult.end)),
 						clinvarResult.referenceAllele, clinvarResult.alternateAllele
 				);
 			}).toArray(String[]::new);
@@ -1109,7 +1109,7 @@ public class AnfisaConnector implements AutoCloseable {
 	private Interval getHg38Coordinates(AnfisaExecuteContext context) {
 		Chromosome chromosome = context.variant.chromosome;
 		return liftoverConnector.toHG38(
-				new Interval(
+				Interval.of(
 						chromosome,
 						context.variant.getStart(),
 						context.variant.end
@@ -1572,7 +1572,7 @@ public class AnfisaConnector implements AutoCloseable {
 	}
 
 	public Interval getHg19Coordinates(AnfisaExecuteContext context) {
-		return new Interval(
+		return Interval.of(
 				context.variant.chromosome,
 				context.variant.getStart(),
 				context.variant.end

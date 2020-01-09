@@ -33,7 +33,7 @@ public class MakeConservationBuildTest {
 	public void test() {
 		for (int k = 0; k < 100; k += 23) {
 
-			Interval interval = new Interval(
+			Interval interval = Interval.of(
 					Chromosome.CHR_1,
 					k * BatchRecord.DEFAULT_SIZE, (k + 1) * BatchRecord.DEFAULT_SIZE - 1
 			);
