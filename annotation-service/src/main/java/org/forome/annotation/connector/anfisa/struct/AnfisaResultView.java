@@ -387,7 +387,9 @@ public class AnfisaResultView {
 		} else {
 			out.put("cohorts", cohorts);
 		}
-		out.put("quality_samples", qualitySamples);
+		if (!qualitySamples.isEmpty()) {
+			out.put("quality_samples", qualitySamples);
+		}
 
 		out.put("pharmacogenomics", pharmacogenomics.toJSON());
 

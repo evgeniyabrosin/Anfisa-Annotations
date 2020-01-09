@@ -192,7 +192,7 @@ public class AnfisaResultData {
 		if (regionWorst != null) {
 			out.put("region_worst", regionWorst);
 		}
-		if (zygosity != null) {
+		if (zygosity != null ) {
 			out.put("zygosity", zygosity);
 		}
 
