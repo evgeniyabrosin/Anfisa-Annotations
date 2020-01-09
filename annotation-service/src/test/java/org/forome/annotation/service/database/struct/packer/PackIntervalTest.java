@@ -33,7 +33,7 @@ public class PackIntervalTest {
 
 		Chromosome chromosome = Chromosome.CHR_1;
 		for (int k = 0; k < 2489082; k += 49000) {
-			Interval iExpected = new Interval(chromosome, k * sizePack, k * sizePack + sizePack - 1);
+			Interval iExpected = Interval.of(chromosome, k * sizePack, k * sizePack + sizePack - 1);
 			byte[] bytes = packInterval.toByteArray(iExpected);
 			Interval iActual = packInterval.fromByteArray(bytes);
 

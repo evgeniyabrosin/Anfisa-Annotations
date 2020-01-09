@@ -46,7 +46,7 @@ public class PackInterval {
 		int start = k * size;
 		int end = start + size - 1;
 
-		return new Interval(chromosome, start, end);
+		return Interval.of(chromosome, start, end);
 	}
 
 	public byte[] toByteArray(Interval value) {

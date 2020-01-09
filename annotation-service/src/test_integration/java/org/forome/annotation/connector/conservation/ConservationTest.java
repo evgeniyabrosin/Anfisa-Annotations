@@ -39,7 +39,7 @@ public class ConservationTest extends AnfisaBaseTest {
 	public void testSimple() {
 		//chr1:16378047 G>T rs35351345 4.48
 		Chromosome chr1 = Chromosome.of("1");
-		Interval pos1 = new Interval(chr1, 16378047);
+		Interval pos1 = Interval.of(chr1, 16378047);
 		Interval hgmdHG38_1 = liftoverConnector.toHG38(pos1);
 		Conservation conservation1 = conservationConnector.getConservation(pos1, hgmdHG38_1, "G", "T");
 		assertDouble(0.183d, conservation1.priPhCons);
@@ -55,7 +55,7 @@ public class ConservationTest extends AnfisaBaseTest {
 
 		//chr4:55593464 A>C rs3822214 1.82
 		Chromosome chr2 = Chromosome.of("4");
-		Interval pos2 = new Interval(chr2, 55593464);
+		Interval pos2 = Interval.of(chr2, 55593464);
 		Interval hgmdHG38_2 = liftoverConnector.toHG38(pos2);
 		Conservation conservation2 = conservationConnector.getConservation(pos2, hgmdHG38_2, "A", "C");
 		assertDouble(0.935d, conservation2.priPhCons);
@@ -71,7 +71,7 @@ public class ConservationTest extends AnfisaBaseTest {
 
 		//chr9:139092481 G>C rs190916587 0.34
 		Chromosome chr3 = Chromosome.of("9");
-		Interval pos3 = new Interval(chr3, 139092481);
+		Interval pos3 = Interval.of(chr3, 139092481);
 		Interval hgmdHG38_3 = liftoverConnector.toHG38(pos3);
 		Conservation conservation3 = conservationConnector.getConservation(pos3, hgmdHG38_3, "G", "C");
 		assertDouble(0.99d, conservation3.priPhCons);
@@ -87,7 +87,7 @@ public class ConservationTest extends AnfisaBaseTest {
 
 		//chr13:86369589 A>G rs199516562 5.86
 		Chromosome chr4 = Chromosome.of("13");
-		Interval pos4 = new Interval(chr4, 86369589);
+		Interval pos4 = Interval.of(chr4, 86369589);
 		Interval hgmdHG38_4 = liftoverConnector.toHG38(pos4);
 		Conservation conservation4 = conservationConnector.getConservation(pos4, hgmdHG38_4, "A", "G");
 		assertDouble(0.617d, conservation4.priPhCons);
@@ -103,14 +103,14 @@ public class ConservationTest extends AnfisaBaseTest {
 
 		//chr2:21266774 GGCAGCGCCA>G rs17240441
 		Chromosome chr5 = Chromosome.of("2");
-		Interval pos5 = new Interval(chr5, 21266774);
+		Interval pos5 = Interval.of(chr5, 21266774);
 		Interval hgmdHG38_5 = liftoverConnector.toHG38(pos5);
 		Conservation conservation5 = conservationConnector.getConservation(pos5, hgmdHG38_5, "GGCAGCGCCA", "G");
 		Assert.assertEquals(null, conservation5);//Вычисляются только однобуквенные и инсерции
 
 		//chr1:175949371 A>AACC
 		Chromosome chr7 = Chromosome.of("1");
-		Interval pos7 = new Interval(chr7, 175949371);
+		Interval pos7 = Interval.of(chr7, 175949371);
 		Interval hgmdHG38_7 = liftoverConnector.toHG38(pos7);
 		Conservation conservation7 = conservationConnector.getConservation(pos7, hgmdHG38_7, "A", "AACC");
 		assertFloat(2.37f, conservation7.gerpRS);//Проверяем на внешнем ресурсе
@@ -120,7 +120,7 @@ public class ConservationTest extends AnfisaBaseTest {
 	public void testMulti() {
 		//chr2:55863360 T>TA rs35916020
 		Chromosome chr1 = Chromosome.of("2");
-		Interval pos1 = new Interval(chr1, 55863361, 55863360);
+		Interval pos1 = Interval.of(chr1, 55863361, 55863360);
 		Interval hgmdHG38_1 = liftoverConnector.toHG38(pos1);
 		Conservation conservation1 = conservationConnector.getConservation(pos1, hgmdHG38_1, "T", "TA");
 		assertFloat(-0.868f, conservation1.gerpRS);//Проверяем на внешнем ресурсе
@@ -128,7 +128,7 @@ public class ConservationTest extends AnfisaBaseTest {
 		//chr1:120681278 A>AT  rs201956187
 		//Проверяем ситуацию когда координаты hg38 - вычислить не удалось
 		Chromosome chr2 = Chromosome.of("1");
-		Interval pos2 = new Interval(chr2, 120681279, 120681278);
+		Interval pos2 = Interval.of(chr2, 120681279, 120681278);
 		Interval hgmdHG38_2 = liftoverConnector.toHG38(pos2);
 		Conservation conservation2 = conservationConnector.getConservation(pos2, hgmdHG38_2, "A", "AT");
 		Assert.assertEquals(null, conservation2.priPhCons);

@@ -84,7 +84,7 @@ public class MakeDatabase implements AutoCloseable {
 			for (int k = ks; k <= ke; k++) {
 				int start = k * BatchRecord.DEFAULT_SIZE;
 				int end = start + BatchRecord.DEFAULT_SIZE - 1;
-				Interval interval = new Interval(chromosome, start, end);
+				Interval interval = Interval.of(chromosome, start, end);
 
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 

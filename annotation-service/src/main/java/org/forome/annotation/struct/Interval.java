@@ -32,15 +32,7 @@ public class Interval {
 	public final int start;
 	public final int end;
 
-	public Interval(Chromosome chromosome, int position) {
-		this(chromosome, position, position);
-	}
-
-	public Interval(Chromosome chromosome, int start, int end) {
-		if (start > end && start - 1 != end) {
-			throw new IllegalArgumentException();
-		}
-
+	private Interval(Chromosome chromosome, int start, int end) {
 		this.chromosome = chromosome;
 		this.start = start;
 		this.end = end;
@@ -71,6 +63,21 @@ public class Interval {
 	@Override
 	public int hashCode() {
 		return Objects.hash(chromosome, start, end);
+	}
+
+	public static Interval of(Chromosome chromosome, int position) {
+		return of(chromosome, position, position);
+	}
+
+	public static Interval of(Chromosome chromosome, int start, int end) {
+		if (start > end && start - 1 != end) {
+			throw new IllegalArgumentException();
+		}
+		return new Interval(chromosome, start, end);
+	}
+
+	public static Interval ofWithoutValidation(Chromosome chromosome, int start, int end) {
+		return new Interval(chromosome, start, end);
 	}
 }
 
