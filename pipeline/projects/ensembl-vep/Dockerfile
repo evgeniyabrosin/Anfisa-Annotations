@@ -4,7 +4,7 @@
 FROM debian:buster as resources
 
 ENV BRANCH release/98
-ARG DBNSFP_VERSION
+ARG ASSEMBLY
 
 #Add resources
 ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep.tar.gz /opt/vep-cache/
@@ -45,21 +45,22 @@ RUN apt-get update \
     && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/LoFtool_scores.txt \
     \
     # Плагин dbNSFP
-    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/dbNSFP.pm \
-    && if [ "$DBNSFP_VERSION" = "3.5a" ] \
+    && wget -P /opt/vep-cache/Plugins/ https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/dbNSFP.pm \
+    && if [ "$ASSEMBLY" = "HG19" ] \
         ; then \
             cd /tmp/ \
+            && mkdir /opt/vep-cache/dbNSFP/ \
             && unzip dbNSFP.zip \
             && head -n1 dbNSFP3.5a_variant.chr1 > h \
-            && cat dbNSFP3.5a_variant.chr* | grep -v ^#chr | awk '$8 != "."' | sort -k8,8 -k9,9n - | cat h - | bgzip -c > /opt/vep-cache/dbNSFP.gz \
-            && cd /opt/vep-cache/ \
-            && tabix -s 8 -b 9 -e 9 dbNSFP.gz \
+            && cat dbNSFP3.5a_variant.chr* | grep -v ^#chr | awk '$8 != "."' | sort -k8,8 -k9,9n - | cat h - | bgzip -c > /opt/vep-cache/dbNSFP/dbNSFP_hg19.gz \
+            && cd /opt/vep-cache/dbNSFP/ \
+            && tabix -s 8 -b 9 -e 9 dbNSFP_hg19.gz \
         ; else \
-            echo Argument is $DBNSFP_VERSION \
+            echo Argument is $ASSEMBLY \
         ; fi \
     \
     # Плагин SpliceRegion
-    && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/SpliceRegion.pm \
+    && wget -P /opt/vep-cache/Plugins/ https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/SpliceRegion.pm \
     \
     # Все чистим
     && apt-get autoremove -y git autotools-dev automake wget \

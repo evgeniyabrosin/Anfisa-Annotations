@@ -44,7 +44,7 @@ node {
 
 		stage('Build & Publish docker image') {
 			def image = "${params.DOCKERHUB}/forome/ensembl-vep:98.GRCh37";
-			sh("tar -czh . | docker build - -t ${image} --build-arg DBNSFP_VERSION=3.5a --file pipeline/projects/ensembl-vep/Dockerfile")
+			sh("tar -czh . | docker build - -t ${image} --build-arg ASSEMBLY=HG19 --file pipeline/projects/ensembl-vep/Dockerfile")
 			sh("docker push ${image}")
 		}
 

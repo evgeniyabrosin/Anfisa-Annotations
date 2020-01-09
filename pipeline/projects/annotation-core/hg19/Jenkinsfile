@@ -45,7 +45,7 @@ node {
 
 		stage('Build & Publish docker image') {
 			def image = "${params.DOCKERHUB}/forome/annotation:${env.annotationVersion}";
-			sh("docker build . -t ${image} --file pipeline/projects/annotation-core/Dockerfile")
+			sh("docker build . -t ${image} --file pipeline/projects/annotation-core/hg19/Dockerfile")
 			sh("docker push ${image}")
 		}
 
