@@ -1161,6 +1161,7 @@ public class AnfisaConnector implements AutoCloseable {
 			return ColorCode.code(shape, ColorCode.Color.RED);
 		}
 
+		//Применяется модельные in-silico предсказание
 		int minValue = 100;
 		int maxValue = 0;
 		for (String tool : ColorCode.allInSilicoTools()) {
@@ -1177,6 +1178,9 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 
 		if (minValue > maxValue) {
+			if (shape == ColorCode.Shape.CROSS) {
+				return ColorCode.code(shape, ColorCode.Color.YELLOW);
+			}
 			return null;
 		}
 		if (minValue >= 30) {
@@ -1190,7 +1194,6 @@ public class AnfisaConnector implements AutoCloseable {
 		} else {
 			return null;
 		}
-
 
 		return ColorCode.code(shape, color);
 	}
@@ -1300,10 +1303,6 @@ public class AnfisaConnector implements AutoCloseable {
 
 	private static List<String> getGenes(VariantVep variantVep) {
 		return getFromTranscriptsList(variantVep, "gene_symbol");
-	}
-
-	public List<String> getHgncIds(VariantVep variantVep) {
-		return getFromTranscriptsList(variantVep, "hgnc_id");
 	}
 
 	protected static List<JSONObject> getMostSevereTranscripts(VariantVep variantVep) {
