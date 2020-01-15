@@ -19,7 +19,11 @@
 package org.forome.annotation.custominput;
 
 import com.google.common.base.Strings;
-import org.apache.commons.cli.*;
+import net.minidev.json.JSONObject;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.controller.GetAnfisaJSONController;
@@ -34,6 +38,7 @@ import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
+import org.forome.annotation.iterator.json.JsonFileIterator;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
@@ -44,7 +49,6 @@ import org.forome.annotation.service.notification.NotificationService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mcase.MCase;
-import org.forome.annotation.struct.mcase.Sample;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vep.VariantVep;
@@ -61,7 +65,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.zip.GZIPOutputStream;
 
 public class CustomInputMain {
@@ -71,6 +74,7 @@ public class CustomInputMain {
 	public static final String OPTION_FILE_CONFIG = "config";
 
 	public static final String OPTION_FILE_INPUT = "input";
+	public static final String OPTION_FILE_VEPJSON = "vepjson";
 
 	private static ServiceConfig serviceConfig;
 	private static NotificationService notificationService;
@@ -105,6 +109,13 @@ public class CustomInputMain {
 						.hasArg(true)
 						.optionalArg(false)
 						.desc("Absolute path to input file")
+						.build())
+
+				.addOption(Option.builder()
+						.longOpt(OPTION_FILE_VEPJSON)
+						.hasArg(true)
+						.optionalArg(false)
+						.desc("Absolute path to file vep.json")
 						.build());
 
 		try {
@@ -128,6 +139,14 @@ public class CustomInputMain {
 				throw new IllegalArgumentException("Inventory file is not exists: " + config);
 			}
 
+			String strFileVepJson = cmd.getOptionValue(OPTION_FILE_VEPJSON);
+			if (Strings.isNullOrEmpty(strFileVepJson)) {
+				throw new IllegalArgumentException("Missing vep.json file");
+			}
+			Path pathFileVepJson = Paths.get(strFileVepJson).toAbsolutePath();
+			if (!Files.exists(pathInputFile)) {
+				throw new IllegalArgumentException("Vep.json file is not exists: " + config);
+			}
 
 			serviceConfig = new ServiceConfig(config);
 
@@ -225,8 +244,6 @@ public class CustomInputMain {
 					throw new RuntimeException();
 				}
 
-//				if (!"rs1042485".equals(l0)) continue;
-
 				for (String alt : alts) {
 					GetAnfisaJSONController.RequestItem requestItem = new GetAnfisaJSONController.RequestItem(
 							chromosome,
@@ -234,105 +251,60 @@ public class CustomInputMain {
 							end,
 							alt
 					);
-
 					requestItems.add(requestItem);
 				}
 				requestIds.add(l0);
 			}
 
-//			ensemblVepService.getVepJson(requestIds.get(0))
-//					.thenApply(vepJson -> {
-//						log.debug("id: {}", vepJson);
-//						return null;
-//					});
-//			GetAnfisaJSONController.RequestItem requestItem1 = requestItems.get(0);
-//			ensemblVepService.getVepJson(requestItem1.chromosome, requestItem1.start, requestItem1.end, requestItem1.alternative)
-//					.thenApply(vepJson -> {
-//						log.debug("region: {}", vepJson);
-//						return null;
-//					});
+			MCase mCase = new MCase.Builder(new LinkedHashMap<>(), Collections.emptyList()).build();
 
+//			Path pathIds = Paths.get("/home/kris/processtech/tmp/10/variants2_ids.txt");
+//			try (OutputStream os = Files.newOutputStream(pathIds)){
+//				try (BufferedOutputStream bos = new BufferedOutputStream(os)) {
+//					for (String id : requestIds) {
+//						bos.write(id.getBytes(StandardCharsets.UTF_8));
+//						bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+//					}
+//				}
+//			}
 
-			LinkedHashMap<String, Sample> samples = new LinkedHashMap<>();
-//			samples.put("KCNJ2", new Sample(
-//					"KCNJ2", "KCNJ12", "", "0", "0", 0, true, null
-//			));
-			MCase mCase = new MCase.Builder(samples, Collections.emptyList()).build();
+			try (OutputStream os = new GZIPOutputStream(Files.newOutputStream(Paths.get("KCNJ2_anfisa.json.gz")))) {
+				try (BufferedOutputStream bos = new BufferedOutputStream(os)) {
+					AnnotatorResult.Metadata metadata = AnnotatorResult.Metadata.build(
+							"KCNJ2", null, mCase, processing.getAnfisaConnector()
+					);
+					bos.write(metadata.toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
+					bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
-			List<CompletableFuture<List<ProcessingResult>>> futureProcessingResults = new ArrayList<>();
-			for (String id : requestIds) {
-				futureProcessingResults.add(
-						ensemblVepService.getVepJson(id)
-								.thenApply(vepJson -> {
-									try {
-										Chromosome chromosome = Chromosome.of(vepJson.getAsString("seq_region_name"));
-										int start = Integer.parseInt(vepJson.getAsString("start"));
-										int end = Integer.parseInt(vepJson.getAsString("end"));
+					int index = 0;
+					try (JsonFileIterator jsonFileIterator = new JsonFileIterator(pathFileVepJson)) {
+						while (jsonFileIterator.hasNext()) {
+							JSONObject vepJson = jsonFileIterator.next();
 
-										VariantVep variantVep = new VariantCustom(chromosome, start, end);
-										variantVep.setVepJson(vepJson);
-										return processing.exec(mCase, variantVep);
-									} catch (Throwable e) {
-										log.error("vepjson: " + vepJson, e);
-										throw e;
-									}
-								})
-				);
-			}
-			/*
-			for (GetAnfisaJSONController.RequestItem requestItem : requestItems) {
-				futureProcessingResults.add(
-						ensemblVepService.getVepJson(requestItem.chromosome, requestItem.start, requestItem.end, requestItem.alternative)
-								.thenApply(vepJson -> {
-									VariantVep variantVep = new VariantCustom(requestItem.chromosome, requestItem.start, requestItem.end);
-									variantVep.setVepJson(vepJson);
-									return processing.exec(mCase, variantVep);
-								})
-				);
-			}
-			*/
+							Chromosome chromosome = Chromosome.of(vepJson.getAsString("seq_region_name"));
+							int start = Integer.parseInt(vepJson.getAsString("start"));
+							int end = Integer.parseInt(vepJson.getAsString("end"));
 
+							VariantVep variantVep = new VariantCustom(chromosome, start, end);
+							variantVep.setVepJson(vepJson);
 
-			OutputStream os = new GZIPOutputStream(Files.newOutputStream(Paths.get("KCNJ2_anfisa.json.gz")));
-			BufferedOutputStream bos = new BufferedOutputStream(os);
+							List<ProcessingResult> processingResults = processing.exec(mCase, variantVep);
+							for (ProcessingResult processingResult : processingResults) {
+								String out = processingResult.toJSON().toJSONString();
+								bos.write(out.getBytes(StandardCharsets.UTF_8));
+								bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
-			AnnotatorResult.Metadata metadata = AnnotatorResult.Metadata.build(
-					"KCNJ2", null, mCase, processing.getAnfisaConnector()
-			);
-			bos.write(metadata.toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
-			bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
-
-			try {
-				for (int i = 0; i < futureProcessingResults.size(); i++) {
-					List<ProcessingResult> processingResults;
-					try {
-						processingResults = futureProcessingResults.get(i).join();
-						for (ProcessingResult processingResult : processingResults) {
-
-							String out = processingResult.toJSON().toJSONString();
-							bos.write(out.getBytes(StandardCharsets.UTF_8));
-							bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
-
-							log.debug("Processing {}/{}", i + 1, futureProcessingResults.size());
+								log.debug("Processing {}", index++);
+							}
 						}
-					} catch (Throwable e) {
-						log.error("Exception ", e);
 					}
 				}
-				bos.flush();
-				bos.close();
-				os.close();
-
-				System.exit(0);
-			} catch (Throwable ex) {
-				fail(ex);
 			}
 
-
+			log.debug("Processing complete");
+			System.exit(0);
 		} catch (Throwable ex) {
 			log.error("Exception: ", ex);
-			new HelpFormatter().printHelp("", options);
-
 			fail(ex);
 		}
 	}

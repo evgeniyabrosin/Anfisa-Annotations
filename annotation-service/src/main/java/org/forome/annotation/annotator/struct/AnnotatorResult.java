@@ -60,7 +60,11 @@ public class AnnotatorResult {
 		public static class Versions {
 
 			private static Pattern PATTERN_GATK_VERSION = Pattern.compile(
-					"^<ID=(ApplyRecalibration|CombineVariants),Version=(.*?)[,](.*)$", Pattern.CASE_INSENSITIVE
+					"^<ID=(ApplyRecalibration|CombineVariants|SelectVariants|HaplotypeCaller),Version=(.*?)[,](.*)$", Pattern.CASE_INSENSITIVE
+			);
+
+			private static Pattern PATTERN_VEP_VERSION = Pattern.compile(
+					"^v(.*?) (.*)$", Pattern.CASE_INSENSITIVE
 			);
 
 			public final Instant pipelineDate;
@@ -71,9 +75,12 @@ public class AnnotatorResult {
 
 			public final List<SourceMetadata> metadataDatabases;
 
+			private final String toolGatk;
 			private final String toolGatksCombineVariants;
 			private final String toolGatksApplyRecalibration;
+			private final String toolGatkSelectVariants;
 			private final String bcftoolsAnnotateVersion;
+			private final String vepVersion;
 
 			public Versions(Path pathVepVcf, AnfisaConnector anfisaConnector) {
 				annotations = AppVersion.getVersionFormat();
@@ -99,6 +106,17 @@ public class AnnotatorResult {
 						pipelineDate = null;
 					}
 
+					VCFHeaderLine hlGatk = vcfHeader.getMetaDataLine("GATKCommandLine");
+					if (hlGatk != null) {
+						Matcher matcher = PATTERN_GATK_VERSION.matcher(hlGatk.getValue());
+						if (!matcher.matches()) {
+							throw new RuntimeException("Not support format GATK version: " + hlGatk.getValue());
+						}
+						toolGatk = matcher.group(2);
+					} else {
+						toolGatk = null;
+					}
+
 					VCFHeaderLine hlGatkCV = vcfHeader.getMetaDataLine("GATKCommandLine.CombineVariants");
 					if (hlGatkCV != null) {
 						Matcher matcher = PATTERN_GATK_VERSION.matcher(hlGatkCV.getValue());
@@ -109,6 +127,7 @@ public class AnnotatorResult {
 					} else {
 						toolGatksCombineVariants = null;
 					}
+
 					VCFHeaderLine hlGatkAR = vcfHeader.getMetaDataLine("GATKCommandLine.ApplyRecalibration");
 					if (hlGatkAR != null) {
 						Matcher matcher = PATTERN_GATK_VERSION.matcher(hlGatkAR.getValue());
@@ -120,19 +139,45 @@ public class AnnotatorResult {
 						toolGatksApplyRecalibration = null;
 					}
 
+					VCFHeaderLine hlGatkSV = vcfHeader.getMetaDataLine("GATKCommandLine.SelectVariants");
+					if (hlGatkSV != null) {
+						Matcher matcher = PATTERN_GATK_VERSION.matcher(hlGatkSV.getValue());
+						if (!matcher.matches()) {
+							throw new RuntimeException("Not support format GATK version: " + hlGatkSV.getValue());
+						}
+						toolGatkSelectVariants = matcher.group(2);
+					} else {
+						toolGatkSelectVariants = null;
+					}
+
 					VCFHeaderLine hlBCFAnnotateVersion = vcfHeader.getMetaDataLine("bcftools_annotateVersion");
 					if (hlBCFAnnotateVersion != null) {
 						bcftoolsAnnotateVersion = hlBCFAnnotateVersion.getValue();
 					} else {
 						bcftoolsAnnotateVersion = null;
 					}
+
+					VCFHeaderLine hlVepVersion = vcfHeader.getMetaDataLine("VEP");
+					if (hlVepVersion != null) {
+						Matcher matcher = PATTERN_VEP_VERSION.matcher(hlVepVersion.getValue());
+						if (!matcher.matches()) {
+							throw new RuntimeException("Not support format VEP version: " + hlVepVersion.getValue());
+						}
+						vepVersion = matcher.group(1);
+					} else {
+						vepVersion = null;
+					}
+
 				} else {
 					pipeline = null;
 					reference = null;
 					pipelineDate = null;
+					toolGatk = null;
 					toolGatksApplyRecalibration = null;
 					toolGatksCombineVariants = null;
+					toolGatkSelectVariants = null;
 					bcftoolsAnnotateVersion = null;
+					vepVersion = null;
 				}
 
 				metadataDatabases = new ArrayList<>();
@@ -169,14 +214,23 @@ public class AnnotatorResult {
 					}
 					out.put(metadata.product, value.toString());
 				}
+				if (!Strings.isNullOrEmpty(toolGatk)) {
+					out.put("gatk", toolGatk);
+				}
 				if (!Strings.isNullOrEmpty(toolGatksApplyRecalibration)) {
 					out.put("gatks_apply_recalibration", toolGatksApplyRecalibration);
 				}
 				if (!Strings.isNullOrEmpty(toolGatksCombineVariants)) {
 					out.put("gatks_combine_variants", toolGatksCombineVariants);
 				}
+				if (!Strings.isNullOrEmpty(toolGatkSelectVariants)) {
+					out.put("gatk_select_variants", toolGatkSelectVariants);
+				}
 				if (!Strings.isNullOrEmpty(bcftoolsAnnotateVersion)) {
 					out.put("bcftools_annotate_version", bcftoolsAnnotateVersion);
+				}
+				if (!Strings.isNullOrEmpty(vepVersion)) {
+					out.put("vep_version", vepVersion);
 				}
 				return out;
 			}
