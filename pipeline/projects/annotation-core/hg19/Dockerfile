@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM docker.forome.org/forome/ensembl-vep:98
+FROM docker.forome.org/forome/ensembl-vep:98.GRCh37
 MAINTAINER Vladimir A. Ulitin <v.ulitin@mobin.me>
 
 USER root
