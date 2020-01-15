@@ -29,14 +29,15 @@ public class MainMakeDatabase {
 
 	private final static Logger log = LoggerFactory.getLogger(MainMakeDatabase.class);
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		try {
 			ParserArgument argumentParser = new ParserArgument(args);
 			Arguments arguments = argumentParser.arguments;
 
 			ArgumentsMake argumentsMake = (ArgumentsMake) arguments;
-			try (MakeDatabase makeConservation = new MakeDatabase(argumentsMake)) {
-				makeConservation.build();
+			try (MakeDatabase makeDatabase = new MakeDatabase(argumentsMake)) {
+				makeDatabase.buildInfo();
+				makeDatabase.buildRecords();
 			}
 
 			System.exit(0);

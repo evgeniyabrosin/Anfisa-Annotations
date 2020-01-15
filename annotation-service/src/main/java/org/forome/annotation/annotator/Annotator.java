@@ -60,7 +60,7 @@ public class Annotator {
 
 	private final static Logger log = LoggerFactory.getLogger(Annotator.class);
 
-	private static final int MAX_THREAD_COUNT = 1;// Runtime.getRuntime().availableProcessors() * 4;
+	private static final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 4;
 
 	private final EnsemblVepService ensemblVepService;
 	private final Processing processing;

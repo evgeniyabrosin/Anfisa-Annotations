@@ -20,6 +20,7 @@ package org.forome.annotation.makedatabase.main.argument;
 
 import com.google.common.base.Strings;
 import org.apache.commons.cli.CommandLine;
+import org.forome.annotation.struct.Assembly;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,6 +31,8 @@ public class ArgumentsMake extends Arguments {
 	public final Path config;
 
 	public final Path database;
+
+	public final Assembly assembly;
 
 	public ArgumentsMake(CommandLine cmd) {
 		super(cmd);
@@ -51,5 +54,11 @@ public class ArgumentsMake extends Arguments {
 		if (Files.exists(database) && !Files.isDirectory(database)) {
 			throw new IllegalArgumentException("path database is file: " + config);
 		}
+
+		String strAssembly = cmd.getOptionValue(ParserArgument.OPTION_ASSEMBLY);
+		if (Strings.isNullOrEmpty(strPathDatabase)) {
+			throw new IllegalArgumentException("Missing assembly");
+		}
+		assembly = Assembly.valueOf(strAssembly);
 	}
 }

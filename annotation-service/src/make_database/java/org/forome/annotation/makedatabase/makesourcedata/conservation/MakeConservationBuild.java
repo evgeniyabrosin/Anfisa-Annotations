@@ -56,6 +56,9 @@ public class MakeConservationBuild {
 	public MakeConservationBuild(Interval interval, MakeConservationBuild.GerpData[] values) {
 		this.interval = interval;
 		this.values = values;
+		if (values.length != interval.end - interval.start +1) {
+			throw new IllegalArgumentException();
+		}
 	}
 
 	public byte[] build() {

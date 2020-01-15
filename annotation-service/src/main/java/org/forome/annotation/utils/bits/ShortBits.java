@@ -24,6 +24,10 @@ public class ShortBits {
 		return (short) ((bytes[offset] << 8) | (bytes[offset + 1] & 0xff));
 	}
 
+	public static short fromByteArray(byte[] bytes) {
+		return fromByteArray(bytes,0);
+	}
+
 	public static byte[] toByteArray(short value) {
 		byte[] bytes = new byte[2];
 		bytes[0] = (byte) (value >> 8);

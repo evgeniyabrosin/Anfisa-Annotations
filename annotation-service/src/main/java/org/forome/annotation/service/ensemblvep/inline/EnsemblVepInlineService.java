@@ -21,7 +21,7 @@ package org.forome.annotation.service.ensemblvep.inline;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.config.ensemblvep.EnsemblVepConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
-import org.forome.annotation.connector.ref.RefConnector;
+import org.forome.annotation.data.ref.RefConnector;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.inline.runner.EnsemblVepRunner;
 import org.forome.annotation.service.ensemblvep.inline.runner.EnsemblVepSshRunner;

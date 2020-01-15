@@ -21,17 +21,17 @@ package org.forome.annotation.customvariant;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
-import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.clinvar.ClinvarConnector;
-import org.forome.annotation.connector.conservation.ConservationConnector;
-import org.forome.annotation.connector.gnomad.GnomadConnector;
-import org.forome.annotation.connector.gnomad.old.GnomadConnectorOld;
-import org.forome.annotation.connector.gtex.GTEXConnector;
-import org.forome.annotation.connector.gtf.GTFConnector;
-import org.forome.annotation.connector.hgmd.HgmdConnector;
-import org.forome.annotation.connector.liftover.LiftoverConnector;
-import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
-import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.forome.annotation.data.anfisa.AnfisaConnector;
+import org.forome.annotation.data.clinvar.ClinvarConnector;
+import org.forome.annotation.data.conservation.ConservationData;
+import org.forome.annotation.data.gnomad.GnomadConnector;
+import org.forome.annotation.data.gnomad.old.GnomadConnectorOld;
+import org.forome.annotation.data.gtex.GTEXConnector;
+import org.forome.annotation.data.gtf.GTFConnector;
+import org.forome.annotation.data.hgmd.HgmdConnector;
+import org.forome.annotation.data.liftover.LiftoverConnector;
+import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
+import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
@@ -59,7 +59,7 @@ public class CustomVariantMain {
 	private final DatabaseConnectService databaseConnectService;
 	private final GnomadConnector gnomadConnector;
 	private final SpliceAIConnector spliceAIConnector;
-	private final ConservationConnector conservationConnector;
+	private final ConservationData conservationConnector;
 	private final HgmdConnector hgmdConnector;
 	private final ClinvarConnector clinvarConnector;
 	private final LiftoverConnector liftoverConnector;
@@ -78,7 +78,7 @@ public class CustomVariantMain {
 		gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 //      gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-		conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
+		conservationConnector = new ConservationData(databaseConnectService, serviceConfig.conservationConfigConnector);
 		hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 		clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 		liftoverConnector = new LiftoverConnector();
@@ -110,7 +110,7 @@ public class CustomVariantMain {
 		);
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		try {
 			CustomVariantMain variantMain = new CustomVariantMain();
 
@@ -126,7 +126,7 @@ public class CustomVariantMain {
 	}
 
 	public static void crash(Throwable e) {
-		log.error("Application crashing ", e);
+		log.error("Application crashing", e);
 		System.exit(1);
 	}
 }

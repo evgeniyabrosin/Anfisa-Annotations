@@ -26,6 +26,7 @@ import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
 import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.database.struct.Metadata;
 import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.service.database.struct.packer.PackInterval;
 import org.forome.annotation.service.database.struct.record.Record;
@@ -51,10 +52,15 @@ public class DatabaseConnectService implements AutoCloseable {
 
 	private final static Logger log = LoggerFactory.getLogger(DatabaseConnectService.class);
 
+	public static final short VERSION_FORMAT = 1;
+
+	public static final String COLUMN_FAMILY_INFO = "info";
 	public static final String COLUMN_FAMILY_RECORD = "record";
 
 	private final RocksDB rocksDB;
 	private final Map<String, ColumnFamilyHandle> columnFamilies;
+
+	private final Metadata metadata;
 
 	private final SSHConnectService sshTunnelService;
 	private final Map<String, ComboPooledDataSource> dataSources;
@@ -79,14 +85,23 @@ public class DatabaseConnectService implements AutoCloseable {
 		} catch (RocksDBException e) {
 			throw new DatabaseException(e);
 		}
+
+		ColumnFamilyHandle columnFamilyInfo = getColumnFamily(COLUMN_FAMILY_INFO);
+//		if (columnFamilyInfo == null) {
+//			throw ExceptionBuilder.buildExternalDatabaseException("ColumnFamily not found");
+//		}
+		this.metadata = new Metadata(rocksDB, columnFamilyInfo);
+//		if (metadata.getFormatVersion() != VERSION_FORMAT) {
+//			throw new RuntimeException("Format version RocksDB is not correct: " + metadata.getFormatVersion());
+//		}
 	}
 
-	public RocksDB getRocksDB() {
-		return rocksDB;
-	}
-
-	public ColumnFamilyHandle getColumnFamily(String name) {
+	private ColumnFamilyHandle getColumnFamily(String name) {
 		return columnFamilies.get(name);
+	}
+
+	public Metadata getMetadata() {
+		return metadata;
 	}
 
 	public Record getRecord(Position position) {
@@ -110,7 +125,7 @@ public class DatabaseConnectService implements AutoCloseable {
 		}
 	}
 
-	public ComboPooledDataSource getDataSource(DatabaseConfigConnector databaseConfigConnector) throws Exception {
+	public ComboPooledDataSource getDataSource(DatabaseConfigConnector databaseConfigConnector) {
 		String keyDataSource = getKeyDataSource(databaseConfigConnector);
 		ComboPooledDataSource dataSource = dataSources.get(keyDataSource);
 		if (dataSource == null) {
@@ -125,44 +140,48 @@ public class DatabaseConnectService implements AutoCloseable {
 		return dataSource;
 	}
 
-	private ComboPooledDataSource connect(DatabaseConfigConnector databaseConfigConnector) throws Exception {
-		StringBuilder jdbcUrl = new StringBuilder("jdbc:mysql://")
-				.append(databaseConfigConnector.mysqlHost).append(':');
+	private ComboPooledDataSource connect(DatabaseConfigConnector databaseConfigConnector) {
+		try {
+			StringBuilder jdbcUrl = new StringBuilder("jdbc:mysql://")
+					.append(databaseConfigConnector.mysqlHost).append(':');
 
-		int mysqlUrlPort;
-		SshTunnelConfig sshTunnelConfig = databaseConfigConnector.sshTunnelConfig;
-		if (sshTunnelConfig != null) {
-			SSHConnect sshTunnel = sshTunnelService.getSSHConnect(
-					sshTunnelConfig.host,
-					sshTunnelConfig.port,
-					sshTunnelConfig.user,
-					sshTunnelConfig.key
-			);
-			mysqlUrlPort = sshTunnel.getTunnel(databaseConfigConnector.mysqlPort);
-		} else {
-			mysqlUrlPort = databaseConfigConnector.mysqlPort;
+			int mysqlUrlPort;
+			SshTunnelConfig sshTunnelConfig = databaseConfigConnector.sshTunnelConfig;
+			if (sshTunnelConfig != null) {
+				SSHConnect sshTunnel = sshTunnelService.getSSHConnect(
+						sshTunnelConfig.host,
+						sshTunnelConfig.port,
+						sshTunnelConfig.user,
+						sshTunnelConfig.key
+				);
+				mysqlUrlPort = sshTunnel.getTunnel(databaseConfigConnector.mysqlPort);
+			} else {
+				mysqlUrlPort = databaseConfigConnector.mysqlPort;
+			}
+			jdbcUrl.append(mysqlUrlPort).append('/').append(databaseConfigConnector.mysqlDatabase)
+					.append("?user=").append(databaseConfigConnector.mysqlUser)
+					.append("&password=").append(databaseConfigConnector.mysqlPassword)
+					.append("&useSSL=false");
+
+			String driverName = "com.mysql.jdbc.Driver";
+			Class.forName(driverName).newInstance();
+
+			ComboPooledDataSource pooledDataSource = new ComboPooledDataSource();
+			pooledDataSource.setDriverClass(driverName);
+			pooledDataSource.setJdbcUrl(jdbcUrl.toString());
+			pooledDataSource.setMinPoolSize(1);
+			pooledDataSource.setAcquireIncrement(1);
+			pooledDataSource.setMaxPoolSize(20);
+			pooledDataSource.setCheckoutTimeout((int) Duration.ofMinutes(1).toMillis());
+			pooledDataSource.setTestConnectionOnCheckin(false);
+			pooledDataSource.setTestConnectionOnCheckout(true);
+
+			log.debug("Database connected by: {}", databaseConfigConnector.mysqlHost);
+
+			return pooledDataSource;
+		} catch (Throwable ex) {
+			throw ExceptionBuilder.buildExternalDatabaseException(ex);
 		}
-		jdbcUrl.append(mysqlUrlPort).append('/').append(databaseConfigConnector.mysqlDatabase)
-				.append("?user=").append(databaseConfigConnector.mysqlUser)
-				.append("&password=").append(databaseConfigConnector.mysqlPassword)
-				.append("&useSSL=false");
-
-		String driverName = "com.mysql.jdbc.Driver";
-		Class.forName(driverName).newInstance();
-
-		ComboPooledDataSource pooledDataSource = new ComboPooledDataSource();
-		pooledDataSource.setDriverClass(driverName);
-		pooledDataSource.setJdbcUrl(jdbcUrl.toString());
-		pooledDataSource.setMinPoolSize(1);
-		pooledDataSource.setAcquireIncrement(1);
-		pooledDataSource.setMaxPoolSize(20);
-		pooledDataSource.setCheckoutTimeout((int) Duration.ofMinutes(1).toMillis());
-		pooledDataSource.setTestConnectionOnCheckin(false);
-		pooledDataSource.setTestConnectionOnCheckout(true);
-
-		log.debug("Database connected by: {}", databaseConfigConnector.mysqlHost);
-
-		return pooledDataSource;
 	}
 
 	private static String getKeyDataSource(DatabaseConfigConnector databaseConfigConnector) {

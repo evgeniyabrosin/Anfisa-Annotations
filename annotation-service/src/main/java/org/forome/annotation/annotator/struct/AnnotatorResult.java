@@ -25,9 +25,9 @@ import htsjdk.variant.vcf.VCFHeaderLine;
 import io.reactivex.Observable;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.connector.DatabaseConnector;
-import org.forome.annotation.connector.anfisa.AnfisaConnector;
+import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.processing.struct.ProcessingResult;
+import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
@@ -69,7 +69,7 @@ public class AnnotatorResult {
 			public final String annotationsBuild;
 			public final String reference;
 
-			public final List<DatabaseConnector.Metadata> metadataDatabases;
+			public final List<SourceMetadata> metadataDatabases;
 
 			private final String toolGatksCombineVariants;
 			private final String toolGatksApplyRecalibration;
@@ -136,13 +136,13 @@ public class AnnotatorResult {
 				}
 
 				metadataDatabases = new ArrayList<>();
-				metadataDatabases.addAll(anfisaConnector.clinvarConnector.getMetadata());
-				metadataDatabases.addAll(anfisaConnector.hgmdConnector.getMetadata());
-				metadataDatabases.addAll(anfisaConnector.spliceAIConnector.getMetadata());
-				metadataDatabases.addAll(anfisaConnector.conservationConnector.getMetadata());
-				metadataDatabases.addAll(anfisaConnector.gnomadConnector.getMetadata());
-				metadataDatabases.addAll(anfisaConnector.gtexConnector.getMetadata());
-				metadataDatabases.addAll(anfisaConnector.pharmGKBConnector.getMetadata());
+				metadataDatabases.addAll(anfisaConnector.clinvarConnector.getSourceMetadata());
+				metadataDatabases.addAll(anfisaConnector.hgmdConnector.getSourceMetadata());
+				metadataDatabases.addAll(anfisaConnector.spliceAIConnector.getSourceMetadata());
+				metadataDatabases.addAll(anfisaConnector.conservationData.getSourceMetadata());
+				metadataDatabases.addAll(anfisaConnector.gnomadConnector.getSourceMetadata());
+				metadataDatabases.addAll(anfisaConnector.gtexConnector.getSourceMetadata());
+				metadataDatabases.addAll(anfisaConnector.pharmGKBConnector.getSourceMetadata());
 				metadataDatabases.sort(Comparator.comparing(o -> o.product));
 			}
 
@@ -156,7 +156,7 @@ public class AnnotatorResult {
 				out.put("annotations", annotations);
 				out.put("annotations_build", annotationsBuild);
 				out.put("reference", reference);
-				for (DatabaseConnector.Metadata metadata : metadataDatabases) {
+				for (SourceMetadata metadata : metadataDatabases) {
 					StringBuilder value = new StringBuilder();
 					if (metadata.version != null) {
 						value.append(metadata.version);
