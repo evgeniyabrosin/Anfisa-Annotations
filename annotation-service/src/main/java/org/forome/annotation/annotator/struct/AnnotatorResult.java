@@ -60,7 +60,11 @@ public class AnnotatorResult {
 		public static class Versions {
 
 			private static Pattern PATTERN_GATK_VERSION = Pattern.compile(
-					"^<ID=(ApplyRecalibration|CombineVariants|SelectVariants),Version=(.*?)[,](.*)$", Pattern.CASE_INSENSITIVE
+					"^<ID=(ApplyRecalibration|CombineVariants|SelectVariants|HaplotypeCaller),Version=(.*?)[,](.*)$", Pattern.CASE_INSENSITIVE
+			);
+
+			private static Pattern PATTERN_VEP_VERSION = Pattern.compile(
+					"^v(.*?) (.*)$", Pattern.CASE_INSENSITIVE
 			);
 
 			public final Instant pipelineDate;
@@ -76,6 +80,7 @@ public class AnnotatorResult {
 			private final String toolGatksApplyRecalibration;
 			private final String toolGatkSelectVariants;
 			private final String bcftoolsAnnotateVersion;
+			private final String vepVersion;
 
 			public Versions(Path pathVepVcf, AnfisaConnector anfisaConnector) {
 				annotations = AppVersion.getVersionFormat();
@@ -151,6 +156,18 @@ public class AnnotatorResult {
 					} else {
 						bcftoolsAnnotateVersion = null;
 					}
+
+					VCFHeaderLine hlVepVersion = vcfHeader.getMetaDataLine("VEP");
+					if (hlVepVersion != null) {
+						Matcher matcher = PATTERN_VEP_VERSION.matcher(hlVepVersion.getValue());
+						if (!matcher.matches()) {
+							throw new RuntimeException("Not support format VEP version: " + hlVepVersion.getValue());
+						}
+						vepVersion = matcher.group(1);
+					} else {
+						vepVersion = null;
+					}
+
 				} else {
 					pipeline = null;
 					reference = null;
@@ -160,6 +177,7 @@ public class AnnotatorResult {
 					toolGatksCombineVariants = null;
 					toolGatkSelectVariants = null;
 					bcftoolsAnnotateVersion = null;
+					vepVersion = null;
 				}
 
 				metadataDatabases = new ArrayList<>();
@@ -210,6 +228,9 @@ public class AnnotatorResult {
 				}
 				if (!Strings.isNullOrEmpty(bcftoolsAnnotateVersion)) {
 					out.put("bcftools_annotate_version", bcftoolsAnnotateVersion);
+				}
+				if (!Strings.isNullOrEmpty(vepVersion)) {
+					out.put("vep_version", vepVersion);
 				}
 				return out;
 			}
