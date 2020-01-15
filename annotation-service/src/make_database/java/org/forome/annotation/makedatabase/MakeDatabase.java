@@ -19,17 +19,21 @@
 package org.forome.annotation.makedatabase;
 
 import org.forome.annotation.config.ServiceConfig;
-import org.forome.annotation.connector.conservation.ConservationConnector;
-import org.forome.annotation.connector.liftover.LiftoverConnector;
+import org.forome.annotation.data.conservation.ConservationDataMysql;
+import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.makedatabase.main.argument.ArgumentsMake;
 import org.forome.annotation.makedatabase.makesourcedata.conservation.MakeConservation;
 import org.forome.annotation.makedatabase.makesourcedata.conservation.MakeConservationBuild;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.database.struct.Metadata;
 import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.service.database.struct.packer.PackInterval;
 import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
+import org.forome.annotation.utils.bits.ShortBits;
+import org.forome.annotation.utils.bits.StringBits;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.OptimisticTransactionDB;
 import org.rocksdb.RocksDBException;
@@ -45,17 +49,21 @@ public class MakeDatabase implements AutoCloseable {
 
 	private final static Logger log = LoggerFactory.getLogger(MakeDatabase.class);
 
+	public final Assembly assembly;
+
 	protected final DatabaseConnectService databaseConnectService;
 
 	private final MakeDatabaseConnector makeDatabaseConnector;
 	private final OptimisticTransactionDB rocksDB;
 
 	public final LiftoverConnector liftoverConnector;
-	public final ConservationConnector conservationConnector;
+	public final ConservationDataMysql conservationConnector;
 
 	public final MakeConservation makeConservation;
 
 	public MakeDatabase(ArgumentsMake argumentsMake) throws Exception {
+		this.assembly = argumentsMake.assembly;
+
 		ServiceConfig serviceConfig = new ServiceConfig(argumentsMake.config);
 
 		SSHConnectService sshTunnelService = new SSHConnectService();
@@ -65,15 +73,35 @@ public class MakeDatabase implements AutoCloseable {
 		this.rocksDB = makeDatabaseConnector.rocksDB;
 
 		this.liftoverConnector = new LiftoverConnector();
-		this.conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
+		this.conservationConnector = new ConservationDataMysql(databaseConnectService, serviceConfig.conservationConfigConnector);
 
 		this.makeConservation = new MakeConservation(this);
 	}
 
-	public void build() throws RocksDBException, SQLException, IOException {
+	public void buildInfo() throws RocksDBException {
+		if (makeDatabaseConnector.getColumnFamily(DatabaseConnectService.COLUMN_FAMILY_INFO) != null) {
+			makeDatabaseConnector.dropColumnFamily(DatabaseConnectService.COLUMN_FAMILY_INFO);
+		}
+		ColumnFamilyHandle columnFamilyInfo = makeDatabaseConnector.createColumnFamily(DatabaseConnectService.COLUMN_FAMILY_INFO);
 
+		//Версия формата
+		rocksDB.put(
+				columnFamilyInfo,
+				StringBits.toByteArray(Metadata.KEY_FORMAT_VERSION),
+				ShortBits.toByteArray(DatabaseConnectService.VERSION_FORMAT)
+		);
 
-		//Заливаем данные
+		//Assembly
+		rocksDB.put(
+				columnFamilyInfo,
+				StringBits.toByteArray(Metadata.KEY_ASSEMBLY),
+				StringBits.toByteArray(assembly.name())
+		);
+
+		makeDatabaseConnector.rocksDB.compactRange(columnFamilyInfo);
+	}
+
+	public void buildRecords() throws RocksDBException, SQLException, IOException {
 		if (makeDatabaseConnector.getColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD) != null) {
 			makeDatabaseConnector.dropColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
 		}
@@ -100,7 +128,7 @@ public class MakeDatabase implements AutoCloseable {
 					);
 				}
 
-				if (start % 10000 == 0) {
+				if (start % 100000 == 0) {
 					log.debug("Write, chromosome: {}, position: {}", chromosome, start);
 				}
 			}

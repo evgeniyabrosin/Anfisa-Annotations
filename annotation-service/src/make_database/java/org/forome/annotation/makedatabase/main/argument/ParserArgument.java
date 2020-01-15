@@ -29,6 +29,8 @@ public class ParserArgument {
 
 	public static final String OPTION_PATH_DATABASE = "database";
 
+	public static final String OPTION_ASSEMBLY = "assembly";
+
 	public final Arguments arguments;
 
 	public ParserArgument(String[] args) throws InterruptedException {
@@ -46,6 +48,13 @@ public class ParserArgument {
 						.hasArg(true)
 						.optionalArg(false)
 						.desc("Absolute path to database")
+						.build())
+
+				.addOption(Option.builder()
+						.longOpt(OPTION_ASSEMBLY)
+						.hasArg(true)
+						.optionalArg(false)
+						.desc("Type assembly")
 						.build())
 				;
 

@@ -23,7 +23,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.config.ServiceConfig;
-import org.forome.annotation.connector.ref.RefConnector;
+import org.forome.annotation.data.ref.RefConnector;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
 import org.forome.annotation.service.ssh.SSHConnectService;

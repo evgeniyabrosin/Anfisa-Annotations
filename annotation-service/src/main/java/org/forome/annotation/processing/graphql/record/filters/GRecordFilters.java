@@ -22,7 +22,7 @@ import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import htsjdk.variant.variantcontext.CommonInfo;
 import htsjdk.variant.variantcontext.VariantContext;
-import org.forome.annotation.connector.anfisa.struct.AnfisaVariant;
+import org.forome.annotation.data.anfisa.struct.AnfisaVariant;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
 import org.forome.annotation.struct.variant.Genotype;

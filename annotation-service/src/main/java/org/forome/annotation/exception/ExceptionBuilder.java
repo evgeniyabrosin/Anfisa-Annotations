@@ -39,6 +39,10 @@ public class ExceptionBuilder {
 		return buildExternalDatabaseException(cause, null);
 	}
 
+	public static AnnotatorException buildExternalDatabaseException(String comment) {
+		return buildExternalDatabaseException(null, comment);
+	}
+
 	public static AnnotatorException buildExternalDatabaseException(Throwable cause, String comment) {
 		return EXCEPTION_FACTORY.build("external_database_error", comment, null, cause);
 	}

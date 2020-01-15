@@ -22,18 +22,18 @@ import com.google.common.base.Strings;
 import org.apache.commons.cli.*;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
-import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.clinvar.ClinvarConnector;
-import org.forome.annotation.connector.conservation.ConservationConnector;
-import org.forome.annotation.connector.gnomad.GnomadConnector;
-import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
-import org.forome.annotation.connector.gtex.GTEXConnector;
-import org.forome.annotation.connector.gtf.GTFConnector;
-import org.forome.annotation.connector.hgmd.HgmdConnector;
-import org.forome.annotation.connector.liftover.LiftoverConnector;
-import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
-import org.forome.annotation.connector.spliceai.SpliceAIConnector;
 import org.forome.annotation.controller.GetAnfisaJSONController;
+import org.forome.annotation.data.anfisa.AnfisaConnector;
+import org.forome.annotation.data.clinvar.ClinvarConnector;
+import org.forome.annotation.data.conservation.ConservationData;
+import org.forome.annotation.data.gnomad.GnomadConnector;
+import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.data.gtex.GTEXConnector;
+import org.forome.annotation.data.gtf.GTFConnector;
+import org.forome.annotation.data.hgmd.HgmdConnector;
+import org.forome.annotation.data.liftover.LiftoverConnector;
+import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
+import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
@@ -79,7 +79,7 @@ public class CustomInputMain {
 
 	private static GnomadConnector gnomadConnector;
 	private static SpliceAIConnector spliceAIConnector;
-	private static ConservationConnector conservationConnector;
+	private static ConservationData conservationConnector;
 	private static HgmdConnector hgmdConnector;
 	private static ClinvarConnector clinvarConnector;
 	private static LiftoverConnector liftoverConnector;
@@ -140,7 +140,7 @@ public class CustomInputMain {
 //            gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
 			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e));
 			spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-			conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
+			conservationConnector = new ConservationData(databaseConnectService, serviceConfig.conservationConfigConnector);
 			hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 			clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 			liftoverConnector = new LiftoverConnector();
@@ -225,6 +225,8 @@ public class CustomInputMain {
 					throw new RuntimeException();
 				}
 
+//				if (!"rs1042485".equals(l0)) continue;
+
 				for (String alt : alts) {
 					GetAnfisaJSONController.RequestItem requestItem = new GetAnfisaJSONController.RequestItem(
 							chromosome,
@@ -252,8 +254,8 @@ public class CustomInputMain {
 
 
 			LinkedHashMap<String, Sample> samples = new LinkedHashMap<>();
-//			samples.put("KCNJ12", new Sample(
-//					"KCNJ12", "KCNJ12", "", "0", "0", 0, true, null
+//			samples.put("KCNJ2", new Sample(
+//					"KCNJ2", "KCNJ12", "", "0", "0", 0, true, null
 //			));
 			MCase mCase = new MCase.Builder(samples, Collections.emptyList()).build();
 
@@ -291,11 +293,11 @@ public class CustomInputMain {
 			*/
 
 
-			OutputStream os = new GZIPOutputStream(Files.newOutputStream(Paths.get("KCNJ12_anfisa.json.gz")));
+			OutputStream os = new GZIPOutputStream(Files.newOutputStream(Paths.get("KCNJ2_anfisa.json.gz")));
 			BufferedOutputStream bos = new BufferedOutputStream(os);
 
 			AnnotatorResult.Metadata metadata = AnnotatorResult.Metadata.build(
-					"KCNJ12", null, mCase, processing.getAnfisaConnector()
+					"KCNJ2", null, mCase, processing.getAnfisaConnector()
 			);
 			bos.write(metadata.toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
 			bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));

@@ -19,18 +19,18 @@
 package org.forome.annotation;
 
 import org.forome.annotation.config.ServiceConfig;
-import org.forome.annotation.connector.anfisa.AnfisaConnector;
-import org.forome.annotation.connector.clinvar.ClinvarConnector;
-import org.forome.annotation.connector.conservation.ConservationConnector;
-import org.forome.annotation.connector.gnomad.GnomadConnector;
-import org.forome.annotation.connector.gnomad.GnomadConnectorImpl;
-import org.forome.annotation.connector.gtex.GTEXConnector;
-import org.forome.annotation.connector.gtf.GTFConnector;
-import org.forome.annotation.connector.hgmd.HgmdConnector;
-import org.forome.annotation.connector.liftover.LiftoverConnector;
-import org.forome.annotation.connector.pharmgkb.PharmGKBConnector;
-import org.forome.annotation.connector.ref.RefConnector;
-import org.forome.annotation.connector.spliceai.SpliceAIConnector;
+import org.forome.annotation.data.anfisa.AnfisaConnector;
+import org.forome.annotation.data.clinvar.ClinvarConnector;
+import org.forome.annotation.data.conservation.ConservationData;
+import org.forome.annotation.data.gnomad.GnomadConnector;
+import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.data.gtex.GTEXConnector;
+import org.forome.annotation.data.gtf.GTFConnector;
+import org.forome.annotation.data.hgmd.HgmdConnector;
+import org.forome.annotation.data.liftover.LiftoverConnector;
+import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
+import org.forome.annotation.data.ref.RefConnector;
+import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
@@ -50,7 +50,7 @@ public class AnfisaBaseTest {
 
 	protected static GnomadConnector gnomadConnector;
 	protected static SpliceAIConnector spliceAIConnector;
-	protected static ConservationConnector conservationConnector;
+	protected static ConservationData conservationConnector;
 	protected static HgmdConnector hgmdConnector;
 	protected static ClinvarConnector clinvarConnector;
 	protected static LiftoverConnector liftoverConnector;
@@ -75,7 +75,7 @@ public class AnfisaBaseTest {
 			Assert.fail();
 		});
 		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-		conservationConnector = new ConservationConnector(databaseConnectService, serviceConfig.conservationConfigConnector);
+		conservationConnector = new ConservationData(databaseConnectService, serviceConfig.conservationConfigConnector);
 		hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 		clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 		liftoverConnector = new LiftoverConnector();
