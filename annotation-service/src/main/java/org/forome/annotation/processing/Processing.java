@@ -32,9 +32,10 @@ import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.anfisa.struct.AnfisaInput;
 import org.forome.annotation.data.anfisa.struct.AnfisaResult;
 import org.forome.annotation.processing.graphql.record.GRecord;
+import org.forome.annotation.processing.smavariant.SplitMAVariant;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.processing.struct.ProcessingResult;
-import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.mavariant.MAVariant;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
 import org.slf4j.Logger;
@@ -78,27 +79,26 @@ public class Processing {
 
 	public List<ProcessingResult> exec(
 			MCase mCase,
-			Variant variant
+			MAVariant maVariant
 	) {
 		List<ProcessingResult> results = new ArrayList<>();
-		for (Allele altAllele : variant.getAltAllele()) {
-			results.add(
-					exec(mCase, variant, altAllele)
-			);
+		for (Variant variant : SplitMAVariant.split(maVariant)) {
+			ProcessingResult processingResult = exec(mCase, variant);
+			results.add(processingResult);
 		}
 		return results;
 	}
 
-	private ProcessingResult exec(
+	public ProcessingResult exec(
 			MCase mCase,
-			Variant variant, Allele altAllele
+			Variant variant
 	) {
 
 		JSONObject result = new JSONObject();
 
 		AnfisaResult anfisaResult = anfisaConnector.build(
 				new AnfisaInput.Builder().withSamples(mCase).build(),
-				variant, altAllele
+				variant
 		);
 		result.merge(anfisaResult.toJSON());
 
@@ -107,7 +107,7 @@ public class Processing {
 						.query(graphQLQuery)
 						.variables(Collections.emptyMap())
 						.context(
-								new GContext(mCase, variant, altAllele)
+								new GContext(mCase, variant)
 						)
 						.build()
 		);
@@ -129,8 +129,9 @@ public class Processing {
 		result.merge(graphQLResult);
 
 		return new ProcessingResult(
-				variant, altAllele,
+				variant,
 				result
 		);
 	}
+
 }

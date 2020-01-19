@@ -18,7 +18,6 @@
 
 package org.forome.annotation.customvariant;
 
-import net.minidev.json.JSONObject;
 import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
@@ -34,21 +33,12 @@ import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
-import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.ssh.SSHConnectService;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.mcase.MCase;
-import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class CustomVariantMain {
 
@@ -100,24 +90,24 @@ public class CustomVariantMain {
 		processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 	}
 
-	private List<ProcessingResult> build(VariantCustom variant, String alternative) throws ExecutionException, InterruptedException {
-		JSONObject vepJson = ensemblVepService.getVepJson(variant, alternative).get();
-		variant.setVepJson(vepJson);
-
-		return processing.exec(
-				new MCase.Builder(new LinkedHashMap<>(), Collections.emptyList()).build(),
-				variant
-		);
-	}
+//	private List<ProcessingResult> build(VariantCustom variant, String alternative) throws ExecutionException, InterruptedException {
+//		JSONObject vepJson = ensemblVepService.getVepJson(variant, alternative).get();
+//		variant.setVepJson(vepJson);
+//
+//		return processing.exec(
+//				new MCase.Builder(new LinkedHashMap<>(), Collections.emptyList()).build(),
+//				variant
+//		);
+//	}
 
 	public static void main(String[] args) {
 		try {
 			CustomVariantMain variantMain = new CustomVariantMain();
 
-			List<ProcessingResult> processingResults = variantMain.build(
-					new VariantCustom(Chromosome.of("11"), 2466481, 2466480), "AC"
-			);
-			log.debug("result: " + processingResults);
+//			List<ProcessingResult> processingResults = variantMain.build(
+//					new VariantCustom(Chromosome.of("11"), 2466481, 2466480), "AC"
+//			);
+//			log.debug("result: " + processingResults);
 
 			System.exit(0);
 		} catch (Throwable e) {

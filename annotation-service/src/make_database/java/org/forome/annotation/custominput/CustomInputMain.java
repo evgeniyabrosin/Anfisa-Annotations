@@ -288,14 +288,14 @@ public class CustomInputMain {
 							VariantVep variantVep = new VariantCustom(chromosome, start, end);
 							variantVep.setVepJson(vepJson);
 
-							List<ProcessingResult> processingResults = processing.exec(mCase, variantVep);
-							for (ProcessingResult processingResult : processingResults) {
+							ProcessingResult processingResult = processing.exec(mCase, variantVep);
+//							for (ProcessingResult processingResult : processingResults) {
 								String out = processingResult.toJSON().toJSONString();
 								bos.write(out.getBytes(StandardCharsets.UTF_8));
 								bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
 								log.debug("Processing {}", index++);
-							}
+//							}
 						}
 					}
 				}

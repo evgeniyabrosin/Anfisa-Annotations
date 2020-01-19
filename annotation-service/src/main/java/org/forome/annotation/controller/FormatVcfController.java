@@ -130,7 +130,7 @@ public class FormatVcfController {
 						add(variant.chromosome.getChromosome());
 						add(variant.getStart());
 						add(variant.end);
-						add(processingResult.altAllele.getBaseString());
+						add(processingResult.variant.getStrAlt());
 					}});
 					out.put("result", new JSONArray() {{
 						add(results);

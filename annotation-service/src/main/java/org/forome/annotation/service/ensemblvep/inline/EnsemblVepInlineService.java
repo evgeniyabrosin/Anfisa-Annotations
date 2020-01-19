@@ -92,14 +92,10 @@ public class EnsemblVepInlineService implements EnsemblVepService {
 		thread.start();
 	}
 
-	public CompletableFuture<JSONObject> getVepJson(Variant variant, String alternative) {
-		String reference = refConnector.getRef(variant);
-		return getVepJson(variant, reference, alternative);
-	}
-
 	@Override
-	public CompletableFuture<JSONObject> getVepJson(Variant variant, String reference, String alternative) {
-		return getVepJson(variant.chromosome, variant.getStart(), variant.end, reference, alternative);
+	public CompletableFuture<JSONObject> getVepJson(Variant variant) {
+		String reference = refConnector.getRef(variant);
+		return getVepJson(variant.chromosome, variant.getStart(), variant.end, reference, variant.getStrAlt());
 	}
 
 	@Override

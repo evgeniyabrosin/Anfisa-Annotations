@@ -27,9 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface EnsemblVepService extends Closeable {
 
-	CompletableFuture<JSONObject> getVepJson(Variant variant, String alternative);
-
-	CompletableFuture<JSONObject> getVepJson(Variant variant, String reference, String alternative);
+	CompletableFuture<JSONObject> getVepJson(Variant variant);
 
 	CompletableFuture<JSONObject> getVepJson(Chromosome chromosome, int start, int end, String alternative);
 

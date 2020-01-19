@@ -20,6 +20,7 @@ package org.forome.annotation.iterator.cnv;
 
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.mavariant.MAVariantCNV;
 import org.forome.annotation.struct.variant.cnv.GenotypeCNV;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
 
@@ -59,7 +60,7 @@ public class CNVFileIterator implements AutoCloseable {
 	private List<String> samples;
 	private Map<String, Integer> columns;
 
-	private VariantCNV nextVariant;
+	private MAVariantCNV nextVariant;
 
 	private CNVFileRecord nextProcessedRecord;
 
@@ -105,13 +106,13 @@ public class CNVFileIterator implements AutoCloseable {
 		return (nextVariant != null);
 	}
 
-	public VariantCNV next() throws NoSuchElementException {
+	public MAVariantCNV next() throws NoSuchElementException {
 		if (nextVariant == null) {
 			throw new NoSuchElementException();
 		}
 
 		try {
-			VariantCNV result = nextVariant;
+			MAVariantCNV result = nextVariant;
 			if (nextProcessedRecord != null) {
 				nextVariant = readVariant(nextProcessedRecord);
 			} else {
@@ -123,7 +124,7 @@ public class CNVFileIterator implements AutoCloseable {
 		}
 	}
 
-	private VariantCNV readVariant(CNVFileRecord record) throws IOException {
+	private MAVariantCNV readVariant(CNVFileRecord record) throws IOException {
 		List<CNVFileRecord> records = new ArrayList<>();
 		records.add(record);
 
@@ -165,13 +166,15 @@ public class CNVFileIterator implements AutoCloseable {
 			genotypes.add(new GenotypeCNV(sample, gt, lo));
 		}
 
-		return new VariantCNV(
+		VariantCNV variantCNV = new VariantCNV(
 				record.chromosome,
 				record.start, record.end,
 				new ArrayList<>(exonNums),
 				new ArrayList<>(transcripts),
 				genotypes
 		);
+
+		return new MAVariantCNV(variantCNV);
 	}
 
 	private CNVFileRecord buildRecord(String line) {

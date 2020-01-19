@@ -25,10 +25,6 @@ import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public abstract class VariantVep extends Variant {
 
 	private JSONObject vepJson;
@@ -62,18 +58,12 @@ public abstract class VariantVep extends Variant {
 	}
 
 	@Override
-	public List<Allele> getAltAllele() {
+	public Allele getAlt() {
 		String[] ss = vepJson.getAsString("allele_string").split("/");
-		List<Allele> result = new ArrayList<>();
-		for (int i = 1; i < ss.length; i++) {
-			result.add(new Allele(ss[i]));
+		if (ss.length != 2) {
+			throw new RuntimeException("Exception multi allele! " + vepJson.getAsString("allele_string"));
 		}
-		return result;
-	}
-
-	@Override
-	public List<String> getStrAltAllele() {
-		return getAltAllele().stream().map(Allele::getBaseString).collect(Collectors.toList());
+		return new Allele(ss[1]);
 	}
 
 	public String getMostSevereConsequence() {
@@ -81,11 +71,11 @@ public abstract class VariantVep extends Variant {
 	}
 
 	@Override
-	public String getId(){
+	public String getId() {
 		return vepJson.getAsString("id");
 	}
 
-	public JSONArray getTranscriptConsequences(){
+	public JSONArray getTranscriptConsequences() {
 		return (JSONArray) vepJson.get("transcript_consequences");
 	}
 }

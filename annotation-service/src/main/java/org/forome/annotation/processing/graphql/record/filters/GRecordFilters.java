@@ -51,7 +51,7 @@ public class GRecordFilters {
 	@GraphQLName("fs")
 	public double getFS() {
 		if (variant instanceof VariantVCF) {
-			VariantContext variantContext = ((VariantVCF) variant).variantContext;
+			VariantContext variantContext = ((VariantVCF) variant).maVariantVCF.variantContext;
 			CommonInfo commonInfo = variantContext.getCommonInfo();
 			return MathUtils.toPrimitiveDouble(commonInfo.getAttribute("FS"));
 		} else {
@@ -63,7 +63,7 @@ public class GRecordFilters {
 	@GraphQLName("qd")
 	public double getQD() {
 		if (variant instanceof VariantVCF) {
-			VariantContext variantContext = ((VariantVCF) variant).variantContext;
+			VariantContext variantContext = ((VariantVCF) variant).maVariantVCF.variantContext;
 			CommonInfo commonInfo = variantContext.getCommonInfo();
 			return MathUtils.toPrimitiveDouble(commonInfo.getAttribute("QD"));
 		} else {
@@ -75,7 +75,7 @@ public class GRecordFilters {
 	@GraphQLName("mq")
 	public double getMQ() {
 		if (variant instanceof VariantVCF) {
-			VariantContext variantContext = ((VariantVCF) variant).variantContext;
+			VariantContext variantContext = ((VariantVCF) variant).maVariantVCF.variantContext;
 			CommonInfo commonInfo = variantContext.getCommonInfo();
 			Object oMQAttribute = commonInfo.getAttribute("MQ");
 			if ("nan".equals(oMQAttribute)) {//В кейсе ipm0001 встретилась такая ситуация

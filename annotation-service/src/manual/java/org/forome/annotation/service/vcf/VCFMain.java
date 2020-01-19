@@ -18,7 +18,6 @@
 
 package org.forome.annotation.service.vcf;
 
-import net.minidev.json.JSONObject;
 import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
@@ -35,19 +34,15 @@ import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.iterator.vcf.VCFFileIterator;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
-import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.ssh.SSHConnectService;
-import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 public class VCFMain {
 
@@ -85,20 +80,20 @@ public class VCFMain {
 		Path pathVcf = Paths.get("/home/kris/processtech/tmp/newvcf/HG002_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-22_v.3.3.2_highconf_triophased.vcf");
 		VCFFileIterator vcfFileIterator = new VCFFileIterator(pathVcf);
 
-		while (true) {
-			try {
-				VariantVep variant = vcfFileIterator.next();
-				JSONObject vepJson = ensemblVepService.getVepJson(variant, "-").get();
-				variant.setVepJson(vepJson);
-
-				List<ProcessingResult> processingResults = processing.exec(null, variant);
-				for (ProcessingResult processingResult: processingResults) {
-					log.debug("processingResult: " + processingResult);
-				}
-			} catch (NoSuchElementException e) {
-				break;
-			}
-		}
+//		while (true) {
+//			try {
+//				MAVariantVep variant = vcfFileIterator.next();
+//				JSONObject vepJson = ensemblVepService.getVepJson(variant).get();
+//				variant.setVepJson(vepJson);
+//
+//				List<ProcessingResult> processingResults = processing.exec(null, variant);
+//				for (ProcessingResult processingResult: processingResults) {
+//					log.debug("processingResult: " + processingResult);
+//				}
+//			} catch (NoSuchElementException e) {
+//				break;
+//			}
+//		}
 
 		log.debug("end");
 	}
