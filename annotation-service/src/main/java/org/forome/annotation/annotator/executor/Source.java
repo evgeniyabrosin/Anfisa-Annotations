@@ -13,48 +13,48 @@ import java.util.Objects;
 
 class Source {
 
-    private final static Logger log = LoggerFactory.getLogger(Source.class);
+	private final static Logger log = LoggerFactory.getLogger(Source.class);
 
-    public final VariantVep variant;
-    public final JSONObject vepJson;
+	public final VariantVep variant;
+	public final JSONObject vepJson;
 
-    public Source(VariantVep variant, JSONObject vepJson) {
-        this.variant = variant;
-        this.vepJson = vepJson;
+	public Source(VariantVep variant, JSONObject vepJson) {
+		this.variant = variant;
+		this.vepJson = vepJson;
 
-        variant.setVepJson(vepJson);
+		variant.setVepJson(vepJson);
 
-        //Валидация на соотвествие строк
-        if (variant instanceof VariantVCF) {
-            VariantContext variantContext = ((VariantVCF) variant).variantContext;
+		//Валидация на соотвествие строк
+		if (variant instanceof VariantVCF) {
+			VariantContext variantContext = ((VariantVCF) variant).variantContext;
 
-            String[] vepJsonInput = vepJson.getAsString("input").split("\t");
+			String[] vepJsonInput = vepJson.getAsString("input").split("\t");
 
-            String vcfChromosome = RequestParser.toChromosome(variantContext.getContig());
-            String vepJsonChromosome = RequestParser.toChromosome(vepJsonInput[0]);
-            if (!vcfChromosome.equals(vepJsonChromosome)) {
-                throw new RuntimeException(
-                        String.format("Not equals chromosome, vcf %s and vep.json %s", vcfChromosome, vepJsonChromosome)
-                );
-            }
+			String vcfChromosome = RequestParser.toChromosome(variantContext.getContig());
+			String vepJsonChromosome = RequestParser.toChromosome(vepJsonInput[0]);
+			if (!vcfChromosome.equals(vepJsonChromosome)) {
+				throw new RuntimeException(
+						String.format("Not equals chromosome, vcf %s and vep.json %s", vcfChromosome, vepJsonChromosome)
+				);
+			}
 
-            String vcfId = variantContext.getID();
-            String vepJsonId = vepJsonInput[2];
-            if (!vcfId.equals(vepJsonId)) {
-                throw new RuntimeException(
-                        String.format("Not equals id, vcf %s and vep.json %s", vcfId, vepJsonId)
-                );
-            }
+			String vcfId = variantContext.getID();
+			String vepJsonId = vepJsonInput[2];
+			if (!vcfId.equals(vepJsonId)) {
+				throw new RuntimeException(
+						String.format("Not equals id, vcf %s and vep.json %s", vcfId, vepJsonId)
+				);
+			}
 
-            //Валидация позиций
-            if (!Objects.equals(
-                    Chromosome.of(variantContext.getContig()),
-                    Chromosome.of(vepJson.getAsString("seq_region_name"))
-            )) {
-                throw new RuntimeException(
-                        String.format("Not equals chromosome, vcf %s and vep.json %s", variantContext.getContig(), vepJson)
-                );
-            }
+			//Валидация позиций
+			if (!Objects.equals(
+					Chromosome.of(variantContext.getContig()),
+					Chromosome.of(vepJson.getAsString("seq_region_name"))
+			)) {
+				throw new RuntimeException(
+						String.format("Not equals chromosome, vcf %s and vep.json %s", variantContext.getContig(), vepJson)
+				);
+			}
 //            if (VariantVCF.getStart(variantContext) != vepJson.getAsNumber("start").intValue()) {
 //                throw new RuntimeException(
 //                        String.format("Not equals start, vcf: %s, vep.json: %s, input: %s",
@@ -63,16 +63,16 @@ class Source {
 //                        )
 //                );
 //            }
-            if (VariantVCF.getEnd(variantContext) != vepJson.getAsNumber("end").intValue()) {
-                throw new RuntimeException(
-                        String.format("Not equals end, vcf: %s, vep.json: %s, input: %s",
-                                VariantVCF.getEnd(variantContext), vepJson.getAsNumber("end"),
-                                vepJson.getAsString("input")
-                        )
-                );
-            }
+			if (Math.abs(VariantVCF.getEnd(variantContext) - vepJson.getAsNumber("end").intValue()) > 1) {
+				throw new RuntimeException(
+						String.format("Not equals end, vcf: %s, vep.json: %s, input: %s",
+								VariantVCF.getEnd(variantContext), vepJson.getAsNumber("end"),
+								vepJson.getAsString("input")
+						)
+				);
+			}
 
-            //Валидация VariantType
+			//Валидация VariantType
 //            String vepVariantType = vepJson.getAsString("variant_class");
 //            VariantType vcfVariantType = variant.getVariantType();
 //            log.debug("{} {}", vepVariantType, vcfVariantType);
@@ -85,6 +85,6 @@ class Source {
 //                );
 //            }
 
-        }
-    }
+		}
+	}
 }
