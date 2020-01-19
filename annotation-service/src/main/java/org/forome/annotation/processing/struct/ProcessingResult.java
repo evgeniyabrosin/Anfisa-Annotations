@@ -19,19 +19,16 @@
 package org.forome.annotation.processing.struct;
 
 import net.minidev.json.JSONObject;
-import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.variant.Variant;
 
 public class ProcessingResult {
 
 	public final Variant variant;
-	public final Allele altAllele;
 
 	private final JSONObject out;
 
-	public ProcessingResult(Variant variant, Allele altAllele, JSONObject out) {
+	public ProcessingResult(Variant variant,  JSONObject out) {
 		this.variant = variant;
-		this.altAllele = altAllele;
 		this.out = out;
 	}
 

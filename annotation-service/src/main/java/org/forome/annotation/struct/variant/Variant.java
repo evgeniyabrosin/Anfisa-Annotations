@@ -22,9 +22,6 @@ import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mcase.Sample;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 public abstract class Variant {
 
 	public final Chromosome chromosome;
@@ -49,10 +46,10 @@ public abstract class Variant {
 
 	public abstract String getRef();
 
-	public abstract List<Allele> getAltAllele();
+	public abstract Allele getAlt();
 
-	public List<String> getStrAltAllele() {
-		return getAltAllele().stream().map(Allele::getBaseString).collect(Collectors.toList());
+	public String getStrAlt() {
+		return getAlt().getBaseString();
 	}
 
 	public abstract String getMostSevereConsequence();

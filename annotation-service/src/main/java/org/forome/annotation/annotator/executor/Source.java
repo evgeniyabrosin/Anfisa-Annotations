@@ -22,8 +22,9 @@ import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.mavariant.MAVariantVCF;
+import org.forome.annotation.struct.mavariant.MAVariantVep;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
-import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,18 +34,18 @@ class Source {
 
 	private final static Logger log = LoggerFactory.getLogger(Source.class);
 
-	public final VariantVep variant;
+	public final MAVariantVep variant;
 	public final JSONObject vepJson;
 
-	public Source(VariantVep variant, JSONObject vepJson) {
+	public Source(MAVariantVep variant, JSONObject vepJson) {
 		this.variant = variant;
 		this.vepJson = vepJson;
 
 		variant.setVepJson(vepJson);
 
 		//Валидация на соотвествие строк
-		if (variant instanceof VariantVCF) {
-			VariantContext variantContext = ((VariantVCF) variant).variantContext;
+		if (variant instanceof MAVariantVCF) {
+			VariantContext variantContext = ((MAVariantVCF) variant).variantContext;
 
 			String[] vepJsonInput = vepJson.getAsString("input").split("\t");
 
@@ -89,19 +90,6 @@ class Source {
 						)
 				);
 			}
-
-			//Валидация VariantType
-//            String vepVariantType = vepJson.getAsString("variant_class");
-//            VariantType vcfVariantType = variant.getVariantType();
-//            log.debug("{} {}", vepVariantType, vcfVariantType);
-//            if (!vepVariantType.equals(vcfVariantType.toJSON())) {
-//                throw new RuntimeException(
-//                        String.format("Not equals VariantType, vcf: %s, vep.json: %s, input: %s",
-//                                vcfVariantType, vepVariantType,
-//                                vepJson.getAsString("input")
-//                        )
-//                );
-//            }
 
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,18 +16,22 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.struct;
+package org.forome.annotation.struct.mavariant;
 
-import org.forome.annotation.struct.mcase.MCase;
-import org.forome.annotation.struct.variant.Variant;
+import net.minidev.json.JSONObject;
 
-public class GContext {
+public class MAVariantVep extends MAVariant {
 
-	public final MCase mCase;
-	public final Variant variant;
+	private JSONObject vepJson;
 
-	public GContext(MCase mCase, Variant variant) {
-		this.mCase = mCase;
-		this.variant = variant;
+	public MAVariantVep() {
+	}
+
+	public void setVepJson(JSONObject vepJson) {
+		this.vepJson = vepJson;
+	}
+
+	public JSONObject getVepJson() {
+		return vepJson;
 	}
 }

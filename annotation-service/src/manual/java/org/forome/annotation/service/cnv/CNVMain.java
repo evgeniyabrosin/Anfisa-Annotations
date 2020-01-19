@@ -47,7 +47,6 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class CNVMain {
 
@@ -85,15 +84,13 @@ public class CNVMain {
 		CNVFileIterator cnvFileIterator = new CNVFileIterator(pathVcf);
 
 		while (cnvFileIterator.hasNext()) {
-			VariantCNV variant = cnvFileIterator.next();
-			JSONObject vepJson = ensemblVepService.getVepJson(variant, "-").get();
+			VariantCNV variant = cnvFileIterator.next().variantCNV;
+			JSONObject vepJson = ensemblVepService.getVepJson(variant).get();
 			variant.setVepJson(vepJson);
 
 			AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
-			List<ProcessingResult> processingResults = processing.exec(null, variant);
-			for (ProcessingResult processingResult: processingResults) {
-				log.debug("processingResult: " + processingResult);
-			}
+			ProcessingResult processingResult = processing.exec(null, variant);
+			log.debug("processingResult: " + processingResult);
 		}
 
 		log.debug("end");

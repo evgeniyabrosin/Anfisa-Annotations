@@ -83,7 +83,7 @@ public class ClinvarConnector implements AutoCloseable {
 		this.databaseConnector = new DatabaseConnector(databaseConnectService, clinVarConfigConnector);
 	}
 
-	public List<SourceMetadata> getSourceMetadata(){
+	public List<SourceMetadata> getSourceMetadata() {
 		return databaseConnector.getSourceMetadata();
 	}
 
@@ -153,15 +153,13 @@ public class ClinvarConnector implements AutoCloseable {
 		return addSubmittersToRows(rows);
 	}
 
-	public List<ClinvarResult> getData(String chromosome, long qStart, long qEnd, List<String> alts) {
+	public List<ClinvarResult> getData(String chromosome, long qStart, long qEnd, String alt) {
 		List<Row> rows = new ArrayList<>();
 		try (Connection connection = databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
-				for (String alt : alts) {
-					try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_EXACT, chromosome, qStart, qEnd, alt))) {
-						while (resultSet.next()) {
-							rows.add(_build(resultSet));
-						}
+				try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_EXACT, chromosome, qStart, qEnd, alt))) {
+					while (resultSet.next()) {
+						rows.add(_build(resultSet));
 					}
 				}
 

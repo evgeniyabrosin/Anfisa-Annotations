@@ -24,8 +24,8 @@ import htsjdk.variant.vcf.VCFFileReader;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.iterator.cnv.CNVFileIterator;
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.variant.vcf.VariantVCF;
-import org.forome.annotation.struct.variant.vep.VariantVep;
+import org.forome.annotation.struct.mavariant.MAVariantVCF;
+import org.forome.annotation.struct.mavariant.MAVariantVep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,14 +64,14 @@ public class VCFFileIterator implements AutoCloseable {
 		}
 	}
 
-	public VariantVep next() throws NoSuchElementException {
+	public MAVariantVep next() throws NoSuchElementException {
 		while (true) {
 			if (vcfFileReaderIterator.hasNext()) {
 				VariantContext variantContext = vcfFileReaderIterator.next();
 				if (!Chromosome.isSupportChromosome(variantContext.getContig())) {
 					continue;//Игнорируем непонятные хромосомы
 				}
-				return new VariantVCF(variantContext);
+				return new MAVariantVCF(variantContext);
 			} else if (cnvFileIterator != null && cnvFileIterator.hasNext()) {
 				return cnvFileIterator.next();
 			} else {

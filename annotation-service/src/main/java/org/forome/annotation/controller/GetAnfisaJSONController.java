@@ -52,7 +52,7 @@ import java.util.concurrent.CompletionException;
  * http://localhost:8095/GetAnfisaJSON?session=...&data=[{"chromosome": "1", "start": 6484880, "end": 6484880, "alternative": "G"}]
  */
 @Controller
-@RequestMapping(value = {"/GetAnfisaData", "/annotationservice/GetAnfisaData", "/GetAnfisaJSON", "/annotationservice/GetAnfisaJSON"})
+@RequestMapping(value = { "/GetAnfisaData", "/annotationservice/GetAnfisaData", "/GetAnfisaJSON", "/annotationservice/GetAnfisaJSON" })
 public class GetAnfisaJSONController {
 
 	private final static Logger log = LoggerFactory.getLogger(GetAnfisaJSONController.class);
@@ -72,7 +72,7 @@ public class GetAnfisaJSONController {
 		}
 	}
 
-	@RequestMapping(value = {"", "/"})
+	@RequestMapping(value = { "", "/" })
 	public CompletableFuture<ResponseEntity> execute(HttpServletRequest request) {
 		Service service = Service.getInstance();
 
@@ -98,7 +98,7 @@ public class GetAnfisaJSONController {
 
 				ArrayList<RequestItem> requestItems = parseRequestData(sRequestData);
 
-				List<CompletableFuture<List<ProcessingResult>>> futureProcessingResults = new ArrayList<>();
+				List<CompletableFuture<ProcessingResult>> futureProcessingResults = new ArrayList<>();
 
 				AnfisaConnector anfisaConnector = service.getAnfisaConnector();
 				Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
@@ -119,23 +119,21 @@ public class GetAnfisaJSONController {
 							JSONArray results = new JSONArray();
 							for (int i = 0; i < requestItems.size(); i++) {
 								RequestItem requestItem = requestItems.get(i);
+								ProcessingResult processingResult = futureProcessingResults.get(i).join();
 
-								List<ProcessingResult> processingResults = futureProcessingResults.get(i).join();
-								for (ProcessingResult processingResult: processingResults) {
-									JSONObject result = new JSONObject();
-									result.put("input", new JSONArray() {{
-										add(requestItem.chromosome);
-										add(requestItem.start);
-										add(requestItem.end);
-										add(requestItem.alternative);
-									}});
+								JSONObject result = new JSONObject();
+								result.put("input", new JSONArray() {{
+									add(requestItem.chromosome);
+									add(requestItem.start);
+									add(requestItem.end);
+									add(requestItem.alternative);
+								}});
 
-									JSONArray outAnfisaResults = new JSONArray();
-									outAnfisaResults.add(processingResult.toJSON());
-									result.put("result", outAnfisaResults);
+								JSONArray outAnfisaResults = new JSONArray();
+								outAnfisaResults.add(processingResult.toJSON());
+								result.put("result", outAnfisaResults);
 
-									results.add(result);
-								}
+								results.add(result);
 							}
 
 							long t2 = System.currentTimeMillis();

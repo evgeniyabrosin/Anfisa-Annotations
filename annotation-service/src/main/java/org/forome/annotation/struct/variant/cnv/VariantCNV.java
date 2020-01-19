@@ -78,15 +78,15 @@ public class VariantCNV extends VariantVep {
 	}
 
 	@Override
-	public List<Allele> getAltAllele() {
-		return Collections.singletonList(Allele.EMPTY);
+	public Allele getAlt() {
+		return Allele.EMPTY;
 	}
 
 	protected String getAllele(int index) {
 		if (index == 0) {
 			return getRef();
 		} else {
-			return getStrAltAllele().get(index - 1);
+			return getStrAlt();
 		}
 	}
 

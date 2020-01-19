@@ -18,25 +18,25 @@
 
 package org.forome.annotation.annotator.executor;
 
-import htsjdk.variant.variantcontext.Allele;
-import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.iterator.json.JsonFileIterator;
 import org.forome.annotation.iterator.vcf.VCFFileIterator;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.struct.mavariant.MAVariant;
+import org.forome.annotation.struct.mavariant.MAVariantCNV;
+import org.forome.annotation.struct.mavariant.MAVariantVCF;
+import org.forome.annotation.struct.mavariant.MAVariantVep;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
-import org.forome.annotation.struct.variant.cnv.VariantCNV;
-import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -134,34 +134,41 @@ public class ThreadExecutor implements AutoCloseable {
 					continue;
 				}
 
-				Variant variant = source.variant;
+				MAVariant maVariant = source.variant;
 
-				if (variant instanceof VariantVCF && vepJsonIterator != null) {
-					List<ProcessingResult> processingResults = processing.exec(samples, variant);
+				if (maVariant instanceof MAVariantVCF && vepJsonIterator != null) {
+					List<ProcessingResult> processingResults = processing.exec(samples, maVariant);
 
 					result.future.complete(processingResults);
 				} else {
-					String alternative;
-					if (variant instanceof VariantVCF) {
-						VariantContext variantContext = ((VariantVCF) variant).variantContext;
+//					String alternative;
+//					if (variant instanceof MAVariantVCF) {
+//						VariantContext variantContext = ((MAVariantVCF) variant).variantContext;
+//
+//						Allele allele = variantContext.getAlternateAlleles().stream()
+//								.filter(iAllele -> !iAllele.getDisplayString().equals("*"))
+//								.max(Comparator.comparing(variantContext::getCalledChrCount))
+//								.orElse(null);
+//						alternative = allele.getDisplayString();
+//					} else if (variant instanceof MAVariantCNV) {
+//						alternative = "-";
+//					} else {
+//						throw new RuntimeException("Not support type variant: " + variant);
+//					}
 
-						Allele allele = variantContext.getAlternateAlleles().stream()
-								.filter(iAllele -> !iAllele.getDisplayString().equals("*"))
-								.max(Comparator.comparing(variantContext::getCalledChrCount))
-								.orElse(null);
-						alternative = allele.getDisplayString();
-					} else if (variant instanceof VariantCNV) {
-						alternative = "-";
+					Variant variant;
+					if (maVariant instanceof MAVariantCNV) {
+						variant = ((MAVariantCNV) maVariant).variantCNV;
 					} else {
-						throw new RuntimeException("Not support type variant: " + variant);
+						throw new RuntimeException("Not support type maVariant: " + maVariant);
 					}
 
-					ensemblVepService.getVepJson(variant, alternative)
+					ensemblVepService.getVepJson(variant)
 							.thenApply(iVepJson -> {
 								((VariantVep) variant).setVepJson(iVepJson);
 
-								List<ProcessingResult> processingResults = processing.exec(samples, variant);
-								result.future.complete(processingResults);
+								ProcessingResult processingResult = processing.exec(samples, variant);
+								result.future.complete(Collections.singletonList(processingResult));
 								return null;
 							})
 							.exceptionally(throwable -> {
@@ -190,7 +197,7 @@ public class ThreadExecutor implements AutoCloseable {
 
 	private Source nextSource(int step) {
 		if (step < 1) throw new IllegalArgumentException();
-		VariantVep variantVep = null;
+		MAVariantVep variantVep = null;
 		JSONObject vepJson = null;
 		for (int i = 0; i < step; i++) {
 			try {
@@ -206,7 +213,7 @@ public class ThreadExecutor implements AutoCloseable {
 				}
 				throw ne;
 			}
-			if (variantVep instanceof VariantVCF && vepJsonIterator != null) {
+			if (variantVep instanceof MAVariantVCF && vepJsonIterator != null) {
 				try {
 					vepJson = vepJsonIterator.next();
 				} catch (NoSuchElementException ne) {

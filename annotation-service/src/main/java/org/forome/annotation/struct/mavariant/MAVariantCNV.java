@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,18 +16,15 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.struct;
+package org.forome.annotation.struct.mavariant;
 
-import org.forome.annotation.struct.mcase.MCase;
-import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.cnv.VariantCNV;
 
-public class GContext {
+public class MAVariantCNV extends MAVariantVep {
 
-	public final MCase mCase;
-	public final Variant variant;
+	public final VariantCNV variantCNV;
 
-	public GContext(MCase mCase, Variant variant) {
-		this.mCase = mCase;
-		this.variant = variant;
+	public MAVariantCNV(VariantCNV variantCNV) {
+		this.variantCNV = variantCNV;
 	}
 }

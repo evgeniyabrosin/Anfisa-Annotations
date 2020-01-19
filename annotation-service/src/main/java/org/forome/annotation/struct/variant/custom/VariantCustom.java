@@ -18,6 +18,7 @@
 
 package org.forome.annotation.struct.variant.custom;
 
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.vep.VariantVep;
@@ -38,6 +39,16 @@ public class VariantCustom extends VariantVep {
 
 	@Override
 	public Genotype getGenotype(String sample) {
+		return null;
+	}
+
+	@Override
+	public String getRef() {
+		return null;
+	}
+
+	@Override
+	public Allele getAlt() {
 		return null;
 	}
 }

@@ -35,15 +35,10 @@ public class EnsemblVepExternalService implements EnsemblVepService {
 	}
 
 	@Override
-	public CompletableFuture<JSONObject> getVepJson(Variant variant, String alternative) {
+	public CompletableFuture<JSONObject> getVepJson(Variant variant) {
 		String region = String.format("%s:%s:%s", variant.chromosome.getChar(), variant.getStart(), variant.end);
-		String endpoint = String.format("/vep/human/region/%s/%s?hgvs=true&canonical=true&merged=true&protein=true&variant_class=true", region, alternative);
+		String endpoint = String.format("/vep/human/region/%s/%s?hgvs=true&canonical=true&merged=true&protein=true&variant_class=true", region, variant.getStrAlt());
 		return ensemblVepHttpClient.request(endpoint).thenApply(jsonArray -> (JSONObject) jsonArray.get(0));
-	}
-
-	@Override
-	public CompletableFuture<JSONObject> getVepJson(Variant variant, String reference, String alternative) {
-		return getVepJson(variant, alternative);
 	}
 
 	@Override

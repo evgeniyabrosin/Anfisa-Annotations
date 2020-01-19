@@ -21,34 +21,41 @@ package org.forome.annotation.struct.variant.vcf;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.mavariant.MAVariantVCF;
 import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class VariantVCF extends VariantVep {
 
-	public final VariantContext variantContext;
+	public final MAVariantVCF maVariantVCF;
 
-	public VariantVCF(VariantContext variantContext) {
+	private final Allele alt;
+
+	public VariantVCF(MAVariantVCF maVariantVCF, Allele alt) {
 		super(
-				Chromosome.of(variantContext.getContig()),
-				getEnd(variantContext)
+				Chromosome.of(maVariantVCF.variantContext.getContig()),
+				getEnd(maVariantVCF.variantContext)
 		);
-		this.variantContext = variantContext;
+		this.maVariantVCF = maVariantVCF;
+
+		this.alt = alt;
 	}
 
 	@Override
 	public Genotype getGenotype(String sample) {
-		return new GenotypeVCF(variantContext, sample);
+		return new GenotypeVCF(maVariantVCF.variantContext, sample);
 	}
 
 	@Override
 	public String getRef() {
-		return variantContext.getReference().getBaseString();
+		return maVariantVCF.variantContext.getReference().getBaseString();
+	}
+
+	@Override
+	public Allele getAlt() {
+		return alt;
 	}
 
 	/**
@@ -59,8 +66,9 @@ public class VariantVCF extends VariantVep {
 	 *
 	 * @return
 	 */
+	/*
 	@Override
-	public List<Allele> getAltAllele() {
+	public List<Allele> getAlt() {
 		List<Allele> alleles = variantContext.getAlleles()
 				.stream().map(allele -> new Allele(allele.getBaseString())).collect(Collectors.toList());
 		List<Allele> altAllels = variantContext.getAlternateAlleles()
@@ -86,6 +94,7 @@ public class VariantVCF extends VariantVep {
 			return altAllels;
 		}
 	}
+	*/
 
 	public static int getStart(VariantContext variantContext) {
 		if (isAnyEqualsLength(variantContext.getReference(), variantContext.getAlternateAlleles())) {

@@ -31,7 +31,6 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
-import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vep.VariantVep;
@@ -53,12 +52,12 @@ import java.util.concurrent.CompletionException;
  * http://localhost:8095/FormatAnfisa?session=...&data=[{"chromosome": "1", "start": 6484880, "end": 6484880, "alternative": "G"}]
  */
 @Controller
-@RequestMapping(value = {"/FormatAnfisa", "/annotationservice/FormatAnfisa"})
+@RequestMapping(value = { "/FormatAnfisa", "/annotationservice/FormatAnfisa" })
 public class FormatAnfisaController {
 
 	private final static Logger log = LoggerFactory.getLogger(FormatAnfisaController.class);
 
-	@RequestMapping(value = {"/get"})
+	@RequestMapping(value = { "/get" })
 	public CompletableFuture<ResponseEntity> execute(HttpServletRequest request) {
 		log.debug("FormatAnfisaController execute, time: {}", System.currentTimeMillis());
 
@@ -101,21 +100,19 @@ public class FormatAnfisaController {
 										variantVep.setVepJson(vepJson);
 										return processing.exec(null, variantVep);
 									})
-									.thenCompose(processingResults -> {
+									.thenCompose(processingResult -> {
 										List<CompletableFuture<JSONArray>> futureItems = new ArrayList<>();
-										for (ProcessingResult processingResult: processingResults) {
-											JSONObject result = processingResult.toJSON();
-											CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
-													.exceptionally(throwable -> {
-														if (throwable instanceof AnnotatorException) {
-															throw (AnnotatorException) throwable;
-														} else {
-															Main.crash(throwable);
-															return null;
-														}
-													});
-											futureItems.add(futureItem);
-										}
+										JSONObject result = processingResult.toJSON();
+										CompletableFuture<JSONArray> futureItem = formatAnfisaHttpClient.request(result.toJSONString())
+												.exceptionally(throwable -> {
+													if (throwable instanceof AnnotatorException) {
+														throw (AnnotatorException) throwable;
+													} else {
+														Main.crash(throwable);
+														return null;
+													}
+												});
+										futureItems.add(futureItem);
 										return CompletableFuture.allOf(futureItems.toArray(new CompletableFuture[futureItems.size()]))
 												.thenApply(v -> {
 													JSONObject out = new JSONObject();
@@ -127,8 +124,8 @@ public class FormatAnfisaController {
 													}});
 
 													JSONArray outs = new JSONArray();
-													for(CompletableFuture<JSONArray> futureItem: futureItems) {
-														JSONArray fresult = futureItem.join();
+													for (CompletableFuture<JSONArray> item : futureItems) {
+														JSONArray fresult = item.join();
 														outs.add(fresult);
 													}
 													out.put("result", outs);
