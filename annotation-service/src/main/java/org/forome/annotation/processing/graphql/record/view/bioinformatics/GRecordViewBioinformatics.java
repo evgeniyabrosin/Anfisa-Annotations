@@ -20,13 +20,14 @@ package org.forome.annotation.processing.graphql.record.view.bioinformatics;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sex;
 import org.forome.annotation.struct.variant.Variant;
 
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @GraphQLName("record_view_bioinformatics")
 public class GRecordViewBioinformatics {
@@ -46,20 +47,21 @@ public class GRecordViewBioinformatics {
 			return null;
 		}
 
-		String genotype = variant.getGenotype(mCase.proband).getGenotypeString();
-		if (genotype == null) {
+		List<Allele> alleles = variant.getGenotype(mCase.proband).getAllele();
+		if (alleles == null) {
 			return null;
 		}
-		List<String> alleles = Arrays.stream(genotype.split("/")).distinct().collect(Collectors.toList());
+
+		Set<Allele> uniqueAllelies = new HashSet<>(alleles);
 
 		String chr = variant.chromosome.getChar();
 		if ("X".equals(chr.toUpperCase()) && mCase.proband.sex == Sex.MALE) {
 			return "X-linked";
 		}
-		if (alleles.size() == 1) {
+		if (uniqueAllelies.size() == 1) {
 			return "Homozygous";
 		}
-		if (alleles.size() == 2) {
+		if (uniqueAllelies.size() == 2) {
 			return "Heterozygous";
 		}
 		return "Unknown";

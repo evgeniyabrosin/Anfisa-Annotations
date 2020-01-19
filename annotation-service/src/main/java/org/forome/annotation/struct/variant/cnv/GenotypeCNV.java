@@ -18,9 +18,12 @@
 
 package org.forome.annotation.struct.variant.cnv;
 
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.variant.Genotype;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class GenotypeCNV extends Genotype {
 
@@ -64,9 +67,14 @@ public class GenotypeCNV extends Genotype {
 	}
 
 	@Override
-	public String getGenotypeString() {
+	public List<Allele> getAllele() {
+		final List<Allele> al = new ArrayList<Allele>();
+		al.add(new Allele(variantCNV.getRef()));
+
 		int[] gts = Arrays.stream(gt.split("/")).map(s -> Integer.parseInt(s)).mapToInt(Integer::intValue).toArray();
-		return variantCNV.getAllele(gts[0]) + "/" + variantCNV.getAllele(gts[1]);
+		al.add(new Allele(variantCNV.getAllele(gts[1])));
+
+		return al;
 	}
 
 	@Override
