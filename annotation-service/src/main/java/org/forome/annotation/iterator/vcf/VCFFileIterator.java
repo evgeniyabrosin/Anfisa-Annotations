@@ -50,8 +50,8 @@ public class VCFFileIterator implements AutoCloseable {
 		while (true) {
 			if (vcfFileReaderIterator.hasNext()) {
 				VariantContext variantContext = vcfFileReaderIterator.next();
-				if (Chromosome.CHR_M == Chromosome.of(variantContext.getContig())) {
-					continue;//Игнорируем митохондрии
+				if (!Chromosome.isSupportChromosome(variantContext.getContig())) {
+					continue;//Игнорируем непонятные хромосомы
 				}
 				return new VariantVCF(variantContext);
 			} else if (cnvFileIterator != null && cnvFileIterator.hasNext()) {

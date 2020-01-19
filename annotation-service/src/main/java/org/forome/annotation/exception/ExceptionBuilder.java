@@ -11,6 +11,8 @@ public class ExceptionBuilder {
 
 	private static final ExceptionFactory EXCEPTION_FACTORY = new ExceptionFactory();
 
+	public static final String CODE_INVALID_CHROMOSOME = "invalid_chromosome";
+
 	public static AnnotatorException buildDatabaseException(DatabaseException cause) {
 		return EXCEPTION_FACTORY.build("database_error", cause);
 	}
@@ -82,7 +84,7 @@ public class ExceptionBuilder {
 	}
 
 	public static AnnotatorException buildInvalidChromosome(String value) {
-		return EXCEPTION_FACTORY.build("invalid_chromosome", new HashMap<String, Object>() {{
+		return EXCEPTION_FACTORY.build(CODE_INVALID_CHROMOSOME, new HashMap<String, Object>() {{
 			put("value", value);
 		}});
 	}

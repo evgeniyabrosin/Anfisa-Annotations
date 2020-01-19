@@ -1,6 +1,7 @@
 package org.forome.annotation.struct;
 
 import com.google.common.base.Strings;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 
 public enum Chromosome {
@@ -81,5 +82,24 @@ public enum Chromosome {
         }
 
         throw ExceptionBuilder.buildInvalidChromosome(str);
+    }
+
+    public static boolean isSupportChromosome(String str) {
+        Chromosome chromosome;
+        try {
+            chromosome = Chromosome.of(str);
+        } catch (AnnotatorException ae) {
+            if (ExceptionBuilder.CODE_INVALID_CHROMOSOME.equals(ae.getCode())) {
+                return false;
+            } else {
+                throw ae;
+            }
+        }
+
+        if (Chromosome.CHR_M == chromosome) {
+            return false;
+        }
+
+        return true;
     }
 }
