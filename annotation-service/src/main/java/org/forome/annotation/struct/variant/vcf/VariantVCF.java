@@ -45,7 +45,7 @@ public class VariantVCF extends VariantVep {
 
 	@Override
 	public Genotype getGenotype(String sample) {
-		return new GenotypeVCF(maVariantVCF.variantContext, sample);
+		return new GenotypeVCF(this, maVariantVCF.variantContext, sample);
 	}
 
 	@Override
