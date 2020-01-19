@@ -823,6 +823,11 @@ public class AnfisaConnector implements AutoCloseable {
 					gnomAD.hom = gnomadResult.overall.hom;
 					gnomAD.hem = gnomadResult.overall.hem;
 				}
+				if (gnomadResult.popmax != null) {
+					gnomAD.popmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
+							gnomadResult.popmax.group.name(), gnomadResult.popmax.af, gnomadResult.popmax.an
+					);
+				}
 				if (gnomadResult.rawPopmax != null) {
 					gnomAD.rawPopmax = String.format(Locale.ENGLISH, "%s: %.5f [%s]",
 							gnomadResult.rawPopmax.group.name(), gnomadResult.rawPopmax.af, gnomadResult.rawPopmax.an
