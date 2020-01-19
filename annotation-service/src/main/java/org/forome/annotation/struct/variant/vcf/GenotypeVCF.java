@@ -19,7 +19,11 @@
 package org.forome.annotation.struct.variant.vcf;
 
 import htsjdk.variant.variantcontext.VariantContext;
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.variant.Genotype;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GenotypeVCF extends Genotype {
 
@@ -86,17 +90,22 @@ public class GenotypeVCF extends Genotype {
 	}
 
 	@Override
+	public List<Allele> getAllele() {
+		if (vcfGenotype.isCalled()) {
+			final List<Allele> al = new ArrayList<Allele>();
+			for ( htsjdk.variant.variantcontext.Allele a : vcfGenotype.getAlleles() ) {
+				al.add(new Allele(a.getBaseString()));
+			}
+			return al;
+		} else {
+			return null;
+		}
+	}
+
+	@Override
 	public Integer getGQ() {
 		int value = vcfGenotype.getGQ();
 		return (value != -1) ? value : null;
 	}
 
-	@Override
-	public String getGenotypeString() {
-		if (vcfGenotype.isCalled()) {
-			return vcfGenotype.getGenotypeString();
-		} else {
-			return null;
-		}
-	}
 }

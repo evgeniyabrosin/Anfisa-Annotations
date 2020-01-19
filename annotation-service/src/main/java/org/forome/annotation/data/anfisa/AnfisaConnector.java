@@ -42,6 +42,7 @@ import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.mcase.Cohort;
@@ -1194,12 +1195,13 @@ public class AnfisaConnector implements AutoCloseable {
 			return false;
 		}
 
-		String probandGenotype = variant.getGenotype(mCase.proband).getGenotypeString();
-		if (probandGenotype == null) {
+		List<Allele> probandAlleles = variant.getGenotype(mCase.proband).getAllele();
+		if (probandAlleles == null) {
 			return false;
 		}
-		Set<String> set1 = Arrays.stream(probandGenotype.split("/")).collect(Collectors.toSet());
-		return set1.contains(variant.getStrAlt());
+
+		Set<String> set = probandAlleles.stream().map(allele -> allele.getBaseString()).collect(Collectors.toSet());
+		return set.contains(variant.getStrAlt());
 	}
 
 	private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, VariantVep variantVep, Kind kind) {

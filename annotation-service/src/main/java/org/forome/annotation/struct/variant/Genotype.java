@@ -18,6 +18,11 @@
 
 package org.forome.annotation.struct.variant;
 
+import org.forome.annotation.struct.Allele;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 public abstract class Genotype {
 
 	public final String sampleName;
@@ -28,7 +33,16 @@ public abstract class Genotype {
 
 	public abstract int hasVariant();
 
-	public abstract String getGenotypeString();
+	public abstract List<Allele> getAllele();
+
+	public String getGenotypeString() {
+		List<Allele> alleles = getAllele();
+		if (alleles == null) {
+			return null;
+		} else {
+			return alleles.stream().map(allele -> allele.getBaseString()).collect(Collectors.joining("/"));
+		}
+	}
 
 	public abstract Integer getGQ();
 
