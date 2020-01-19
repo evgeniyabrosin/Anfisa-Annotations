@@ -82,7 +82,7 @@ class Source {
 //						)
 //				);
 //			}
-			if (VariantVCF.getEnd(variantContext) != vepJson.getAsNumber("end").intValue()) {
+			if (Math.abs(VariantVCF.getEnd(variantContext) - vepJson.getAsNumber("end").intValue()) > 1) {
 				throw new RuntimeException(
 						String.format("Not equals end, vcf: %s, vep.json: %s, input: %s",
 								VariantVCF.getEnd(variantContext), vepJson.getAsNumber("end"),

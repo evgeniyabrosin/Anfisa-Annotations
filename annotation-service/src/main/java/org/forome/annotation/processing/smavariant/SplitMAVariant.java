@@ -70,6 +70,10 @@ public class SplitMAVariant {
 			}
 			for (int i = 0; i < alleles.size(); i++) {
 				Allele al = alleles.get(i);
+				if (al.getBaseString().trim().length() == 0) {
+					continue;
+				}
+
 				long n = ad[i];
 				counts.put(al, counts.getOrDefault(al, 0L) + n);
 			}

@@ -50,16 +50,16 @@ public class GRecordViewBioinformatics {
 		if (genotype == null) {
 			return null;
 		}
-		List<String> set1 = Arrays.stream(genotype.split("/")).distinct().collect(Collectors.toList());
+		List<String> alleles = Arrays.stream(genotype.split("/")).distinct().collect(Collectors.toList());
 
 		String chr = variant.chromosome.getChar();
 		if ("X".equals(chr.toUpperCase()) && mCase.proband.sex == Sex.MALE) {
 			return "X-linked";
 		}
-		if (set1.size() == 1) {
+		if (alleles.size() == 1) {
 			return "Homozygous";
 		}
-		if (set1.size() == 2) {
+		if (alleles.size() == 2) {
 			return "Heterozygous";
 		}
 		return "Unknown";

@@ -239,7 +239,6 @@ public class AnfisaResultView {
 
 	public static class Bioinformatics {
 
-//		public String zygosity;
 		public String inheritedFrom;
 		public List<Object> distFromExonWorst = new ArrayList<>();
 		public List<Object> distFromExonCanonical = new ArrayList<>();

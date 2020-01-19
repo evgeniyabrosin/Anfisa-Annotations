@@ -45,7 +45,7 @@ public class VariantVCF extends VariantVep {
 
 	@Override
 	public Genotype getGenotype(String sample) {
-		return new GenotypeVCF(maVariantVCF.variantContext, sample);
+		return new GenotypeVCF(this, maVariantVCF.variantContext, sample);
 	}
 
 	@Override
@@ -57,44 +57,6 @@ public class VariantVCF extends VariantVep {
 	public Allele getAlt() {
 		return alt;
 	}
-
-	/**
-	 * В VCF файле могут находится аллели которые не относятся ни к одному генотипу, поэтому необходима фильтрация
-	 * всех альтернативный аллелей, алгоритм следующий:
-	 * Пробегаемся по всем генотипам, и посредством поля AD, суммируем как часто встречается каждый аллель в каждом генотипе
-	 * В случае, если аллель встречался больше 0 раз, то мы считаем, что этот аллель используется
-	 *
-	 * @return
-	 */
-	/*
-	@Override
-	public List<Allele> getAlt() {
-		List<Allele> alleles = variantContext.getAlleles()
-				.stream().map(allele -> new Allele(allele.getBaseString())).collect(Collectors.toList());
-		List<Allele> altAllels = variantContext.getAlternateAlleles()
-				.stream().map(allele -> new Allele(allele.getBaseString())).collect(Collectors.toList());
-		Map<Allele, Long> counts = new HashMap<>();
-		for (htsjdk.variant.variantcontext.Genotype genotype : variantContext.getGenotypes()) {
-			int[] ad = genotype.getAD();
-			if (ad == null || ad.length == 0) {
-				return altAllels;
-			}
-			for (int i = 0; i < alleles.size(); i++) {
-				Allele al = alleles.get(i);
-				long n = ad[i];
-				counts.put(al, counts.getOrDefault(al, 0L) + n);
-			}
-		}
-		List<Allele> filterAltAllels = altAllels.stream()
-				.filter(s -> counts.containsKey(s) && counts.get(s) > 0)
-				.collect(Collectors.toList());
-		if (!filterAltAllels.isEmpty()) {
-			return filterAltAllels;
-		} else {
-			return altAllels;
-		}
-	}
-	*/
 
 	public static int getStart(VariantContext variantContext) {
 		if (isAnyEqualsLength(variantContext.getReference(), variantContext.getAlternateAlleles())) {

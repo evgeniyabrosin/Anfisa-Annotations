@@ -23,20 +23,36 @@ import org.forome.annotation.struct.variant.Genotype;
 
 public class GenotypeVCF extends Genotype {
 
+	private final VariantVCF variantVCF;
+
 	private final VariantContext variantContext;
 	private final htsjdk.variant.variantcontext.Genotype vcfGenotype;
 
-	public GenotypeVCF(VariantContext variantContext, String sampleName) {
+	public GenotypeVCF(VariantVCF variantVCF, VariantContext variantContext, String sampleName) {
 		super(sampleName);
+		this.variantVCF = variantVCF;
 		this.variantContext = variantContext;
 		this.vcfGenotype = variantContext.getGenotype(sampleName);
 	}
 
 	@Override
 	public int hasVariant() {
-		// REF/REF: 0;
-		// REF/ALTn: 1
-		// ALTn/ALTk: 2
+		//REF - референс
+		//ALT - альтернативный аллель
+		//ALTk - альтернативный аллель не относящийся к обрабатываемому single варианту
+		//Например:
+		//chr1:100818464 T>C,A
+		//В первом single вариант: REF - T, ALT - C, ALTk - A
+		//Во втором single вариант: REF - T, ALT - A, ALTk - C
+
+		// ALTk/ALTk: 0
+		// REF/REF: 0
+
+		// REF/ALT: 1
+		// ALT/REF: 1
+
+		// ALT/ALTk: 2
+		// ALTk/ALT: 2
 		switch (vcfGenotype.getType()) {
 			case NO_CALL: //Генотип не может быть определен из-за плохого качества секвенирования
 			case UNAVAILABLE: //Не имеет альтернативных аллелей
@@ -54,11 +70,14 @@ public class GenotypeVCF extends Genotype {
 				if (isRef1 && isRef2) {
 					// REF/REF
 					return 0;
+				} else if (!allele1.equals(variantVCF.getStrAlt()) && !allele2.equals(variantVCF.getStrAlt())) {
+					// ALTk/ALTk: 0
+					return 0;
 				} else if (!isRef1 && !isRef2) {
-					// ALTn/ALTk
+					// ALT/ALTk, ALTk/ALT
 					return 2;
 				} else {
-					// REF/ALTn
+					// REF/ALT, ALT/REF
 					return 1;
 				}
 			default:
@@ -67,7 +86,7 @@ public class GenotypeVCF extends Genotype {
 	}
 
 	@Override
-	public Integer getGQ(){
+	public Integer getGQ() {
 		int value = vcfGenotype.getGQ();
 		return (value != -1) ? value : null;
 	}
