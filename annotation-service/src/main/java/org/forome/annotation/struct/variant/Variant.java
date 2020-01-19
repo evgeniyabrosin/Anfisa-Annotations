@@ -44,6 +44,8 @@ public abstract class Variant {
 
 	public abstract String getId();
 
+	public abstract Allele getRefAllele();
+
 	public abstract String getRef();
 
 	public abstract Allele getAlt();

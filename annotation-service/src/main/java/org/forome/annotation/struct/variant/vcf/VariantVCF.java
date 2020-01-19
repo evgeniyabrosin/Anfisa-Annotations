@@ -31,6 +31,7 @@ public class VariantVCF extends VariantVep {
 
 	public final MAVariantVCF maVariantVCF;
 
+	private final Allele ref;
 	private final Allele alt;
 
 	public VariantVCF(MAVariantVCF maVariantVCF, Allele alt) {
@@ -40,6 +41,7 @@ public class VariantVCF extends VariantVep {
 		);
 		this.maVariantVCF = maVariantVCF;
 
+		this.ref = new Allele(maVariantVCF.variantContext.getReference().getBaseString());
 		this.alt = alt;
 	}
 
@@ -49,8 +51,13 @@ public class VariantVCF extends VariantVep {
 	}
 
 	@Override
+	public Allele getRefAllele() {
+		return ref;
+	}
+
+	@Override
 	public String getRef() {
-		return maVariantVCF.variantContext.getReference().getBaseString();
+		return getRefAllele().getBaseString();
 	}
 
 	@Override

@@ -1772,6 +1772,17 @@ public class AnfisaConnector implements AutoCloseable {
 			return null;
 		}
 
+		/**
+		 * Ситуация когда ни один аллель генотипа не относится к иследуемому варианту,
+		 * например ситуация, когда мы разрезали мультиалельный вариант
+		 */
+		List<Allele> probandAlleles = variant.getGenotype(mCase.proband).getAllele();
+		if (probandAlleles != null) {
+			if (!probandAlleles.contains(variant.getRefAllele()) && !probandAlleles.contains(variant.getAlt())) {
+				return "Inconclusive";
+			}
+		}
+
 		Genotypes genotypes = getGenotypes(variant, mCase);
 		if (genotypes == null) {
 			return null;
