@@ -1208,7 +1208,7 @@ public class AnfisaConnector implements AutoCloseable {
 			return false;
 		}
 		Set<String> set1 = Arrays.stream(probandGenotype.split("/")).collect(Collectors.toSet());
-		return set1.contains(altAllele);
+		return set1.contains(altAllele.getBaseString());
 	}
 
 	private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, VariantVep variantVep, Kind kind) {
