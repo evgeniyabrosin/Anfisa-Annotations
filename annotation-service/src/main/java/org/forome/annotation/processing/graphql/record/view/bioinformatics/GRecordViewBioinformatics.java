@@ -54,6 +54,14 @@ public class GRecordViewBioinformatics {
 
 		Set<Allele> uniqueAllelies = new HashSet<>(alleles);
 
+		/**
+		 * Ситуация когда ни один аллель генотипа не относится к иследуемому варианту,
+		 * например ситуация, когда мы разрезали мультиалельный вариант
+		 */
+		if (!uniqueAllelies.contains(variant.getRefAllele()) && !uniqueAllelies.contains(variant.getAlt())) {
+			return "Unknown";
+		}
+
 		String chr = variant.chromosome.getChar();
 		if ("X".equals(chr.toUpperCase()) && mCase.proband.sex == Sex.MALE) {
 			return "X-linked";

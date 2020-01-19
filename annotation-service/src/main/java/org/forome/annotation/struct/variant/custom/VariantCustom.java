@@ -43,6 +43,11 @@ public class VariantCustom extends VariantVep {
 	}
 
 	@Override
+	public Allele getRefAllele() {
+		return null;
+	}
+
+	@Override
 	public String getRef() {
 		return null;
 	}

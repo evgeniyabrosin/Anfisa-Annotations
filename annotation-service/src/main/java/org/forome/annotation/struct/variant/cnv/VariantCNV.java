@@ -105,6 +105,11 @@ public class VariantCNV extends VariantVep {
 	}
 
 	@Override
+	public Allele getRefAllele() {
+		return Allele.EMPTY;
+	}
+
+	@Override
 	public JSONArray getTranscriptConsequences() {
 		JSONArray result = new JSONArray();
 		for (Object o : super.getTranscriptConsequences()) {
