@@ -28,6 +28,11 @@
     
     "spliceai.database":   "spliceai",
     "spliceai.batch_size":  1000,
-    "spliceai.file_list":   ["?/*.vcf.gz"]
+    "spliceai.file_list":   ["?/*.vcf.gz"],
+
+    "dbnsfp4.database":    "dbnsfp4",
+    "dbnsfp4.batch_size":  1000,
+    "dbnsfp4.file_list":   ["?.chr*.gz"]
+
 }
 

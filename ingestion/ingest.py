@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 parser = ArgumentParser(
     description = "Data ingestion utiities")
 parser.add_argument("--mode", "-m",
-    help = "Mode: hg19/hg38/gerp/gnomad/pharmgkb/gtech/...")
+    help = "Mode: hg19/hg38/gerp/gnomad/pharmgkb/gtech/dbnsfp4/...")
 parser.add_argument("config", nargs = 1)
 
 args = parser.parse_args()
@@ -209,6 +209,19 @@ if args.mode == "spliceai":
         file_list  = config["spliceai.file_list"])
     sys.exit()
 #========================================
+if args.mode == "dbnsfp4":
+    from dbnsfp4 import ingestDBNSFP4
+    ingestDBNSFP4(
+        db_host    = config.get("dbnsfp4.db.host", std_db_host),
+        db_port    = config.get("dbnsfp4.db.port", std_db_port),
+        user       = config.get("dbnsfp4.db.user", std_user),
+        password   = config.get("dbnsfp4.db.password", std_password),
+        database   = config["dbnsfp4.database"],
+        batch_size = config["dbnsfp4.batch_size"],
+        file_list  = config["dbnsfp4.file_list"])
+    sys.exit()
+#========================================
+
 # More modes to add:
 # gnomad
 # spliceai
