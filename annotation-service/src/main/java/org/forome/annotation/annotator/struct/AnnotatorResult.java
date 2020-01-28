@@ -57,6 +57,30 @@ public class AnnotatorResult {
 		public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 				.withZone(ZoneId.systemDefault());
 
+		public enum Mode {
+
+			HG19("hg19"),
+			HG38("hg38");
+
+			private final String value;
+
+			Mode(String value) {
+				this.value = value;
+			}
+		}
+
+		public enum DataSchema {
+
+			CASE("CASE"),
+			FAVOR("FAVOR");
+
+			private final String value;
+
+			DataSchema(String value) {
+				this.value = value;
+			}
+		}
+
 		public static class Versions {
 
 			private static Pattern PATTERN_GATK_VERSION = Pattern.compile(
@@ -253,8 +277,12 @@ public class AnnotatorResult {
 
 		public JSONObject toJSON() {
 			JSONObject out = new JSONObject();
+			out.put("data_schema", DataSchema.CASE.value);
 			out.put("case", caseSequence);
 			out.put("record_type", recordType);
+			out.put("modes", new JSONArray() {{
+				add(Mode.HG19.value);
+			}});
 			out.put("versions", versions.toJSON());
 			if (mCase.proband != null) {
 				out.put("proband", mCase.proband.id);

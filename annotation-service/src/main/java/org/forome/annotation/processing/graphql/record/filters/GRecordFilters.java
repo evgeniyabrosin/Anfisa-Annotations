@@ -48,6 +48,18 @@ public class GRecordFilters {
 	}
 
 	@GraphQLField
+	@GraphQLName("start")
+	public int getStart() {
+		return variant.getStart();
+	}
+
+	@GraphQLField
+	@GraphQLName("end")
+	public int getEnd() {
+		return variant.end;
+	}
+
+	@GraphQLField
 	@GraphQLName("fs")
 	public double getFS() {
 		if (variant instanceof VariantVCF) {
