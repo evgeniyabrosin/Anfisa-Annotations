@@ -2,6 +2,8 @@
     record_type
     _filters {
         chromosome
+        start
+        end
         fs
         qd
         mq
