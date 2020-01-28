@@ -58,6 +58,11 @@ public abstract class VariantVep extends Variant {
 	}
 
 	@Override
+	public Allele getRefAllele() {
+		return new Allele(getRef());
+	}
+
+	@Override
 	public Allele getAlt() {
 		String[] ss = vepJson.getAsString("allele_string").split("/");
 		if (ss.length != 2) {

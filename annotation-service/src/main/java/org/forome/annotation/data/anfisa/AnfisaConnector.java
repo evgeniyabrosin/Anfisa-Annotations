@@ -1773,7 +1773,7 @@ public class AnfisaConnector implements AutoCloseable {
 	}
 
 	private static String inherited_from(Variant variant, MCase mCase) {
-		if (mCase == null) {
+		if (mCase == null || mCase.proband == null) {
 			return null;
 		}
 

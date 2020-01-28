@@ -43,17 +43,8 @@ public class VariantCustom extends VariantVep {
 	}
 
 	@Override
-	public Allele getRefAllele() {
-		return null;
-	}
-
-	@Override
-	public String getRef() {
-		return null;
-	}
-
-	@Override
 	public Allele getAlt() {
-		return null;
+		String[] ss = getVepJson().getAsString("allele_string").split("/");
+		return new Allele(ss[1]);
 	}
 }
