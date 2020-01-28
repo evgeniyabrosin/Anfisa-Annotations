@@ -142,7 +142,10 @@ public class AnfisaResultData {
 		}
 		out.put("most_severe_consequence", mostSevereConsequence);
 		out.put("strand", strand);
-		out.put("color_code", (colorCode != null) ? colorCode.code : null);
+
+		if (colorCode != null) {
+			out.put("color_code", colorCode.code);
+		}
 
 		if (lmm != null) {
 			out.put("lmm", lmm);
@@ -192,7 +195,7 @@ public class AnfisaResultData {
 		if (regionWorst != null) {
 			out.put("region_worst", regionWorst);
 		}
-		if (zygosity != null ) {
+		if (zygosity != null) {
 			out.put("zygosity", zygosity);
 		}
 
