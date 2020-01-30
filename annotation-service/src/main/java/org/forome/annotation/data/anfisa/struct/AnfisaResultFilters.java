@@ -49,8 +49,6 @@ public class AnfisaResultFilters {
 	public String spliceAltering;
 	public Float spliceAiDsmax;
 
-	public String alt;
-
 	public Integer numClinvarSubmitters;
 
 	public ClinvarVariantSummary.ReviewStatus clinvarReviewStatus;
@@ -122,9 +120,6 @@ public class AnfisaResultFilters {
 		out.put("splice_ai_dsmax", spliceAiDsmax);
 
 		out.put("gerp_rs", (bioinformatics.conservation != null) ? bioinformatics.conservation.gerpRS : null);
-
-		out.put("ref", anfisaResultData.ref);
-		out.put("alt", alt);
 
 		out.put("num_clinvar_submitters", numClinvarSubmitters);
 

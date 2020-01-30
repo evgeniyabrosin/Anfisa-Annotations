@@ -32,8 +32,6 @@ public class AnfisaResultData {
 	public String assemblyName;
 	public int start;
 	public int end;
-	public String alt;
-	public String ref;
 	public JSONArray regulatoryFeatureConsequences;
 	public JSONArray motifFeatureConsequences;
 	public JSONArray intergenicConsequences;
@@ -110,12 +108,6 @@ public class AnfisaResultData {
 		out.put("assembly_name", assemblyName);
 		out.put("start", start);
 		out.put("end", end);
-		if (alt != null) {
-			out.put("alt", alt);
-		}
-		if (ref != null) {
-			out.put("ref", ref);
-		}
 		if (regulatoryFeatureConsequences != null) {
 			out.put("regulatory_feature_consequences", regulatoryFeatureConsequences);
 		}
