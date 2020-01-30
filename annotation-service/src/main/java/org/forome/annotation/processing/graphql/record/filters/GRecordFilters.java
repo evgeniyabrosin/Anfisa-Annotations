@@ -60,6 +60,18 @@ public class GRecordFilters {
 	}
 
 	@GraphQLField
+	@GraphQLName("ref")
+	public String getRef() {
+		return variant.getRef();
+	}
+
+	@GraphQLField
+	@GraphQLName("alt")
+	public String getAlt() {
+		return variant.getStrAlt();
+	}
+
+	@GraphQLField
 	@GraphQLName("fs")
 	public double getFS() {
 		if (variant instanceof VariantVCF) {

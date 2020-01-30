@@ -4,6 +4,8 @@
         chromosome
         start
         end
+        ref
+        alt
         fs
         qd
         mq

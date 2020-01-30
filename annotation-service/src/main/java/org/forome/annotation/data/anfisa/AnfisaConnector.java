@@ -158,8 +158,6 @@ public class AnfisaConnector implements AutoCloseable {
 		GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant);
 		callQuality(filters, variant);
 
-		filters.alt = variant.getStrAlt();
-
 		Sample proband = anfisaInput.samples.proband;
 		if (proband != null) {
 			String probandId = proband.id;
@@ -538,10 +536,8 @@ public class AnfisaConnector implements AutoCloseable {
 		view.general.hg19 = str(context);
 		view.general.hg38 = getStrHg38Coordinates(context);
 
-		if (isSnv(variant)) {
-			data.ref = variant.getRef();
-			data.alt = variant.getStrAlt();
-		} else {
+		//Особенность связанна с удобством визуального отображением
+		if (!isSnv(variant)) {
 			view.general.ref = variant.getRef();
 			view.general.alt = variant.getStrAlt();
 		}
