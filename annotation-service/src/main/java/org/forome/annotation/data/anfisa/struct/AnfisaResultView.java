@@ -168,7 +168,6 @@ public class AnfisaResultView {
         public String probandGenotype;
         public String maternalGenotype;
         public String paternalGenotype;
-//        public String canonicalAnnotation;
         public List<String> canonicalAnnotation = new ArrayList<>();
         public String alt;
         public String ref;
@@ -278,7 +277,6 @@ public class AnfisaResultView {
 		private JSONObject toJSON() {
 			JSONObject out = new JSONObject();
 			out.put("human_splicing_finder", humanSplicingFinder);
-//			out.put("zygosity", zygosity);
 			out.put("dist_from_exon_worst", distFromExonWorst);
 			out.put("called_by", calledBy);
 			out.put("max_ent_scan", maxEntScan);
