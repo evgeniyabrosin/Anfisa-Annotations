@@ -97,6 +97,10 @@ public class SSHConnect implements AutoCloseable {
 		return sshSession.openChannel("exec");
 	}
 
+	public Channel openChannel(String type) throws JSchException {
+		return sshSession.openChannel(type);
+	}
+
 	private synchronized void disconnect() {
 		tunnels.clear();
 		if (sshSession != null) {

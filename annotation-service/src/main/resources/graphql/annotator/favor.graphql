@@ -1,0 +1,175 @@
+{
+    record_type
+
+    _filters {
+        type
+        chromosome
+        start
+        end
+        ref
+        alt
+        genes
+    }
+
+    _view {
+        general {
+            Variant
+            rsID
+            TOPMed_Depth
+            TOPMed_QC_Status
+            TOPMed_Bravo_AF
+            GNOMAD_Total_AF
+            ALL_1000G_AF
+        }
+
+        variant_category {
+            GENCODE_Category
+            GENCODE_Info
+            GENCODE_Exonic_Category
+            GENCODE_Exonic_Info
+            Disruptive_Missense
+            CAGE_Promoter
+            CAGE_Enhancer
+            GeneHancer
+            SuperEnhancer
+            ClinVar
+        }
+
+        allele_frequencies {
+            TOPMed_Bravo_AF
+            GNOMAD_Total_AF
+            ALL_1000G_AF
+            EUR_1000G_AF
+            AFR_1000G_AF
+            AMR_1000G_AF
+            SAS_1000G_AF
+            EAS_1000G_AF
+            ExAC03
+            ExAC03_nontcga
+            ESP_ALL
+            ESP_EA
+            ESP_AA
+        }
+
+        integrative_score {
+            LINSIGHT
+            FATHMM_XF_coding
+            FATHMM_XF_noncoding
+            CADD_RawScore
+            CADD_PHRED
+            APC_ProteinFunction
+            APC_Conservation
+            APC_Epigenetics
+            APC_Local_Nucleotide_Diversity
+            APC_MutationDensity
+            APC_TranscriptionFactor
+            APC_MapAbility
+            APC_Proximity_To_TSSTES
+        }
+
+        protein_function {
+            APC_ProteinFunction
+            PolyPhenCat
+            PolyPhenVal
+            Polyphen2_HDIV
+            Polyphen2_HVAR
+            Grantham
+            MutationTaster
+            MutationAssessor
+            SIFTcat
+            SIFTval
+        }
+
+        conservation {
+            APC_Conservation
+            priPhCons
+            mamPhCons
+            verPhCons
+            priPhyloP
+            mamPhyloP
+            verPhyloP
+            GerpN
+            GerpS
+        }
+
+        epigenetics {
+            APC_Epigenetics
+            DNase
+            H3K27ac
+            H3K4me1
+            H3K4me2
+            H3K4me3
+            H3K9ac
+            H4K20me1
+            H2AFZ
+            H3K9me3
+            H3K27me3
+            H3K36me3
+            H3K79me2
+            totalRNA
+        }
+
+        transcription_factors {
+            APC_TranscriptionFactor
+            OverlapTF
+            OverlapCL
+        }
+
+        chromatin_states {
+            cHmm_E1
+            cHmm_E2
+            cHmm_E3
+            cHmm_E4
+            cHmm_E5
+            cHmm_E6
+            cHmm_E7
+            cHmm_E8
+            cHmm_E9
+            cHmm_E10
+            cHmm_E11
+            cHmm_E12
+            cHmm_E13
+            cHmm_E14
+            cHmm_E15
+            cHmm_E16
+            cHmm_E17
+            cHmm_E18
+            cHmm_E19
+            cHmm_E20
+            cHmm_E21
+            cHmm_E22
+            cHmm_E23
+            cHmm_E24
+            cHmm_E25
+        }
+
+        local_nucleotide_diversity {
+            APC_Local_Nucleotide_Diversity
+            RecRate
+            NucDiv
+            bStatistics
+        }
+
+        mutation_rate {
+            APC_MutationDensity
+            Freq1000bp
+            Rare1000bp
+            Sngl1000bp
+        }
+
+        mappability {
+            APC_MapAbility
+            Umap_k100
+            Bismap_k100
+            Umap_k50
+            Bismap_k50
+            Umap_k24
+            Bismap_k24
+        }
+    }
+
+    __data {
+        label
+        color_code
+    }
+}
