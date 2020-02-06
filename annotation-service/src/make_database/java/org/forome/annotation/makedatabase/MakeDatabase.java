@@ -25,6 +25,7 @@ import org.forome.annotation.makedatabase.main.argument.ArgumentsMake;
 import org.forome.annotation.makedatabase.makesourcedata.conservation.MakeConservation;
 import org.forome.annotation.makedatabase.makesourcedata.conservation.MakeConservationBuild;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.database.RocksDBDatabase;
 import org.forome.annotation.service.database.struct.Metadata;
 import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.service.database.struct.packer.PackInterval;
@@ -79,16 +80,16 @@ public class MakeDatabase implements AutoCloseable {
 	}
 
 	public void buildInfo() throws RocksDBException {
-		if (makeDatabaseConnector.getColumnFamily(DatabaseConnectService.COLUMN_FAMILY_INFO) != null) {
-			makeDatabaseConnector.dropColumnFamily(DatabaseConnectService.COLUMN_FAMILY_INFO);
+		if (makeDatabaseConnector.getColumnFamily(RocksDBDatabase.COLUMN_FAMILY_INFO) != null) {
+			makeDatabaseConnector.dropColumnFamily(RocksDBDatabase.COLUMN_FAMILY_INFO);
 		}
-		ColumnFamilyHandle columnFamilyInfo = makeDatabaseConnector.createColumnFamily(DatabaseConnectService.COLUMN_FAMILY_INFO);
+		ColumnFamilyHandle columnFamilyInfo = makeDatabaseConnector.createColumnFamily(RocksDBDatabase.COLUMN_FAMILY_INFO);
 
 		//Версия формата
 		rocksDB.put(
 				columnFamilyInfo,
 				StringBits.toByteArray(Metadata.KEY_FORMAT_VERSION),
-				ShortBits.toByteArray(DatabaseConnectService.VERSION_FORMAT)
+				ShortBits.toByteArray(RocksDBDatabase.VERSION_FORMAT)
 		);
 
 		//Assembly
@@ -102,10 +103,10 @@ public class MakeDatabase implements AutoCloseable {
 	}
 
 	public void buildRecords() throws RocksDBException, SQLException, IOException {
-		if (makeDatabaseConnector.getColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD) != null) {
-			makeDatabaseConnector.dropColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
+		if (makeDatabaseConnector.getColumnFamily(RocksDBDatabase.COLUMN_FAMILY_RECORD) != null) {
+			makeDatabaseConnector.dropColumnFamily(RocksDBDatabase.COLUMN_FAMILY_RECORD);
 		}
-		ColumnFamilyHandle columnFamilyRecord = makeDatabaseConnector.createColumnFamily(DatabaseConnectService.COLUMN_FAMILY_RECORD);
+		ColumnFamilyHandle columnFamilyRecord = makeDatabaseConnector.createColumnFamily(RocksDBDatabase.COLUMN_FAMILY_RECORD);
 		for (Chromosome chromosome : Chromosome.CHROMOSOMES) {
 			int ks = getMinPosition(chromosome) / BatchRecord.DEFAULT_SIZE;
 			int ke = getMaxPosition(chromosome) / BatchRecord.DEFAULT_SIZE;

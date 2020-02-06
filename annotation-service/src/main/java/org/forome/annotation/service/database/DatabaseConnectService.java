@@ -19,48 +19,27 @@
 package org.forome.annotation.service.database;
 
 import com.infomaximum.database.exception.DatabaseException;
-import com.infomaximum.database.utils.TypeConvert;
-import com.infomaximum.rocksdb.RocksDBProvider;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
 import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.service.database.struct.Metadata;
-import org.forome.annotation.service.database.struct.batch.BatchRecord;
-import org.forome.annotation.service.database.struct.packer.PackInterval;
-import org.forome.annotation.service.database.struct.record.Record;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.service.ssh.struct.SSHConnect;
-import org.forome.annotation.struct.Interval;
-import org.forome.annotation.struct.Position;
-import org.rocksdb.*;
-import org.rocksdb.util.SizeUnit;
+import org.forome.annotation.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class DatabaseConnectService implements AutoCloseable {
 
 	private final static Logger log = LoggerFactory.getLogger(DatabaseConnectService.class);
 
-	public static final short VERSION_FORMAT = 1;
-
-	public static final String COLUMN_FAMILY_INFO = "info";
-	public static final String COLUMN_FAMILY_RECORD = "record";
-
-	private final RocksDB rocksDB;
-	private final Map<String, ColumnFamilyHandle> columnFamilies;
-
-	private final Metadata metadata;
+	private final RocksDBDatabase rocksDBDatabase37;
+	private final RocksDBDatabase rocksDBDatabase38;
 
 	private final SSHConnectService sshTunnelService;
 	private final Map<String, ComboPooledDataSource> dataSources;
@@ -69,59 +48,15 @@ public class DatabaseConnectService implements AutoCloseable {
 		this.sshTunnelService = sshTunnelService;
 		this.dataSources = new HashMap<>();
 
-		Path pathDatabase = databaseConfig.path;
-		try (DBOptions options = buildOptions(pathDatabase)) {
-			List<ColumnFamilyDescriptor> columnFamilyDescriptors = getColumnFamilyDescriptors(pathDatabase);
-
-			List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>();
-			rocksDB = RocksDB.openReadOnly(options, pathDatabase.toString(), columnFamilyDescriptors, columnFamilyHandles);
-
-			columnFamilies = new HashMap<>();
-			for (int i = 0; i < columnFamilyDescriptors.size(); i++) {
-				String columnFamilyName = TypeConvert.unpackString(columnFamilyDescriptors.get(i).getName());
-				ColumnFamilyHandle columnFamilyHandle = columnFamilyHandles.get(i);
-				columnFamilies.put(columnFamilyName, columnFamilyHandle);
-			}
-		} catch (RocksDBException e) {
-			throw new DatabaseException(e);
+		if (databaseConfig.hg37 != null) {
+			rocksDBDatabase37 = new RocksDBDatabase(Assembly.GRCh37, databaseConfig.hg37);
+		} else {
+			rocksDBDatabase37 = null;
 		}
-
-		ColumnFamilyHandle columnFamilyInfo = getColumnFamily(COLUMN_FAMILY_INFO);
-//		if (columnFamilyInfo == null) {
-//			throw ExceptionBuilder.buildExternalDatabaseException("ColumnFamily not found");
-//		}
-		this.metadata = new Metadata(rocksDB, columnFamilyInfo);
-//		if (metadata.getFormatVersion() != VERSION_FORMAT) {
-//			throw new RuntimeException("Format version RocksDB is not correct: " + metadata.getFormatVersion());
-//		}
-	}
-
-	private ColumnFamilyHandle getColumnFamily(String name) {
-		return columnFamilies.get(name);
-	}
-
-	public Metadata getMetadata() {
-		return metadata;
-	}
-
-	public Record getRecord(Position position) {
-		int k = position.value / BatchRecord.DEFAULT_SIZE;
-		Interval interval = Interval.of(
-				position.chromosome,
-				k * BatchRecord.DEFAULT_SIZE,
-				k * BatchRecord.DEFAULT_SIZE + BatchRecord.DEFAULT_SIZE - 1
-		);
-		try {
-			byte[] bytes = rocksDB.get(
-					getColumnFamily(COLUMN_FAMILY_RECORD),
-					new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(interval)
-			);
-			if (bytes == null) return null;
-
-			BatchRecord batchRecord = new BatchRecord(interval, bytes);
-			return batchRecord.getRecord(position);
-		} catch (RocksDBException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+		if (databaseConfig.hg38 != null) {
+			rocksDBDatabase38 = new RocksDBDatabase(Assembly.GRCh38, databaseConfig.hg38);
+		} else {
+			rocksDBDatabase38 = null;
 		}
 	}
 
@@ -206,35 +141,15 @@ public class DatabaseConnectService implements AutoCloseable {
 		}
 	}
 
-	private static DBOptions buildOptions(Path pathDatabase) throws RocksDBException {
-		final String optionsFilePath = pathDatabase.toString() + ".ini";
-
-		DBOptions options = new DBOptions();
-		if (Files.exists(Paths.get(optionsFilePath))) {
-			final List<ColumnFamilyDescriptor> ignoreDescs = new ArrayList<>();
-			OptionsUtil.loadOptionsFromFile(optionsFilePath, Env.getDefault(), options, ignoreDescs, false);
-		} else {
-			options
-					.setInfoLogLevel(InfoLogLevel.WARN_LEVEL)
-					.setMaxTotalWalSize(100L * SizeUnit.MB);
+	public Source getSource(Assembly assembly) {
+		switch (assembly) {
+			case GRCh37:
+				return rocksDBDatabase37;
+			case GRCh38:
+				return rocksDBDatabase38;
+			default:
+				throw new RuntimeException();
 		}
-
-		return options.setCreateIfMissing(true);
 	}
 
-	private static List<ColumnFamilyDescriptor> getColumnFamilyDescriptors(Path pathDatabase) throws RocksDBException {
-		List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
-
-		try (Options options = new Options()) {
-			for (byte[] columnFamilyName : RocksDB.listColumnFamilies(options, pathDatabase.toString())) {
-				columnFamilyDescriptors.add(new ColumnFamilyDescriptor(columnFamilyName));
-			}
-		}
-
-		if (columnFamilyDescriptors.isEmpty()) {
-			columnFamilyDescriptors.add(new ColumnFamilyDescriptor(TypeConvert.pack(RocksDBProvider.DEFAULT_COLUMN_FAMILY)));
-		}
-
-		return columnFamilyDescriptors;
-	}
 }
