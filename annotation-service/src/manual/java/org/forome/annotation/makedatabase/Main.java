@@ -20,7 +20,7 @@ package org.forome.annotation.makedatabase;
 
 import com.infomaximum.database.utils.TypeConvert;
 import com.infomaximum.rocksdb.RocksDBProvider;
-import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.database.RocksDBDatabase;
 import org.forome.annotation.service.database.struct.packer.PackInterval;
 import org.forome.annotation.struct.Interval;
 import org.rocksdb.*;
@@ -65,7 +65,7 @@ public class Main {
 			int size16 = 0;
 			int size100 = 0;
 			try (RocksIterator rocksIterator = rocksDB.newIterator(
-					columnFamilies.get(DatabaseConnectService.COLUMN_FAMILY_RECORD)
+					columnFamilies.get(RocksDBDatabase.COLUMN_FAMILY_RECORD)
 			)) {
 				rocksIterator.seekToFirst();
 				while (rocksIterator.isValid()) {

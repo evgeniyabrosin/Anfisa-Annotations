@@ -25,6 +25,7 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.database.struct.record.Record;
 import org.forome.annotation.service.database.struct.record.RecordConservation;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.SourceMetadata;
@@ -222,7 +223,7 @@ public class ConservationDataMysql {
 		}
 	}
 
-	private GerpData getGerpDataFromRocksDB(Interval pHG19) {
+	private GerpData getGerpDataFromRocksDB(Assembly assembly, Interval pHG19) {
 		long t1 = System.nanoTime();
 
 		try {
@@ -245,7 +246,7 @@ public class ConservationDataMysql {
 						pHG19.chromosome,
 						pos
 				);
-				Record record = databaseConnectService.getRecord(position);
+				Record record = databaseConnectService.getSource(assembly).getRecord(position);
 				RecordConservation recordConservation = record.getRecordConservation();
 
 				if (maxGerpN == null || maxGerpN < recordConservation.getGerpN()) {

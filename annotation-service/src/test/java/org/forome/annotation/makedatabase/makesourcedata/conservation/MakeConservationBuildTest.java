@@ -27,6 +27,8 @@ import org.forome.annotation.struct.Position;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Objects;
+
 public class MakeConservationBuildTest {
 
 	@Test
@@ -41,12 +43,20 @@ public class MakeConservationBuildTest {
 			for (int t = 0; t < 10000; t++) {
 
 				//generate
-				MakeConservationBuild.GerpData[] values = new MakeConservationBuild.GerpData[BatchRecord.DEFAULT_SIZE];
+				MakeConservationBuild.Data[] values = new MakeConservationBuild.Data[BatchRecord.DEFAULT_SIZE];
 				for (int i = 0; i < values.length; i++) {
-					values[i] = new MakeConservationBuild.GerpData(
-							RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f,
-							RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f
-					);
+					MakeConservationBuild.Data data = new MakeConservationBuild.Data();
+					data.priPhCons = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
+					data.mamPhCons = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
+					data.verPhCons = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
+					data.priPhyloP = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
+					data.mamPhyloP = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
+					data.verPhyloP = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
+					data.gerpRS = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
+					data.gerpRSpval = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
+					data.gerpN = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
+					data.gerpS = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
+					values[i] = data;
 				}
 				MakeConservationBuild makeConservationBuild = new MakeConservationBuild(interval, values);
 				byte[] bytes = makeConservationBuild.build();
@@ -58,12 +68,23 @@ public class MakeConservationBuildTest {
 				for (int p = interval.start; p < interval.end; p++) {
 					Position position = new Position(interval.chromosome, p);
 
-					Assert.assertEquals(values[p - interval.start].gerpN, batchRecordConservation.getGerpN(position), 0.001d);
-					Assert.assertEquals(values[p - interval.start].gerpRS, batchRecordConservation.getGerpRS(position), 0.001d);
+					assertFloat(values[p - interval.start].priPhCons, batchRecordConservation.getPriPhCons(position));
+					assertFloat(values[p - interval.start].mamPhCons, batchRecordConservation.getMamPhCons(position));
+					assertFloat(values[p - interval.start].verPhCons, batchRecordConservation.getVerPhCons(position));
+					assertFloat(values[p - interval.start].priPhyloP, batchRecordConservation.getPriPhyloP(position));
+					assertFloat(values[p - interval.start].mamPhyloP, batchRecordConservation.getMamPhyloP(position));
+					assertFloat(values[p - interval.start].verPhyloP, batchRecordConservation.getVerPhyloP(position));
+					assertFloat(values[p - interval.start].gerpRS, batchRecordConservation.getGerpRS(position));
+					assertFloat(values[p - interval.start].gerpRSpval, batchRecordConservation.getGerpRSpval(position));
+					assertFloat(values[p - interval.start].gerpN, batchRecordConservation.getGerpN(position));
+					assertFloat(values[p - interval.start].gerpS, batchRecordConservation.getGerpS(position));
 				}
 			}
 		}
+	}
 
-
+	private void assertFloat(Float expected, Float actual) {
+		if (Objects.equals(expected, actual)) return;
+		Assert.assertEquals(expected, actual, 0.001d);
 	}
 }

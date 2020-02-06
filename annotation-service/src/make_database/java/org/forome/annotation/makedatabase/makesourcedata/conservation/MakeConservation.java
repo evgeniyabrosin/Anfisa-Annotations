@@ -18,8 +18,10 @@
 
 package org.forome.annotation.makedatabase.makesourcedata.conservation;
 
+import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.makedatabase.MakeDatabase;
 import org.forome.annotation.makedatabase.makesourcedata.MakeSourceData;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
@@ -28,7 +30,44 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+/**
+ * Structure DB
+ * <p>
+ * GERP
+ * +--------+------------+------+-----+---------+-------+
+ * | Field  | Type       | Null | Key | Default | Extra |
+ * +--------+------------+------+-----+---------+-------+
+ * | GerpN  | double     | YES  |     | NULL    |       |
+ * | Chrom  | varchar(4) | NO   | PRI | NULL    |       |
+ * | Pos    | int(11)    | NO   | PRI | NULL    |       | <- hg19 position
+ * | GerpRS | double     | YES  |     | NULL    |       |
+ * +--------+------------+------+-----+---------+-------+
+ * <p>
+ * CONSERVATION
+ * +------------+------------+------+-----+---------+-------+
+ * | Field      | Type       | Null | Key | Default | Extra |
+ * +------------+------------+------+-----+---------+-------+
+ * | verPhCons  | double     | YES  |     | NULL    |       |
+ * | mamPhyloP  | double     | YES  |     | NULL    |       |
+ * | GerpN      | double     | YES  |     | NULL    |       |
+ * | priPhyloP  | double     | YES  |     | NULL    |       |
+ * | verPhyloP  | double     | YES  |     | NULL    |       |
+ * | GerpRSpval | double     | YES  |     | NULL    |       |
+ * | GerpRS     | double     | YES  |     | NULL    |       |
+ * | priPhCons  | double     | YES  |     | NULL    |       |
+ * | Pos        | int(11)    | NO   | PRI | NULL    |       | <- hg38 position
+ * | mamPhCons  | double     | YES  |     | NULL    |       |
+ * | Chrom      | varchar(4) | NO   | PRI | NULL    |       |
+ * | GerpS      | double     | YES  |     | NULL    |       |
+ * | hg19       | int(11)    | YES  | MUL | NULL    |       |
+ * +------------+------------+------+-----+---------+-------+
+ * <p>
+ * Поля GerpN и GerpRS забираем из таблицы GERP, все остальные значения забираем из CONSERVATION
+ */
 public class MakeConservation implements MakeSourceData {
 
 	private final MakeDatabase makeDatabase;
@@ -38,21 +77,64 @@ public class MakeConservation implements MakeSourceData {
 	}
 
 	public MakeConservationBuild getBatchRecord(Interval interval) throws SQLException {
-		MakeConservationBuild.GerpData[] values = new MakeConservationBuild.GerpData[interval.end - interval.start + 1];
+		LiftoverConnector liftoverConnector = makeDatabase.liftoverConnector;
+		Assembly assembly = makeDatabase.assembly;
+		Chromosome chromosome = interval.chromosome;
 
-		try (Connection connection = makeDatabase.conservationConnector.databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				String sql = String.format("select * from conservation.GERP where Chrom = '%s' and Pos >= %s and Pos <= %s order by Pos asc",
-						interval.chromosome.getChar(), interval.start, interval.end
-				);
-				try (ResultSet resultSet = statement.executeQuery(sql)) {
-					while (resultSet.next()) {
-						int iPos = resultSet.getInt("Pos");
-						float gerpN = resultSet.getFloat("GerpN");
-						float gerpRS = resultSet.getFloat("GerpRS");
-						values[iPos - interval.start] = new MakeConservationBuild.GerpData(
-								gerpN, gerpRS
-						);
+		MakeConservationBuild.Data[] values = new MakeConservationBuild.Data[interval.end - interval.start + 1];
+
+		Interval interval37 = liftoverConnector.toHG37(assembly, interval);
+		if (interval37 != null) {
+			try (Connection connection = makeDatabase.conservationConnector.databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					String sql = String.format("select * from conservation.GERP where Chrom = '%s' and Pos >= %s and Pos <= %s order by Pos asc",
+							chromosome.getChar(), interval37.start, interval37.end
+					);
+					try (ResultSet resultSet = statement.executeQuery(sql)) {
+						while (resultSet.next()) {
+							int iPos37 = resultSet.getInt("Pos");
+							Position position = liftoverConnector.convertFromHG37(assembly, new Position(chromosome, iPos37));
+
+							MakeConservationBuild.Data data = getAndCreate(values, position.value - interval.start);
+							data.gerpN = resultSet.getFloat("GerpN");
+							data.gerpRS = resultSet.getFloat("GerpRS");
+						}
+					}
+				}
+			}
+		}
+
+
+		Map<Integer, Integer> position38ToPosition = new HashMap<>();
+		for (int pos = interval.start; pos <= interval.end; pos++) {
+			Position position38 = liftoverConnector.toHG38(assembly, new Position(interval.chromosome, pos));
+			if (position38 == null) continue;
+			position38ToPosition.put(position38.value, pos);
+		}
+		if (!position38ToPosition.isEmpty()) {
+			try (Connection connection = makeDatabase.conservationConnector.databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					String sql = String.format("select * from conservation.CONSERVATION where Chrom = '%s' and Pos IN (%s)",
+							chromosome.getChar(),
+							position38ToPosition.keySet().stream()
+									.map(position -> String.valueOf(position))
+									.collect(Collectors.joining(","))
+					);
+					try (ResultSet resultSet = statement.executeQuery(sql)) {
+						while (resultSet.next()) {
+							int iPos38 = resultSet.getInt("Pos");
+							int position = position38ToPosition.get(iPos38);
+
+							MakeConservationBuild.Data data = getAndCreate(values, position - interval.start);
+							data.priPhCons = toFloat(resultSet.getObject("priPhCons"));
+							data.mamPhCons = toFloat(resultSet.getObject("mamPhCons"));
+							data.verPhCons = toFloat(resultSet.getObject("verPhCons"));
+							data.priPhyloP = toFloat(resultSet.getObject("priPhyloP"));
+							data.mamPhyloP = toFloat(resultSet.getObject("mamPhyloP"));
+							data.verPhyloP = toFloat(resultSet.getObject("verPhyloP"));
+							data.gerpRSpval = toFloat(resultSet.getObject("gerpRSpval"));
+							data.gerpS = toFloat(resultSet.getObject("gerpS"));
+						}
 					}
 				}
 			}
@@ -63,8 +145,28 @@ public class MakeConservation implements MakeSourceData {
 		);
 	}
 
+	private static MakeConservationBuild.Data getAndCreate(MakeConservationBuild.Data[] values, int index) {
+		MakeConservationBuild.Data data = values[index];
+		if (data == null) {
+			data = new MakeConservationBuild.Data();
+			values[index] = data;
+		}
+		return data;
+	}
+
+	public Float toFloat(Object value) {
+		if (value == null) {
+			return null;
+		}
+		return ((Number) value).floatValue();
+	}
+
 	@Override
 	public int getMinPosition(Chromosome chromosome) throws SQLException {
+		if (makeDatabase.assembly != Assembly.GRCh37) {
+			throw new IllegalArgumentException();
+		}
+
 		int min;
 		try (Connection connection = makeDatabase.conservationConnector.databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
@@ -99,6 +201,10 @@ public class MakeConservation implements MakeSourceData {
 
 	@Override
 	public int getMaxPosition(Chromosome chromosome) throws SQLException {
+		if (makeDatabase.assembly != Assembly.GRCh37) {
+			throw new IllegalArgumentException();
+		}
+
 		int max;
 		try (Connection connection = makeDatabase.conservationConnector.databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {

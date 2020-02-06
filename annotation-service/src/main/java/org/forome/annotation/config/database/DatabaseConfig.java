@@ -26,12 +26,29 @@ import java.nio.file.Paths;
 
 public class DatabaseConfig {
 
-	public final Path path;
+	private final static String FIELD_PATH_HG37 = "hg37";
+	private final static String FIELD_PATH_HG38 = "hg38";
+
+	public final Path hg37;
+	public final Path hg38;
 
 	public DatabaseConfig(JSONObject parse) {
-		this.path = Paths.get(parse.getAsString("path")).toAbsolutePath();
-		if (!Files.exists(path) || !Files.isDirectory(path)) {
-			throw new RuntimeException("Exception database path: " + path);
+		if (parse.containsKey(FIELD_PATH_HG37)) {
+			this.hg37 = Paths.get(parse.getAsString(FIELD_PATH_HG37)).toAbsolutePath();
+			if (!Files.exists(hg37) || !Files.isDirectory(hg37)) {
+				throw new RuntimeException("Exception database path hg37: " + hg37);
+			}
+		} else {
+			this.hg37 = null;
+		}
+
+		if (parse.containsKey(FIELD_PATH_HG38)) {
+			this.hg38 = Paths.get(parse.getAsString(FIELD_PATH_HG38)).toAbsolutePath();
+			if (!Files.exists(hg38) || !Files.isDirectory(hg38)) {
+				throw new RuntimeException("Exception database path hg38: " + hg38);
+			}
+		} else {
+			this.hg38 = null;
 		}
 	}
 }

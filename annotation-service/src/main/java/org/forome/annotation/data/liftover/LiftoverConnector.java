@@ -19,6 +19,7 @@
 package org.forome.annotation.data.liftover;
 
 import htsjdk.samtools.liftover.LiftOver;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
 
@@ -80,6 +81,20 @@ public class LiftoverConnector implements AutoCloseable {
 		}
 	}
 
+	public Interval toHG37(Interval intervalHg38) {
+		int start = Math.min(intervalHg38.start, intervalHg38.end);
+		int end = Math.max(intervalHg38.start, intervalHg38.end);
+
+		htsjdk.samtools.util.Interval interval = liftOverHg38toHg19.liftOver(new htsjdk.samtools.util.Interval(
+				intervalHg38.chromosome.toString(),
+				start,
+				end
+		));
+		if (interval == null) return null;
+
+		return Interval.of(intervalHg38.chromosome, interval.getStart(), interval.getEnd());
+	}
+
 	public Position toHG19(Position positionHg38) {
 		htsjdk.samtools.util.Interval interval = liftOverHg38toHg19.liftOver(new htsjdk.samtools.util.Interval(
 				positionHg38.chromosome.toString(),
@@ -88,6 +103,111 @@ public class LiftoverConnector implements AutoCloseable {
 		));
 		if (interval == null) return null;
 		return new Position(positionHg38.chromosome, interval.getStart());
+	}
+
+	public Position toHG38(Position positionHg37) {
+		htsjdk.samtools.util.Interval interval = liftOverHg19toHg38.liftOver(new htsjdk.samtools.util.Interval(
+				positionHg37.chromosome.toString(),
+				positionHg37.value,
+				positionHg37.value
+		));
+		if (interval == null) return null;
+		return new Position(positionHg37.chromosome, interval.getStart());
+	}
+
+	public Position toHG37(Position positionHg38) {
+		htsjdk.samtools.util.Interval interval = liftOverHg38toHg19.liftOver(new htsjdk.samtools.util.Interval(
+				positionHg38.chromosome.toString(),
+				positionHg38.value,
+				positionHg38.value
+		));
+		if (interval == null) return null;
+		return new Position(positionHg38.chromosome, interval.getStart());
+	}
+
+	/**
+	 * Приведение координат к hg38, если будет передан hg38, то вернется без изменений
+	 * @param assembly
+	 * @param interval
+	 * @return
+	 */
+	public Interval toHG38(Assembly assembly, Interval interval) {
+		switch (assembly) {
+			case GRCh37:
+				return toHG38(interval);
+			case GRCh38:
+				return interval;
+			default:
+				throw new RuntimeException();
+		}
+	}
+
+	/**
+	 * Приведение координат к hg37, если будет передан hg37, то вернется без изменений
+	 * @param assembly
+	 * @param interval
+	 * @return
+	 */
+	public Interval toHG37(Assembly assembly, Interval interval) {
+		switch (assembly) {
+			case GRCh37:
+				return interval;
+			case GRCh38:
+				return toHG37(interval);
+			default:
+				throw new RuntimeException();
+		}
+	}
+
+	/**
+	 * Приведение координат к hg38, если будет передан hg38, то вернется без изменений
+	 * @param assembly
+	 * @param position
+	 * @return
+	 */
+	public Position toHG38(Assembly assembly, Position position) {
+		switch (assembly) {
+			case GRCh37:
+				return toHG38(position);
+			case GRCh38:
+				return position;
+			default:
+				throw new RuntimeException();
+		}
+	}
+
+	/**
+	 * Приведение координат hg37, к необходимые координаты, если будет передан hg37, то вернется без изменений
+	 * @param assembly
+	 * @param positionHg37 координаты в hg37
+	 * @return
+	 */
+	public Position convertFromHG37(Assembly assembly, Position positionHg37) {
+		switch (assembly) {
+			case GRCh37:
+				return positionHg37;
+			case GRCh38:
+				return toHG38(positionHg37);
+			default:
+				throw new RuntimeException();
+		}
+	}
+
+	/**
+	 * Приведение координат hg38, к необходимые координаты, если будет передан hg38, то вернется без изменений
+	 * @param assembly
+	 * @param positionHg38 координаты в hg37
+	 * @return
+	 */
+	public Position convertFromHG38(Assembly assembly, Position positionHg38) {
+		switch (assembly) {
+			case GRCh37:
+				return toHG37(positionHg38);
+			case GRCh38:
+				return positionHg38;
+			default:
+				throw new RuntimeException();
+		}
 	}
 
 	@Override

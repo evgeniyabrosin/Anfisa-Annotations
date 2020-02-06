@@ -18,78 +18,123 @@
 
 package org.forome.annotation.makedatabase.makesourcedata.conservation;
 
+import org.forome.annotation.service.database.struct.batch.BatchRecordConservation;
 import org.forome.annotation.struct.Interval;
+import org.forome.annotation.utils.bits.IntegerBits;
 import org.forome.annotation.utils.bits.ShortBits;
 
 import java.nio.ByteBuffer;
 
 /**
- * Упаковка идет последовательным укладом чисел gerpN и gerpRS
+ * Упаковка идет последовательным укладом чисел
  * Для уменьшения объема, воспользуемся особенностью, т.к.
  * - нам интересно максимум 3 знака после запятой
  * - число > -31
  * - число < 31
+ * Short.MIN_VALUE(-32768) - зарезервировано под null
  * то, сохраняемое число умножаем на 1000 и сохраняем как short которое размером в 2 байта
  */
 public class MakeConservationBuild {
 
-	public static class GerpData {
+	public static class Data {
 
-		public final Float gerpN;
-		public final Float gerpRS;
+		public Float priPhCons = null;
+		public Float mamPhCons = null;
+		public Float verPhCons = null;
+		public Float priPhyloP = null;
+		public Float mamPhyloP = null;
+		public Float verPhyloP = null;
+		public Float gerpRS = null;
+		public Float gerpRSpval = null;
+		public Float gerpN = null;
+		public Float gerpS = null;
 
-		public GerpData(Float gerpN, Float gerpRS) {
-			this.gerpN = gerpN;
-			this.gerpRS = gerpRS;
+		public Data() {
 		}
 
 		private boolean isEmpty() {
-			if (Math.abs(gerpN) > 0.00000001d) return false;
-			if (Math.abs(gerpRS) > 0.00000001d) return false;
+			if (priPhCons != null && Math.abs(priPhCons) > 0.00000001d) return false;
+			if (mamPhCons != null && Math.abs(mamPhCons) > 0.00000001d) return false;
+			if (verPhCons != null && Math.abs(verPhCons) > 0.00000001d) return false;
+			if (priPhyloP != null && Math.abs(priPhyloP) > 0.00000001d) return false;
+			if (mamPhyloP != null && Math.abs(mamPhyloP) > 0.00000001d) return false;
+			if (verPhyloP != null && Math.abs(verPhyloP) > 0.00000001d) return false;
+			if (gerpRS != null && Math.abs(gerpRS) > 0.00000001d) return false;
+			if (gerpRSpval != null && Math.abs(gerpRSpval) > 0.00000001d) return false;
+			if (gerpN != null && Math.abs(gerpN) > 0.00000001d) return false;
+			if (gerpS != null && Math.abs(gerpS) > 0.00000001d) return false;
 			return true;
 		}
 	}
 
-	private final Interval interval;
-	private final MakeConservationBuild.GerpData[] values;
+	private final MakeConservationBuild.Data[] values;
 
-	public MakeConservationBuild(Interval interval, MakeConservationBuild.GerpData[] values) {
-		this.interval = interval;
+	public MakeConservationBuild(Interval interval, MakeConservationBuild.Data[] values) {
 		this.values = values;
-		if (values.length != interval.end - interval.start +1) {
+		if (values.length != interval.end - interval.start + 1) {
 			throw new IllegalArgumentException();
 		}
 	}
 
 	public byte[] build() {
-		ByteBuffer byteBuffer = ByteBuffer.allocate((2 + 2) * values.length);
+		ByteBuffer byteBuffer = ByteBuffer.allocate(
+				BatchRecordConservation.BYTE_SIZE_RECORD * values.length
+		);
 		for (int i = 0; i < values.length; i++) {
-			GerpData item = values[i];
-
-			short sGerpN;
-			short sGerpRS;
+			Data item = values[i];
 			if (item == null) {
-				sGerpN = 0;
-				sGerpRS = 0;
+				byteBuffer.put(packShort(null));
+				byteBuffer.put(packShort(null));
+				byteBuffer.put(packShort(null));
+				byteBuffer.put(packShort(null));
+				byteBuffer.put(packShort(null));
+				byteBuffer.put(packShort(null));
+				byteBuffer.put(packInteger(null));
+				byteBuffer.put(packShort(null));
+				byteBuffer.put(packShort(null));
+				byteBuffer.put(packShort(null));
 			} else {
-				if (item.gerpN > 31 || item.gerpN < -31) {
-					throw new IllegalStateException();
-				}
-				if (item.gerpRS > 31 || item.gerpRS < -31) {
-					throw new IllegalStateException();
-				}
-				sGerpN = (short) (item.gerpN * 1000);
-				sGerpRS = (short) (item.gerpRS * 1000);
+				byteBuffer.put(packShort(item.priPhCons));
+				byteBuffer.put(packShort(item.mamPhCons));
+				byteBuffer.put(packShort(item.verPhCons));
+				byteBuffer.put(packShort(item.priPhyloP));
+				byteBuffer.put(packShort(item.mamPhyloP));
+				byteBuffer.put(packShort(item.verPhyloP));
+				byteBuffer.put(packInteger(item.gerpRS));
+				byteBuffer.put(packInteger(item.gerpRSpval));
+				byteBuffer.put(packShort(item.gerpN));
+				byteBuffer.put(packInteger(item.gerpS));
 			}
-
-			byteBuffer.put(ShortBits.toByteArray(sGerpN));
-			byteBuffer.put(ShortBits.toByteArray(sGerpRS));
 		}
 		return byteBuffer.array();
 	}
 
+	private byte[] packShort(Float value) {
+		if (value == null) {
+			return ShortBits.toByteArray(BatchRecordConservation.SHORT_NULL_VALUE);
+		} else {
+			if (value > 31 || value < -32) {
+				throw new IllegalStateException("value: " + value);
+			}
+			short sValue = (short) (value * 1000);
+			return ShortBits.toByteArray(sValue);
+		}
+	}
+
+	private byte[] packInteger(Float value) {
+		if (value == null) {
+			return IntegerBits.toByteArray(BatchRecordConservation.INT_NULL_VALUE);
+		} else {
+			if (value > 2147482 || value < -2147482) {
+				throw new IllegalStateException("value: " + value);
+			}
+			int iValue = (int) (value * 1000);
+			return IntegerBits.toByteArray(iValue);
+		}
+	}
+
 	public boolean isEmpty() {
-		for (GerpData gerpData : values) {
+		for (Data gerpData : values) {
 			if (gerpData == null) continue;
 			if (gerpData.isEmpty()) continue;
 			return false;
