@@ -26,10 +26,12 @@ import org.forome.annotation.struct.variant.vep.VariantVep;
 public class VariantCustom extends VariantVep {
 
 	private final int start;
+	private final Allele alt;
 
-	public VariantCustom(Chromosome chromosome, int start, int end) {
+	public VariantCustom(Chromosome chromosome, int start, int end, Allele alt) {
 		super(chromosome, end);
 		this.start = start;
+		this.alt = alt;
 	}
 
 	@Override
@@ -44,7 +46,6 @@ public class VariantCustom extends VariantVep {
 
 	@Override
 	public Allele getAlt() {
-		String[] ss = getVepJson().getAsString("allele_string").split("/");
-		return new Allele(ss[1]);
+		return alt;
 	}
 }

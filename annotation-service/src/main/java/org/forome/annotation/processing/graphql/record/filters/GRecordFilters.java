@@ -114,10 +114,6 @@ public class GRecordFilters {
 	@GraphQLField
 	@GraphQLName("min_gq")
 	public Integer getMinGQ() {
-		if (mCase == null) {
-			return null;
-		}
-
 		Integer GQ = null;
 		for (Sample sample : mCase.samples.values()) {
 			Genotype genotype = variant.getGenotype(sample);
@@ -149,7 +145,7 @@ public class GRecordFilters {
 	@GraphQLField
 	@GraphQLName("proband_gq")
 	public Integer getProbandGQ() {
-		if (mCase == null) {
+		if (mCase.proband == null) {
 			return null;
 		}
 		Genotype genotype = variant.getGenotype(mCase.proband);
