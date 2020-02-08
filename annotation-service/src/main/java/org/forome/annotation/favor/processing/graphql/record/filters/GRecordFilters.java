@@ -22,6 +22,8 @@ import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import org.forome.annotation.favor.utils.struct.table.Row;
 
+import java.util.Arrays;
+
 @GraphQLName("record_filters")
 public class GRecordFilters {
 
@@ -77,6 +79,67 @@ public class GRecordFilters {
 	@GraphQLField
 	@GraphQLName("genes")
 	public String[] getGenes() {
-		return new String[] { row.getValue("GeneName") };
+		return new String[]{ row.getValue("GeneName") };
 	}
+
+	@GraphQLField
+	@GraphQLName("gnomad_total_af")
+	public double getGnomadTotalAf() {
+		String value = row.getValue("GNOMAD_total");
+		if (value == null) return 0;
+		return Double.parseDouble(value);
+	}
+
+	@GraphQLField
+	@GraphQLName("gencode_category")
+	public String getGencodeCategory() {
+		return row.getValue("GENCODE.Category");
+	}
+
+	@GraphQLField
+	@GraphQLName("gencode_exonic_category")
+	public String getGencodeExonicCategory() {
+		return row.getValue("GENCODE.EXONIC.Category");
+	}
+
+	@GraphQLField
+	@GraphQLName("polyphen2_hdiv")
+	public String getPolyphen2HDIV() {
+		String value = row.getValue("Polyphen2_HDIV_pred");
+		if (".".equals(value)) return null;
+		return value;
+	}
+
+	@GraphQLField
+	@GraphQLName("polyphen2_hvar")
+	public String getPolyphen2HVAR() {
+		String value = row.getValue("Polyphen2_HVAR_pred");
+		if (".".equals(value)) return null;
+		return value;
+	}
+
+	@GraphQLField
+	@GraphQLName("polyphen_cat")
+	public String getPolyPhenCat() {
+		return row.getValue("PolyPhenCat");
+	}
+
+	@GraphQLField
+	@GraphQLName("sift_cat")
+	public String getSiftCat() {
+		return row.getValue("SIFTcat");
+	}
+
+	@GraphQLField
+	@GraphQLName("clinvar")
+	public String[] getClinvar() {
+		String value = row.getValue("clinvar");
+		if (value==null) return null;
+		return Arrays.stream(value.split("\\|"))
+				.map(s -> s.trim())
+				.filter(s -> !s.isEmpty())
+				.distinct()
+				.toArray(String[]::new);
+	}
+
 }

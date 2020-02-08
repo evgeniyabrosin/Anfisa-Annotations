@@ -51,14 +51,26 @@ public class GRecordViewProteinFunction {
 	}
 
 	@GraphQLField
-	@GraphQLName("Polyphen2_HDIV")
-	public String getPolyphen2_HDIV() {
+	@GraphQLName("polyphen2_hdiv")
+	public String getPolyphen2Hdiv() {
+		return row.getValue("Polyphen2_HDIV_pred");
+	}
+
+	@GraphQLField
+	@GraphQLName("polyphen2_hvar")
+	public String getPolyphen2Hvar() {
+		return row.getValue("Polyphen2_HVAR_pred");
+	}
+
+	@GraphQLField
+	@GraphQLName("polyphen2_hdiv_score")
+	public String getPolyphen2HdivScore() {
 		return row.getValue("Polyphen2_HDIV_score");
 	}
 
 	@GraphQLField
-	@GraphQLName("Polyphen2_HVAR")
-	public String getPolyphen2_HVAR() {
+	@GraphQLName("polyphen2_hvar_score")
+	public String getPolyphen2HvarScore() {
 		return row.getValue("Polyphen2_HVAR_score");
 	}
 

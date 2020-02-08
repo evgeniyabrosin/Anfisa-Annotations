@@ -23,6 +23,8 @@ import graphql.annotations.annotationTypes.GraphQLName;
 import org.forome.annotation.favor.processing.graphql.record.GRecord;
 import org.forome.annotation.favor.utils.struct.table.Row;
 
+import java.util.Arrays;
+
 @GraphQLName("record_view_general")
 public class GRecordViewGeneral {
 
@@ -73,4 +75,18 @@ public class GRecordViewGeneral {
 	public String getALL_1000G_AF() {
 		return row.getValue("TG_ALL");
 	}
+
+	@GraphQLField
+	@GraphQLName("genes")
+	public String[] getGenes() {
+		String genInfo = row.getValue("GENCODE.Info");
+		if (genInfo == null || genInfo.isEmpty()) {
+			return new String[0];
+		}
+		return Arrays.stream(genInfo.replaceAll("\\(([^\\)]*)\\)", "").split(","))
+				.map(s -> s.trim())
+				.filter(s -> !s.isEmpty())
+				.toArray(String[]::new);
+	}
+
 }

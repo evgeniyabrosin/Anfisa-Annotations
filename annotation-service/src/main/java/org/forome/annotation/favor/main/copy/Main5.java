@@ -45,7 +45,7 @@ public class Main5 {
                 try (BufferedReader bf = new BufferedReader(new InputStreamReader(new GZIPInputStream(is)))) {
                     DumpIterator dumpIterator = new DumpIterator(bf);
 
-                    try (OutputStream os = new GZIPOutputStream(Files.newOutputStream(Paths.get("data/Filtered[KCNQ1,NF2,SMAD4]_5_Cloud_SQL_Export_2019-12-31.gz")))) {
+                    try (OutputStream os = new GZIPOutputStream(Files.newOutputStream(Paths.get("data/favor/Filtered[KCNQ1,NF2,SMAD4]_14_Cloud_SQL_Export_2019-12-31.gz")))) {
                         try (BufferedOutputStream bos = new BufferedOutputStream(os)) {
 
                             int countLineProcessed = 0;
@@ -65,17 +65,14 @@ public class Main5 {
                                     bos.flush();
                                 }
 
-
-                                if (countLineProcessed % 20 == 0) {
+                                countLineProcessed++;
+                                if (countLineProcessed % 14 == 0) {
                                     bos.write(row.rawLine.getBytes(StandardCharsets.UTF_8));
                                     bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
                                     bos.flush();
 
                                     countFind++;
-                                }
 
-                                countLineProcessed++;
-                                if (countLineProcessed % 20 == 0) {
                                     log.debug("Processing {}|{}", countFind, countLineProcessed);
                                 }
                             }

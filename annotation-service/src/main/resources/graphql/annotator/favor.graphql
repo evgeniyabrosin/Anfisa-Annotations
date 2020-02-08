@@ -9,6 +9,14 @@
         ref
         alt
         genes
+        gnomad_total_af
+        gencode_category
+        gencode_exonic_category
+        polyphen2_hdiv
+        polyphen2_hvar
+        polyphen_cat
+        sift_cat
+        clinvar
     }
 
     _view {
@@ -20,6 +28,7 @@
             TOPMed_Bravo_AF
             GNOMAD_Total_AF
             ALL_1000G_AF
+            genes
         }
 
         variant_category {
@@ -71,8 +80,10 @@
             APC_ProteinFunction
             PolyPhenCat
             PolyPhenVal
-            Polyphen2_HDIV
-            Polyphen2_HVAR
+            polyphen2_hdiv
+            polyphen2_hvar
+            polyphen2_hdiv_score
+            polyphen2_hvar_score
             Grantham
             MutationTaster
             MutationAssessor

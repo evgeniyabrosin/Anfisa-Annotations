@@ -44,7 +44,7 @@ public class Main {
     public static void main(String[] args) {
         try {
 //            Source source = new SourceRemote(Source.PATH_FILE);
-            Source source = new SourceLocal(Paths.get("data/favor/Filtered[KCNQ1,NF2,SMAD4]_5_Cloud_SQL_Export_2019-12-31.gz"));
+            Source source = new SourceLocal(Paths.get("data/favor/Filtered[KCNQ1,NF2,SMAD4]_14_Cloud_SQL_Export_2019-12-31.gz"));
 
             Processing processing = new Processing();
             try (InputStream is = source.getInputStream()) {
