@@ -77,7 +77,9 @@ public class ConservationDataMysql {
 		if (alt.length() == 1 && ref.length() == 1) {
 			//Однобуквенный вариант
 			if (hg38 != null && !hg38.isSingle()) {
-				throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", position.chromosome.getChar(), position));
+				String message = String.format("Unknown state, chr: %s, position: %s", position.chromosome.getChar(), position);
+				log.error(message);
+//                throw new RuntimeException(message);
 			}
 			return getConservation(position, hg38);
 		} else if (alt.length() > 1 && ref.length() == 1) {
