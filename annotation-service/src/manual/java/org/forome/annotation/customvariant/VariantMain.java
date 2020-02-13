@@ -97,7 +97,8 @@ public class VariantMain {
 		VariantMain variantMain = new VariantMain();
 
 		AnfisaResult anfisaResult = variantMain.build(
-				new VariantCustom(Chromosome.of("11"), 2466481, 2466480), "AC"
+//				new VariantCustom(Chromosome.of("6"), 53140021, 53140021), "A"
+		new VariantCustom(Chromosome.of("1"), 12040479, 12040479), "C"
 		);
 		log.debug("result: " + anfisaResult.toJSON());
 	}
