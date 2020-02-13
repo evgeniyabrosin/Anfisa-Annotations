@@ -151,21 +151,21 @@ public class AnfisaConnector implements AutoCloseable {
 
 		data.version = AppVersion.getVersionFormat();
 
-		callGnomAD(context, variant, anfisaInput.samples, filters);
+		callGnomAD(context, variant, anfisaInput.mCase, filters);
 		callSpliceai(data, filters, variant);
 		callHgmd(record, context, filters, data);
 		callClinvar(context, record, variant.chromosome.getChar(), filters, data, view, vepJson);
 		GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant);
 		callQuality(filters, variant);
 
-		Sample proband = anfisaInput.samples.proband;
+		Sample proband = anfisaInput.mCase.proband;
 		if (proband != null) {
 			String probandId = proband.id;
-			String mother = anfisaInput.samples.samples.get(probandId).mother;
-			String father = anfisaInput.samples.samples.get(probandId).father;
+			String mother = anfisaInput.mCase.samples.get(probandId).mother;
+			String father = anfisaInput.mCase.samples.get(probandId).father;
 			data.zygosity = new HashMap<>();
 			filters.altZygosity = new HashMap<>();
-			for (Map.Entry<String, Sample> entry : anfisaInput.samples.samples.entrySet()) {
+			for (Map.Entry<String, Sample> entry : anfisaInput.mCase.samples.entrySet()) {
 				String name = entry.getValue().name;
 				Sex sex = entry.getValue().sex;
 				String label;
@@ -233,17 +233,17 @@ public class AnfisaConnector implements AutoCloseable {
 			data.cnvGT = variantCNV.genotypes.values().stream()
 					.collect(Collectors.toMap(item -> item.sampleName, item -> item.gt));
 			filters.cnvLO = view.bioinformatics.cnvLO =
-					variantCNV.getGenotype(anfisaInput.samples.proband.id).lo;
+					variantCNV.getGenotype(anfisaInput.mCase.proband.id).lo;
 		}
 
-		createGeneralTab(context, data, filters, view, variant, anfisaInput.samples);
-		createQualityTab(view, variant, anfisaInput.samples);
-		createGnomadTab(context, variant.chromosome.getChar(), variant, anfisaInput.samples, view);
+		createGeneralTab(context, data, filters, view, variant, anfisaInput.mCase);
+		createQualityTab(view, variant, anfisaInput.mCase);
+		createGnomadTab(context, variant.chromosome.getChar(), variant, anfisaInput.mCase, view);
 		createDatabasesTab((VariantVep) variant, record, data, view);
 		createPredictionsTab((VariantVep) variant, vepJson, view);
 		createBioinformaticsTab(gtfAnfisaResult, context, data, view);
 		createPharmacogenomicsTab(view, filters, variant);
-		countCohorts(view, filters, anfisaInput.samples, variant);
+		countCohorts(view, filters, anfisaInput.mCase, variant);
 
 		return new AnfisaResult(filters, data, view);
 	}
@@ -976,7 +976,7 @@ public class AnfisaConnector implements AutoCloseable {
 		AnfisaInput anfisaInput = anfisaExecuteContext.anfisaInput;
 		Variant variant = anfisaExecuteContext.variant;
 
-		view.bioinformatics.inheritedFrom = inherited_from(variant, anfisaInput.samples);
+		view.bioinformatics.inheritedFrom = inherited_from(variant, anfisaInput.mCase);
 		view.bioinformatics.distFromExonCanonical = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.CANONICAL);
 		view.bioinformatics.distFromExonWorst = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.WORST);
 		view.bioinformatics.conservation = buildConservation(anfisaExecuteContext);
@@ -986,7 +986,7 @@ public class AnfisaConnector implements AutoCloseable {
 		view.bioinformatics.nnSplice = "";
 		view.bioinformatics.humanSplicingFinder = "";
 		view.bioinformatics.otherGenes = getOtherGenes((VariantVep) variant);
-		view.bioinformatics.calledBy = getCallers(variant, anfisaInput.samples).stream().toArray(String[]::new);
+		view.bioinformatics.calledBy = getCallers(variant, anfisaInput.mCase).stream().toArray(String[]::new);
 		view.bioinformatics.callerData = getCallersData(variant);
 		view.bioinformatics.spliceAi = list_dsmax(data);
 
@@ -1590,12 +1590,13 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	public static Genotypes getGenotypes(Variant variant, MCase samples) {
-		String empty = "Can not be determined";
-		Sample proband = samples.proband;
+	public static Genotypes getGenotypes(Variant variant, MCase mCase) {
+		Sample proband = mCase.proband;
 		if (proband == null) {
 			return null;
 		}
+		
+		String empty = "Can not be determined";
 		String probandId = proband.id;
 		org.forome.annotation.struct.variant.Genotype gProband = variant.getGenotype(probandId);
 		String probandGenotype;
@@ -1605,7 +1606,7 @@ public class AnfisaConnector implements AutoCloseable {
 			probandGenotype = empty;
 		}
 
-		String mother = samples.samples.get(probandId).mother;
+		String mother = mCase.samples.get(probandId).mother;
 		if ("0".equals(mother)) {
 			mother = null;
 		}
@@ -1614,7 +1615,7 @@ public class AnfisaConnector implements AutoCloseable {
 			maternalGenotype = empty;
 		}
 
-		String father = samples.samples.get(probandId).father;
+		String father = mCase.samples.get(probandId).father;
 		if ("0".equals(father)) {
 			father = null;
 		}
@@ -1626,7 +1627,7 @@ public class AnfisaConnector implements AutoCloseable {
 		String finalProbandGenotype = probandGenotype;
 		String finalMaternalGenotype = maternalGenotype;
 		String finalPaternalGenotype = paternalGenotype;
-		List<String> otherGenotypes = samples.samples.keySet().stream()
+		List<String> otherGenotypes = mCase.samples.keySet().stream()
 				.map(iSample -> variant.getGenotype(iSample))
 				.filter(genotype -> genotype != null)
 				.map(genotype -> genotype.getGenotypeString())

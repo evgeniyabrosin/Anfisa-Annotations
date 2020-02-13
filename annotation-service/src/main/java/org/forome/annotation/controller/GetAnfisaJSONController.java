@@ -32,6 +32,7 @@ import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vep.VariantVep;
@@ -107,7 +108,7 @@ public class GetAnfisaJSONController {
 					futureProcessingResults.add(
 							ensemblVepService.getVepJson(requestItem.chromosome, requestItem.start, requestItem.end, requestItem.alternative)
 									.thenApply(vepJson -> {
-										VariantVep variantVep = new VariantCustom(requestItem.chromosome, requestItem.start, requestItem.end);
+										VariantVep variantVep = new VariantCustom(requestItem.chromosome, requestItem.start, requestItem.end, new Allele(requestItem.alternative));
 										variantVep.setVepJson(vepJson);
 										return processing.exec(null, variantVep);
 									})

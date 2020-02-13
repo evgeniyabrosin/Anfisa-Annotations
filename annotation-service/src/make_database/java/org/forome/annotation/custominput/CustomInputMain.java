@@ -47,6 +47,7 @@ import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.notification.NotificationService;
 import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.VariantType;
@@ -284,8 +285,9 @@ public class CustomInputMain {
 							Chromosome chromosome = Chromosome.of(vepJson.getAsString("seq_region_name"));
 							int start = Integer.parseInt(vepJson.getAsString("start"));
 							int end = Integer.parseInt(vepJson.getAsString("end"));
+							Allele alt = new Allele(vepJson.getAsString("allele_string").split("/")[1]);
 
-							VariantVep variantVep = new VariantCustom(chromosome, start, end);
+							VariantVep variantVep = new VariantCustom(chromosome, start, end, alt);
 							variantVep.setVepJson(vepJson);
 
 							ProcessingResult processingResult = processing.exec(mCase, variantVep);

@@ -43,7 +43,7 @@ public class GRecordViewBioinformatics {
 	@GraphQLField
 	@GraphQLName("zygosity")
 	public String getZygosity() {
-		if (mCase == null) {
+		if (mCase.proband == null) {
 			return null;
 		}
 

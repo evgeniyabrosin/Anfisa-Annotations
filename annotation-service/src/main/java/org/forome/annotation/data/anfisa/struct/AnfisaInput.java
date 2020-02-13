@@ -25,28 +25,29 @@ import java.util.LinkedHashMap;
 
 public class AnfisaInput {
 
-	public final MCase samples;
+	public final MCase mCase;
 
-	private AnfisaInput(MCase samples) {
-		this.samples = samples;
+	private AnfisaInput(MCase mCase) {
+		if (mCase == null) new IllegalArgumentException();
+		this.mCase = mCase;
 	}
 
 	public static class Builder {
 
-		private MCase samples;
+		private MCase mCase;
 
 		public Builder() {
-			this.samples = new MCase.Builder(new LinkedHashMap<>(), Collections.emptyList()).build();
+			this.mCase = new MCase.Builder(new LinkedHashMap<>(), Collections.emptyList()).build();
 		}
 
-		public Builder withSamples(MCase samples) {
-			this.samples = samples;
+		public Builder withSamples(MCase mCase) {
+			this.mCase = mCase;
 			return this;
 		}
 
 		public AnfisaInput build() {
 			return new AnfisaInput(
-					samples
+					mCase
 			);
 		}
 	}

@@ -93,6 +93,8 @@ public class Processing {
 			MCase mCase,
 			Variant variant
 	) {
+		if (mCase == null) throw new IllegalArgumentException();
+		if (variant == null) throw new IllegalArgumentException();
 
 		JSONObject result = new JSONObject();
 
