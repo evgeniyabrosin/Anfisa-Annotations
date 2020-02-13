@@ -91,10 +91,10 @@ public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
 
     private GnomadResult syncRequest(Chromosome chromosome, long position, String reference, String alternative) throws Exception {
         List<GnomadDataConnector.Result> exomes = gnomadDataConnector.getData(
-                chromosome, position, reference, alternative, "e", false
+                chromosome, position, reference, alternative, "e"
         );
         List<GnomadDataConnector.Result> genomes = gnomadDataConnector.getData(
-                chromosome, position, reference, alternative, "g", false
+                chromosome, position, reference, alternative, "g"
         );
 
         List<GnomadDataConnector.Result> overall = new ImmutableList.Builder().addAll(exomes).addAll(genomes).build();
