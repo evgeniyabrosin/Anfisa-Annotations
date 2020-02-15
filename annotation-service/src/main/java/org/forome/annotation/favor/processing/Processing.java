@@ -25,6 +25,7 @@ import graphql.annotations.AnnotationsSchemaCreator;
 import graphql.schema.GraphQLSchema;
 import net.minidev.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.favor.processing.graphql.record.GRecord;
 import org.forome.annotation.favor.processing.struct.GContext;
 import org.forome.annotation.favor.utils.struct.table.Row;
@@ -39,11 +40,15 @@ public class Processing {
 
 	private final static Logger log = LoggerFactory.getLogger(Processing.class);
 
+	private final HgmdConnector hgmdConnector;
+
 	private final GraphQL graphQL;
 
 	private final String graphQLQuery;
 
-	public Processing() {
+	public Processing(HgmdConnector hgmdConnector) {
+		this.hgmdConnector = hgmdConnector;
+
 		GraphQLSchema graphQLSchema = AnnotationsSchemaCreator.newAnnotationsSchema()
 				.query(GRecord.class)
 				.build();
@@ -65,7 +70,10 @@ public class Processing {
 				ExecutionInput.newExecutionInput()
 						.query(graphQLQuery)
 						.variables(Collections.emptyMap())
-						.context(new GContext(row))
+						.context(new GContext(
+								hgmdConnector,
+								row
+						))
 						.build()
 		);
 		if (!graphQLExecutionResult.getErrors().isEmpty()) {

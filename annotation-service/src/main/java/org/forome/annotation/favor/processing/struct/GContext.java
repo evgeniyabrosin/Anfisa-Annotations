@@ -18,13 +18,82 @@
 
 package org.forome.annotation.favor.processing.struct;
 
+import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.favor.utils.struct.table.Row;
+import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.custom.VariantCustom;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GContext {
 
+	public final HgmdConnector hgmdConnector;
+
 	public final Row row;
 
-	public GContext(Row row) {
+	private Variant _lazyVariant;
+	private List<String> _lazyHgmdAccNums;
+	private String _lazyHgmdAccNumHg38;
+	private HgmdConnector.Data _lazyHgmdData;
+
+	public GContext(HgmdConnector hgmdConnector, Row row) {
+		this.hgmdConnector = hgmdConnector;
+
 		this.row = row;
 	}
+
+	public Variant getVariant() {
+		if (_lazyVariant == null) {
+			String variantFormat = row.getValue("variant_format");
+			String[] splitvariantFormat = variantFormat.split("-");
+			if (splitvariantFormat.length != 4) throw new RuntimeException();
+
+			_lazyVariant = new VariantCustom(
+					Chromosome.of(splitvariantFormat[0]),
+					Integer.parseInt(splitvariantFormat[1]),
+					Integer.parseInt(splitvariantFormat[1]),
+					new Allele(splitvariantFormat[3])
+			);
+		}
+		return _lazyVariant;
+	}
+
+	public List<String> getHgmdAccNums() {
+		if (_lazyHgmdAccNums == null) {
+			Variant variant = getVariant();
+			_lazyHgmdAccNums = hgmdConnector.getAccNum(variant.chromosome.getChar(), variant.getStart(), variant.end);
+		}
+		return _lazyHgmdAccNums;
+	}
+
+	public String getHgmdAccNumHg38() {
+		if (_lazyHgmdAccNumHg38 == null) {
+			List<String> accNums = getHgmdAccNums();
+			if (!accNums.isEmpty()) {
+				List<Long[]> hg38 = hgmdConnector.getHg38(accNums);
+				_lazyHgmdAccNumHg38 = hg38.stream().map(longs -> String.format("%s-%s", longs[0], longs[1])).collect(Collectors.joining(", "));
+			} else {
+				_lazyHgmdAccNumHg38 = "";
+			}
+		}
+		return _lazyHgmdAccNumHg38;
+	}
+
+
+	public HgmdConnector.Data getHgmdData() {
+		if (_lazyHgmdData == null) {
+			List<String> accNums = getHgmdAccNums();
+			if (!accNums.isEmpty()) {
+				_lazyHgmdData = hgmdConnector.getDataForAccessionNumbers(accNums);
+			} else {
+				_lazyHgmdData = new HgmdConnector.Data(Collections.emptyList(), Collections.emptyList());
+			}
+		}
+		return _lazyHgmdData;
+	}
+
 }

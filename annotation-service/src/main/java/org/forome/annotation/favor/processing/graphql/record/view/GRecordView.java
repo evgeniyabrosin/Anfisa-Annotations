@@ -20,21 +20,24 @@ package org.forome.annotation.favor.processing.graphql.record.view;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
+import org.forome.annotation.favor.processing.struct.GContext;
 import org.forome.annotation.favor.utils.struct.table.Row;
 
 @GraphQLName("record_view")
 public class GRecordView {
 
+	public final GContext gContext;
 	public final Row row;
 
-	public GRecordView(Row row) {
-		this.row = row;
+	public GRecordView(GContext gContext) {
+		this.gContext = gContext;
+		this.row = gContext.row;
 	}
 
 	@GraphQLField
 	@GraphQLName("general")
 	public GRecordViewGeneral getGRecordViewGeneral() {
-		return new GRecordViewGeneral(row);
+		return new GRecordViewGeneral(gContext);
 	}
 
 	@GraphQLField

@@ -36,16 +36,14 @@ public class GRecord {
 	@GraphQLName("_filters")
 	public static GRecordFilters getGRecordFilters(DataFetchingEnvironment env) {
 		GContext gContext = env.getContext();
-		Row row = gContext.row;
-		return new GRecordFilters(row);
+		return new GRecordFilters(gContext);
 	}
 
 	@GraphQLField
 	@GraphQLName("_view")
 	public static GRecordView getGRecordView(DataFetchingEnvironment env) {
 		GContext gContext = env.getContext();
-		Row row = gContext.row;
-		return new GRecordView(row);
+		return new GRecordView(gContext);
 	}
 
 	@GraphQLField
@@ -62,10 +60,14 @@ public class GRecord {
 		return "variant";
 	}
 
-
 	public static String formatDouble2(String value) {
-		if (value ==null) return null;
+		if (value == null) return null;
 		return String.format(Locale.ENGLISH, "%.2f", Double.parseDouble(value));
+	}
+
+	public static Double toDouble(String value) {
+		if (value == null) return null;
+		return Double.parseDouble(value);
 	}
 }
 

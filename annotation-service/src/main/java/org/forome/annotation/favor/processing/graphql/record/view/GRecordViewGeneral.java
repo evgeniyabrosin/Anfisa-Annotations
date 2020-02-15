@@ -20,18 +20,23 @@ package org.forome.annotation.favor.processing.graphql.record.view;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
+import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.favor.processing.graphql.record.GRecord;
+import org.forome.annotation.favor.processing.struct.GContext;
 import org.forome.annotation.favor.utils.struct.table.Row;
 
 import java.util.Arrays;
+import java.util.List;
 
 @GraphQLName("record_view_general")
 public class GRecordViewGeneral {
 
+	public final GContext gContext;
 	public final Row row;
 
-	public GRecordViewGeneral(Row row) {
-		this.row = row;
+	public GRecordViewGeneral(GContext gContext) {
+		this.gContext = gContext;
+		this.row = gContext.row;
 	}
 
 	@GraphQLField
@@ -89,4 +94,41 @@ public class GRecordViewGeneral {
 				.toArray(String[]::new);
 	}
 
+	@GraphQLField
+	@GraphQLName("hgmd")
+	public String getHgmd() {
+		List<String> accNums = gContext.getHgmdAccNums();
+		if (accNums.isEmpty()) return null;
+		return String.join(",", accNums);
+	}
+
+	@GraphQLField
+	@GraphQLName("hgmd_hg38")
+	public String getHgmdHg38() {
+		String hgmdAccNumHg38 = gContext.getHgmdAccNumHg38();
+		if (hgmdAccNumHg38.isEmpty()) return null;
+		return hgmdAccNumHg38;
+	}
+
+	@GraphQLField
+	@GraphQLName("hgmd_tags")
+	public String[] getHgmdTags() {
+		HgmdConnector.Data hgmdData = gContext.getHgmdData();
+		return hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).distinct().toArray(String[]::new);
+	}
+
+	@GraphQLField
+	@GraphQLName("hgmd_phenotypes")
+	public String[] getHgmdPhenotypes() {
+		HgmdConnector.Data hgmdData = gContext.getHgmdData();
+		return hgmdData.phenotypes.stream().toArray(String[]::new);
+	}
+
+	@GraphQLField
+	@GraphQLName("hgmd_pmids")
+	public String[] getHgmdPmids() {
+		HgmdConnector.Data hgmdData = gContext.getHgmdData();
+		return hgmdData.hgmdPmidRows.stream()
+			.map(hgmdPmidRow -> hgmdPmidRow.pmid).toArray(String[]::new);
+	}
 }

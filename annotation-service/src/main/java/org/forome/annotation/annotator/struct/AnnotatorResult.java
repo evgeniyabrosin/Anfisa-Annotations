@@ -271,8 +271,8 @@ public class AnnotatorResult {
 			this.versions = new Versions(pathVepVcf, anfisaConnector);
 		}
 
-		public static Metadata build(String caseSequence, Path pathVepVcf, MCase samples, AnfisaConnector anfisaConnector) {
-			return new Metadata(caseSequence, pathVepVcf, samples, anfisaConnector);
+		public static Metadata build(String caseSequence, Path pathVepVcf, MCase mCase, AnfisaConnector anfisaConnector) {
+			return new Metadata(caseSequence, pathVepVcf, mCase, anfisaConnector);
 		}
 
 		public JSONObject toJSON() {

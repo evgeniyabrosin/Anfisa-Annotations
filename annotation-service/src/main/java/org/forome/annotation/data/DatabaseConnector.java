@@ -19,6 +19,7 @@
 package org.forome.annotation.data;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.mchange.v2.resourcepool.TimeoutException;
 import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
@@ -45,11 +46,30 @@ public class DatabaseConnector implements Closeable {
 	}
 
 	public Connection createConnection() {
-		try {
-			return pooledDataSource.getConnection();
-		} catch (SQLException e) {
-			log.debug("Exception", e);
-			throw ExceptionBuilder.buildOperationException(e);
+		int attempt = 0;
+		while (true) {
+			try {
+				return pooledDataSource.getConnection();
+			} catch (SQLException e) {
+				if (e.getCause() instanceof TimeoutException) {
+					//at com.mchange.v2.resourcepool.BasicResourcePool.awaitAvailable(BasicResourcePool.java:1467)
+					attempt++;
+					if (attempt > 120) {
+						log.debug("Exception", e);
+						throw ExceptionBuilder.buildExternalDatabaseException(e);
+					} else {
+						log.debug("Failed create connect... pause, attempt: {}", attempt);
+						try {
+							Thread.sleep(10000);
+						} catch (InterruptedException ignore) {
+						}
+						continue;
+					}
+				} else {
+					log.debug("Exception", e);
+					throw ExceptionBuilder.buildExternalDatabaseException(e);
+				}
+			}
 		}
 	}
 

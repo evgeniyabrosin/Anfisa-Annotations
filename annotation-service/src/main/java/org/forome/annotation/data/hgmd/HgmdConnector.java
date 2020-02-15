@@ -41,7 +41,7 @@ public class HgmdConnector implements AutoCloseable {
             "WHERE acc_num = '%s'";
     private static final String SQL_HG38 = "SELECT coordSTART, coordEND FROM `hgmd_pro`.`hg38_coords` WHERE acc_num = '%s'";
 
-    public class Data {
+    public static class Data {
         public final List<HgmdPmidRow> hgmdPmidRows;
         public final List<String> phenotypes;
 

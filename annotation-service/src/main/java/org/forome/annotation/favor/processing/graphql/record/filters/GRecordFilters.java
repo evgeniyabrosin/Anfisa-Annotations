@@ -20,19 +20,26 @@ package org.forome.annotation.favor.processing.graphql.record.filters;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
+import org.forome.annotation.data.hgmd.HgmdConnector;
+import org.forome.annotation.favor.processing.graphql.record.GRecord;
+import org.forome.annotation.favor.processing.struct.GContext;
 import org.forome.annotation.favor.utils.struct.table.Row;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @GraphQLName("record_filters")
 public class GRecordFilters {
 
+	public final GContext gContext;
 	public final Row row;
 
 	private final String[] splitvariantFormat;
 
-	public GRecordFilters(Row row) {
-		this.row = row;
+	public GRecordFilters(GContext gContext) {
+		this.gContext = gContext;
+		this.row = gContext.row;
 
 		String variantFormat = row.getValue("variant_format");
 		splitvariantFormat = variantFormat.split("-");
@@ -140,6 +147,88 @@ public class GRecordFilters {
 				.filter(s -> !s.isEmpty())
 				.distinct()
 				.toArray(String[]::new);
+	}
+
+	@GraphQLField
+	@GraphQLName("hgmd_benign")
+	public boolean getHgmdBenign() {
+		HgmdConnector.Data hgmdData = gContext.getHgmdData();
+		List<String> tags = hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).collect(Collectors.toList());
+		return (tags.size() == 0);
+	}
+
+	@GraphQLField
+	@GraphQLName("hgmd_tags")
+	public String[] getHgmdTags() {
+		HgmdConnector.Data hgmdData = gContext.getHgmdData();
+		return hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).distinct().toArray(String[]::new);
+	}
+
+	@GraphQLField
+	@GraphQLName("top_med_qc_status")
+	public String[] getTOPMedQCStatus() {
+		String value = row.getValue("FilterStatus");
+		return value.split(";");
+	}
+
+	@GraphQLField
+	@GraphQLName("top_med_bravo_af")
+	public Double getTOPMedBravoAf() {
+		return GRecord.toDouble(row.getValue("Bravo_AF"));
+	}
+
+	@GraphQLField
+	@GraphQLName("exac03")
+	public Double getExAC03() {
+		return GRecord.toDouble(row.getValue("ExAC03"));
+	}
+
+	@GraphQLField
+	@GraphQLName("disruptive_missense")
+	public String getDisruptiveMissense() {
+		return row.getValue("lof.in.nonsynonymous");
+	}
+
+	@GraphQLField
+	@GraphQLName("cage_promoter")
+	public String getCagePromoter() {
+		return row.getValue("CAGE.Promoter");
+	}
+
+	@GraphQLField
+	@GraphQLName("cage_enhancer")
+	public String getCageEnhancer() {
+		return row.getValue("CAGE.Enhancer");
+	}
+
+	@GraphQLField
+	@GraphQLName("gene_hancer")
+	public String getGeneHancer() {
+		return row.getValue("GeneHancer");
+	}
+
+	@GraphQLField
+	@GraphQLName("super_enhancer")
+	public String getSuperEnhancer() {
+		return row.getValue("SuperEnhancer");
+	}
+
+	@GraphQLField
+	@GraphQLName("bstatistics")
+	public Double getBStatistics() {
+		return GRecord.toDouble(row.getValue("bStatistics"));
+	}
+
+	@GraphQLField
+	@GraphQLName("freq1000bp")
+	public Double getFreq1000bp() {
+		return GRecord.toDouble(row.getValue("Freq1000bp"));
+	}
+
+	@GraphQLField
+	@GraphQLName("rare1000bp")
+	public Double getRare1000bp() {
+		return GRecord.toDouble(row.getValue("Rare1000bp"));
 	}
 
 }
