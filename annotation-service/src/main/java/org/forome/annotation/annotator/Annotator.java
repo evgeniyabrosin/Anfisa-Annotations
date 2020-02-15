@@ -60,8 +60,6 @@ public class Annotator {
 
 	private final static Logger log = LoggerFactory.getLogger(Annotator.class);
 
-	private static final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 4;
-
 	private final EnsemblVepService ensemblVepService;
 	private final Processing processing;
 
@@ -150,23 +148,23 @@ public class Annotator {
 	}
 
 	public AnnotatorResult annotateJson(
-			String caseSequence, MCase samples,
+			String caseSequence, MCase mCase,
 			Path pathVepVcf, Path pathVepJson,
 			Path cnvFile,
 			int startPosition
 	) {
 		return new AnnotatorResult(
-				AnnotatorResult.Metadata.build(caseSequence, pathVepVcf, samples, processing.getAnfisaConnector()),
+				AnnotatorResult.Metadata.build(caseSequence, pathVepVcf, mCase, processing.getAnfisaConnector()),
 				Observable.create(o -> {
 					new Thread(new Runnable() {
 						@Override
 						public void run() {
 							try (AnnotatorExecutor annotatorExecutor = new AnnotatorExecutor(
 									ensemblVepService, processing,
-									caseSequence, samples,
+									caseSequence, mCase,
 									pathVepVcf, pathVepJson,
 									cnvFile,
-									startPosition, MAX_THREAD_COUNT,
+									startPosition, getThreads(mCase),
 									(t, e) -> o.tryOnError(e)
 							)) {
 								boolean run = true;
@@ -196,4 +194,18 @@ public class Annotator {
 		);
 	}
 
+
+	/**
+	 * Необходимо учитывать, что при большом колличестве samples у нас сильно увеличивается потребления оперативной памяти
+	 * для этого мы усеньшаем кол-во поток и соответсвенно кол-во экземпляторов чтения vcf-файлов
+	 */
+	private static int getThreads(MCase mCase) {
+		int maxThread = Runtime.getRuntime().availableProcessors() * 4;
+
+		int k = mCase.samples.size() / 100;
+		int thread = maxThread / (k + 1);
+		if (thread == 0) thread = 1;
+
+		return thread;
+	}
 }
