@@ -60,10 +60,14 @@ public class GRecord {
 		return "variant";
 	}
 
-
 	public static String formatDouble2(String value) {
-		if (value ==null) return null;
+		if (value == null) return null;
 		return String.format(Locale.ENGLISH, "%.2f", Double.parseDouble(value));
+	}
+
+	public static Double toDouble(String value) {
+		if (value == null) return null;
+		return Double.parseDouble(value);
 	}
 }
 

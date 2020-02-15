@@ -53,7 +53,7 @@ public class Main {
             HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 
 //            Source source = new SourceRemote(Source.PATH_FILE);
-            Source source = new SourceLocal(Paths.get("data/favor/Filtered[KCNQ1,NF2,SMAD4]_14_Cloud_SQL_Export_2019-12-31.gz"));
+            Source source = new SourceLocal(Paths.get("data/favor/Filtered[KCNQ1,NF2,SMAD4]_Cloud_SQL_Export_2019-12-31.gz"));
 
             Processing processing = new Processing(hgmdConnector);
             try (InputStream is = source.getInputStream()) {

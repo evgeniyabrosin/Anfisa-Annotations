@@ -19,6 +19,17 @@
         clinvar
         hgmd_benign
         hgmd_tags
+        top_med_qc_status
+        top_med_bravo_af
+        exac03
+        disruptive_missense
+        cage_promoter
+        cage_enhancer
+        gene_hancer
+        super_enhancer
+        bstatistics
+        freq1000bp
+        rare1000bp
     }
 
     _view {
