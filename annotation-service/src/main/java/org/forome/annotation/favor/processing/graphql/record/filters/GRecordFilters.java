@@ -20,19 +20,25 @@ package org.forome.annotation.favor.processing.graphql.record.filters;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
+import org.forome.annotation.data.hgmd.HgmdConnector;
+import org.forome.annotation.favor.processing.struct.GContext;
 import org.forome.annotation.favor.utils.struct.table.Row;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @GraphQLName("record_filters")
 public class GRecordFilters {
 
+	public final GContext gContext;
 	public final Row row;
 
 	private final String[] splitvariantFormat;
 
-	public GRecordFilters(Row row) {
-		this.row = row;
+	public GRecordFilters(GContext gContext) {
+		this.gContext = gContext;
+		this.row = gContext.row;
 
 		String variantFormat = row.getValue("variant_format");
 		splitvariantFormat = variantFormat.split("-");
@@ -140,6 +146,21 @@ public class GRecordFilters {
 				.filter(s -> !s.isEmpty())
 				.distinct()
 				.toArray(String[]::new);
+	}
+
+	@GraphQLField
+	@GraphQLName("hgmd_benign")
+	public boolean getHgmdBenign() {
+		HgmdConnector.Data hgmdData = gContext.getHgmdData();
+		List<String> tags = hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).collect(Collectors.toList());
+		return (tags.size() == 0);
+	}
+
+	@GraphQLField
+	@GraphQLName("hgmd_tags")
+	public String[] getHgmdTags() {
+		HgmdConnector.Data hgmdData = gContext.getHgmdData();
+		return hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).distinct().toArray(String[]::new);
 	}
 
 }

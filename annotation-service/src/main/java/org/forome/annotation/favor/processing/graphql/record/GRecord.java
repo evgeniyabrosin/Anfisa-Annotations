@@ -36,16 +36,14 @@ public class GRecord {
 	@GraphQLName("_filters")
 	public static GRecordFilters getGRecordFilters(DataFetchingEnvironment env) {
 		GContext gContext = env.getContext();
-		Row row = gContext.row;
-		return new GRecordFilters(row);
+		return new GRecordFilters(gContext);
 	}
 
 	@GraphQLField
 	@GraphQLName("_view")
 	public static GRecordView getGRecordView(DataFetchingEnvironment env) {
 		GContext gContext = env.getContext();
-		Row row = gContext.row;
-		return new GRecordView(row);
+		return new GRecordView(gContext);
 	}
 
 	@GraphQLField

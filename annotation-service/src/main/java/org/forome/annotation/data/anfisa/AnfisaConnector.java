@@ -1595,7 +1595,7 @@ public class AnfisaConnector implements AutoCloseable {
 		if (proband == null) {
 			return null;
 		}
-		
+
 		String empty = "Can not be determined";
 		String probandId = proband.id;
 		org.forome.annotation.struct.variant.Genotype gProband = variant.getGenotype(probandId);

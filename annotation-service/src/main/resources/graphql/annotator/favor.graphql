@@ -17,6 +17,8 @@
         polyphen_cat
         sift_cat
         clinvar
+        hgmd_benign
+        hgmd_tags
     }
 
     _view {
@@ -29,6 +31,11 @@
             GNOMAD_Total_AF
             ALL_1000G_AF
             genes
+            hgmd
+            hgmd_hg38
+            hgmd_tags
+            hgmd_phenotypes
+            hgmd_pmids
         }
 
         variant_category {

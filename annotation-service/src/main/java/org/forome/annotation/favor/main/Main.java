@@ -18,6 +18,8 @@
 
 package org.forome.annotation.favor.main;
 
+import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.favor.processing.Processing;
 import org.forome.annotation.favor.struct.out.JMetadata;
 import org.forome.annotation.favor.utils.iterator.DumpIterator;
@@ -26,6 +28,8 @@ import org.forome.annotation.favor.utils.source.SourceLocal;
 import org.forome.annotation.favor.utils.struct.table.Row;
 import org.forome.annotation.favor.utils.struct.table.Table;
 import org.forome.annotation.processing.struct.ProcessingResult;
+import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.ssh.SSHConnectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,10 +47,15 @@ public class Main {
 
     public static void main(String[] args) {
         try {
+            ServiceConfig serviceConfig = new ServiceConfig();
+            SSHConnectService sshTunnelService = new SSHConnectService();
+            DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
+            HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
+
 //            Source source = new SourceRemote(Source.PATH_FILE);
             Source source = new SourceLocal(Paths.get("data/favor/Filtered[KCNQ1,NF2,SMAD4]_14_Cloud_SQL_Export_2019-12-31.gz"));
 
-            Processing processing = new Processing();
+            Processing processing = new Processing(hgmdConnector);
             try (InputStream is = source.getInputStream()) {
                 try (BufferedReader bf = new BufferedReader(new InputStreamReader(new GZIPInputStream(is)))) {
                     DumpIterator dumpIterator = new DumpIterator(bf);
@@ -75,8 +84,8 @@ public class Main {
                                 bos.write(processingResult.toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
                                 bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
-                                if (line % 10000 == 0) {
-                                    System.out.println("limit: " + line);
+                                if (line % 10 == 0) {
+                                    log.debug("Processing line: " + line);
                                 }
                             }
                         }
