@@ -47,27 +47,14 @@ public class GRecordFilters {
 	}
 
 	@GraphQLField
-	@GraphQLName("type")
-	public String getType() {
-		String type = row.getValue("Type");
-		return (type == null) ? "" : type;
-	}
-
-	@GraphQLField
 	@GraphQLName("chromosome")
 	public String getChromosome() {
 		return splitvariantFormat[0];
 	}
 
 	@GraphQLField
-	@GraphQLName("start")
+	@GraphQLName("position")
 	public int getStart() {
-		return Integer.parseInt(splitvariantFormat[1]);
-	}
-
-	@GraphQLField
-	@GraphQLName("end")
-	public int getEnd() {
 		return Integer.parseInt(splitvariantFormat[1]);
 	}
 
@@ -99,8 +86,14 @@ public class GRecordFilters {
 
 	@GraphQLField
 	@GraphQLName("gencode_category")
-	public String getGencodeCategory() {
-		return row.getValue("GENCODE.Category");
+	public String[] getGencodeCategory() {
+		String value = row.getValue("GENCODE.Category");
+		if (value == null) return null;
+		return Arrays.stream(value.split(";"))
+				.map(s -> s.trim())
+				.filter(s -> !s.isEmpty())
+				.distinct()
+				.toArray(String[]::new);
 	}
 
 	@GraphQLField
@@ -141,7 +134,7 @@ public class GRecordFilters {
 	@GraphQLName("clinvar")
 	public String[] getClinvar() {
 		String value = row.getValue("clinvar");
-		if (value==null) return null;
+		if (value == null) return null;
 		return Arrays.stream(value.split("\\|"))
 				.map(s -> s.trim())
 				.filter(s -> !s.isEmpty())
@@ -231,4 +224,15 @@ public class GRecordFilters {
 		return GRecord.toDouble(row.getValue("Rare1000bp"));
 	}
 
+	@GraphQLField
+	@GraphQLName("gc")
+	public Double getGC() {
+		return GRecord.toDouble(row.getValue("GC"));
+	}
+
+	@GraphQLField
+	@GraphQLName("cpg")
+	public Double getCpG() {
+		return GRecord.toDouble(row.getValue("CpG"));
+	}
 }
