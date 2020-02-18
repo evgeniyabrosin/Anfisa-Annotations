@@ -104,11 +104,7 @@ public class Chromosome {
 			}
 		}
 
-		if (value.startsWith("PATCH_")) {
-			return new Chromosome(value);
-		} else {
-			throw ExceptionBuilder.buildInvalidChromosome(str);
-		}
+		return new Chromosome(value);
 	}
 
 	@Override
