@@ -23,14 +23,17 @@ import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
 import org.forome.annotation.utils.vcf.convert.main.argument.Arguments;
 import org.forome.annotation.utils.vcf.convert.main.argument.ParserArgument;
+import org.forome.annotation.utils.vcf.convert.struct.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -61,8 +64,9 @@ public class MainVcfConvert {
 			try (BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(arguments.sourceVcf))))) {
 				try (OutputStream os = new GZIPOutputStream(Files.newOutputStream(arguments.targetVcf))) {
 
-					int count = 0;
+					Map<Chromosome, List<Record>> values = new HashMap<>();
 
+					int count = 0;
 					String line;
 					while ((line = br.readLine()) != null) {
 						Matcher matcherConfigID = PATTERN_CONFIG_ID.matcher(line);
@@ -71,6 +75,7 @@ public class MainVcfConvert {
 							String out = "##contig=<ID=" + matcherConfigID.group(1) + ",assembly=hg19>";
 
 							os.write(out.getBytes(StandardCharsets.UTF_8));
+							os.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 						} else if (!line.startsWith("#")) {
 							String[] parse = line.split("\t", 3);
 							StringBuilder out = new StringBuilder();
@@ -93,18 +98,22 @@ public class MainVcfConvert {
 							//Тело
 							out.append(parse[2]);
 
-							os.write(out.toString().getBytes(StandardCharsets.UTF_8));
+							List<Record> records = values.computeIfAbsent(pos19.chromosome, chromosome -> new ArrayList<>());
+							records.add(new Record(
+									pos19, out.toString()
+							));
 						} else {
 							os.write(line.getBytes(StandardCharsets.UTF_8));
+							os.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 						}
-
-						os.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
 						count++;
 						if (count % 10000 == 0) {
 							log.debug("Progress: {}", count);
 						}
 					}
+
+					write(os, values);
 				}
 			}
 		} catch (Throwable e) {
@@ -112,6 +121,27 @@ public class MainVcfConvert {
 			System.exit(2);
 			return;
 		}
+	}
 
+	private static void write(OutputStream os, Map<Chromosome, List<Record>> values) throws IOException {
+		for (Chromosome chromosome : Chromosome.CHROMOSOMES) {
+			List<Record> records = values.get(chromosome);
+			if (records != null) {
+				write(os, records);
+			} else {
+				log.debug("chromosome {} is skipped", chromosome);
+			}
+		}
+	}
+
+	private static void write(OutputStream os, List<Record> records) throws IOException {
+		log.debug("flush({}: {})...", records.get(0).position.chromosome, records.size());
+
+		records.sort(Comparator.comparingInt(o -> o.position.value));
+		for (Record record : records) {
+			os.write(record.value.getBytes(StandardCharsets.UTF_8));
+			os.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+		}
+		os.flush();
 	}
 }
