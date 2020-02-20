@@ -20,6 +20,8 @@ package org.forome.annotation.favor.main;
 
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.hgmd.HgmdConnector;
+import org.forome.annotation.favor.main.argument.Arguments;
+import org.forome.annotation.favor.main.argument.ParserArgument;
 import org.forome.annotation.favor.processing.Processing;
 import org.forome.annotation.favor.struct.out.JMetadata;
 import org.forome.annotation.favor.utils.iterator.DumpIterator;
@@ -36,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -46,6 +47,16 @@ public class Main {
     private final static Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
+        Arguments arguments;
+        try {
+            ParserArgument argumentParser = new ParserArgument(args);
+            arguments = argumentParser.arguments;
+        } catch (Throwable e) {
+            log.error("Exception arguments parser", e);
+            System.exit(2);
+            return;
+        }
+
         try {
             ServiceConfig serviceConfig = new ServiceConfig();
             SSHConnectService sshTunnelService = new SSHConnectService();
@@ -53,14 +64,14 @@ public class Main {
             HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 
 //            Source source = new SourceRemote(Source.PATH_FILE);
-            Source source = new SourceLocal(Paths.get("data/favor/Filtered[KCNQ1,NF2,SMAD4]_Cloud_SQL_Export_2019-12-31.gz"));
+            Source source = new SourceLocal(arguments.sourceDump);
 
             Processing processing = new Processing(hgmdConnector);
             try (InputStream is = source.getInputStream()) {
                 try (BufferedReader bf = new BufferedReader(new InputStreamReader(new GZIPInputStream(is)))) {
                     DumpIterator dumpIterator = new DumpIterator(bf);
 
-                    try (OutputStream os = new GZIPOutputStream(Files.newOutputStream(Paths.get("favor_anfisa.json.gz")))) {
+                    try (OutputStream os = new GZIPOutputStream(Files.newOutputStream(arguments.target))) {
                         try (BufferedOutputStream bos = new BufferedOutputStream(os)) {
                             bos.write(new JMetadata().toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
                             bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));

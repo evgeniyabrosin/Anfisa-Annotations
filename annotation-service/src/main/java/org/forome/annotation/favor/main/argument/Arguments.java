@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.vcf.convert.main.argument;
+package org.forome.annotation.favor.main.argument;
 
 import com.google.common.base.Strings;
 import org.apache.commons.cli.CommandLine;
@@ -27,9 +27,9 @@ import java.nio.file.Paths;
 
 public class Arguments {
 
-	public final Path sourceVcf;
+	public final Path sourceDump;
 
-	public final Path targetVcf;
+	public final Path target;
 
 	public Arguments(CommandLine cmd) {
 
@@ -37,21 +37,21 @@ public class Arguments {
 		if (Strings.isNullOrEmpty(strSourceFile)) {
 			throw new IllegalArgumentException("Missing source file");
 		}
-		sourceVcf = Paths.get(strSourceFile).toAbsolutePath();
-		if (!Files.exists(sourceVcf)) {
-			throw new IllegalArgumentException("Source file is not exists: " + sourceVcf);
+		sourceDump = Paths.get(strSourceFile).toAbsolutePath();
+		if (!Files.exists(sourceDump)) {
+			throw new IllegalArgumentException("Source file is not exists: " + sourceDump);
 		}
-		if (!sourceVcf.getFileName().toString().endsWith(".vcf.gz")) {
-			throw new IllegalArgumentException("Bad source file: " + sourceVcf.toAbsolutePath());
+		if (!sourceDump.getFileName().toString().endsWith(".gz")) {
+			throw new IllegalArgumentException("Bad source file: " + sourceDump.toAbsolutePath());
 		}
 
 		String strTargetFile = cmd.getOptionValue(ParserArgument.OPTION_TARGET);
 		if (Strings.isNullOrEmpty(strTargetFile)) {
 			throw new IllegalArgumentException("Missing target file");
 		}
-		targetVcf = Paths.get(strTargetFile).toAbsolutePath();
-		if (!targetVcf.getFileName().toString().endsWith(".vcf.gz")) {
-			throw new IllegalArgumentException("Bad target file: " + targetVcf.toAbsolutePath());
+		target = Paths.get(strTargetFile).toAbsolutePath();
+		if (!target.getFileName().toString().endsWith(".gz")) {
+			throw new IllegalArgumentException("Bad target file: " + target.toAbsolutePath());
 		}
 	}
 

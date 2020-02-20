@@ -27,7 +27,7 @@ public class ProcessingResult {
 
 	private final JSONObject out;
 
-	public ProcessingResult(Variant variant,  JSONObject out) {
+	public ProcessingResult(Variant variant, JSONObject out) {
 		this.variant = variant;
 		this.out = out;
 	}
