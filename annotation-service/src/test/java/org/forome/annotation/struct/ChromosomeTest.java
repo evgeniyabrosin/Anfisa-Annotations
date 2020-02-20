@@ -41,40 +41,5 @@ public class ChromosomeTest {
 		} catch (AnnotatorException ignore) {
 		}
 
-		try {
-			Chromosome.of("0");
-			Assert.fail();
-		} catch (AnnotatorException ignore) {
-		}
-
-		try {
-			Chromosome.of("24");
-			Assert.fail();
-		} catch (AnnotatorException ignore) {
-		}
-
-		try {
-			Chromosome.of("chr0");
-			Assert.fail();
-		} catch (AnnotatorException ignore) {
-		}
-
-		try {
-			Chromosome.of("chr24");
-			Assert.fail();
-		} catch (AnnotatorException ignore) {
-		}
-
-		try {
-			Chromosome.of("h");
-			Assert.fail();
-		} catch (AnnotatorException ignore) {
-		}
-
-		try {
-			Chromosome.of("A");
-			Assert.fail();
-		} catch (AnnotatorException ignore) {
-		}
 	}
 }
