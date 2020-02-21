@@ -1044,11 +1044,7 @@ public class AnfisaConnector implements AutoCloseable {
 		String ref = variant.getRef();
 		String alt = variant.getStrAlt();
 		Interval hgmdHG19 = getHg19Coordinates(context);
-		Interval hgmdHG38 = getHg38Coordinates(context);
-		if (hgmdHG38 == null) {
-			return null;
-		}
-		return conservationData.getConservation(hgmdHG19, hgmdHG38, ref, alt);
+		return conservationData.getConservation(hgmdHG19, ref, alt);
 	}
 
 	private static Map<String, Float> list_dsmax(AnfisaResultData data) {
