@@ -109,4 +109,16 @@ public class GRecordViewIntegrativeScore {
 	public String getAPC_Proximity_To_TSSTES() {
 		return GRecord.formatDouble2(row.getValue("APC.DistanceTSSTES"));
 	}
+
+	@GraphQLField
+	@GraphQLName("gc")
+	public String getGC() {
+		return GRecord.formatDouble2(row.getValue("GC"));
+	}
+
+	@GraphQLField
+	@GraphQLName("cpg")
+	public String getCpG() {
+		return GRecord.formatDouble2(row.getValue("CpG"));
+	}
 }

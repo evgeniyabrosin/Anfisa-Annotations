@@ -22,6 +22,7 @@ import com.infomaximum.database.exception.DatabaseException;
 import net.minidev.json.parser.ParseException;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -97,8 +98,10 @@ public class ExceptionBuilder {
 		return EXCEPTION_FACTORY.build("invalid_vcf_file", cause);
 	}
 
-	public static AnnotatorException buildNotEqualSamplesVcfAndFamFile() {
-		return EXCEPTION_FACTORY.build("not_equal_samples_vcf_and_fam_file");
+	public static AnnotatorException buildNotEqualSamplesVcfAndFamFile(Collection<String> diff) {
+		return EXCEPTION_FACTORY.build("not_equal_samples_vcf_and_fam_file", new HashMap<String, Object>() {{
+			put("diff", diff);
+		}});
 	}
 
 	public static AnnotatorException buildNotEqualSamplesVcfAndCnvFile() {

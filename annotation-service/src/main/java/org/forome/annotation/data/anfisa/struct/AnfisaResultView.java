@@ -303,16 +303,8 @@ public class AnfisaResultView {
 				return null;
 			}
 			JSONObject out = new JSONObject();
-			out.put("pri_ph_cons", conservation.priPhCons);
-			out.put("mam_ph_cons", conservation.mamPhCons);
-			out.put("ver_ph_cons", conservation.verPhCons);
-			out.put("pri_phylo_p", conservation.priPhyloP);
-			out.put("mam_phylo_p", conservation.mamPhyloP);
-			out.put("ver_phylo_p", conservation.verPhyloP);
 			out.put("gerp_r_s", conservation.gerpRS);
-			out.put("gerp_r_spval", conservation.getGerpRSpval());
 			out.put("gerp_n", conservation.gerpN);
-			out.put("gerp_s", conservation.gerpS);
 			return out;
 		}
 	}

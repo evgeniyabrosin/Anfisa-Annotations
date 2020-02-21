@@ -44,8 +44,8 @@ public class ConservationData {
 		return conservationConnectorMysql.getSourceMetadata();
 	}
 
-	public Conservation getConservation(Interval position, Interval hg38, String ref, String alt) {
-		return conservationConnectorMysql.getConservation(position, hg38, ref, alt);
+	public Conservation getConservation(Interval position, String ref, String alt) {
+		return conservationConnectorMysql.getConservation(position, ref, alt);
 	}
 
 	public Statistics.Stat getStatistics() {

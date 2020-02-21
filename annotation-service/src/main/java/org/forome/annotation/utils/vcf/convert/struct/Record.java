@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,23 +16,17 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.struct;
+package org.forome.annotation.utils.vcf.convert.struct;
 
-import net.minidev.json.JSONObject;
-import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.Position;
 
-public class ProcessingResult {
+public class Record {
 
-	public final Variant variant;
+	public final Position position;
+	public final String value;
 
-	private final JSONObject out;
-
-	public ProcessingResult(Variant variant, JSONObject out) {
-		this.variant = variant;
-		this.out = out;
-	}
-
-	public JSONObject toJSON(){
-		return out;
+	public Record(Position position, String value) {
+		this.position = position;
+		this.value = value;
 	}
 }

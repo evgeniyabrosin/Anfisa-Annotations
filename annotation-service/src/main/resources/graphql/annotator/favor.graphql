@@ -2,10 +2,9 @@
     record_type
 
     _filters {
-        type
         chromosome
-        start
-        end
+        position
+        start: position
         ref
         alt
         genes
@@ -30,6 +29,8 @@
         bstatistics
         freq1000bp
         rare1000bp
+        gc
+        cpg
     }
 
     _view {
@@ -92,6 +93,8 @@
             APC_TranscriptionFactor
             APC_MapAbility
             APC_Proximity_To_TSSTES
+            gc
+            cpg
         }
 
         protein_function {

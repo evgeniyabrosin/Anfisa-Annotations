@@ -19,6 +19,7 @@
 package org.forome.annotation.annotator.executor;
 
 import htsjdk.variant.vcf.VCFFileReader;
+import org.apache.commons.collections4.CollectionUtils;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
@@ -49,7 +50,9 @@ public class AnnotatorExecutor implements AutoCloseable {
 		VCFFileReader vcfFileReader = new VCFFileReader(pathVcf, false);
 		List<String> vcfSamples = vcfFileReader.getFileHeader().getGenotypeSamples();
 		if (vcfSamples.size() != mCase.samples.size() || !vcfSamples.containsAll(mCase.samples.keySet())) {
-			throw ExceptionBuilder.buildNotEqualSamplesVcfAndFamFile();
+			throw ExceptionBuilder.buildNotEqualSamplesVcfAndFamFile(
+					CollectionUtils.disjunction(vcfSamples, mCase.samples.keySet())
+			);
 		}
 
 		threadExecutors = new ThreadExecutor[thread];

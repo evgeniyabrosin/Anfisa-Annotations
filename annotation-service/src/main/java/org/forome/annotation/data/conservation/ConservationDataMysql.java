@@ -73,111 +73,30 @@ public class ConservationDataMysql {
 		return databaseConnector.getSourceMetadata();
 	}
 
-	public Conservation getConservation(Interval position, Interval hg38, String ref, String alt) {
+	public Conservation getConservation(Interval position, String ref, String alt) {
 		if (alt.length() == 1 && ref.length() == 1) {
 			//Однобуквенный вариант
-			if (hg38 != null && !hg38.isSingle()) {
-				String message = String.format("Unknown state, chr: %s, position: %s", position.chromosome.getChar(), position);
-				log.error(message);
-//                throw new RuntimeException(message);
-			}
-			return getConservation(position, hg38);
+			return getConservation(position);
 		} else if (alt.length() > 1 && ref.length() == 1) {
 			//Инсерция
-			return getConservation(position, hg38);
+			return getConservation(position);
 		} else {
 			return null;
 		}
 	}
 
-	private Conservation getConservation(Interval position, Interval hg38) {
-		String sqlFromConservation = null;
-		if (position.isSingle()) {
-			if (hg38 != null) {
-				sqlFromConservation = String.format("select priPhCons, mamPhCons, verPhCons, priPhyloP, mamPhyloP, " +
-								"verPhyloP, GerpRSpval, GerpS from conservation.CONSERVATION where Chrom='%s' and Pos = %s",
-						position.chromosome.getChar(), hg38.start
-				);
-			}
-		} else {
-			int hg38Pos1 = Integer.MIN_VALUE;
-			int hg38Pos2 = Integer.MIN_VALUE;
-			if (position.start > position.end) {
-				if (hg38 != null) {
-					hg38Pos1 = hg38.end - 1;
-					hg38Pos2 = hg38.start;
-					if (hg38.start <= hg38.end) {
-						throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s, hg38: %s", position.chromosome.getChar(), position, hg38));
-					}
-				}
-			} else {
-				throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", position.chromosome.getChar(), position));
-			}
-
-			if (hg38 != null) {
-				if (hg38Pos1 == Integer.MIN_VALUE || hg38Pos2 == Integer.MIN_VALUE) {
-					throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", position.chromosome.getChar(), position));
-				}
-				sqlFromConservation = String.format("select max(priPhCons) as priPhCons, max(mamPhCons) as mamPhCons, " +
-								"max(verPhCons) as verPhCons, max(priPhyloP) as priPhyloP, max(mamPhyloP) as mamPhyloP, " +
-								"max(verPhyloP) as verPhyloP, max(GerpRSpval) as GerpRSpval, max(GerpS) as GerpS " +
-								"from conservation.CONSERVATION where Chrom='%s' and Pos between %s and %s",
-						position.chromosome.getChar(), hg38Pos1, hg38Pos2
-				);
-			}
-		}
-		return getConservation(position, sqlFromConservation);
-	}
-
-	private Conservation getConservation(Interval pHG19, String sqlFromConservation) {
-		Double priPhCons = null;
-		Double mamPhCons = null;
-		Double verPhCons = null;
-		Double priPhyloP = null;
-		Double mamPhyloP = null;
-		Double verPhyloP = null;
-		Double gerpRSpval = null;
-		Double gerpS = null;
-
+	private Conservation getConservation(Interval pHG19) {
 		GerpData gerpData = getGerpDataFromMysql(pHG19);
 		//GerpData gerpData = getGerpDataFromRocksDB(pHG19);
 
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-
-				boolean success = false;
-				if (sqlFromConservation != null) {
-					try (ResultSet resultSet = statement.executeQuery(sqlFromConservation)) {
-						if (resultSet.next()) {
-							priPhCons = (Double) resultSet.getObject("priPhCons");
-							mamPhCons = (Double) resultSet.getObject("mamPhCons");
-							verPhCons = (Double) resultSet.getObject("verPhCons");
-							priPhyloP = (Double) resultSet.getObject("priPhyloP");
-							mamPhyloP = (Double) resultSet.getObject("mamPhyloP");
-							verPhyloP = (Double) resultSet.getObject("verPhyloP");
-							gerpRSpval = (Double) resultSet.getObject("GerpRSpval");
-							gerpS = (Double) resultSet.getObject("GerpS");
-							success = true;
-						}
-					}
-				}
-
-				if (gerpData != null || success) {
-					Float gerpRS = (gerpData != null) ? gerpData.gerpRS : null;
-					Float gerpN = (gerpData != null) ? gerpData.gerpN : null;
-					return new Conservation(
-							priPhCons, mamPhCons,
-							verPhCons, priPhyloP,
-							mamPhyloP, verPhyloP,
-							gerpRS, gerpRSpval,
-							gerpN, gerpS
-					);
-				} else {
-					return null;
-				}
-			}
-		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+		if (gerpData != null) {
+			Float gerpRS = (gerpData != null) ? gerpData.gerpRS : null;
+			Float gerpN = (gerpData != null) ? gerpData.gerpN : null;
+			return new Conservation(
+					gerpRS,  gerpN
+			);
+		} else {
+			return null;
 		}
 	}
 
