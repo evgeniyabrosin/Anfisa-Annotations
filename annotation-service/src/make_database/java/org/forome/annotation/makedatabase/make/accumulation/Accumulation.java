@@ -26,12 +26,8 @@ import org.forome.annotation.struct.Position;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.OptimisticTransactionDB;
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Accumulation implements AutoCloseable {
-
-	private final static Logger log = LoggerFactory.getLogger(Accumulation.class);
 
 	protected final OptimisticTransactionDB rocksDB;
 	protected final ColumnFamilyHandle columnFamily;
@@ -67,10 +63,8 @@ public class Accumulation implements AutoCloseable {
 		if (activeWriteBatchRecord == null) return;
 
 		byte[] key = new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(activeWriteBatchRecord.interval);
-		log.debug("key: {}", key);
 		if (activeWriteBatchRecord.isEmpty()) {
 			rocksDB.delete(columnFamily, key);
-			log.debug("delete key: {}", key);
 		} else {
 			byte[] value = activeWriteBatchRecord.build();
 			rocksDB.put(columnFamily, key, value);

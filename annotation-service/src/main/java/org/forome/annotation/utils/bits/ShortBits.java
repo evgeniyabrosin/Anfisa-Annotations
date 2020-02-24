@@ -20,16 +20,18 @@ package org.forome.annotation.utils.bits;
 
 public class ShortBits {
 
+	public static int BYTE_SIZE = 2;
+
 	public static short fromByteArray(byte[] bytes, int offset) {
 		return (short) ((bytes[offset] << 8) | (bytes[offset + 1] & 0xff));
 	}
 
 	public static short fromByteArray(byte[] bytes) {
-		return fromByteArray(bytes,0);
+		return fromByteArray(bytes, 0);
 	}
 
 	public static byte[] toByteArray(short value) {
-		byte[] bytes = new byte[2];
+		byte[] bytes = new byte[BYTE_SIZE];
 		bytes[0] = (byte) (value >> 8);
 		bytes[1] = (byte) (value);
 		return bytes;

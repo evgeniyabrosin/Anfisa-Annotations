@@ -16,27 +16,13 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.struct.record;
+package org.forome.annotation.service.database.batchrecord.compression;
 
-import org.forome.annotation.service.database.struct.batch.BatchRecordConservation;
+import org.forome.annotation.utils.RandomUtils;
 
-public class RecordConservation {
+public class CompressionTest {
 
-	private final Record record;
-
-	private final BatchRecordConservation batchRecordConservation;
-
-	protected RecordConservation(Record record, BatchRecordConservation batchRecordConservation) {
-		this.record = record;
-
-		this.batchRecordConservation = batchRecordConservation;
-	}
-
-	public float getGerpN() {
-		return batchRecordConservation.getConservation(record.position).gerpN;
-	}
-
-	public float getGerpRS() {
-		return batchRecordConservation.getConservation(record.position).gerpRS;
+	public static short getRandomShort() {
+		return (short) (RandomUtils.RANDOM.nextInt(Short.MAX_VALUE - Short.MIN_VALUE) - Short.MIN_VALUE + 1);
 	}
 }

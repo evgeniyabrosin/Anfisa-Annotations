@@ -27,12 +27,8 @@ import org.forome.annotation.struct.Position;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.OptimisticTransactionDB;
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AccumulationConservation extends Accumulation {
-
-	private final static Logger log = LoggerFactory.getLogger(AccumulationConservation.class);
 
 	public AccumulationConservation(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamilyRecord) {
 		super(rocksDB, columnFamilyRecord);

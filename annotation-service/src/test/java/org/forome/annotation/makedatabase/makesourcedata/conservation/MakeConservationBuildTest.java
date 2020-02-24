@@ -19,7 +19,8 @@
 package org.forome.annotation.makedatabase.makesourcedata.conservation;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.forome.annotation.makedatabase.make.conservation.MakeConservationBuild;
+import org.forome.annotation.data.conservation.struct.Conservation;
+import org.forome.annotation.makedatabase.make.batchrecord.WriteBatchRecordConservation;
 import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.service.database.struct.batch.BatchRecordConservation;
 import org.forome.annotation.struct.Chromosome;
@@ -43,16 +44,17 @@ public class MakeConservationBuildTest {
 
 			for (int t = 0; t < 10000; t++) {
 
-				//generate
-				MakeConservationBuild.Data[] values = new MakeConservationBuild.Data[BatchRecord.DEFAULT_SIZE];
-				for (int i = 0; i < values.length; i++) {
-					MakeConservationBuild.Data data = new MakeConservationBuild.Data();
-					data.gerpRS = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
-					data.gerpN = (RandomUtils.nextBoolean())?null:RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f;
-					values[i] = data;
+				WriteBatchRecordConservation writeBatchRecordConservation = new WriteBatchRecordConservation(interval);
+				for (int i = 0; i < BatchRecord.DEFAULT_SIZE; i++) {
+					Position position = new Position(interval.chromosome, interval.start + i);
+					Conservation conservation = new Conservation(
+							(RandomUtils.nextBoolean()) ? null : RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f,
+							(RandomUtils.nextBoolean()) ? null : RandomUtils.nextFloat(0.0f, 62.0f) - 31.0f
+					);
+					writeBatchRecordConservation.set(position, conservation);
 				}
-				MakeConservationBuild makeConservationBuild = new MakeConservationBuild(interval, values);
-				byte[] bytes = makeConservationBuild.build();
+
+				byte[] bytes = writeBatchRecordConservation.build();
 
 				//restore
 				BatchRecordConservation batchRecordConservation = new BatchRecordConservation(interval, bytes, 0);
@@ -61,8 +63,10 @@ public class MakeConservationBuildTest {
 				for (int p = interval.start; p < interval.end; p++) {
 					Position position = new Position(interval.chromosome, p);
 
-					assertFloat(values[p - interval.start].gerpRS, batchRecordConservation.getGerpRS(position));
-					assertFloat(values[p - interval.start].gerpN, batchRecordConservation.getGerpN(position));
+					Conservation restoreConservation = batchRecordConservation.getConservation(position);
+
+					assertFloat(writeBatchRecordConservation.getConservation(position).gerpRS, restoreConservation.gerpRS);
+					assertFloat(writeBatchRecordConservation.getConservation(position).gerpN, restoreConservation.gerpN);
 				}
 			}
 		}

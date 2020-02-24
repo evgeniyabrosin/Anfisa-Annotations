@@ -19,13 +19,24 @@
 package org.forome.annotation.makedatabase.make.batchrecord;
 
 import org.forome.annotation.data.conservation.struct.Conservation;
+import org.forome.annotation.service.database.batchrecord.compression.Compression;
+import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.service.database.struct.batch.BatchRecordConservation;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
-import org.forome.annotation.utils.bits.ShortBits;
 
-import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Упаковка идет последовательным укладом чисел
+ * Для уменьшения объема, воспользуемся особенностью, т.к.
+ * - нам интересно максимум 3 знака после запятой
+ * - число > -31
+ * - число < 31
+ * Short.MIN_VALUE(-32768) - зарезервировано под null
+ * то, сохраняемое число умножаем на 1000 и сохраняем как short которое размером в 2 байта
+ */
 public class WriteBatchRecordConservation {
 
 	private final Interval interval;
@@ -46,7 +57,15 @@ public class WriteBatchRecordConservation {
 	}
 
 	public void set(Position position, Conservation conservation) {
-		conservations[position.value - interval.start] = conservation;
+		conservations[getIndex(position)] = conservation;
+	}
+
+	public Conservation getConservation(Position position) {
+		return conservations[getIndex(position)];
+	}
+
+	private int getIndex(Position position) {
+		return position.value - interval.start;
 	}
 
 	public boolean isEmpty() {
@@ -65,33 +84,31 @@ public class WriteBatchRecordConservation {
 	}
 
 	public byte[] build() {
-		ByteBuffer byteBuffer = ByteBuffer.allocate(
-				BatchRecordConservation.BYTE_SIZE_RECORD * conservations.length
-		);
+		List<Object[]> values = new ArrayList<>();
 		for (int i = 0; i < conservations.length; i++) {
 			Conservation conservation = conservations[i];
 			if (conservation == null) {
-				byteBuffer.put(packShort(null));
-				byteBuffer.put(packShort(null));
+				values.add(new Object[]{ null, null });
 			} else {
-				byteBuffer.put(packShort(conservation.gerpRS));
-				byteBuffer.put(packShort(conservation.gerpN));
+				values.add(new Object[]{
+						convertToShort(conservation.gerpRS),
+						convertToShort(conservation.gerpN)
+				});
 			}
 		}
-		return byteBuffer.array();
+		return new Compression(BatchRecordConservation.DATABASE_ORDER_TYPES, BatchRecord.DEFAULT_SIZE)
+				.pack(values);
 	}
 
 
-
-	private static byte[] packShort(Float value) {
+	private static Short convertToShort(Float value) {
 		if (value == null) {
-			return ShortBits.toByteArray(BatchRecordConservation.SHORT_NULL_VALUE);
+			return null;
 		} else {
 			if (value > 31 || value < -32) {
 				throw new IllegalStateException("value: " + value);
 			}
-			short sValue = (short) (value * 1000);
-			return ShortBits.toByteArray(sValue);
+			return (short) (value * 1000);
 		}
 	}
 }

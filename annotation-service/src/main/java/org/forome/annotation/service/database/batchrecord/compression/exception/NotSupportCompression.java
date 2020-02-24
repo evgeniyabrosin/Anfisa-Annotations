@@ -16,27 +16,10 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.struct.record;
+package org.forome.annotation.service.database.batchrecord.compression.exception;
 
-import org.forome.annotation.service.database.struct.batch.BatchRecordConservation;
-
-public class RecordConservation {
-
-	private final Record record;
-
-	private final BatchRecordConservation batchRecordConservation;
-
-	protected RecordConservation(Record record, BatchRecordConservation batchRecordConservation) {
-		this.record = record;
-
-		this.batchRecordConservation = batchRecordConservation;
-	}
-
-	public float getGerpN() {
-		return batchRecordConservation.getConservation(record.position).gerpN;
-	}
-
-	public float getGerpRS() {
-		return batchRecordConservation.getConservation(record.position).gerpRS;
-	}
+/**
+ * Тип ошибки указывающий, что алгоритм сжатия не поодерживает эти данные
+ */
+public class NotSupportCompression extends Exception {
 }

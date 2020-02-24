@@ -16,27 +16,24 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.struct.record;
+package org.forome.annotation.utils.bits;
 
-import org.forome.annotation.service.database.struct.batch.BatchRecordConservation;
+public class ByteBits {
 
-public class RecordConservation {
+	public static final int MAX_UNSIGNED_VALUE=255;
 
-	private final Record record;
-
-	private final BatchRecordConservation batchRecordConservation;
-
-	protected RecordConservation(Record record, BatchRecordConservation batchRecordConservation) {
-		this.record = record;
-
-		this.batchRecordConservation = batchRecordConservation;
+	public static byte convertFromUnsigned(int value) {
+		if (value < 0) {
+			throw new IllegalArgumentException();
+		}
+		if (value > MAX_UNSIGNED_VALUE) {
+			throw new IllegalArgumentException();
+		}
+		return (byte) (value + Byte.MIN_VALUE);
 	}
 
-	public float getGerpN() {
-		return batchRecordConservation.getConservation(record.position).gerpN;
+	public static int convertByUnsigned(byte value) {
+		return value - Byte.MIN_VALUE;
 	}
 
-	public float getGerpRS() {
-		return batchRecordConservation.getConservation(record.position).gerpRS;
-	}
 }

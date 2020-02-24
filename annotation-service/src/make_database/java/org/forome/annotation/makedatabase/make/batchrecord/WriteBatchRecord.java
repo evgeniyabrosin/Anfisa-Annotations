@@ -24,20 +24,17 @@ import org.forome.annotation.struct.Interval;
 public class WriteBatchRecord {
 
 	public final Interval interval;
-	private final BatchRecord batchRecord;
 
 	private final WriteBatchRecordConservation writeBatchRecordConservation;
 
 	public WriteBatchRecord(Interval interval) {
 		this.interval = interval;
-		this.batchRecord = null;
 
 		this.writeBatchRecordConservation = new WriteBatchRecordConservation(interval);
 	}
 
 	public WriteBatchRecord(BatchRecord batchRecord) {
 		this.interval = batchRecord.interval;
-		this.batchRecord = batchRecord;
 
 		this.writeBatchRecordConservation = new WriteBatchRecordConservation(
 				batchRecord.batchRecordConservation

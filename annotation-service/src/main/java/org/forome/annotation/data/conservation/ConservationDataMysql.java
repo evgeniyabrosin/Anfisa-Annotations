@@ -169,6 +169,10 @@ public class ConservationDataMysql {
 						pos
 				);
 				Record record = source.getRecord(position);
+				if (record == null) {
+					continue;
+				}
+
 				RecordConservation recordConservation = record.getRecordConservation();
 
 				if (maxGerpN == null || maxGerpN < recordConservation.getGerpN()) {
