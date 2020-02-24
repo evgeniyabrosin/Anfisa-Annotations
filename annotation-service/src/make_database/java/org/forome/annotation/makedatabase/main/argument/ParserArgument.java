@@ -25,23 +25,16 @@ import org.slf4j.LoggerFactory;
 
 public class ParserArgument {
 
-	public static final String OPTION_FILE_CONFIG = "config";
-
 	public static final String OPTION_PATH_DATABASE = "database";
 
 	public static final String OPTION_ASSEMBLY = "assembly";
+
+	public static final String OPTION_SOURCE_GERP_HG19 = "gerp19";
 
 	public final Arguments arguments;
 
 	public ParserArgument(String[] args) throws InterruptedException {
 		Options options = new Options()
-
-				.addOption(Option.builder()
-						.longOpt(OPTION_FILE_CONFIG)
-						.hasArg(true)
-						.optionalArg(false)
-						.desc("Absolute path to config file")
-						.build())
 
 				.addOption(Option.builder()
 						.longOpt(OPTION_PATH_DATABASE)
@@ -56,6 +49,14 @@ public class ParserArgument {
 						.optionalArg(false)
 						.desc("Type assembly")
 						.build())
+
+				.addOption(Option.builder()
+						.longOpt(OPTION_SOURCE_GERP_HG19)
+						.hasArg(true)
+						.optionalArg(false)
+						.desc("Absolute path to data file: gerp hg19")
+						.build())
+
 				;
 
 		try {

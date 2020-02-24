@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.makedatabase.makesourcedata.conservation;
+package org.forome.annotation.makedatabase.make.conservation;
 
 import org.forome.annotation.service.database.struct.batch.BatchRecordConservation;
 import org.forome.annotation.struct.Interval;
@@ -38,31 +38,15 @@ public class MakeConservationBuild {
 
 	public static class Data {
 
-		public Float priPhCons = null;
-		public Float mamPhCons = null;
-		public Float verPhCons = null;
-		public Float priPhyloP = null;
-		public Float mamPhyloP = null;
-		public Float verPhyloP = null;
 		public Float gerpRS = null;
-		public Float gerpRSpval = null;
 		public Float gerpN = null;
-		public Float gerpS = null;
 
 		public Data() {
 		}
 
 		private boolean isEmpty() {
-			if (priPhCons != null && Math.abs(priPhCons) > 0.00000001d) return false;
-			if (mamPhCons != null && Math.abs(mamPhCons) > 0.00000001d) return false;
-			if (verPhCons != null && Math.abs(verPhCons) > 0.00000001d) return false;
-			if (priPhyloP != null && Math.abs(priPhyloP) > 0.00000001d) return false;
-			if (mamPhyloP != null && Math.abs(mamPhyloP) > 0.00000001d) return false;
-			if (verPhyloP != null && Math.abs(verPhyloP) > 0.00000001d) return false;
 			if (gerpRS != null && Math.abs(gerpRS) > 0.00000001d) return false;
-			if (gerpRSpval != null && Math.abs(gerpRSpval) > 0.00000001d) return false;
 			if (gerpN != null && Math.abs(gerpN) > 0.00000001d) return false;
-			if (gerpS != null && Math.abs(gerpS) > 0.00000001d) return false;
 			return true;
 		}
 	}
@@ -85,25 +69,9 @@ public class MakeConservationBuild {
 			if (item == null) {
 				byteBuffer.put(packShort(null));
 				byteBuffer.put(packShort(null));
-				byteBuffer.put(packShort(null));
-				byteBuffer.put(packShort(null));
-				byteBuffer.put(packShort(null));
-				byteBuffer.put(packShort(null));
-				byteBuffer.put(packInteger(null));
-				byteBuffer.put(packShort(null));
-				byteBuffer.put(packShort(null));
-				byteBuffer.put(packShort(null));
 			} else {
-				byteBuffer.put(packShort(item.priPhCons));
-				byteBuffer.put(packShort(item.mamPhCons));
-				byteBuffer.put(packShort(item.verPhCons));
-				byteBuffer.put(packShort(item.priPhyloP));
-				byteBuffer.put(packShort(item.mamPhyloP));
-				byteBuffer.put(packShort(item.verPhyloP));
-				byteBuffer.put(packInteger(item.gerpRS));
-				byteBuffer.put(packInteger(item.gerpRSpval));
+				byteBuffer.put(packShort(item.gerpRS));
 				byteBuffer.put(packShort(item.gerpN));
-				byteBuffer.put(packInteger(item.gerpS));
 			}
 		}
 		return byteBuffer.array();

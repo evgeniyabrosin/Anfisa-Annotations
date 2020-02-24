@@ -50,6 +50,11 @@ public class Interval {
 		return Math.max(start, end);
 	}
 
+	public boolean contains(Position position) {
+		if (!chromosome.equals(position.chromosome)) return false;
+		return (position.value >= start && position.value <= end);
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
