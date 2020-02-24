@@ -18,10 +18,10 @@
 
 package org.forome.annotation.makedatabase.main;
 
-import org.forome.annotation.makedatabase.MakeDatabase;
 import org.forome.annotation.makedatabase.main.argument.Arguments;
 import org.forome.annotation.makedatabase.main.argument.ArgumentsMake;
 import org.forome.annotation.makedatabase.main.argument.ParserArgument;
+import org.forome.annotation.makedatabase.make.MakeDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

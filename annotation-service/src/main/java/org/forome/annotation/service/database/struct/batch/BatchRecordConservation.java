@@ -19,6 +19,7 @@
 package org.forome.annotation.service.database.struct.batch;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
 import org.forome.annotation.utils.bits.IntegerBits;
@@ -33,34 +34,18 @@ public class BatchRecordConservation {
 
 	//Порядок сохраняемых значений и их размер в байтах
 	private static final int[] FIELD_BYTE_SIZE = new int[]{
-			2,//priPhCons
-			2,//mamPhCons
-			2,//verPhCons
-			2,//priPhyloP
-			2,//mamPhyloP
-			2,//verPhyloP
-			4,//gerpRS
-			4,//gerpRSpval
-			2,//gerpN
-			4//gerpS
+			2,//gerpRS
+			2//gerpN
 	};
 
 	private static final int[] BYTE_OFFSETS = new int[]{
 			0,
 			Arrays.stream(FIELD_BYTE_SIZE).limit(1).sum(),
-			Arrays.stream(FIELD_BYTE_SIZE).limit(2).sum(),
-			Arrays.stream(FIELD_BYTE_SIZE).limit(3).sum(),
-			Arrays.stream(FIELD_BYTE_SIZE).limit(4).sum(),
-			Arrays.stream(FIELD_BYTE_SIZE).limit(5).sum(),
-			Arrays.stream(FIELD_BYTE_SIZE).limit(6).sum(),
-			Arrays.stream(FIELD_BYTE_SIZE).limit(7).sum(),
-			Arrays.stream(FIELD_BYTE_SIZE).limit(8).sum(),
-			Arrays.stream(FIELD_BYTE_SIZE).limit(9).sum(),
 	};
 
 	public static final int BYTE_SIZE_RECORD = Arrays.stream(BatchRecordConservation.FIELD_BYTE_SIZE).sum();
 
-	private final Interval interval;
+	public final Interval interval;
 	private final byte[] bytes;
 	private final int offsetBytes;
 
@@ -71,54 +56,20 @@ public class BatchRecordConservation {
 		this.offsetBytes = offsetBytes;
 	}
 
-	public Float getPriPhCons(Position position) {
+	public Conservation getConservation(Position position) {
+		return new Conservation(
+				getGerpRS(position), getGerpN(position)
+		);
+	}
+
+	public Float getGerpRS(Position position) {
 		int ioffset = getIOffset(position, 0);
 		return getFloatByShort(ioffset);
 	}
 
-	public Float getMamPhCons(Position position) {
+	public Float getGerpN(Position position) {
 		int ioffset = getIOffset(position, 1);
 		return getFloatByShort(ioffset);
-	}
-
-	public Float getVerPhCons(Position position) {
-		int ioffset = getIOffset(position, 2);
-		return getFloatByShort(ioffset);
-	}
-
-	public Float getPriPhyloP(Position position) {
-		int ioffset = getIOffset(position, 3);
-		return getFloatByShort(ioffset);
-	}
-
-	public Float getMamPhyloP(Position position) {
-		int ioffset = getIOffset(position, 4);
-		return getFloatByShort(ioffset);
-	}
-
-	public Float getVerPhyloP(Position position) {
-		int ioffset = getIOffset(position, 5);
-		return getFloatByShort(ioffset);
-	}
-
-	public Float getGerpRS(Position position) {
-		int ioffset = getIOffset(position, 6);
-		return getFloatByInteger(ioffset);
-	}
-
-	public Float getGerpRSpval(Position position) {
-		int ioffset = getIOffset(position, 7);
-		return getFloatByInteger(ioffset);
-	}
-
-	public Float getGerpN(Position position) {
-		int ioffset = getIOffset(position, 8);
-		return getFloatByShort(ioffset);
-	}
-
-	public Float getGerpS(Position position) {
-		int ioffset = getIOffset(position, 9);
-		return getFloatByInteger(ioffset);
 	}
 
 	private int getIOffset(Position position, int index) {

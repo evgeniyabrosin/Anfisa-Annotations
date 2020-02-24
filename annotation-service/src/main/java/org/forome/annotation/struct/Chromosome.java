@@ -48,14 +48,13 @@ public class Chromosome {
 	public static final Chromosome CHR_20 = new Chromosome("20");
 	public static final Chromosome CHR_21 = new Chromosome("21");
 	public static final Chromosome CHR_22 = new Chromosome("22");
-	public static final Chromosome CHR_23 = new Chromosome("23");
 	public static final Chromosome CHR_X = new Chromosome("X");
 	public static final Chromosome CHR_Y = new Chromosome("Y");
 
 	public static final ImmutableList<Chromosome> CHROMOSOMES = ImmutableList.of(
 			CHR_1, CHR_2, CHR_3, CHR_4, CHR_5, CHR_6, CHR_7, CHR_8, CHR_9,
 			CHR_10, CHR_11, CHR_12, CHR_13, CHR_14, CHR_15, CHR_16, CHR_17, CHR_18, CHR_19,
-			CHR_20, CHR_21, CHR_22, CHR_23,
+			CHR_20, CHR_21, CHR_22,
 			CHR_X, CHR_Y
 	);
 
@@ -118,6 +117,10 @@ public class Chromosome {
 	@Override
 	public int hashCode() {
 		return Objects.hash(value);
+	}
+
+	public boolean isSupport() {
+		return CHROMOSOMES.contains(this);
 	}
 
 	public static boolean isSupportChromosome(String str) {

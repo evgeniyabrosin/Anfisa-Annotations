@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,12 +16,11 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.makedatabase;
+package org.forome.annotation.makedatabase.make;
 
 import com.infomaximum.database.exception.DatabaseException;
 import com.infomaximum.database.utils.TypeConvert;
 import com.infomaximum.rocksdb.RocksDBProvider;
-import org.forome.annotation.service.database.DatabaseConnectService;
 import org.rocksdb.*;
 import org.rocksdb.util.SizeUnit;
 
@@ -34,17 +33,14 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class MakeDatabaseConnector implements AutoCloseable {
-
-	public final DatabaseConnectService databaseConnectService;
+public class RocksDBConnector implements AutoCloseable {
 
 	public final Path pathRocksDB;
 
 	public final OptimisticTransactionDB rocksDB;
 	private final ConcurrentMap<String, ColumnFamilyHandle> columnFamilies;
 
-	public MakeDatabaseConnector(DatabaseConnectService databaseConnectService, Path pathRocksDB) throws Exception {
-		this.databaseConnectService = databaseConnectService;
+	public RocksDBConnector(Path pathRocksDB) throws Exception {
 		this.pathRocksDB = pathRocksDB;
 
 		try (DBOptions options = buildOptions()) {

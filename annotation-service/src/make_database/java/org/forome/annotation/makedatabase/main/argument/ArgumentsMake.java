@@ -28,23 +28,14 @@ import java.nio.file.Paths;
 
 public class ArgumentsMake extends Arguments {
 
-	public final Path config;
-
 	public final Path database;
 
 	public final Assembly assembly;
 
+	public final Path gerpHg19;
+
 	public ArgumentsMake(CommandLine cmd) {
 		super(cmd);
-
-		String strConfigFile = cmd.getOptionValue(ParserArgument.OPTION_FILE_CONFIG);
-		if (Strings.isNullOrEmpty(strConfigFile)) {
-			throw new IllegalArgumentException("Missing config file");
-		}
-		config = Paths.get(strConfigFile).toAbsolutePath();
-		if (!Files.exists(config)) {
-			throw new IllegalArgumentException("Config file is not exists: " + config);
-		}
 
 		String strPathDatabase = cmd.getOptionValue(ParserArgument.OPTION_PATH_DATABASE);
 		if (Strings.isNullOrEmpty(strPathDatabase)) {
@@ -52,7 +43,7 @@ public class ArgumentsMake extends Arguments {
 		}
 		database = Paths.get(strPathDatabase).toAbsolutePath();
 		if (Files.exists(database) && !Files.isDirectory(database)) {
-			throw new IllegalArgumentException("path database is file: " + config);
+			throw new IllegalArgumentException("path database is file: " + database);
 		}
 
 		String strAssembly = cmd.getOptionValue(ParserArgument.OPTION_ASSEMBLY);
@@ -60,5 +51,14 @@ public class ArgumentsMake extends Arguments {
 			throw new IllegalArgumentException("Missing assembly");
 		}
 		assembly = Assembly.valueOf(strAssembly);
+
+		String strSourceGerpHg19 = cmd.getOptionValue(ParserArgument.OPTION_SOURCE_GERP_HG19);
+		if (Strings.isNullOrEmpty(strSourceGerpHg19)) {
+			throw new IllegalArgumentException("Missing Gerp(hg19) file");
+		}
+		gerpHg19 = Paths.get(strSourceGerpHg19).toAbsolutePath();
+		if (!Files.exists(gerpHg19)) {
+			throw new IllegalArgumentException("Gerp(hg19) file is not exists: " + gerpHg19);
+		}
 	}
 }

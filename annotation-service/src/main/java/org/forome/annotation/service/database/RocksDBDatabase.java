@@ -97,23 +97,15 @@ public class RocksDBDatabase implements Source {
 	}
 
 	public Record getRecord(Position position) {
-		int k = position.value / BatchRecord.DEFAULT_SIZE;
-		Interval interval = Interval.of(
-				position.chromosome,
-				k * BatchRecord.DEFAULT_SIZE,
-				k * BatchRecord.DEFAULT_SIZE + BatchRecord.DEFAULT_SIZE - 1
+		BatchRecord batchRecord = getBatchRecord(
+				rocksDB,
+				getColumnFamily(COLUMN_FAMILY_RECORD),
+				position
 		);
-		try {
-			byte[] bytes = rocksDB.get(
-					getColumnFamily(COLUMN_FAMILY_RECORD),
-					new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(interval)
-			);
-			if (bytes == null) return null;
-
-			BatchRecord batchRecord = new BatchRecord(interval, bytes);
+		if (batchRecord != null) {
 			return batchRecord.getRecord(position);
-		} catch (RocksDBException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+		} else {
+			return null;
 		}
 	}
 
@@ -149,4 +141,29 @@ public class RocksDBDatabase implements Source {
 
 		return columnFamilyDescriptors;
 	}
+
+	public static Interval getIntervalBatchRecord(Position position) {
+		int k = position.value / BatchRecord.DEFAULT_SIZE;
+		return Interval.of(
+				position.chromosome,
+				k * BatchRecord.DEFAULT_SIZE,
+				k * BatchRecord.DEFAULT_SIZE + BatchRecord.DEFAULT_SIZE - 1
+		);
+	}
+
+	public static BatchRecord getBatchRecord(RocksDB rocksDB, ColumnFamilyHandle columnFamilyHandle, Position position) {
+		Interval interval = getIntervalBatchRecord(position);
+		try {
+			byte[] bytes = rocksDB.get(
+					columnFamilyHandle,
+					new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(interval)
+			);
+			if (bytes == null) return null;
+
+			return new BatchRecord(interval, bytes);
+		} catch (RocksDBException ex) {
+			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+		}
+	}
+
 }
