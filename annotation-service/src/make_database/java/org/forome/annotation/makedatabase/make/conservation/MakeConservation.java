@@ -23,6 +23,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.makedatabase.make.MakeDatabase;
 import org.forome.annotation.makedatabase.make.conservation.accumulation.AccumulationConservation;
+import org.forome.annotation.makedatabase.statistics.StatisticsCompression;
 import org.forome.annotation.struct.Chromosome;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.OptimisticTransactionDB;
@@ -66,7 +67,7 @@ public class MakeConservation {
 		this.gerpHg19 = gerpHg19;
 	}
 
-	public void build(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamilyRecord) throws IOException, RocksDBException {
+	public void build(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamilyRecord, StatisticsCompression statistics) throws IOException, RocksDBException {
 		log.debug("Write conservation...");
 		try (GZIPInputStream isGZ = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(gerpHg19)))) {
 			try (TarArchiveInputStream isTarGZ = new TarArchiveInputStream(isGZ)) {
@@ -76,7 +77,7 @@ public class MakeConservation {
 					if (chromosome == null) continue;
 
 					BufferedReader isItem = new BufferedReader(new InputStreamReader(isTarGZ));
-					try (AccumulationConservation accumulation = new AccumulationConservation(rocksDB, columnFamilyRecord)) {
+					try (AccumulationConservation accumulation = new AccumulationConservation(rocksDB, columnFamilyRecord, statistics)) {
 
 						String line;
 						int position = 0;
@@ -101,9 +102,9 @@ public class MakeConservation {
 
 							if (position % 1_000_000 == 0) {
 								log.debug("Write chromosome: {}, position: {}", chromosome.toString(), position);
+								break;
 							}
 						}
-
 					}
 				}
 			}

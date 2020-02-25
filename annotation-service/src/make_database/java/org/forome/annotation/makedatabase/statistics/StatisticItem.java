@@ -16,23 +16,17 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.struct.record;
+package org.forome.annotation.makedatabase.statistics;
 
-import org.forome.annotation.data.conservation.struct.Conservation;
-import org.forome.annotation.service.database.struct.batch.BatchRecordConservation;
+import org.forome.annotation.service.database.batchrecord.compression.TypeCompression;
 
-public class RecordConservation {
+public class StatisticItem {
 
-	private final Record record;
+	public final TypeCompression typeCompression;
+	public final int size;
 
-	private final BatchRecordConservation batchRecordConservation;
-
-	protected RecordConservation(Record record, BatchRecordConservation batchRecordConservation) {
-		this.record = record;
-		this.batchRecordConservation = batchRecordConservation;
-	}
-
-	public Conservation getConservation() {
-		return batchRecordConservation.getConservation(record.position);
+	public StatisticItem(TypeCompression typeCompression, int size) {
+		this.typeCompression = typeCompression;
+		this.size = size;
 	}
 }

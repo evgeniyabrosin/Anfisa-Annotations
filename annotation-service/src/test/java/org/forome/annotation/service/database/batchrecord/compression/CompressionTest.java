@@ -18,9 +18,53 @@
 
 package org.forome.annotation.service.database.batchrecord.compression;
 
+import org.forome.annotation.service.database.batchrecord.compression.exception.NotSupportCompression;
+import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.utils.RandomUtils;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CompressionTest {
+
+	@Test
+	public void testCompressionFromShortAndShort() throws NotSupportCompression {
+		Class[] types = { Short.class, Short.class };
+
+		//Generate
+		List<Object[]> expected = new ArrayList<>();
+		for (int index = 0; index < BatchRecord.DEFAULT_SIZE; index++) {
+			Short value1 = (RandomUtils.RANDOM.nextBoolean()) ? null : CompressionTest.getRandomShort();
+			Short value2 = (RandomUtils.RANDOM.nextBoolean()) ? null : CompressionTest.getRandomShort();
+			expected.add(new Object[]{value1, value2});
+		}
+
+		//Этот тип компрессии не поддерживает эти данные
+		try {
+			checkCompression(TypeCompression.EMPTY, types, expected);
+			Assert.fail();
+		} catch (NotSupportCompression e) {}
+
+		checkCompression(TypeCompression.ORDER_VALUES, types, expected);
+
+		checkCompression(TypeCompression.ORDER_VALUES_WITH_DICTIONARY, types, expected);
+	}
+
+	private void checkCompression(TypeCompression type, Class[] types, List<Object[]> expected) throws NotSupportCompression {
+		byte[] bytes = type.compression.pack(types, expected);
+
+		//Assert size
+		int unpackSize = type.compression.unpackSize(types, expected.size(), bytes, 0);
+		Assert.assertEquals(bytes.length, unpackSize);
+
+		//Assert values
+		for (int index = 0; index < BatchRecord.DEFAULT_SIZE; index++) {
+			Object[] values = type.compression.unpackValues(types, bytes, 0, index);
+			Assert.assertArrayEquals(expected.get(index), values);
+		}
+	}
 
 	public static short getRandomShort() {
 		return (short) (RandomUtils.RANDOM.nextInt(Short.MAX_VALUE - Short.MIN_VALUE) - Short.MIN_VALUE + 1);

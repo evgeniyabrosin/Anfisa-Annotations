@@ -25,7 +25,6 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.database.Source;
 import org.forome.annotation.service.database.struct.record.Record;
-import org.forome.annotation.service.database.struct.record.RecordConservation;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
@@ -173,57 +172,12 @@ public class ConservationDataMysql {
 					continue;
 				}
 
-				RecordConservation recordConservation = record.getRecordConservation();
-
-				if (maxGerpN == null || maxGerpN < recordConservation.getGerpN()) {
-					maxGerpN = recordConservation.getGerpN();
+				Conservation conservation = record.getConservation();
+				if ((conservation.gerpN != null) && (maxGerpN == null || maxGerpN < conservation.gerpN)) {
+					maxGerpN = conservation.gerpN;
 				}
-				if (maxGerpRS == null || maxGerpRS < recordConservation.getGerpRS()) {
-					maxGerpRS = recordConservation.getGerpRS();
-				}
-			}
-
-			if (maxGerpN != null || maxGerpRS != null) {
-				return new GerpData(maxGerpN, maxGerpRS);
-			} else {
-				return null;
-			}
-		} finally {
-			statistics.addTime(System.nanoTime() - t1);
-		}
-	}
-
-	private GerpData getGerpDataFromRocksDB1(Assembly assembly, Interval pHG19) {
-		long t1 = System.nanoTime();
-
-		try {
-
-			int minPosition;
-			int maxPosition;
-			if (pHG19.start <= pHG19.end) {
-				minPosition = pHG19.start;
-				maxPosition = pHG19.end;
-			} else {
-				//Инсерция
-				minPosition = pHG19.end;
-				maxPosition = pHG19.start;
-			}
-
-			Float maxGerpN = null;
-			Float maxGerpRS = null;
-			for (int pos = minPosition; pos <= maxPosition; pos++) {
-				Position position = new Position(
-						pHG19.chromosome,
-						pos
-				);
-				Record record = databaseConnectService.getSource(assembly).getRecord(position);
-				RecordConservation recordConservation = record.getRecordConservation();
-
-				if (maxGerpN == null || maxGerpN < recordConservation.getGerpN()) {
-					maxGerpN = recordConservation.getGerpN();
-				}
-				if (maxGerpRS == null || maxGerpRS < recordConservation.getGerpRS()) {
-					maxGerpRS = recordConservation.getGerpRS();
+				if ((conservation.gerpRS != null) && (maxGerpRS == null || maxGerpRS < conservation.gerpRS)) {
+					maxGerpRS = conservation.gerpRS;
 				}
 			}
 

@@ -32,13 +32,12 @@ import java.util.stream.Collectors;
 
 /**
  * Простое последовательное укладывание значений со словарем
- * в настоящий момент поддерживается упаковка только одно типных значений. и размер карты не больше 255 элементов
+ * В настоящий момент поддерживается упаковка только однотипных значений, а так же размер карты не больше 255 элементов
  */
 public class CompressionOrderValuesWithDictionary extends AbstractCompression {
 
 	@Override
 	public byte[] pack(Class[] types, List<Object[]> items) throws NotSupportCompression {
-
 		if (Arrays.stream(types).distinct().count() > 1) {
 			//Проверяем, что все значения одного типа
 			throw new NotSupportCompression();
@@ -95,7 +94,10 @@ public class CompressionOrderValuesWithDictionary extends AbstractCompression {
 
 	@Override
 	public int unpackSize(Class[] types, int sizeInterval, byte[] bytes, int offsetBytes) {
-		throw new RuntimeException("Not implemented");
+		int sizeMap = ByteBits.convertByUnsigned(bytes[offsetBytes]);
+		return 1 //Размер карты
+				+ getByteSize(types[0]) * sizeMap //Сама карта
+				+ types.length * sizeInterval; // каждое значение заниет 1 байт - ссылку на словарь
 	}
 
 	@Override
@@ -104,9 +106,8 @@ public class CompressionOrderValuesWithDictionary extends AbstractCompression {
 
 		int offset = offsetBytes
 				+ 1 //Размер карты
-		        + getByteSize(types[0]) * sizeMap //Сама карта
-				+ types.length * index // каждое значение заниет 1 байт - ссылку на словарь
-				;
+				+ getByteSize(types[0]) * sizeMap //Сама карта
+				+ types.length * index; // каждое значение заниет 1 байт - ссылку на словарь
 
 		Object[] value = new Object[types.length];
 		for (int i = 0; i < types.length; i++) {
