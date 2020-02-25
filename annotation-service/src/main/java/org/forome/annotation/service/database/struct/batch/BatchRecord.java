@@ -24,7 +24,7 @@ import org.forome.annotation.struct.Position;
 
 public class BatchRecord {
 
-	public static final int DEFAULT_SIZE = 100;
+	public static final int DEFAULT_SIZE = 200;
 
 	public final Interval interval;
 	protected final byte[] bytes;

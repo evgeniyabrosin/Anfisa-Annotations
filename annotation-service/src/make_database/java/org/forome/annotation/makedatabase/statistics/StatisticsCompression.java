@@ -43,33 +43,38 @@ public class StatisticsCompression {
 	public void println() {
 		PrintStream out = System.out;
 
-		for(String key: statistics.keySet()) {
+		for (String key : statistics.keySet()) {
 			List<StatisticItem> items = statistics.get(key);
 
 			out.println("********* " + key + " ***********");
 			out.println("Колличество записей: " + items.size());
+			out.println("Чистый объем данных: "
+					+ (items.size() * 4 + items.stream().mapToLong(item -> item.size).sum())
+					+ " bytes"
+			);
 			out.println();
 
 			out.println("Использованные алгоритмы упаковки");
 			Map<TypeCompression, List<StatisticItem>> compressions = new HashMap<>();
-			for (StatisticItem statisticItem: items) {
+			for (StatisticItem statisticItem : items) {
 				compressions
 						.computeIfAbsent(statisticItem.typeCompression, typeCompression -> new ArrayList<>())
 						.add(statisticItem);
 			}
-			for (TypeCompression type: compressions.keySet()) {
+			for (TypeCompression type : compressions.keySet()) {
 				List<StatisticItem> compressionItems = compressions.get(type);
 
 				StringBuilder sBuilder = new StringBuilder();
 				sBuilder.append(type.name()).append(": ");
-				sBuilder.append("Использовано: ").append(compressionItems.size()*100/items.size()).append("%, ");
+				sBuilder.append("Использовано: ")
+						.append(compressionItems.size())
+						.append(" (")
+						.append(
+								String.format("%.2f", compressionItems.size() * 100.0d / (double) items.size())
+						).append("%), ");
 				sBuilder.append("Средний размер пакета: ").append(compressionItems.stream().mapToLong(item -> item.size).sum() / compressionItems.size()).append(" bytes");
 				out.println(sBuilder.toString());
 			}
-
-
 		}
-
-
 	}
 }

@@ -27,9 +27,7 @@ import org.forome.annotation.service.database.struct.Metadata;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.utils.bits.ShortBits;
 import org.forome.annotation.utils.bits.StringBits;
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.OptimisticTransactionDB;
-import org.rocksdb.RocksDBException;
+import org.rocksdb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,19 +84,24 @@ public class MakeDatabase implements AutoCloseable {
 		}
 		ColumnFamilyHandle columnFamilyInfo = rocksDBConnector.createColumnFamily(RocksDBDatabase.COLUMN_FAMILY_INFO);
 
-		//Версия формата
-		rocksDB.put(
-				columnFamilyInfo,
-				StringBits.toByteArray(Metadata.KEY_FORMAT_VERSION),
-				ShortBits.toByteArray(RocksDBDatabase.VERSION_FORMAT)
-		);
+		try (Transaction transaction = rocksDB.beginTransaction(new WriteOptions())) {
 
-		//Assembly
-		rocksDB.put(
-				columnFamilyInfo,
-				StringBits.toByteArray(Metadata.KEY_ASSEMBLY),
-				StringBits.toByteArray(assembly.name())
-		);
+			//Версия формата
+			transaction.put(
+					columnFamilyInfo,
+					StringBits.toByteArray(Metadata.KEY_FORMAT_VERSION),
+					ShortBits.toByteArray(RocksDBDatabase.VERSION_FORMAT)
+			);
+
+			//Assembly
+			transaction.put(
+					columnFamilyInfo,
+					StringBits.toByteArray(Metadata.KEY_ASSEMBLY),
+					StringBits.toByteArray(assembly.name())
+			);
+
+			transaction.commit();
+		}
 
 		rocksDBConnector.rocksDB.compactRange(columnFamilyInfo);
 	}

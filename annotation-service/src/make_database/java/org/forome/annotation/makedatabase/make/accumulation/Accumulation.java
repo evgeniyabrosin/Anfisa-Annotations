@@ -24,9 +24,7 @@ import org.forome.annotation.service.database.RocksDBDatabase;
 import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.service.database.struct.packer.PackInterval;
 import org.forome.annotation.struct.Position;
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.OptimisticTransactionDB;
-import org.rocksdb.RocksDBException;
+import org.rocksdb.*;
 
 public class Accumulation implements AutoCloseable {
 
@@ -64,12 +62,15 @@ public class Accumulation implements AutoCloseable {
 	private void flush() throws RocksDBException {
 		if (activeWriteBatchRecord == null) return;
 
-		byte[] key = new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(activeWriteBatchRecord.interval);
-		if (activeWriteBatchRecord.isEmpty()) {
-			rocksDB.delete(columnFamily, key);
-		} else {
-			byte[] value = activeWriteBatchRecord.build();
-			rocksDB.put(columnFamily, key, value);
+		try (Transaction transaction = rocksDB.beginTransaction(new WriteOptions())) {
+			byte[] key = new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(activeWriteBatchRecord.interval);
+			if (activeWriteBatchRecord.isEmpty()) {
+				transaction.delete(columnFamily, key);
+			} else {
+				byte[] value = activeWriteBatchRecord.build();
+				transaction.put(columnFamily, key, value);
+			}
+			transaction.commit();
 		}
 	}
 

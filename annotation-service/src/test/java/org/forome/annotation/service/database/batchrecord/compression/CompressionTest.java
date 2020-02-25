@@ -33,7 +33,7 @@ public class CompressionTest {
 	public void testCompressionFromShortAndShort() throws NotSupportCompression {
 		Class[] types = { Short.class, Short.class };
 
-		for (int test = 0; test < 100; test++) {
+		for (int test = 0; test < BatchRecord.DEFAULT_SIZE; test++) {
 			//Generate
 			List<Object[]> expected = new ArrayList<>();
 			expected.add(new Object[]{ null, null });//Первую запись гарантированна добавляем пустую
