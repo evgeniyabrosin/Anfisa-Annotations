@@ -33,23 +33,31 @@ public class CompressionTest {
 	public void testCompressionFromShortAndShort() throws NotSupportCompression {
 		Class[] types = { Short.class, Short.class };
 
-		//Generate
-		List<Object[]> expected = new ArrayList<>();
-		for (int index = 0; index < BatchRecord.DEFAULT_SIZE; index++) {
-			Short value1 = (RandomUtils.RANDOM.nextBoolean()) ? null : CompressionTest.getRandomShort();
-			Short value2 = (RandomUtils.RANDOM.nextBoolean()) ? null : CompressionTest.getRandomShort();
-			expected.add(new Object[]{value1, value2});
+		for (int test = 0; test < 100; test++) {
+			//Generate
+			List<Object[]> expected = new ArrayList<>();
+			expected.add(new Object[]{ null, null });//Первую запись гарантированна добавляем пустую
+			for (int index = 1; index < BatchRecord.DEFAULT_SIZE; index++) {
+				Short value1 = (RandomUtils.RANDOM.nextBoolean()) ? null : CompressionTest.getRandomShort();
+				Short value2 = (RandomUtils.RANDOM.nextBoolean()) ? null : CompressionTest.getRandomShort();
+				expected.add(new Object[]{ value1, value2 });
+			}
+
+			//Этот тип компрессии не поддерживает эти данные
+			try {
+				checkCompression(TypeCompression.EMPTY, types, expected);
+				Assert.fail();
+			} catch (NotSupportCompression e) {
+			}
+
+			checkCompression(TypeCompression.ORDERS, types, expected);
+
+			checkCompression(TypeCompression.ORDERS_WITH_DICTIONARY, types, expected);
+
+			checkCompression(TypeCompression.SELECTIVE, types, expected);
+
+			checkCompression(TypeCompression.SELECTIVE_WITH_DICTIONARY, types, expected);
 		}
-
-		//Этот тип компрессии не поддерживает эти данные
-		try {
-			checkCompression(TypeCompression.EMPTY, types, expected);
-			Assert.fail();
-		} catch (NotSupportCompression e) {}
-
-		checkCompression(TypeCompression.ORDER_VALUES, types, expected);
-
-		checkCompression(TypeCompression.ORDER_VALUES_WITH_DICTIONARY, types, expected);
 	}
 
 	private void checkCompression(TypeCompression type, Class[] types, List<Object[]> expected) throws NotSupportCompression {

@@ -28,9 +28,9 @@ import java.util.List;
 /**
  * Простое последовательное укладывание значений
  */
-public class CompressionOrderValues extends AbstractCompression {
+public class CompressionOrder extends AbstractCompression {
 
-	public CompressionOrderValues() {
+	public CompressionOrder() {
 	}
 
 	public byte[] pack(Class[] types, List<Object[]> items) {

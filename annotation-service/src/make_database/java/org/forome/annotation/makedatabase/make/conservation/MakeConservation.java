@@ -102,7 +102,6 @@ public class MakeConservation {
 
 							if (position % 1_000_000 == 0) {
 								log.debug("Write chromosome: {}, position: {}", chromosome.toString(), position);
-								break;
 							}
 						}
 					}

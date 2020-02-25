@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * Простое последовательное укладывание значений со словарем
  * В настоящий момент поддерживается упаковка только однотипных значений, а так же размер карты не больше 255 элементов
  */
-public class CompressionOrderValuesWithDictionary extends AbstractCompression {
+public class CompressionOrderWithDictionary extends AbstractCompression {
 
 	@Override
 	public byte[] pack(Class[] types, List<Object[]> items) throws NotSupportCompression {
@@ -43,11 +43,8 @@ public class CompressionOrderValuesWithDictionary extends AbstractCompression {
 			throw new NotSupportCompression();
 		}
 
-		List<Object> dictionary = items.stream().flatMap(objects -> Arrays.stream(objects)).distinct().collect(Collectors.toList());
-		if (dictionary.size() > ByteBits.MAX_UNSIGNED_VALUE) {
-			//Проверяем, что размер словаря не больше 255 элементов
-			throw new NotSupportCompression();
-		}
+		//Собираем словарь
+		List<Object> dictionary = getDictionary(items);
 
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 
@@ -82,7 +79,7 @@ public class CompressionOrderValuesWithDictionary extends AbstractCompression {
 					}
 				}
 				if (dictionaryIndex == Integer.MIN_VALUE) {
-					//Баг, почему-то не нашлось значение в карте
+					//Баг, почему-то не нашлось значение в словаре
 					throw new IllegalStateException();
 				}
 				os.write(ByteBits.convertFromUnsigned(dictionaryIndex));
@@ -90,6 +87,21 @@ public class CompressionOrderValuesWithDictionary extends AbstractCompression {
 		}
 
 		return os.toByteArray();
+	}
+
+	/**
+	 * Собираем словарь
+	 * @param items
+	 * @return
+	 * @throws NotSupportCompression
+	 */
+	protected static List<Object> getDictionary(List<Object[]> items) throws NotSupportCompression {
+		List<Object> dictionary = items.stream().flatMap(objects -> Arrays.stream(objects)).distinct().collect(Collectors.toList());
+		if (dictionary.size() > ByteBits.MAX_UNSIGNED_VALUE) {
+			//Проверяем, что размер словаря не больше 255 элементов
+			throw new NotSupportCompression();
+		}
+		return dictionary;
 	}
 
 	@Override
@@ -107,7 +119,7 @@ public class CompressionOrderValuesWithDictionary extends AbstractCompression {
 		int offset = offsetBytes
 				+ 1 //Размер карты
 				+ getByteSize(types[0]) * sizeMap //Сама карта
-				+ types.length * index; // каждое значение заниет 1 байт - ссылку на словарь
+				+ types.length * index; // каждое значение занимет 1 байт - ссылку на словарь
 
 		Object[] value = new Object[types.length];
 		for (int i = 0; i < types.length; i++) {
@@ -120,7 +132,7 @@ public class CompressionOrderValuesWithDictionary extends AbstractCompression {
 		return value;
 	}
 
-	protected int getByteSize(Class type) {
+	protected static int getByteSize(Class type) {
 		if (type == Short.class || type == short.class) {
 			return ShortBits.BYTE_SIZE;
 		} else {

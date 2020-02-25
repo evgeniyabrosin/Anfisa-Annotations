@@ -18,9 +18,7 @@
 
 package org.forome.annotation.service.database.batchrecord.compression;
 
-import org.forome.annotation.service.database.batchrecord.compression.impl.CompressionEmpty;
-import org.forome.annotation.service.database.batchrecord.compression.impl.CompressionOrderValues;
-import org.forome.annotation.service.database.batchrecord.compression.impl.CompressionOrderValuesWithDictionary;
+import org.forome.annotation.service.database.batchrecord.compression.impl.*;
 
 public enum TypeCompression {
 
@@ -28,10 +26,16 @@ public enum TypeCompression {
 	EMPTY((byte) 0, new CompressionEmpty()),
 
 	//Простое последовательное укладывание значений
-	ORDER_VALUES((byte) 1, new CompressionOrderValues()),
+	ORDERS((byte) 1, new CompressionOrder()),
 
 	//Простое последовательное укладывание значений со словарем
-	ORDER_VALUES_WITH_DICTIONARY((byte) 2, new CompressionOrderValuesWithDictionary());
+	ORDERS_WITH_DICTIONARY((byte) 2, new CompressionOrderWithDictionary()),
+
+	//Укладка не пустых записей(значение с индексом)
+	SELECTIVE((byte) 3, new CompressionSelective()),
+
+	//Укладка не пустых записей(значение с индексом) со словарем
+	SELECTIVE_WITH_DICTIONARY((byte) 4, new CompressionSelectiveWithDictionary());
 
 	public final byte value;
 	public final AbstractCompression compression;
