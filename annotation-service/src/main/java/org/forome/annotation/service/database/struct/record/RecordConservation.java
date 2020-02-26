@@ -18,6 +18,7 @@
 
 package org.forome.annotation.service.database.struct.record;
 
+import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.service.database.struct.batch.BatchRecordConservation;
 
 public class RecordConservation {
@@ -28,15 +29,10 @@ public class RecordConservation {
 
 	protected RecordConservation(Record record, BatchRecordConservation batchRecordConservation) {
 		this.record = record;
-
 		this.batchRecordConservation = batchRecordConservation;
 	}
 
-	public float getGerpN() {
-		return batchRecordConservation.getGerpN(record.position);
-	}
-
-	public float getGerpRS() {
-		return batchRecordConservation.getGerpRS(record.position);
+	public Conservation getConservation() {
+		return batchRecordConservation.getConservation(record.position);
 	}
 }

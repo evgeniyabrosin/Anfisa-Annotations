@@ -18,22 +18,22 @@
 
 package org.forome.annotation.utils.bits;
 
-public class ShortBits {
+public class ByteBits {
 
-	public static int BYTE_SIZE = 2;
+	public static final int MAX_UNSIGNED_VALUE=255;
 
-	public static short fromByteArray(byte[] bytes, int offset) {
-		return (short) ((bytes[offset] << 8) | (bytes[offset + 1] & 0xff));
+	public static byte convertFromUnsigned(int value) {
+		if (value < 0) {
+			throw new IllegalArgumentException();
+		}
+		if (value > MAX_UNSIGNED_VALUE) {
+			throw new IllegalArgumentException();
+		}
+		return (byte) (value + Byte.MIN_VALUE);
 	}
 
-	public static short fromByteArray(byte[] bytes) {
-		return fromByteArray(bytes, 0);
+	public static int convertByUnsigned(byte value) {
+		return value - Byte.MIN_VALUE;
 	}
 
-	public static byte[] toByteArray(short value) {
-		byte[] bytes = new byte[BYTE_SIZE];
-		bytes[0] = (byte) (value >> 8);
-		bytes[1] = (byte) (value);
-		return bytes;
-	}
 }

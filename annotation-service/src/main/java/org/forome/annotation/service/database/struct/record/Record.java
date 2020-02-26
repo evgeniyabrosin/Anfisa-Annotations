@@ -18,6 +18,7 @@
 
 package org.forome.annotation.service.database.struct.record;
 
+import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.struct.Position;
 
@@ -31,7 +32,8 @@ public class Record {
 		this.position = position;
 	}
 
-	public RecordConservation getRecordConservation() {
-		return new RecordConservation(this, batchRecord.batchRecordConservation);
+	public Conservation getConservation() {
+		RecordConservation recordConservation = new RecordConservation(this, batchRecord.batchRecordConservation);
+		return recordConservation.getConservation();
 	}
 }

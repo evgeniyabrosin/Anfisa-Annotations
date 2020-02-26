@@ -55,7 +55,7 @@ public class GRecordFilters {
 	@GraphQLField
 	@GraphQLName("position")
 	public int getStart() {
-		return Integer.parseInt(splitvariantFormat[1]);
+		return gContext.getVariant().getStart();
 	}
 
 	@GraphQLField

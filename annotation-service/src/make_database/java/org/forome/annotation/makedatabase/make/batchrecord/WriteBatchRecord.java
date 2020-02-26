@@ -18,30 +18,34 @@
 
 package org.forome.annotation.makedatabase.make.batchrecord;
 
+import org.forome.annotation.makedatabase.statistics.StatisticsCompression;
 import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.struct.Interval;
 
 public class WriteBatchRecord {
 
 	public final Interval interval;
-	private final BatchRecord batchRecord;
 
 	private final WriteBatchRecordConservation writeBatchRecordConservation;
 
-	public WriteBatchRecord(Interval interval) {
+	private final StatisticsCompression statistics;
+
+	public WriteBatchRecord(Interval interval, StatisticsCompression statistics) {
 		this.interval = interval;
-		this.batchRecord = null;
 
 		this.writeBatchRecordConservation = new WriteBatchRecordConservation(interval);
+
+		this.statistics = statistics;
 	}
 
-	public WriteBatchRecord(BatchRecord batchRecord) {
+	public WriteBatchRecord(BatchRecord batchRecord, StatisticsCompression statistics) {
 		this.interval = batchRecord.interval;
-		this.batchRecord = batchRecord;
 
 		this.writeBatchRecordConservation = new WriteBatchRecordConservation(
 				batchRecord.batchRecordConservation
 		);
+
+		this.statistics = statistics;
 	}
 
 	public WriteBatchRecordConservation getBatchRecordConservation() {
@@ -53,6 +57,10 @@ public class WriteBatchRecord {
 	}
 
 	public byte[] build() {
-		return writeBatchRecordConservation.build();
+		byte[] conservationBytes = writeBatchRecordConservation.build();
+
+		statistics.add("conservation", conservationBytes);
+
+		return conservationBytes;
 	}
 }

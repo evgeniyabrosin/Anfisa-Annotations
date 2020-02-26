@@ -18,22 +18,28 @@
 
 package org.forome.annotation.utils.bits;
 
-public class ShortBits {
+import org.junit.Assert;
+import org.junit.Test;
 
-	public static int BYTE_SIZE = 2;
+public class ByteBitsTest {
 
-	public static short fromByteArray(byte[] bytes, int offset) {
-		return (short) ((bytes[offset] << 8) | (bytes[offset + 1] & 0xff));
+	@Test
+	public void testByUnsigned() {
+		Assert.assertEquals(0, ByteBits.convertByUnsigned(Byte.MIN_VALUE));
+		Assert.assertEquals(255, ByteBits.convertByUnsigned(Byte.MAX_VALUE));
 	}
 
-	public static short fromByteArray(byte[] bytes) {
-		return fromByteArray(bytes, 0);
+	@Test
+	public void testFromUnsigned() {
+		Assert.assertEquals(Byte.MIN_VALUE, ByteBits.convertFromUnsigned(0));
+		Assert.assertEquals(Byte.MAX_VALUE, ByteBits.convertFromUnsigned(255));
 	}
 
-	public static byte[] toByteArray(short value) {
-		byte[] bytes = new byte[BYTE_SIZE];
-		bytes[0] = (byte) (value >> 8);
-		bytes[1] = (byte) (value);
-		return bytes;
+	@Test
+	public void test() {
+		for (int i = 0; i<=255; i++) {
+			byte b = ByteBits.convertFromUnsigned(i);
+			Assert.assertEquals(i, ByteBits.convertByUnsigned(b));
+		}
 	}
 }

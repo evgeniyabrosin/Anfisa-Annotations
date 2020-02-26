@@ -19,61 +19,58 @@
 package org.forome.annotation.makedatabase.make.accumulation;
 
 import org.forome.annotation.makedatabase.make.batchrecord.WriteBatchRecord;
+import org.forome.annotation.makedatabase.statistics.StatisticsCompression;
 import org.forome.annotation.service.database.RocksDBDatabase;
 import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.service.database.struct.packer.PackInterval;
 import org.forome.annotation.struct.Position;
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.OptimisticTransactionDB;
-import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.rocksdb.*;
 
 public class Accumulation implements AutoCloseable {
 
-	private final static Logger log = LoggerFactory.getLogger(Accumulation.class);
-
 	protected final OptimisticTransactionDB rocksDB;
 	protected final ColumnFamilyHandle columnFamily;
+	protected final StatisticsCompression statistics;
 
 	private WriteBatchRecord activeWriteBatchRecord;
 
-	public Accumulation(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamily) {
+	public Accumulation(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamily, StatisticsCompression statistics) {
 		this.rocksDB = rocksDB;
 		this.columnFamily = columnFamily;
+		this.statistics = statistics;
 	}
 
 	protected WriteBatchRecord getBatchRecord(Position position) throws RocksDBException {
 		if (activeWriteBatchRecord == null) {
-			BatchRecord batchRecord = RocksDBDatabase.getBatchRecord(rocksDB, columnFamily, position);
-			if (batchRecord == null) {
-				activeWriteBatchRecord = new WriteBatchRecord(RocksDBDatabase.getIntervalBatchRecord(position));
-			} else {
-				activeWriteBatchRecord = new WriteBatchRecord(batchRecord);
-			}
+			activeWriteBatchRecord = buildWriteBatchRecord(position);
 		} else if (!activeWriteBatchRecord.interval.contains(position)) {
 			flush();
-			BatchRecord batchRecord = RocksDBDatabase.getBatchRecord(rocksDB, columnFamily, position);
-			if (batchRecord == null) {
-				activeWriteBatchRecord = new WriteBatchRecord(RocksDBDatabase.getIntervalBatchRecord(position));
-			} else {
-				activeWriteBatchRecord = new WriteBatchRecord(batchRecord);
-			}
+			activeWriteBatchRecord = buildWriteBatchRecord(position);
 		}
 		return activeWriteBatchRecord;
+	}
+
+	private WriteBatchRecord buildWriteBatchRecord(Position position) {
+		BatchRecord batchRecord = RocksDBDatabase.getBatchRecord(rocksDB, columnFamily, position);
+		if (batchRecord == null) {
+			return new WriteBatchRecord(RocksDBDatabase.getIntervalBatchRecord(position), statistics);
+		} else {
+			return new WriteBatchRecord(batchRecord, statistics);
+		}
 	}
 
 	private void flush() throws RocksDBException {
 		if (activeWriteBatchRecord == null) return;
 
-		byte[] key = new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(activeWriteBatchRecord.interval);
-		log.debug("key: {}", key);
-		if (activeWriteBatchRecord.isEmpty()) {
-			rocksDB.delete(columnFamily, key);
-			log.debug("delete key: {}", key);
-		} else {
-			byte[] value = activeWriteBatchRecord.build();
-			rocksDB.put(columnFamily, key, value);
+		try (Transaction transaction = rocksDB.beginTransaction(new WriteOptions())) {
+			byte[] key = new PackInterval(BatchRecord.DEFAULT_SIZE).toByteArray(activeWriteBatchRecord.interval);
+			if (activeWriteBatchRecord.isEmpty()) {
+				transaction.delete(columnFamily, key);
+			} else {
+				byte[] value = activeWriteBatchRecord.build();
+				transaction.put(columnFamily, key, value);
+			}
+			transaction.commit();
 		}
 	}
 

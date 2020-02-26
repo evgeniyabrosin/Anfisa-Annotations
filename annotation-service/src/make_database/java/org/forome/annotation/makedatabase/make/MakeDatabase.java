@@ -21,15 +21,13 @@ package org.forome.annotation.makedatabase.make;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.makedatabase.main.argument.ArgumentsMake;
 import org.forome.annotation.makedatabase.make.conservation.MakeConservation;
+import org.forome.annotation.makedatabase.statistics.StatisticsCompression;
 import org.forome.annotation.service.database.RocksDBDatabase;
 import org.forome.annotation.service.database.struct.Metadata;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.utils.bits.ShortBits;
 import org.forome.annotation.utils.bits.StringBits;
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.OptimisticTransactionDB;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
+import org.rocksdb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,8 +58,7 @@ public class MakeDatabase implements AutoCloseable {
 
 		this.makeConservation = new MakeConservation(this, argumentsMake.gerpHg19);
 
-
-		//DELETE!!!!!!!!!!
+		/*
 		ColumnFamilyHandle columnFamilyRecord = rocksDBConnector.getColumnFamily(RocksDBDatabase.COLUMN_FAMILY_RECORD);
 		if (columnFamilyRecord == null) {
 			columnFamilyRecord = rocksDBConnector.createColumnFamily(RocksDBDatabase.COLUMN_FAMILY_RECORD);
@@ -78,6 +75,7 @@ public class MakeDatabase implements AutoCloseable {
 			}
 		}
 		log.debug("read complete");
+		*/
 	}
 
 	public void buildInfo() throws RocksDBException {
@@ -86,19 +84,24 @@ public class MakeDatabase implements AutoCloseable {
 		}
 		ColumnFamilyHandle columnFamilyInfo = rocksDBConnector.createColumnFamily(RocksDBDatabase.COLUMN_FAMILY_INFO);
 
-		//Версия формата
-		rocksDB.put(
-				columnFamilyInfo,
-				StringBits.toByteArray(Metadata.KEY_FORMAT_VERSION),
-				ShortBits.toByteArray(RocksDBDatabase.VERSION_FORMAT)
-		);
+		try (Transaction transaction = rocksDB.beginTransaction(new WriteOptions())) {
 
-		//Assembly
-		rocksDB.put(
-				columnFamilyInfo,
-				StringBits.toByteArray(Metadata.KEY_ASSEMBLY),
-				StringBits.toByteArray(assembly.name())
-		);
+			//Версия формата
+			transaction.put(
+					columnFamilyInfo,
+					StringBits.toByteArray(Metadata.KEY_FORMAT_VERSION),
+					ShortBits.toByteArray(RocksDBDatabase.VERSION_FORMAT)
+			);
+
+			//Assembly
+			transaction.put(
+					columnFamilyInfo,
+					StringBits.toByteArray(Metadata.KEY_ASSEMBLY),
+					StringBits.toByteArray(assembly.name())
+			);
+
+			transaction.commit();
+		}
 
 		rocksDBConnector.rocksDB.compactRange(columnFamilyInfo);
 	}
@@ -109,9 +112,12 @@ public class MakeDatabase implements AutoCloseable {
 			columnFamilyRecord = rocksDBConnector.createColumnFamily(RocksDBDatabase.COLUMN_FAMILY_RECORD);
 		}
 
-		makeConservation.build(rocksDB, columnFamilyRecord);
+		StatisticsCompression statistics = new StatisticsCompression();
 
+		makeConservation.build(rocksDB, columnFamilyRecord, statistics);
 		rocksDBConnector.rocksDB.compactRange();
+
+		statistics.println();
 	}
 
 	@Override

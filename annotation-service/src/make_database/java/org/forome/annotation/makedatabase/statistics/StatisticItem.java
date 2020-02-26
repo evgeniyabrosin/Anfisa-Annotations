@@ -16,24 +16,17 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.utils.bits;
+package org.forome.annotation.makedatabase.statistics;
 
-public class ShortBits {
+import org.forome.annotation.service.database.batchrecord.compression.TypeCompression;
 
-	public static int BYTE_SIZE = 2;
+public class StatisticItem {
 
-	public static short fromByteArray(byte[] bytes, int offset) {
-		return (short) ((bytes[offset] << 8) | (bytes[offset + 1] & 0xff));
-	}
+	public final TypeCompression typeCompression;
+	public final int size;
 
-	public static short fromByteArray(byte[] bytes) {
-		return fromByteArray(bytes, 0);
-	}
-
-	public static byte[] toByteArray(short value) {
-		byte[] bytes = new byte[BYTE_SIZE];
-		bytes[0] = (byte) (value >> 8);
-		bytes[1] = (byte) (value);
-		return bytes;
+	public StatisticItem(TypeCompression typeCompression, int size) {
+		this.typeCompression = typeCompression;
+		this.size = size;
 	}
 }

@@ -21,12 +21,10 @@ package org.forome.annotation.makedatabase.make.conservation;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.forome.annotation.data.conservation.struct.Conservation;
-import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.makedatabase.make.MakeDatabase;
 import org.forome.annotation.makedatabase.make.conservation.accumulation.AccumulationConservation;
-import org.forome.annotation.struct.Assembly;
+import org.forome.annotation.makedatabase.statistics.StatisticsCompression;
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Interval;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.OptimisticTransactionDB;
 import org.rocksdb.RocksDBException;
@@ -69,7 +67,7 @@ public class MakeConservation {
 		this.gerpHg19 = gerpHg19;
 	}
 
-	public void build(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamilyRecord) throws IOException, RocksDBException {
+	public void build(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamilyRecord, StatisticsCompression statistics) throws IOException, RocksDBException {
 		log.debug("Write conservation...");
 		try (GZIPInputStream isGZ = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(gerpHg19)))) {
 			try (TarArchiveInputStream isTarGZ = new TarArchiveInputStream(isGZ)) {
@@ -79,7 +77,7 @@ public class MakeConservation {
 					if (chromosome == null) continue;
 
 					BufferedReader isItem = new BufferedReader(new InputStreamReader(isTarGZ));
-					try (AccumulationConservation accumulation = new AccumulationConservation(rocksDB, columnFamilyRecord)) {
+					try (AccumulationConservation accumulation = new AccumulationConservation(rocksDB, columnFamilyRecord, statistics)) {
 
 						String line;
 						int position = 0;
@@ -106,7 +104,6 @@ public class MakeConservation {
 								log.debug("Write chromosome: {}, position: {}", chromosome.toString(), position);
 							}
 						}
-
 					}
 				}
 			}
@@ -122,56 +119,6 @@ public class MakeConservation {
 		} else {
 			return null;
 		}
-	}
-
-	public MakeConservationBuild getBatchRecord(Interval interval) {
-		LiftoverConnector liftoverConnector = makeDatabase.liftoverConnector;
-		Assembly assembly = makeDatabase.assembly;
-		Chromosome chromosome = interval.chromosome;
-
-		MakeConservationBuild.Data[] values = new MakeConservationBuild.Data[interval.end - interval.start + 1];
-
-		Interval interval37 = liftoverConnector.toHG37(assembly, interval);
-//		if (interval37 != null) {
-//			try (Connection connection = makeDatabase.conservationConnector.databaseConnector.createConnection()) {
-//				try (Statement statement = connection.createStatement()) {
-//					String sql = String.format("select * from conservation.GERP where Chrom = '%s' and Pos >= %s and Pos <= %s order by Pos asc",
-//							chromosome.getChar(), interval37.start, interval37.end
-//					);
-//					try (ResultSet resultSet = statement.executeQuery(sql)) {
-//						while (resultSet.next()) {
-//							int iPos37 = resultSet.getInt("Pos");
-//							Position position = liftoverConnector.convertFromHG37(assembly, new Position(chromosome, iPos37));
-//
-//							MakeConservationBuild.Data data = getAndCreate(values, position.value - interval.start);
-//							data.gerpN = resultSet.getFloat("GerpN");
-//							data.gerpRS = resultSet.getFloat("GerpRS");
-//						}
-//					}
-//				}
-//			}
-//		}
-
-
-		return new MakeConservationBuild(
-				interval, values
-		);
-	}
-
-	private static MakeConservationBuild.Data getAndCreate(MakeConservationBuild.Data[] values, int index) {
-		MakeConservationBuild.Data data = values[index];
-		if (data == null) {
-			data = new MakeConservationBuild.Data();
-			values[index] = data;
-		}
-		return data;
-	}
-
-	public Float toFloat(Object value) {
-		if (value == null) {
-			return null;
-		}
-		return ((Number) value).floatValue();
 	}
 
 }

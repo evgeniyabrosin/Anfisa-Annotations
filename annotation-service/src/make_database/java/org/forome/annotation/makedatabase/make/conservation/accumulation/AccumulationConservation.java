@@ -22,20 +22,17 @@ import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.makedatabase.make.accumulation.Accumulation;
 import org.forome.annotation.makedatabase.make.batchrecord.WriteBatchRecord;
 import org.forome.annotation.makedatabase.make.batchrecord.WriteBatchRecordConservation;
+import org.forome.annotation.makedatabase.statistics.StatisticsCompression;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.OptimisticTransactionDB;
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AccumulationConservation extends Accumulation {
 
-	private final static Logger log = LoggerFactory.getLogger(AccumulationConservation.class);
-
-	public AccumulationConservation(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamilyRecord) {
-		super(rocksDB, columnFamilyRecord);
+	public AccumulationConservation(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamilyRecord, StatisticsCompression statistics) {
+		super(rocksDB, columnFamilyRecord, statistics);
 	}
 
 	public void add(Chromosome chromosome, int pos, Conservation conservation) throws RocksDBException {

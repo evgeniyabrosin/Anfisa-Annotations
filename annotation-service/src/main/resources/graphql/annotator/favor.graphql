@@ -16,8 +16,8 @@
         polyphen_cat
         sift_cat
         clinvar
-        hgmd_benign
-        hgmd_tags
+#        hgmd_benign
+#        hgmd_tags
         top_med_qc_status
         top_med_bravo_af
         exac03
@@ -43,11 +43,11 @@
             GNOMAD_Total_AF
             ALL_1000G_AF
             genes
-            hgmd
-            hgmd_hg38
-            hgmd_tags
-            hgmd_phenotypes
-            hgmd_pmids
+#            hgmd
+#            hgmd_hg38
+#            hgmd_tags
+#            hgmd_phenotypes
+#            hgmd_pmids
         }
 
         variant_category {
