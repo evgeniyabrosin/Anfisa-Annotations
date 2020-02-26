@@ -29,87 +29,84 @@ import org.forome.annotation.favor.utils.source.Source;
 import org.forome.annotation.favor.utils.source.SourceLocal;
 import org.forome.annotation.favor.utils.struct.table.Row;
 import org.forome.annotation.favor.utils.struct.table.Table;
+import org.forome.annotation.output.FileSplitOutputStream;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 public class Main {
 
-    private final static Logger log = LoggerFactory.getLogger(Main.class);
+	private final static Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) {
-        Arguments arguments;
-        try {
-            ParserArgument argumentParser = new ParserArgument(args);
-            arguments = argumentParser.arguments;
-        } catch (Throwable e) {
-            log.error("Exception arguments parser", e);
-            System.exit(2);
-            return;
-        }
+	public static void main(String[] args) {
+		Arguments arguments;
+		try {
+			ParserArgument argumentParser = new ParserArgument(args);
+			arguments = argumentParser.arguments;
+		} catch (Throwable e) {
+			log.error("Exception arguments parser", e);
+			System.exit(2);
+			return;
+		}
 
-        try {
-            ServiceConfig serviceConfig = new ServiceConfig();
-            SSHConnectService sshTunnelService = new SSHConnectService();
-            DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
-            HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
+		try {
+			ServiceConfig serviceConfig = new ServiceConfig();
+			SSHConnectService sshTunnelService = new SSHConnectService();
+			DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
+			HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 
 //            Source source = new SourceRemote(Source.PATH_FILE);
-            Source source = new SourceLocal(arguments.sourceDump);
+			Source source = new SourceLocal(arguments.sourceDump);
 
-            Processing processing = new Processing(hgmdConnector);
-            try (InputStream is = source.getInputStream()) {
-                try (BufferedReader bf = new BufferedReader(new InputStreamReader(new GZIPInputStream(is)))) {
-                    DumpIterator dumpIterator = new DumpIterator(bf);
+			Processing processing = new Processing(hgmdConnector);
+			try (InputStream is = source.getInputStream()) {
+				try (BufferedReader bf = new BufferedReader(new InputStreamReader(new GZIPInputStream(is)))) {
+					DumpIterator dumpIterator = new DumpIterator(bf);
 
-                    try (OutputStream os = new GZIPOutputStream(Files.newOutputStream(arguments.target))) {
-                        try (BufferedOutputStream bos = new BufferedOutputStream(os)) {
-                            bos.write(new JMetadata().toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
-                            bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+					try (FileSplitOutputStream os = new FileSplitOutputStream(arguments.target, 5_000_000)) {
+						os.writeLineWithIgnoreLimit(new JMetadata().toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
 
-                            Table currentTable = null;
+						Table currentTable = null;
 
-                            int line = 0;
-                            while (dumpIterator.hasNext()) {
-                                line++;
+						int line = 0;
+						while (dumpIterator.hasNext()) {
+							line++;
 //                                if (line > 100) break;
 
-                                Row row = dumpIterator.next();
-                                if (!row.table.equals(currentTable)) {
-                                    currentTable = row.table;
-                                    System.out.println("Table: " + currentTable.name);
-                                    System.out.println(currentTable.fields.stream().map(field -> field.name).collect(Collectors.joining(", ")));
-                                }
+							Row row = dumpIterator.next();
+							if (!row.table.equals(currentTable)) {
+								currentTable = row.table;
+								System.out.println("Table: " + currentTable.name);
+								System.out.println(currentTable.fields.stream().map(field -> field.name).collect(Collectors.joining(", ")));
+							}
 
-                                ProcessingResult processingResult = processing.exec(row);
+							ProcessingResult processingResult = processing.exec(row);
 
-                                bos.write(processingResult.toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
-                                bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+							os.writeLine(processingResult.toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
 
-                                if (line % 10 == 0) {
-                                    log.debug("Processing line: " + line);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+							if (line % 100_000 == 0) {
+								log.debug("Processing line: " + line);
+							}
+						}
+					}
+				}
+			}
 
-            source.close();
+			source.close();
 
-            System.exit(0);
-        } catch (Throwable e) {
-            log.error("Exception", e);
-            System.exit(1);
-        }
-    }
+			System.exit(0);
+		} catch (Throwable e) {
+			log.error("Exception", e);
+			System.exit(1);
+		}
+	}
 }

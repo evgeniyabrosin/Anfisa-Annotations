@@ -52,10 +52,12 @@ public class GContext {
 			String[] splitvariantFormat = variantFormat.split("-");
 			if (splitvariantFormat.length != 4) throw new RuntimeException();
 
+			int position = Double.valueOf(splitvariantFormat[1]).intValue();
+
 			_lazyVariant = new VariantCustom(
 					Chromosome.of(splitvariantFormat[0]),
-					Integer.parseInt(splitvariantFormat[1]),
-					Integer.parseInt(splitvariantFormat[1]),
+					position,
+					position,
 					new Allele(splitvariantFormat[3])
 			);
 		}
