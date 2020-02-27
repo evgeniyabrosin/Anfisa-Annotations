@@ -91,8 +91,7 @@ public class ConservationTest extends AnfisaBaseTest {
 		Chromosome chr2 = Chromosome.of("1");
 		Interval pos2 = Interval.of(chr2, 120681279, 120681278);
 		Conservation conservation2 = conservationConnector.getConservation(pos2, "A", "AT");
-		assertFloat(0.0f, conservation2.gerpRS);//TODO необходимо подтверждение на внешнем ресурсе
-		assertFloat(0.0f, conservation2.gerpN);
+		Assert.assertNull(conservation2);
 	}
 
 	private void assertDouble(Double expected, Double actual) {

@@ -75,7 +75,7 @@ public class AnfisaBaseTest {
 			Assert.fail();
 		});
 		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-		conservationConnector = new ConservationData(databaseConnectService, serviceConfig.conservationConfigConnector);
+		conservationConnector = new ConservationData(databaseConnectService);
 		hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 		clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 		liftoverConnector = new LiftoverConnector();
@@ -107,7 +107,6 @@ public class AnfisaBaseTest {
 		liftoverConnector.close();
 		clinvarConnector.close();
 		hgmdConnector.close();
-		conservationConnector.close();
 		spliceAIConnector.close();
 		gnomadConnector.close();
 

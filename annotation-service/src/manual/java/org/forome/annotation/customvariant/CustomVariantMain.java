@@ -78,7 +78,7 @@ public class CustomVariantMain {
 		gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 //      gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-		conservationConnector = new ConservationData(databaseConnectService, serviceConfig.conservationConfigConnector);
+		conservationConnector = new ConservationData(databaseConnectService);
 		hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 		clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 		liftoverConnector = new LiftoverConnector();

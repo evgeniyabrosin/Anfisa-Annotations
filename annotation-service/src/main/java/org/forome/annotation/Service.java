@@ -129,7 +129,7 @@ public class Service {
 //        this.gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
 		this.gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
 		this.spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-		this.conservationConnector = new ConservationData(databaseConnectService, serviceConfig.conservationConfigConnector);
+		this.conservationConnector = new ConservationData(databaseConnectService);
 		this.hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 		this.clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 		this.liftoverConnector = new LiftoverConnector();
@@ -230,7 +230,6 @@ public class Service {
 		liftoverConnector.close();
 		clinvarConnector.close();
 		hgmdConnector.close();
-		conservationConnector.close();
 		spliceAIConnector.close();
 		gnomadConnector.close();
 		ensemblVepService.close();
