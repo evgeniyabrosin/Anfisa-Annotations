@@ -18,10 +18,8 @@
 
 package org.forome.annotation.data.conservation;
 
-import org.forome.annotation.config.connector.ConservationConfigConnector;
-import org.forome.annotation.data.DatabaseConnector;
+import com.google.common.collect.Lists;
 import org.forome.annotation.data.conservation.struct.Conservation;
-import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.database.Source;
 import org.forome.annotation.service.database.struct.record.Record;
@@ -33,19 +31,14 @@ import org.forome.annotation.utils.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
-public class ConservationDataMysql {
+public class ConservationData {
 
-	private final static Logger log = LoggerFactory.getLogger(ConservationDataMysql.class);
+	private final static Logger log = LoggerFactory.getLogger(ConservationData.class);
 
 	private final DatabaseConnectService databaseConnectService;
 
-	public final DatabaseConnector databaseConnector;
 	private final Statistics statistics;
 
 	public class GerpData {
@@ -59,18 +52,15 @@ public class ConservationDataMysql {
 		}
 	}
 
-	public ConservationDataMysql(
-			DatabaseConnectService databaseConnectService,
-			ConservationConfigConnector conservationConfigConnector
+	public ConservationData(
+			DatabaseConnectService databaseConnectService
 	) {
 		this.databaseConnectService = databaseConnectService;
-
-		this.databaseConnector = new DatabaseConnector(databaseConnectService, conservationConfigConnector);
 		this.statistics = new Statistics();
 	}
 
 	public List<SourceMetadata> getSourceMetadata() {
-		return databaseConnector.getSourceMetadata();
+		return Lists.newArrayList(new SourceMetadata("GERP", "hg19.GERP_scores", null));
 	}
 
 	public Conservation getConservation(Interval position, String ref, String alt) {
@@ -86,8 +76,7 @@ public class ConservationDataMysql {
 	}
 
 	private Conservation getConservation(Interval pHG19) {
-		GerpData gerpData = getGerpDataFromMysql(pHG19);
-//		GerpData gerpData = getGerpDataFromRocksDB(Assembly.GRCh37, pHG19);
+		GerpData gerpData = getGerpDataFromRocksDB(Assembly.GRCh37, pHG19);
 
 		if (gerpData != null) {
 			Float gerpRS = (gerpData != null) ? gerpData.gerpRS : null;
@@ -97,50 +86,6 @@ public class ConservationDataMysql {
 			);
 		} else {
 			return null;
-		}
-	}
-
-	private GerpData getGerpDataFromMysql(Interval pHG19) {
-		long t1 = System.nanoTime();
-
-		String sqlFromGerp;
-		if (pHG19.isSingle()) {
-			sqlFromGerp = String.format("select GerpN, GerpRS from conservation.GERP where Chrom='%s' and Pos = %s",
-					pHG19.chromosome.getChar(), pHG19.start
-			);
-		} else {
-			long hg19Pos1;
-			long hg19Pos2;
-			if (pHG19.start > pHG19.end) {
-				hg19Pos1 = pHG19.end - 1;
-				hg19Pos2 = pHG19.start;
-			} else {
-				throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", pHG19.chromosome.getChar(), pHG19));
-			}
-			sqlFromGerp = String.format("select max(GerpN) as GerpN, max(GerpRS) as GerpRS from conservation.GERP " +
-					"where Chrom='%s' and Pos between %s and %s", pHG19.chromosome.getChar(), hg19Pos1, hg19Pos2);
-		}
-
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(sqlFromGerp)) {
-					if (resultSet.next()) {
-						Double dGerpN = (Double) resultSet.getObject("GerpN");
-						Float gerpN = (dGerpN == null) ? null : dGerpN.floatValue();
-
-						Double dGerpRS = (Double) resultSet.getObject("GerpRS");
-						Float gerpRS = (dGerpRS == null) ? null : dGerpRS.floatValue();
-
-						return new GerpData(gerpN, gerpRS);
-					} else {
-						return null;
-					}
-				}
-			}
-		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
-		} finally {
-			statistics.addTime(System.nanoTime() - t1);
 		}
 	}
 
@@ -156,8 +101,9 @@ public class ConservationDataMysql {
 				maxPosition = pHG19.end;
 			} else {
 				//Инсерция
-				minPosition = pHG19.end;
-				maxPosition = pHG19.start;
+				//minPosition = maxPosition = pHG19.start;
+				minPosition = Math.min(pHG19.start, pHG19.end - 1);
+				maxPosition = Math.max(pHG19.start, pHG19.end - 1);
 			}
 
 			Float maxGerpN = null;
@@ -193,10 +139,6 @@ public class ConservationDataMysql {
 
 	public Statistics.Stat getStatistics() {
 		return statistics.getStat();
-	}
-
-	public void close() {
-		databaseConnector.close();
 	}
 
 }

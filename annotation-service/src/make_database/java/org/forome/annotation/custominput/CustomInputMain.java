@@ -160,7 +160,7 @@ public class CustomInputMain {
 //            gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
 			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e));
 			spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-			conservationConnector = new ConservationData(databaseConnectService, serviceConfig.conservationConfigConnector);
+			conservationConnector = new ConservationData(databaseConnectService);
 			hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 			clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 			liftoverConnector = new LiftoverConnector();
