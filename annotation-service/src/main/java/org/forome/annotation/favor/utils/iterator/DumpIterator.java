@@ -36,91 +36,95 @@ import java.util.stream.Collectors;
 
 public class DumpIterator implements Iterator<Row>, AutoCloseable {
 
-    private final static Logger log = LoggerFactory.getLogger(DumpIterator.class);
+	private final static Logger log = LoggerFactory.getLogger(DumpIterator.class);
 
-    private static Pattern PATTERN_COPY_DATA = Pattern.compile(
-            "^COPY (.*) \\((.*)\\) (.*)$"
-    );
+	private static Pattern PATTERN_COPY_DATA = Pattern.compile(
+			"^COPY (.*) \\((.*)\\) (.*)$"
+	);
 
-    private final BufferedReader bufferedReader;
+	private final BufferedReader bufferedReader;
 
-    private Table currentTable;
+	private Table currentTable;
 
-    private Row nextValue;
+	private Row nextValue;
 
-    public DumpIterator(BufferedReader bufferedReader) {
-        this.bufferedReader = bufferedReader;
+	private int count;
 
-        nextValue = readNextValue();
-    }
+	public DumpIterator(BufferedReader bufferedReader) {
+		this.bufferedReader = bufferedReader;
 
-    @Override
-    public boolean hasNext() {
-        return (nextValue != null);
-    }
+		nextValue = readNextValue();
+	}
 
-    @Override
-    public Row next() {
-        if (nextValue == null) {
-            throw new NoSuchElementException();
-        }
-        Row value = nextValue;
-        nextValue = readNextValue();
-        return value;
-    }
+	@Override
+	public boolean hasNext() {
+		return (nextValue != null);
+	}
 
-    private Row readNextValue() {
-        String line;
-        try {
-            while (true) {
-                line = bufferedReader.readLine();
-                if (line == null) return null;
+	@Override
+	public Row next() {
+		if (nextValue == null) {
+			throw new NoSuchElementException();
+		}
+		Row value = nextValue;
+		nextValue = readNextValue();
+		return value;
+	}
 
-                Matcher matcherCopyData = PATTERN_COPY_DATA.matcher(line);
-                if (matcherCopyData.matches()) {
-                    currentTable = nextTable(matcherCopyData, line);
-                    line = bufferedReader.readLine();
-                    if (line == null) return null;
-                }
+	private Row readNextValue() {
+		String line;
+		try {
+			while (true) {
+				line = bufferedReader.readLine();
+				if (line == null) return null;
 
-                if (currentTable != null) {
-                    List<String> values = Arrays.stream(line.split("\t"))
-                            .map(s -> "\\N".equals(s) ? null : s)
-                            .collect(Collectors.toList());
+				Matcher matcherCopyData = PATTERN_COPY_DATA.matcher(line);
+				if (matcherCopyData.matches()) {
+					currentTable = nextTable(matcherCopyData, line);
+					line = bufferedReader.readLine();
+					if (line == null) return null;
 
-                    if (currentTable.fields.size() != values.size()) {
-                        log.error("Fail!!! Not correct dump: " + line);
-                        return null;
-                    }
+					count = 0;
+				}
 
-                    return new Row(currentTable, values, line);
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+				if (currentTable != null) {
+					List<String> values = Arrays.stream(line.split("\t"))
+							.map(s -> "\\N".equals(s) ? null : s)
+							.collect(Collectors.toList());
 
-    private Table nextTable(Matcher matcherCopyData, String rawLine) {
-        String tableName = matcherCopyData.group(1);
-        if (tableName.startsWith("public.")) {
-            tableName = tableName.substring("public.".length());
-        }
+					if (currentTable.fields.size() != values.size()) {
+						log.error("Fail!!! Not correct dump: " + line);
+						return null;
+					}
 
-        List<Field> fields = Arrays.stream(matcherCopyData.group(2).split(","))
-                .map(s -> s.trim())
-                .map(s -> s.replaceAll("\"", ""))
-                .map(s -> new Field(s))
-                .collect(Collectors.toList());
+					return new Row(count++, currentTable, values, line);
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Table nextTable(Matcher matcherCopyData, String rawLine) {
+		String tableName = matcherCopyData.group(1);
+		if (tableName.startsWith("public.")) {
+			tableName = tableName.substring("public.".length());
+		}
+
+		List<Field> fields = Arrays.stream(matcherCopyData.group(2).split(","))
+				.map(s -> s.trim())
+				.map(s -> s.replaceAll("\"", ""))
+				.map(s -> new Field(s))
+				.collect(Collectors.toList());
 
 
-        return new Table(tableName, fields, rawLine);
-    }
+		return new Table(tableName, fields, rawLine);
+	}
 
-    @Override
-    public void close() throws Exception {
-        bufferedReader.close();
-    }
+	@Override
+	public void close() throws Exception {
+		bufferedReader.close();
+	}
 
 }
 

@@ -72,7 +72,7 @@ public class Main {
 				try (BufferedReader bf = new BufferedReader(new InputStreamReader(new GZIPInputStream(is)))) {
 					DumpIterator dumpIterator = new DumpIterator(bf);
 
-					try (FileSplitOutputStream os = new FileSplitOutputStream(arguments.target, 5_000_000)) {
+					try (FileSplitOutputStream os = new FileSplitOutputStream(arguments.target, 5_000)) {
 						os.writeLineWithIgnoreLimit(new JMetadata().toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
 
 						Table currentTable = null;

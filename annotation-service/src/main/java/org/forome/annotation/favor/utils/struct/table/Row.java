@@ -23,24 +23,28 @@ import java.util.List;
 
 public class Row {
 
-    public final Table table;
-    public final List<String> values;
+	public final int order;
 
-    public final String rawLine;
+	public final Table table;
+	public final List<String> values;
 
-    public Row(Table table, List<String> values, String rawLine) {
-        this.table = table;
-        this.values = Collections.unmodifiableList(values);
-        this.rawLine = rawLine;
-    }
+	public final String rawLine;
 
-    public String getValue(Field field) {
-        int index = table.fields.indexOf(field);
-        return values.get(index);
-    }
+	public Row(int order, Table table, List<String> values, String rawLine) {
+		this.order = order;
 
-    public String getValue(String field) {
-        return getValue(new Field(field));
-    }
+		this.table = table;
+		this.values = Collections.unmodifiableList(values);
+		this.rawLine = rawLine;
+	}
+
+	public String getValue(Field field) {
+		int index = table.fields.indexOf(field);
+		return values.get(index);
+	}
+
+	public String getValue(String field) {
+		return getValue(new Field(field));
+	}
 
 }

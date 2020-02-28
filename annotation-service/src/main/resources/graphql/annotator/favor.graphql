@@ -2,6 +2,7 @@
     record_type
 
     _filters {
+        _ord
         chromosome
         position
         start: position

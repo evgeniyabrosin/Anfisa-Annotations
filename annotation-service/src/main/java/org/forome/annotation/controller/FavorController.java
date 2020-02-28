@@ -18,43 +18,67 @@
 
 package org.forome.annotation.controller;
 
+import com.google.common.base.Strings;
 import net.minidev.json.JSONObject;
+import org.forome.annotation.Main;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Stream;
 
 
 @Controller
 @RequestMapping(value = { "/favor" })
 public class FavorController {
 
+	//	private static final Path RESULT_PATH = Paths.get("/mnt/data/favor/anfisa");
+	private static final Path RESULT_PATH = Paths.get("/data/tmp/favor");
+
 	@RequestMapping(value = "info")
 	public ResponseEntity getInfo(HttpServletRequest request) {
+		long countFile;
+		try (Stream<Path> files = Files.list(RESULT_PATH)) {
+			countFile = files.count();
+		} catch (IOException e) {
+			Main.crash(e);
+			return null;
+		}
+
 		JSONObject out = new JSONObject();
-		out.put("packs", 3);
+		out.put("size", countFile);
 		return ResponseBuilder.build(out);
 	}
 
-	@RequestMapping(value = "pack/{id}")
-	public ResponseEntity getPack(@PathVariable("id") int id) {
-		Path parent = Paths.get("/mnt/data/favor/anfisa");
+	@RequestMapping(value = "variant")
+	public ResponseEntity getVariant(HttpServletRequest request) {
+		String sOrd = request.getParameter("ord");
+		if (Strings.isNullOrEmpty(sOrd)) {
+			throw ExceptionBuilder.buildInvalidValueException("ord");
+		}
+		int ord;
+		try {
+			ord = Integer.parseInt(sOrd);
+		} catch (Throwable e) {
+			throw ExceptionBuilder.buildInvalidValueException("ord");
+		}
+
 		Path file;
-		if (id == 0) {
-			file = parent.resolve("favor_anfisa.json.gz");
+		if (ord == 0) {
+			file = RESULT_PATH.resolve("favor_anfisa.json.gz");
 		} else {
-			file = parent.resolve("favor_anfisa." + id + ".json.gz");
+			file = RESULT_PATH.resolve("favor_anfisa." + ord + ".json.gz");
 		}
 
 		if (!Files.exists(file)) {
-			throw ExceptionBuilder.buildInvalidValueException("id");
+			throw ExceptionBuilder.buildInvalidValueException("ord");
 		}
 
 		JSONObject out = new JSONObject();
