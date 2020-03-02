@@ -22,7 +22,7 @@ import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.makedatabase.main.argument.ArgumentsMake;
 import org.forome.annotation.makedatabase.make.conservation.MakeConservation;
 import org.forome.annotation.makedatabase.statistics.StatisticsCompression;
-import org.forome.annotation.service.database.RocksDBDatabase;
+import org.forome.annotation.service.database.rocksdb.annotator.SourceDatabase;
 import org.forome.annotation.service.database.struct.Metadata;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.utils.bits.ShortBits;
@@ -79,10 +79,10 @@ public class MakeDatabase implements AutoCloseable {
 	}
 
 	public void buildInfo() throws RocksDBException {
-		if (rocksDBConnector.getColumnFamily(RocksDBDatabase.COLUMN_FAMILY_INFO) != null) {
-			rocksDBConnector.dropColumnFamily(RocksDBDatabase.COLUMN_FAMILY_INFO);
+		if (rocksDBConnector.getColumnFamily(SourceDatabase.COLUMN_FAMILY_INFO) != null) {
+			rocksDBConnector.dropColumnFamily(SourceDatabase.COLUMN_FAMILY_INFO);
 		}
-		ColumnFamilyHandle columnFamilyInfo = rocksDBConnector.createColumnFamily(RocksDBDatabase.COLUMN_FAMILY_INFO);
+		ColumnFamilyHandle columnFamilyInfo = rocksDBConnector.createColumnFamily(SourceDatabase.COLUMN_FAMILY_INFO);
 
 		try (Transaction transaction = rocksDB.beginTransaction(new WriteOptions())) {
 
@@ -90,7 +90,7 @@ public class MakeDatabase implements AutoCloseable {
 			transaction.put(
 					columnFamilyInfo,
 					StringBits.toByteArray(Metadata.KEY_FORMAT_VERSION),
-					ShortBits.toByteArray(RocksDBDatabase.VERSION_FORMAT)
+					ShortBits.toByteArray(SourceDatabase.VERSION_FORMAT)
 			);
 
 			//Assembly
@@ -107,9 +107,9 @@ public class MakeDatabase implements AutoCloseable {
 	}
 
 	public void buildRecords() throws RocksDBException, SQLException, IOException {
-		ColumnFamilyHandle columnFamilyRecord = rocksDBConnector.getColumnFamily(RocksDBDatabase.COLUMN_FAMILY_RECORD);
+		ColumnFamilyHandle columnFamilyRecord = rocksDBConnector.getColumnFamily(SourceDatabase.COLUMN_FAMILY_RECORD);
 		if (columnFamilyRecord == null) {
-			columnFamilyRecord = rocksDBConnector.createColumnFamily(RocksDBDatabase.COLUMN_FAMILY_RECORD);
+			columnFamilyRecord = rocksDBConnector.createColumnFamily(SourceDatabase.COLUMN_FAMILY_RECORD);
 		}
 
 		StatisticsCompression statistics = new StatisticsCompression();

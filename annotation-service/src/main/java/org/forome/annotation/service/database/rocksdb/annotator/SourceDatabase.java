@@ -16,12 +16,12 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database;
+package org.forome.annotation.service.database.rocksdb.annotator;
 
 import com.infomaximum.database.exception.DatabaseException;
-import com.infomaximum.database.utils.TypeConvert;
-import com.infomaximum.rocksdb.RocksDBProvider;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.database.Source;
+import org.forome.annotation.service.database.rocksdb.RocksDBDatabase;
 import org.forome.annotation.service.database.struct.Metadata;
 import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.service.database.struct.packer.PackInterval;
@@ -29,18 +29,13 @@ import org.forome.annotation.service.database.struct.record.Record;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
-import org.rocksdb.*;
-import org.rocksdb.util.SizeUnit;
+import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-public class RocksDBDatabase implements Source {
+public class SourceDatabase extends RocksDBDatabase implements Source {
 
 	public static final short VERSION_FORMAT = 1;
 
@@ -48,32 +43,12 @@ public class RocksDBDatabase implements Source {
 	public static final String COLUMN_FAMILY_RECORD = "record";
 
 	public final Assembly assembly;
-	public final Path pathDatabase;
-
-	private final RocksDB rocksDB;
-	private final Map<String, ColumnFamilyHandle> columnFamilies;
 
 	private final Metadata metadata;
 
-	public RocksDBDatabase(Assembly assembly, Path pathDatabase) throws DatabaseException {
+	public SourceDatabase(Assembly assembly, Path pathDatabase) throws DatabaseException {
+		super(pathDatabase);
 		this.assembly = assembly;
-		this.pathDatabase = pathDatabase;
-
-		try (DBOptions options = buildOptions(pathDatabase)) {
-			List<ColumnFamilyDescriptor> columnFamilyDescriptors = getColumnFamilyDescriptors(pathDatabase);
-
-			List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>();
-			rocksDB = RocksDB.openReadOnly(options, pathDatabase.toString(), columnFamilyDescriptors, columnFamilyHandles);
-
-			columnFamilies = new HashMap<>();
-			for (int i = 0; i < columnFamilyDescriptors.size(); i++) {
-				String columnFamilyName = TypeConvert.unpackString(columnFamilyDescriptors.get(i).getName());
-				ColumnFamilyHandle columnFamilyHandle = columnFamilyHandles.get(i);
-				columnFamilies.put(columnFamilyName, columnFamilyHandle);
-			}
-		} catch (RocksDBException e) {
-			throw new DatabaseException(e);
-		}
 
 		ColumnFamilyHandle columnFamilyInfo = getColumnFamily(COLUMN_FAMILY_INFO);
 		if (columnFamilyInfo == null) {
@@ -86,10 +61,6 @@ public class RocksDBDatabase implements Source {
 		if (metadata.getAssembly() != assembly) {
 			throw new RuntimeException("Not equals assembly: " + metadata.getAssembly());
 		}
-	}
-
-	private ColumnFamilyHandle getColumnFamily(String name) {
-		return columnFamilies.get(name);
 	}
 
 	public Metadata getMetadata() {
@@ -107,39 +78,6 @@ public class RocksDBDatabase implements Source {
 		} else {
 			return null;
 		}
-	}
-
-
-	private static DBOptions buildOptions(Path pathDatabase) throws RocksDBException {
-		final String optionsFilePath = pathDatabase.toString() + ".ini";
-
-		DBOptions options = new DBOptions();
-		if (Files.exists(Paths.get(optionsFilePath))) {
-			final List<ColumnFamilyDescriptor> ignoreDescs = new ArrayList<>();
-			OptionsUtil.loadOptionsFromFile(optionsFilePath, Env.getDefault(), options, ignoreDescs, false);
-		} else {
-			options
-					.setInfoLogLevel(InfoLogLevel.WARN_LEVEL)
-					.setMaxTotalWalSize(100L * SizeUnit.MB);
-		}
-
-		return options.setCreateIfMissing(true);
-	}
-
-	private static List<ColumnFamilyDescriptor> getColumnFamilyDescriptors(Path pathDatabase) throws RocksDBException {
-		List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
-
-		try (Options options = new Options()) {
-			for (byte[] columnFamilyName : RocksDB.listColumnFamilies(options, pathDatabase.toString())) {
-				columnFamilyDescriptors.add(new ColumnFamilyDescriptor(columnFamilyName));
-			}
-		}
-
-		if (columnFamilyDescriptors.isEmpty()) {
-			columnFamilyDescriptors.add(new ColumnFamilyDescriptor(TypeConvert.pack(RocksDBProvider.DEFAULT_COLUMN_FAMILY)));
-		}
-
-		return columnFamilyDescriptors;
 	}
 
 	public static Interval getIntervalBatchRecord(Position position) {
@@ -165,5 +103,5 @@ public class RocksDBDatabase implements Source {
 			throw ExceptionBuilder.buildExternalDatabaseException(ex);
 		}
 	}
-
 }
+

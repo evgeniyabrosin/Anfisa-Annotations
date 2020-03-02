@@ -200,6 +200,10 @@ public class Service {
 		return networkService;
 	}
 
+	public DatabaseConnectService getDatabaseConnectService() {
+		return databaseConnectService;
+	}
+
 	public GnomadConnector getGnomadConnector() {
 		return gnomadConnector;
 	}

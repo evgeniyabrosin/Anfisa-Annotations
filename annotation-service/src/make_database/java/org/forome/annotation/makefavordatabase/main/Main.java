@@ -16,30 +16,32 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.favor.main;
+package org.forome.annotation.makefavordatabase.main;
 
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.hgmd.HgmdConnector;
-import org.forome.annotation.favor.main.argument.Arguments;
-import org.forome.annotation.favor.main.argument.ParserArgument;
 import org.forome.annotation.favor.processing.Processing;
-import org.forome.annotation.favor.struct.out.JMetadata;
 import org.forome.annotation.favor.utils.iterator.DumpIterator;
 import org.forome.annotation.favor.utils.source.Source;
 import org.forome.annotation.favor.utils.source.SourceLocal;
 import org.forome.annotation.favor.utils.struct.table.Row;
 import org.forome.annotation.favor.utils.struct.table.Table;
-import org.forome.annotation.output.FileSplitOutputStream;
+import org.forome.annotation.makedatabase.make.RocksDBConnector;
+import org.forome.annotation.makefavordatabase.main.argument.Arguments;
+import org.forome.annotation.makefavordatabase.main.argument.ParserArgument;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.database.rocksdb.favor.FavorDatabase;
 import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.utils.compression.GZIPCompression;
+import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -52,6 +54,12 @@ public class Main {
 		try {
 			ParserArgument argumentParser = new ParserArgument(args);
 			arguments = argumentParser.arguments;
+
+			log.info("Arguments:");
+			log.info("Source dump: {}", arguments.sourceDump);
+			log.info("Target: {}", arguments.target);
+			log.info("Offset: {}", arguments.offset);
+			log.info("Limit: {}", arguments.limit);
 		} catch (Throwable e) {
 			log.error("Exception arguments parser", e);
 			System.exit(2);
@@ -67,39 +75,47 @@ public class Main {
 //            Source source = new SourceRemote(Source.PATH_FILE);
 			Source source = new SourceLocal(arguments.sourceDump);
 
+			RocksDBConnector rocksDBConnector = new RocksDBConnector(arguments.target.toAbsolutePath());
+			ColumnFamilyHandle columnFamily = getColumnFamily(rocksDBConnector);
+
 			Processing processing = new Processing(hgmdConnector);
 			try (InputStream is = source.getInputStream()) {
 				try (BufferedReader bf = new BufferedReader(new InputStreamReader(new GZIPInputStream(is)))) {
 					DumpIterator dumpIterator = new DumpIterator(bf);
 
-					try (FileSplitOutputStream os = new FileSplitOutputStream(arguments.target, 5_000)) {
-						os.writeLineWithIgnoreLimit(new JMetadata().toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
+					Table currentTable = null;
 
-						Table currentTable = null;
+					while (dumpIterator.hasNext()) {
+						Row row = dumpIterator.next();
+						if (row.order >= arguments.limit) {
+							break;
+						}
 
-						int line = 0;
-						while (dumpIterator.hasNext()) {
-							line++;
-//                                if (line > 100) break;
+						if (!row.table.equals(currentTable)) {
+							currentTable = row.table;
+							System.out.println("Table: " + currentTable.name);
+							System.out.println(currentTable.fields.stream().map(field -> field.name).collect(Collectors.joining(", ")));
+						}
 
-							Row row = dumpIterator.next();
-							if (!row.table.equals(currentTable)) {
-								currentTable = row.table;
-								System.out.println("Table: " + currentTable.name);
-								System.out.println(currentTable.fields.stream().map(field -> field.name).collect(Collectors.joining(", ")));
-							}
+						ProcessingResult processingResult = processing.exec(row);
+						String record = processingResult.toJSON().toJSONString();
 
-							ProcessingResult processingResult = processing.exec(row);
+						rocksDBConnector.rocksDB.put(
+								columnFamily,
+								FavorDatabase.getKey(row.order),
+								GZIPCompression.compress(record)
+						);
 
-							os.writeLine(processingResult.toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));
-
-							if (line % 100_000 == 0) {
-								log.debug("Processing line: " + line);
-							}
+						if (row.order % 100_000 == 0) {
+							log.debug("Processing row order: " + row.order);
 						}
 					}
 				}
 			}
+
+			log.debug("Compact...");
+			rocksDBConnector.rocksDB.compactRange(columnFamily);
+			log.debug("Compact...complete");
 
 			source.close();
 
@@ -108,5 +124,13 @@ public class Main {
 			log.error("Exception", e);
 			System.exit(1);
 		}
+	}
+
+	public static ColumnFamilyHandle getColumnFamily(RocksDBConnector rocksDBConnector) throws RocksDBException {
+		ColumnFamilyHandle columnFamilyHandle = rocksDBConnector.getColumnFamily(FavorDatabase.COLUMN_FAMILY_DATA);
+		if (columnFamilyHandle == null) {
+			columnFamilyHandle = rocksDBConnector.createColumnFamily(FavorDatabase.COLUMN_FAMILY_DATA);
+		}
+		return columnFamilyHandle;
 	}
 }

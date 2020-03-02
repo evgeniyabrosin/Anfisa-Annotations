@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.favor.main.argument;
+package org.forome.annotation.makefavordatabase.main.argument;
 
 import com.google.common.base.Strings;
 import org.apache.commons.cli.CommandLine;
@@ -30,6 +30,9 @@ public class Arguments {
 	public final Path sourceDump;
 
 	public final Path target;
+
+	public final int offset;
+	public final int limit;
 
 	public Arguments(CommandLine cmd) {
 
@@ -47,12 +50,12 @@ public class Arguments {
 
 		String strTargetFile = cmd.getOptionValue(ParserArgument.OPTION_TARGET);
 		if (Strings.isNullOrEmpty(strTargetFile)) {
-			throw new IllegalArgumentException("Missing target file");
+			throw new IllegalArgumentException("Missing target directory");
 		}
 		target = Paths.get(strTargetFile).toAbsolutePath();
-		if (!target.getFileName().toString().endsWith(".gz")) {
-			throw new IllegalArgumentException("Bad target file: " + target.toAbsolutePath());
-		}
+
+		this.offset = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_LIMIT, "0"));
+		this.limit = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_LIMIT, String.valueOf(Integer.MAX_VALUE)));
 	}
 
 }

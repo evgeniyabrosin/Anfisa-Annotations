@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,40 +16,37 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.makedatabase;
+package org.forome.annotation.service.database.rocksdb;
 
+import com.infomaximum.database.exception.DatabaseException;
 import com.infomaximum.database.utils.TypeConvert;
 import com.infomaximum.rocksdb.RocksDBProvider;
-import org.forome.annotation.service.database.rocksdb.annotator.SourceDatabase;
-import org.forome.annotation.service.database.struct.packer.PackInterval;
-import org.forome.annotation.struct.Interval;
 import org.rocksdb.*;
 import org.rocksdb.util.SizeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class Main {
+public class RocksDBDatabase {
 
-	private final static Logger log = LoggerFactory.getLogger(Main.class);
+	public final Path pathDatabase;
 
-	private static RocksDB rocksDB;
-	private static Map<String, ColumnFamilyHandle> columnFamilies;
+	protected final RocksDB rocksDB;
+	private final Map<String, ColumnFamilyHandle> columnFamilies;
 
-	public static void main(String[] args) throws Exception {
+	public RocksDBDatabase(Path pathDatabase) throws DatabaseException {
+		this.pathDatabase = pathDatabase;
 
-		Path path = Paths.get("/home/kris/processtech/annotation-database");
-
-		try (DBOptions options = buildOptions(path)) {
-			List<ColumnFamilyDescriptor> columnFamilyDescriptors = getColumnFamilyDescriptors(path);
+		try (DBOptions options = buildOptions(pathDatabase)) {
+			List<ColumnFamilyDescriptor> columnFamilyDescriptors = getColumnFamilyDescriptors(pathDatabase);
 
 			List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>();
-			rocksDB = RocksDB.openReadOnly(options, path.toString(), columnFamilyDescriptors, columnFamilyHandles);
+			rocksDB = RocksDB.openReadOnly(options, pathDatabase.toString(), columnFamilyDescriptors, columnFamilyHandles);
 
 			columnFamilies = new HashMap<>();
 			for (int i = 0; i < columnFamilyDescriptors.size(); i++) {
@@ -57,56 +54,14 @@ public class Main {
 				ColumnFamilyHandle columnFamilyHandle = columnFamilyHandles.get(i);
 				columnFamilies.put(columnFamilyName, columnFamilyHandle);
 			}
-
-
-			//
-			int size = 0;
-			int size4 = 0;
-			int size16 = 0;
-			int size100 = 0;
-			try (RocksIterator rocksIterator = rocksDB.newIterator(
-					columnFamilies.get(SourceDatabase.COLUMN_FAMILY_RECORD)
-			)) {
-				rocksIterator.seekToFirst();
-				while (rocksIterator.isValid()) {
-
-					Interval interval = new PackInterval().fromByteArray(rocksIterator.key());
-					if (interval.start % 10000000 == 0) {
-						log.debug("interval, chr: {}, pos: {}", interval.chromosome, interval.start);
-					}
-
-					ByteBuffer byteBuffer = ByteBuffer.wrap(rocksIterator.value());
-					ArrayList<Short> numbers = new ArrayList<>();
-					for (int i = 0; i < 100; i++) {
-						numbers.add(byteBuffer.getShort());
-						numbers.add(byteBuffer.getShort());
-					}
-					Set<Short> unique = new HashSet<>(numbers);
-
-					size++;
-					if (unique.size() < 4) {
-						size4++;
-					} else if (unique.size() < 16) {
-						size16++;
-					} else if (unique.size() < 100) {
-						size100++;
-					}
-					rocksIterator.next();
-				}
-			}
-
-			log.debug("size: {}", size);
-			log.debug("<4, size4: {} vs {}% ", size4, size4 * 100 / size);
-			log.debug("<16, size16: {} vs {}% ", size16, size16 * 100 / size);
-			log.debug("<100, size100: {} vs {}% ", size100, size100 * 100 / size);
-
-			System.exit(0);
 		} catch (RocksDBException e) {
-			log.debug("Exception: ", e);
-			System.exit(1);
+			throw new DatabaseException(e);
 		}
 	}
 
+	protected ColumnFamilyHandle getColumnFamily(String name) {
+		return columnFamilies.get(name);
+	}
 
 	private static DBOptions buildOptions(Path pathDatabase) throws RocksDBException {
 		final String optionsFilePath = pathDatabase.toString() + ".ini";

@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.favor.main.argument;
+package org.forome.annotation.makefavordatabase.main.argument;
 
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -29,6 +29,10 @@ public class ParserArgument {
 	public static final String OPTION_SOURCE = "source";
 
 	public static final String OPTION_TARGET = "target";
+
+	public static final String OPTION_OFFSET = "offset";
+
+	public static final String OPTION_LIMIT = "limit";
 
 	public final Arguments arguments;
 
@@ -46,6 +50,22 @@ public class ParserArgument {
 						.hasArg(true)
 						.optionalArg(false)
 						.desc("Absolute path to target file")
+						.build())
+
+				.addOption(Option.builder()
+						.longOpt(OPTION_OFFSET)
+						.hasArg(true)
+						.optionalArg(true)
+						.desc("Offset position")
+						.type(Integer.class)
+						.build())
+
+				.addOption(Option.builder()
+						.longOpt(OPTION_LIMIT)
+						.hasArg(true)
+						.optionalArg(true)
+						.desc("limit position")
+						.type(Integer.class)
 						.build());
 
 		try {

@@ -20,7 +20,7 @@ package org.forome.annotation.makedatabase.make.accumulation;
 
 import org.forome.annotation.makedatabase.make.batchrecord.WriteBatchRecord;
 import org.forome.annotation.makedatabase.statistics.StatisticsCompression;
-import org.forome.annotation.service.database.RocksDBDatabase;
+import org.forome.annotation.service.database.rocksdb.annotator.SourceDatabase;
 import org.forome.annotation.service.database.struct.batch.BatchRecord;
 import org.forome.annotation.service.database.struct.packer.PackInterval;
 import org.forome.annotation.struct.Position;
@@ -51,9 +51,9 @@ public class Accumulation implements AutoCloseable {
 	}
 
 	private WriteBatchRecord buildWriteBatchRecord(Position position) {
-		BatchRecord batchRecord = RocksDBDatabase.getBatchRecord(rocksDB, columnFamily, position);
+		BatchRecord batchRecord = SourceDatabase.getBatchRecord(rocksDB, columnFamily, position);
 		if (batchRecord == null) {
-			return new WriteBatchRecord(RocksDBDatabase.getIntervalBatchRecord(position), statistics);
+			return new WriteBatchRecord(SourceDatabase.getIntervalBatchRecord(position), statistics);
 		} else {
 			return new WriteBatchRecord(batchRecord, statistics);
 		}
