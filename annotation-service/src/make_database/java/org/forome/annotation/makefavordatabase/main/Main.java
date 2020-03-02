@@ -87,6 +87,9 @@ public class Main {
 
 					while (dumpIterator.hasNext()) {
 						Row row = dumpIterator.next();
+						if (row.order< arguments.offset) {
+							continue;
+						}
 						if (row.order >= arguments.limit) {
 							break;
 						}

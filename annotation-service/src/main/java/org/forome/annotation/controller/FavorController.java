@@ -96,6 +96,6 @@ public class FavorController {
 		headers.setPragma("no-cache");
 		headers.setExpires(0);
 
-		return new ResponseEntity(out.toString().getBytes(StandardCharsets.UTF_8), headers, HttpStatus.OK);
+		return new ResponseEntity(out.getBytes(StandardCharsets.UTF_8), headers, HttpStatus.OK);
 	}
 }

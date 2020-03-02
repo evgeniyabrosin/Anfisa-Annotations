@@ -54,7 +54,7 @@ public class Arguments {
 		}
 		target = Paths.get(strTargetFile).toAbsolutePath();
 
-		this.offset = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_LIMIT, "0"));
+		this.offset = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_OFFSET, "0"));
 		this.limit = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_LIMIT, String.valueOf(Integer.MAX_VALUE)));
 	}
 
