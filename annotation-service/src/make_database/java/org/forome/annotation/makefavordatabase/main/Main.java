@@ -87,7 +87,7 @@ public class Main {
 
 					while (dumpIterator.hasNext()) {
 						Row row = dumpIterator.next();
-						if (row.order< arguments.offset) {
+						if (row.order < arguments.offset) {
 							continue;
 						}
 						if (row.order >= arguments.limit) {
@@ -105,7 +105,7 @@ public class Main {
 
 						rocksDBConnector.rocksDB.put(
 								columnFamily,
-								FavorDatabase.getKey(row.order),
+								FavorDatabase.getKeyData(row.order),
 								GZIPCompression.compress(record)
 						);
 

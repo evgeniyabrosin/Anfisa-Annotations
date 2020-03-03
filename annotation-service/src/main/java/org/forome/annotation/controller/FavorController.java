@@ -19,8 +19,11 @@
 package org.forome.annotation.controller;
 
 import com.google.common.base.Strings;
+import net.minidev.json.JSONArray;
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
 import org.forome.annotation.Service;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.favor.struct.out.JMetadata;
@@ -37,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
+import java.util.StringJoiner;
 
 
 @Controller
@@ -53,7 +57,7 @@ public class FavorController {
 			throw ExceptionBuilder.buildInvalidOperation("error init favor");
 		}
 
-		JSONObject out = new JMetadata().toJSON();;
+		JSONObject out = new JMetadata().toJSON();
 		out.put("variants", favorDatabase.getSize());
 		return build(out);
 	}
@@ -83,6 +87,80 @@ public class FavorController {
 		}
 
 		return build(out);
+	}
+
+	@RequestMapping(value = "variants")
+	public ResponseEntity getVariants(HttpServletRequest request) throws RocksDBException {
+		Service service = Service.getInstance();
+		FavorDatabase favorDatabase = service.getDatabaseConnectService().getFavorDatabase();
+		if (favorDatabase == null) {
+			throw ExceptionBuilder.buildInvalidOperation("error init favor");
+		}
+
+		String sOrds = request.getParameter("seq");
+		if (Strings.isNullOrEmpty(sOrds)) {
+			throw ExceptionBuilder.buildInvalidValueException("seq");
+		}
+		int[] ords;
+		try {
+			JSONArray dataPostVariables = (JSONArray) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(sOrds);
+			ords = dataPostVariables.stream().map(o -> (Number) o).mapToInt(value -> value.intValue()).toArray();
+		} catch (Throwable e) {
+			log.warn("Exception parse request", e);
+			throw ExceptionBuilder.buildInvalidValueException("seq");
+		}
+
+		StringJoiner out = new StringJoiner(",", "[", "]");
+		for (int ord: ords) {
+			String record = favorDatabase.getRecord(ord);
+			if (record == null) {
+				throw ExceptionBuilder.buildInvalidValueException("seq: " + ord);
+			}
+			out.add(record);
+		}
+
+		return build(out.toString());
+	}
+
+	@RequestMapping(value = "titles")
+	public ResponseEntity getTitles(HttpServletRequest request) throws RocksDBException, ParseException {
+		Service service = Service.getInstance();
+		FavorDatabase favorDatabase = service.getDatabaseConnectService().getFavorDatabase();
+		if (favorDatabase == null) {
+			throw ExceptionBuilder.buildInvalidOperation("error init favor");
+		}
+
+		String sOrds = request.getParameter("seq");
+		if (Strings.isNullOrEmpty(sOrds)) {
+			throw ExceptionBuilder.buildInvalidValueException("seq");
+		}
+		int[] ords;
+		try {
+			JSONArray dataPostVariables = (JSONArray) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(sOrds);
+			ords = dataPostVariables.stream().map(o -> (Number) o).mapToInt(value -> value.intValue()).toArray();
+		} catch (Throwable e) {
+			log.warn("Exception parse request", e);
+			throw ExceptionBuilder.buildInvalidValueException("seq");
+		}
+
+		JSONArray out = new JSONArray();
+		for(int ord: ords) {
+			String record = favorDatabase.getRecord(ord);
+			if (record == null) {
+				throw ExceptionBuilder.buildInvalidValueException("seq: " + ord);
+			}
+
+			JSONObject jRecord = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(record);
+			String label = ((JSONObject)jRecord.get("__data")).getAsString("label");
+
+			out.add(new JSONObject(){{
+				put("no", ord);
+				put("lb", label);
+				put("cl", "grey");
+			}});
+		}
+
+		return build(out.toString());
 	}
 
 	public static ResponseEntity build(JSONAware out) {

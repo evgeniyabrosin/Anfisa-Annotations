@@ -31,48 +31,46 @@ import java.nio.file.Path;
 public class FavorDatabase extends RocksDBDatabase {
 
 	public static final String COLUMN_FAMILY_DATA = "data";
-
-	private static int NOT_COUNT_SIZE = Integer.MIN_VALUE;
-
-	private volatile int _lazySize = NOT_COUNT_SIZE;
+//	public static final String COLUMN_FAMILY_META = "meta";
 
 	public FavorDatabase(Path pathDatabase) throws DatabaseException {
 		super(pathDatabase);
 	}
 
-	private ColumnFamilyHandle getDataColumnFamily() {
-		return getColumnFamily(COLUMN_FAMILY_DATA);
-	}
-
 	public int getSize() {
-		if (_lazySize == NOT_COUNT_SIZE) {
-			synchronized (this) {
-				if (_lazySize == NOT_COUNT_SIZE) {
-					int count = 0;
-					try (RocksIterator rocksIterator = rocksDB.newIterator(getDataColumnFamily())) {
-						rocksIterator.seekToFirst();
-						while (rocksIterator.isValid()) {
-							count++;
-							rocksIterator.next();
-						}
-					}
-					_lazySize = count;
-				}
-			}
+		try (RocksIterator rocksIterator = rocksDB.newIterator(getDataColumnFamily())) {
+			rocksIterator.seekToLast();
+
+			byte[] bytes = rocksIterator.key();
+			return getOrder(bytes) + 1;
 		}
-		return _lazySize;
 	}
 
 	public String getRecord(int order) throws RocksDBException {
-		byte[] key = FavorDatabase.getKey(order);
+		byte[] key = getKeyData(order);
 		byte[] value = rocksDB.get(getDataColumnFamily(), key);
 		if (value == null) return null;
 
 		return GZIPCompression.decompress(value);
 	}
 
-	public static byte[] getKey(int order) {
+	private ColumnFamilyHandle getDataColumnFamily() {
+		return getColumnFamily(COLUMN_FAMILY_DATA);
+	}
+
+//	private ColumnFamilyHandle getMetaColumnFamily() {
+//		return getColumnFamily(COLUMN_FAMILY_META);
+//	}
+
+	public static byte[] getKeyData(int order) {
 		return IntegerBits.toByteArray(order);
 	}
 
+	public static int getOrder(byte[] key) {
+		return IntegerBits.fromByteArray(key);
+	}
+
+//	public static byte[] getKeyMetaSize() {
+//		return StringBits.toByteArray("size");
+//	}
 }
