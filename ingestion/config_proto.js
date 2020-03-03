@@ -32,7 +32,12 @@
 
     "dbnsfp4.database":    "dbnsfp4",
     "dbnsfp4.batch_size":  1000,
-    "dbnsfp4.file_list":   ["?.chr*.gz"]
+    "dbnsfp4.file_list":   ["?.chr*.gz"],
+    
+    "clinvar.database":    "clinvar",
+    "clinvar.batch_size":  1000,
+    "clinvar.variant_summary_file":   "?.txt.gz",
+    "clinvar.XML_FILE":               "?.xml.gz"
 
 }
 

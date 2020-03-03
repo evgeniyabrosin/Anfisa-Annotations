@@ -221,6 +221,18 @@ if args.mode == "dbnsfp4":
         file_list  = config["dbnsfp4.file_list"])
     sys.exit()
 #========================================
+if args.mode == "clinvar":
+    from clinvar import ingestCLINVAR
+    ingestCLINVAR(
+        db_host    = config.get("clinvar.db.host", std_db_host),
+        db_port    = config.get("clinvar.db.port", std_db_port),
+        user       = config.get("clinvar.db.user", std_user),
+        password   = config.get("clinvar.db.password", std_password),
+        database   = config["clinvar.database"],
+        batch_size = config["clinvar.batch_size"],
+        variant_summary_file  = config["clinvar.variant_summary_file"],
+        XML_FILE = config["clinvar.XML_FILE"])
+    sys.exit()
 
 # More modes to add:
 # gnomad
