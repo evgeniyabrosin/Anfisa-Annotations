@@ -27,6 +27,8 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FavorDatabase extends RocksDBDatabase {
 
@@ -52,6 +54,24 @@ public class FavorDatabase extends RocksDBDatabase {
 		if (value == null) return null;
 
 		return GZIPCompression.decompress(value);
+	}
+
+	public List<String> getSequenceRecords(int minOrder, int maxOrder) {
+		List<String> records = new ArrayList<>();
+		try (RocksIterator rocksIterator = rocksDB.newIterator(getDataColumnFamily())) {
+			rocksIterator.seek(getKeyData(minOrder));
+			while (rocksIterator.isValid()) {
+				int order = FavorDatabase.getOrder(rocksIterator.key());
+				if (order > maxOrder) break;
+
+				String record = GZIPCompression.decompress(rocksIterator.value());
+				records.add(record);
+
+				rocksIterator.next();
+			}
+		}
+
+		return records;
 	}
 
 	private ColumnFamilyHandle getDataColumnFamily() {

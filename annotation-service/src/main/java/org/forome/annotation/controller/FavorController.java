@@ -40,6 +40,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.StringJoiner;
 
 
@@ -110,16 +113,47 @@ public class FavorController {
 			throw ExceptionBuilder.buildInvalidValueException("seq");
 		}
 
+		List<String> records;
+		int[] orderSequence = getOrderSequence(ords);
+		if (orderSequence == null) {
+			records = getRandomRecord(favorDatabase, ords);
+		} else {
+			records = favorDatabase.getSequenceRecords(orderSequence[0], orderSequence[1]);
+			if (ords.length != records.size()) {
+				throw ExceptionBuilder.buildInvalidValueException("seq");
+			}
+		}
+
 		StringJoiner out = new StringJoiner(",", "[", "]");
-		for (int ord: ords) {
+		for (String record : records) {
+			out.add(record);
+		}
+		return build(out.toString());
+	}
+
+	private static List<String> getRandomRecord(FavorDatabase favorDatabase, int[] ords) throws RocksDBException {
+		List<String> result = new ArrayList<>(ords.length);
+		for (int ord : ords) {
 			String record = favorDatabase.getRecord(ord);
 			if (record == null) {
 				throw ExceptionBuilder.buildInvalidValueException("seq: " + ord);
 			}
-			out.add(record);
+			result.add(record);
 		}
+		return result;
+	}
 
-		return build(out.toString());
+	private int[] getOrderSequence(int[] ords) {
+		int[] sortOrds = Arrays.stream(ords).distinct().sorted().toArray();
+		if (sortOrds.length != ords.length) {
+			return null;
+		}
+		for (int i = 0; i < sortOrds.length; i++) {
+			if (i != sortOrds[i] - sortOrds[0]) {
+				return null;
+			}
+		}
+		return new int[]{ sortOrds[0], sortOrds[sortOrds.length - 1] };
 	}
 
 	@RequestMapping(value = "titles")
@@ -144,16 +178,16 @@ public class FavorController {
 		}
 
 		JSONArray out = new JSONArray();
-		for(int ord: ords) {
+		for (int ord : ords) {
 			String record = favorDatabase.getRecord(ord);
 			if (record == null) {
 				throw ExceptionBuilder.buildInvalidValueException("seq: " + ord);
 			}
 
 			JSONObject jRecord = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(record);
-			String label = ((JSONObject)jRecord.get("__data")).getAsString("label");
+			String label = ((JSONObject) jRecord.get("__data")).getAsString("label");
 
-			out.add(new JSONObject(){{
+			out.add(new JSONObject() {{
 				put("no", ord);
 				put("lb", label);
 				put("cl", "grey");
