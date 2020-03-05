@@ -23,6 +23,8 @@ import com.infomaximum.database.utils.TypeConvert;
 import com.infomaximum.rocksdb.RocksDBProvider;
 import org.rocksdb.*;
 import org.rocksdb.util.SizeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +36,8 @@ import java.util.Map;
 
 public class RocksDBDatabase {
 
+	private final static Logger log = LoggerFactory.getLogger(RocksDBDatabase.class);
+
 	public final Path pathDatabase;
 
 	protected final RocksDB rocksDB;
@@ -42,6 +46,7 @@ public class RocksDBDatabase {
 	public RocksDBDatabase(Path pathDatabase) throws DatabaseException {
 		this.pathDatabase = pathDatabase;
 
+		log.debug("Load database: {}... ", pathDatabase.toString());
 		try (DBOptions options = buildOptions(pathDatabase)) {
 			List<ColumnFamilyDescriptor> columnFamilyDescriptors = getColumnFamilyDescriptors(pathDatabase);
 
@@ -55,8 +60,10 @@ public class RocksDBDatabase {
 				columnFamilies.put(columnFamilyName, columnFamilyHandle);
 			}
 		} catch (RocksDBException e) {
+			log.error("Exception load database: {}", pathDatabase.toString(), e);
 			throw new DatabaseException(e);
 		}
+		log.debug("Load database: {}... complete", pathDatabase.toString());
 	}
 
 	protected ColumnFamilyHandle getColumnFamily(String name) {
