@@ -23,6 +23,7 @@ import graphql.annotations.annotationTypes.GraphQLName;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sex;
+import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.Variant;
 
 import java.util.HashSet;
@@ -47,7 +48,8 @@ public class GRecordViewBioinformatics {
 			return null;
 		}
 
-		List<Allele> alleles = variant.getGenotype(mCase.proband).getAllele();
+		Genotype probandGenotype = variant.getGenotype(mCase.proband);
+		List<Allele> alleles = probandGenotype.getAllele();
 		if (alleles == null) {
 			return null;
 		}

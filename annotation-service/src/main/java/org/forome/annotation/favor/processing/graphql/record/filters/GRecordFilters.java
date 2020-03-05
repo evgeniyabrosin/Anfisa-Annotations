@@ -47,6 +47,12 @@ public class GRecordFilters {
 	}
 
 	@GraphQLField
+	@GraphQLName("_ord")
+	public int getOrd() {
+		return row.order;
+	}
+
+	@GraphQLField
 	@GraphQLName("chromosome")
 	public String getChromosome() {
 		return splitvariantFormat[0];

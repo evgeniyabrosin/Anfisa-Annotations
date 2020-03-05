@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.favor.main.argument;
+package org.forome.annotation.makefavordatabase.validation.main.argument;
 
 import com.google.common.base.Strings;
 import org.apache.commons.cli.CommandLine;
@@ -27,31 +27,16 @@ import java.nio.file.Paths;
 
 public class Arguments {
 
-	public final Path sourceDump;
-
-	public final Path target;
+	public final Path database;
 
 	public Arguments(CommandLine cmd) {
-
-		String strSourceFile = cmd.getOptionValue(ParserArgument.OPTION_SOURCE);
+		String strSourceFile = cmd.getOptionValue(ParserArgument.OPTION_DATABASE);
 		if (Strings.isNullOrEmpty(strSourceFile)) {
-			throw new IllegalArgumentException("Missing source file");
+			throw new IllegalArgumentException("Missing database");
 		}
-		sourceDump = Paths.get(strSourceFile).toAbsolutePath();
-		if (!Files.exists(sourceDump)) {
-			throw new IllegalArgumentException("Source file is not exists: " + sourceDump);
-		}
-		if (!sourceDump.getFileName().toString().endsWith(".gz")) {
-			throw new IllegalArgumentException("Bad source file: " + sourceDump.toAbsolutePath());
-		}
-
-		String strTargetFile = cmd.getOptionValue(ParserArgument.OPTION_TARGET);
-		if (Strings.isNullOrEmpty(strTargetFile)) {
-			throw new IllegalArgumentException("Missing target file");
-		}
-		target = Paths.get(strTargetFile).toAbsolutePath();
-		if (!target.getFileName().toString().endsWith(".gz")) {
-			throw new IllegalArgumentException("Bad target file: " + target.toAbsolutePath());
+		database = Paths.get(strSourceFile).toAbsolutePath();
+		if (!Files.exists(database)) {
+			throw new IllegalArgumentException("Database is not exists: " + database);
 		}
 	}
 

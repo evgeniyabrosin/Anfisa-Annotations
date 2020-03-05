@@ -18,6 +18,9 @@
 
 package org.forome.annotation.output;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
@@ -28,6 +31,8 @@ import java.nio.file.Path;
 import java.util.zip.GZIPOutputStream;
 
 public class FileSplitOutputStream implements Closeable {
+
+	private final static Logger log = LoggerFactory.getLogger(FileSplitOutputStream.class);
 
 	private final Path target;
 	private final int limit;
@@ -76,6 +81,8 @@ public class FileSplitOutputStream implements Closeable {
 			String fileName = sourceFileName.substring(0, i + 1) + index + sourceFileName.substring(i);
 			path = target.getParent().resolve(fileName);
 		}
+
+		log.debug("Build new output file: {}" + path);
 
 		OutputStream os = new GZIPOutputStream(Files.newOutputStream(path));
 		return new BufferedOutputStream(os);

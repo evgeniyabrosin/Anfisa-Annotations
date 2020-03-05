@@ -28,9 +28,12 @@ public class DatabaseConfig {
 
 	private final static String FIELD_PATH_HG37 = "hg37";
 	private final static String FIELD_PATH_HG38 = "hg38";
+	private final static String FIELD_PATH_FAVOR = "favor";
 
 	public final Path hg37;
 	public final Path hg38;
+
+	public final Path favor;
 
 	public DatabaseConfig(JSONObject parse) {
 		if (parse.containsKey(FIELD_PATH_HG37)) {
@@ -49,6 +52,15 @@ public class DatabaseConfig {
 			}
 		} else {
 			this.hg38 = null;
+		}
+
+		if (parse.containsKey(FIELD_PATH_FAVOR)) {
+			this.favor = Paths.get(parse.getAsString(FIELD_PATH_FAVOR)).toAbsolutePath();
+			if (!Files.exists(favor) || !Files.isDirectory(favor)) {
+				throw new RuntimeException("Exception database path favor: " + favor);
+			}
+		} else {
+			this.favor = null;
 		}
 	}
 }

@@ -19,6 +19,7 @@
 package org.forome.annotation.struct.variant;
 
 import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.HasVariant;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,7 +32,7 @@ public abstract class Genotype {
 		this.sampleName = sampleName;
 	}
 
-	public abstract int hasVariant();
+	public abstract HasVariant getHasVariant();
 
 	public abstract List<Allele> getAllele();
 

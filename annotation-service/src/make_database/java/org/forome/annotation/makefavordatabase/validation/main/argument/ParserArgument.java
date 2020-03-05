@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.favor.main.argument;
+package org.forome.annotation.makefavordatabase.validation.main.argument;
 
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
@@ -26,26 +26,17 @@ public class ParserArgument {
 
 	private final static Logger log = LoggerFactory.getLogger(ParserArgument.class);
 
-	public static final String OPTION_SOURCE = "source";
-
-	public static final String OPTION_TARGET = "target";
+	public static final String OPTION_DATABASE = "database";
 
 	public final Arguments arguments;
 
 	public ParserArgument(String[] args) throws InterruptedException {
 		Options options = new Options()
 				.addOption(Option.builder()
-						.longOpt(OPTION_SOURCE)
+						.longOpt(OPTION_DATABASE)
 						.hasArg(true)
 						.optionalArg(false)
-						.desc("Absolute path to source file")
-						.build())
-
-				.addOption(Option.builder()
-						.longOpt(OPTION_TARGET)
-						.hasArg(true)
-						.optionalArg(false)
-						.desc("Absolute path to target file")
+						.desc("Absolute path to database")
 						.build());
 
 		try {

@@ -16,35 +16,20 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.favor.utils.struct.table;
+package org.forome.annotation.utils.compression;
 
-import java.util.Collections;
-import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class Row {
+public class GZIPCompressionTest {
 
-	public final int order;
+	@Test
+	public void test() {
+		String expected = "LONG STRING LONG STRINGLONG STRINGLONG STRINGLONG STRINGLONG STRINGLONG STRINGLONG STRINGLONG STRING";
 
-	public final Table table;
-	public final List<String> values;
+		byte[] bytes = GZIPCompression.compress(expected);
+		String actual = GZIPCompression.decompress(bytes);
 
-	public final String rawLine;
-
-	public Row(int order, Table table, List<String> values, String rawLine) {
-		this.order = order;
-
-		this.table = table;
-		this.values = Collections.unmodifiableList(values);
-		this.rawLine = rawLine;
+		Assert.assertEquals(expected, actual);
 	}
-
-	public String getValue(Field field) {
-		int index = table.fields.indexOf(field);
-		return values.get(index);
-	}
-
-	public String getValue(String field) {
-		return getValue(new Field(field));
-	}
-
 }

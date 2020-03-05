@@ -24,6 +24,8 @@ import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
 import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.database.rocksdb.annotator.SourceDatabase;
+import org.forome.annotation.service.database.rocksdb.favor.FavorDatabase;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.service.ssh.struct.SSHConnect;
 import org.forome.annotation.struct.Assembly;
@@ -38,8 +40,10 @@ public class DatabaseConnectService implements AutoCloseable {
 
 	private final static Logger log = LoggerFactory.getLogger(DatabaseConnectService.class);
 
-	private final RocksDBDatabase rocksDBDatabase37;
-	private final RocksDBDatabase rocksDBDatabase38;
+	private final SourceDatabase sourceDatabase37;
+	private final SourceDatabase sourceDatabase38;
+
+	private final FavorDatabase favorDatabase;
 
 	private final SSHConnectService sshTunnelService;
 	private final Map<String, ComboPooledDataSource> dataSources;
@@ -49,14 +53,19 @@ public class DatabaseConnectService implements AutoCloseable {
 		this.dataSources = new HashMap<>();
 
 		if (databaseConfig.hg37 != null) {
-			rocksDBDatabase37 = new RocksDBDatabase(Assembly.GRCh37, databaseConfig.hg37);
+			sourceDatabase37 = new SourceDatabase(Assembly.GRCh37, databaseConfig.hg37);
 		} else {
-			rocksDBDatabase37 = null;
+			sourceDatabase37 = null;
 		}
 		if (databaseConfig.hg38 != null) {
-			rocksDBDatabase38 = new RocksDBDatabase(Assembly.GRCh38, databaseConfig.hg38);
+			sourceDatabase38 = new SourceDatabase(Assembly.GRCh38, databaseConfig.hg38);
 		} else {
-			rocksDBDatabase38 = null;
+			sourceDatabase38 = null;
+		}
+		if (databaseConfig.favor != null) {
+			favorDatabase = new FavorDatabase(databaseConfig.favor);
+		} else {
+			favorDatabase = null;
 		}
 	}
 
@@ -144,12 +153,15 @@ public class DatabaseConnectService implements AutoCloseable {
 	public Source getSource(Assembly assembly) {
 		switch (assembly) {
 			case GRCh37:
-				return rocksDBDatabase37;
+				return sourceDatabase37;
 			case GRCh38:
-				return rocksDBDatabase38;
+				return sourceDatabase38;
 			default:
 				throw new RuntimeException();
 		}
 	}
 
+	public FavorDatabase getFavorDatabase() {
+		return favorDatabase;
+	}
 }
