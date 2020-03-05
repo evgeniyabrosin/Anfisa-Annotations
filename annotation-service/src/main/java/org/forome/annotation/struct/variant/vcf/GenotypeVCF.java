@@ -20,6 +20,7 @@ package org.forome.annotation.struct.variant.vcf;
 
 import htsjdk.variant.variantcontext.VariantContext;
 import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.HasVariant;
 import org.forome.annotation.struct.variant.Genotype;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class GenotypeVCF extends Genotype {
 	}
 
 	@Override
-	public int hasVariant() {
+	public HasVariant getHasVariant() {
 		//REF - референс
 		//ALT - альтернативный аллель
 		//ALTk - альтернативный аллель не относящийся к обрабатываемому single варианту
@@ -61,7 +62,7 @@ public class GenotypeVCF extends Genotype {
 			case NO_CALL: //Генотип не может быть определен из-за плохого качества секвенирования
 			case UNAVAILABLE: //Не имеет альтернативных аллелей
 			case MIXED:
-				return 0;
+				return HasVariant.MIXED;
 			case HOM_REF:
 			case HET:
 			case HOM_VAR:
@@ -73,16 +74,16 @@ public class GenotypeVCF extends Genotype {
 				boolean isRef2 = "*".equals(allele2) || ref.equals(allele2);
 				if (isRef1 && isRef2) {
 					// REF/REF
-					return 0;
+					return HasVariant.REF_REF;
 				} else if (!allele1.equals(variantVCF.getStrAlt()) && !allele2.equals(variantVCF.getStrAlt())) {
 					// ALTk/ALTk: 0
-					return 0;
+					return HasVariant.ALTki_ALTkj;
 				} else if (!isRef1 && !isRef2) {
 					// ALT/ALTk, ALTk/ALT
-					return 2;
+					return HasVariant.ALT_ALTki;
 				} else {
 					// REF/ALT, ALT/REF
-					return 1;
+					return HasVariant.REF_ALT;
 				}
 			default:
 				throw new RuntimeException("Unknown state: " + vcfGenotype.getType());

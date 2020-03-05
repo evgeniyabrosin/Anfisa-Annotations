@@ -44,6 +44,7 @@ import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.HasVariant;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
@@ -181,11 +182,12 @@ public class AnfisaConnector implements AutoCloseable {
 
 				org.forome.annotation.struct.variant.Genotype genotype = variant.getGenotype(entry.getValue().id);
 				if (genotype != null) {
-					int zyg = genotype.hasVariant();
-					data.zygosity.put(entry.getKey(), zyg);
+					HasVariant hasVariant = genotype.getHasVariant();
+					data.zygosity.put(entry.getKey(), hasVariant.getOutValue());
+					int zyg = hasVariant.getOutValue();
 					int modified_zygosity = (!variant.chromosome.equals(Chromosome.CHR_X) || sex == Sex.FEMALE || (zyg == 0)) ? zyg : 2;
 					filters.altZygosity.put(entry.getKey(), modified_zygosity);
-					if (zyg > 0) {
+					if (hasVariant.getOutValue() > 0) {
 						filters.has_variant.add(label);
 					}
 				}
@@ -274,8 +276,8 @@ public class AnfisaConnector implements AutoCloseable {
 		for (Sample sample : mCase.samples.values()) {
 			if (sample.cohort == null) continue;
 
-			int zyg = variant.getGenotype(sample.id).hasVariant();
-			if (zyg > 0) {
+			HasVariant hasVariant = variant.getGenotype(sample.id).getHasVariant();
+			if (hasVariant.getOutValue() > 0) {
 				cohortHasVariant.add(sample.cohort);
 			}
 		}
@@ -296,11 +298,11 @@ public class AnfisaConnector implements AutoCloseable {
 		for (Sample sample : samples) {
 			org.forome.annotation.struct.variant.Genotype genotype = variant.getGenotype(sample.id);
 			if (genotype == null) continue;
-			int zyg = genotype.hasVariant();
-			if (zyg > 0) {
+			HasVariant hasVariant = genotype.getHasVariant();
+			if (hasVariant.getOutValue() > 0) {
 				countAf++;
 			}
-			if (zyg == 2) {
+			if (hasVariant == HasVariant.ALT_ALTki) {
 				countAf2++;
 			}
 		}

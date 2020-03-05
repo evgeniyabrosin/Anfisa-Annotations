@@ -19,6 +19,7 @@
 package org.forome.annotation.struct.variant.cnv;
 
 import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.HasVariant;
 import org.forome.annotation.struct.variant.Genotype;
 
 import java.util.ArrayList;
@@ -52,17 +53,14 @@ public class GenotypeCNV extends Genotype {
 	}
 
 	@Override
-	public int hasVariant() {
-		// REF/REF: 0;
-		// REF/ALTn: 1
-		// ALTn/ALTk: 2
+	public HasVariant getHasVariant() {
 		int[] gts = Arrays.stream(gt.split("/")).map(s -> Integer.parseInt(s)).mapToInt(Integer::intValue).toArray();
 		if (gts[0] == 0 && gts[1] == 0) {
-			return 0;
+			return HasVariant.REF_REF;
 		} else if (gts[0] == 0 || gts[1] == 0) {
-			return 1;
+			return HasVariant.REF_ALT;
 		} else {
-			return 2;
+			return HasVariant.ALT_ALTki;
 		}
 	}
 
