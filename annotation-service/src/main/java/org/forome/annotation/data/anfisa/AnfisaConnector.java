@@ -1675,10 +1675,7 @@ public class AnfisaConnector implements AutoCloseable {
 	}
 
 
-	private static LinkedHashSet<String> getCallers(Variant variant, MCase samples) {
-		if (samples == null || variant == null) {
-			return new LinkedHashSet();
-		}
+	private static LinkedHashSet<String> getCallers(Variant variant, MCase mCase) {
 		String ref = variant.getRef();
 		String alt = variant.getStrAlt();
 
@@ -1695,7 +1692,15 @@ public class AnfisaConnector implements AutoCloseable {
 			throw new RuntimeException("Not support variant: " + variant);
 		}
 
-		Genotypes genotypes = getGenotypes(variant, samples);
+		HasVariant probandHasVariant = variant.getGenotype(mCase.proband).getHasVariant();
+		if (probandHasVariant == HasVariant.REF_REF) {
+			//У пробанда нет этой мутации
+			LinkedHashSet result = new LinkedHashSet<>();
+			result.add("GATK_Haplotype_Caller");
+			return result;
+		}
+
+		Genotypes genotypes = getGenotypes(variant, mCase);
 		if (genotypes == null) {
 			return callers;
 		}
@@ -1728,7 +1733,7 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 
 		if (callers.isEmpty()) {
-			String inheritance = inherited_from(variant, samples);
+			String inheritance = inherited_from(variant, mCase);
 			if ("De-Novo".equals(inheritance)) {
 				throw new RuntimeException("Inconsistent inheritance");
 			}
@@ -1770,6 +1775,11 @@ public class AnfisaConnector implements AutoCloseable {
 	private static String inherited_from(Variant variant, MCase mCase) {
 		if (mCase == null || mCase.proband == null) {
 			return null;
+		}
+
+		HasVariant probandHasVariant = variant.getGenotype(mCase.proband).getHasVariant();
+		if (probandHasVariant == HasVariant.REF_REF) {
+			return null;//У пробанда нет этой мутации
 		}
 
 		/**
