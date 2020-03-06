@@ -21,6 +21,8 @@ package org.forome.annotation.processing.graphql.record.view.bioinformatics;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.HasVariant;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sex;
 import org.forome.annotation.struct.variant.Genotype;
@@ -44,16 +46,16 @@ public class GRecordViewBioinformatics {
 	@GraphQLField
 	@GraphQLName("zygosity")
 	public String getZygosity() {
-		if (mCase.proband == null) {
-			return null;
+		Genotype probandGenotype = variant.getGenotype(mCase.proband);
+
+		if (Chromosome.CHR_X.equals(variant.chromosome) && mCase.proband.sex == Sex.MALE) {
+			return "X-linked";
 		}
 
-		Genotype probandGenotype = variant.getGenotype(mCase.proband);
 		List<Allele> alleles = probandGenotype.getAllele();
 		if (alleles == null) {
 			return null;
 		}
-
 		Set<Allele> uniqueAllelies = new HashSet<>(alleles);
 
 		/**
@@ -64,10 +66,12 @@ public class GRecordViewBioinformatics {
 			return "Unknown";
 		}
 
-		String chr = variant.chromosome.getChar();
-		if ("X".equals(chr.toUpperCase()) && mCase.proband.sex == Sex.MALE) {
-			return "X-linked";
+		HasVariant probandHasVariant = probandGenotype.getHasVariant();
+		if (probandHasVariant == HasVariant.REF_REF) {
+			//У пробанда нет этой мутации
+			return "Homozygous Ref";
 		}
+
 		if (uniqueAllelies.size() == 1) {
 			return "Homozygous";
 		}
