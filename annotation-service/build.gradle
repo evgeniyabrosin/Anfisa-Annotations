@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.forome'
-version '0.6.0.47'
+version '0.6.0.48'
 
 sourceCompatibility = 1.8
 
@@ -106,6 +106,8 @@ jar {
 dependencies {
 
     compile 'com.github.samtools:htsjdk:2.19.0'
+
+    compile 'org.rocksdb:rocksdbjni:6.6.4'
 
     compile 'mysql:mysql-connector-java:5.1.47'
     compile 'com.mchange:c3p0:0.9.5.2'

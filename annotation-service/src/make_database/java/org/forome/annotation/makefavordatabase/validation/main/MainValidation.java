@@ -18,7 +18,6 @@
 
 package org.forome.annotation.makefavordatabase.validation.main;
 
-import org.forome.annotation.makedatabase.make.RocksDBConnector;
 import org.forome.annotation.makefavordatabase.main.Main;
 import org.forome.annotation.makefavordatabase.validation.main.argument.Arguments;
 import org.forome.annotation.makefavordatabase.validation.main.argument.ParserArgument;
@@ -44,16 +43,15 @@ public class MainValidation {
 		}
 
 		try {
-			RocksDBConnector rocksDBConnector = new RocksDBConnector(arguments.database.toAbsolutePath());
-
+			ReadOnlyRocksDBConnector readOnlyRocksDBConnector = new ReadOnlyRocksDBConnector(arguments.database.toAbsolutePath());
 
 			int count = 0;
-			try (RocksIterator rocksIterator = rocksDBConnector.rocksDB.newIterator(rocksDBConnector.getColumnFamily(FavorDatabase.COLUMN_FAMILY_DATA))) {
+			try (RocksIterator rocksIterator = readOnlyRocksDBConnector.rocksDB.newIterator(readOnlyRocksDBConnector.getColumnFamily(FavorDatabase.COLUMN_FAMILY_DATA))) {
 				rocksIterator.seekToFirst();
 				while (rocksIterator.isValid()) {
 					int order = FavorDatabase.getOrder(rocksIterator.key());
 					if (count != order) {
-						throw new RuntimeException("Exception validation, key: " + count);
+						throw new RuntimeException("Exception validation, count: " + count + ", order: " + order);
 					}
 
 					if (count % 100_000 == 0) {

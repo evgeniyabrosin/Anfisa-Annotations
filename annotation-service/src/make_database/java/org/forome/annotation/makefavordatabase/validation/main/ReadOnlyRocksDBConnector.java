@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.database.rocksdb;
+package org.forome.annotation.makefavordatabase.validation.main;
 
 import com.infomaximum.database.exception.DatabaseException;
 import com.infomaximum.database.utils.TypeConvert;
@@ -26,52 +26,65 @@ import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-public class RocksDBDatabase {
+public class ReadOnlyRocksDBConnector implements AutoCloseable {
 
-	private final static Logger log = LoggerFactory.getLogger(RocksDBDatabase.class);
+	private final static Logger log = LoggerFactory.getLogger(ReadOnlyRocksDBConnector.class);
 
-	public final Path pathDatabase;
+	public final Path pathRocksDB;
 
-	protected final RocksDB rocksDB;
-	private final Map<String, ColumnFamilyHandle> columnFamilies;
+	public final RocksDB rocksDB;
+	private final ConcurrentMap<String, ColumnFamilyHandle> columnFamilies;
 
-	public RocksDBDatabase(Path pathDatabase) throws DatabaseException {
-		this.pathDatabase = pathDatabase;
+	public ReadOnlyRocksDBConnector(Path pathRocksDB) throws Exception {
+		this.pathRocksDB = pathRocksDB;
 
-		log.debug("Load database: {}... ", pathDatabase.toString());
-		try (DBOptions options = buildOptions(pathDatabase)) {
-			List<ColumnFamilyDescriptor> columnFamilyDescriptors = getColumnFamilyDescriptors(pathDatabase);
+		log.debug("Load database: {}... ", pathRocksDB.toString());
+		try (DBOptions options = buildOptions()) {
+			List<ColumnFamilyDescriptor> columnFamilyDescriptors = getColumnFamilyDescriptors();
 
 			List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>();
-			rocksDB = RocksDB.openReadOnly(options, pathDatabase.toString(), columnFamilyDescriptors, columnFamilyHandles);
+			rocksDB = RocksDB.openReadOnly(options, pathRocksDB.toString(), columnFamilyDescriptors, columnFamilyHandles);
 
-			columnFamilies = new HashMap<>();
+			columnFamilies = new ConcurrentHashMap<>();
 			for (int i = 0; i < columnFamilyDescriptors.size(); i++) {
 				String columnFamilyName = TypeConvert.unpackString(columnFamilyDescriptors.get(i).getName());
 				ColumnFamilyHandle columnFamilyHandle = columnFamilyHandles.get(i);
 				columnFamilies.put(columnFamilyName, columnFamilyHandle);
 			}
 		} catch (RocksDBException e) {
-			log.error("Exception load database: {}", pathDatabase.toString(), e);
+			log.error("Exception load database: {}", pathRocksDB.toString(), e);
 			throw new DatabaseException(e);
 		}
-		log.debug("Load database: {}... complete", pathDatabase.toString());
+		log.debug("Load database: {}... complete", pathRocksDB.toString());
 	}
 
-	protected ColumnFamilyHandle getColumnFamily(String name) {
+	public ColumnFamilyHandle getColumnFamily(String name) {
 		return columnFamilies.get(name);
 	}
 
-	private static DBOptions buildOptions(Path pathDatabase) throws RocksDBException {
-		final String optionsFilePath = pathDatabase.toString() + ".ini";
+	public ColumnFamilyHandle createColumnFamily(String name) throws RocksDBException {
+		ColumnFamilyDescriptor columnFamilyDescriptor = new ColumnFamilyDescriptor(name.getBytes(StandardCharsets.UTF_8));
+		ColumnFamilyHandle columnFamilyHandle = rocksDB.createColumnFamily(columnFamilyDescriptor);
+		columnFamilies.put(name, columnFamilyHandle);
+		return columnFamilyHandle;
+	}
+
+	public void dropColumnFamily(String name) throws RocksDBException {
+		rocksDB.dropColumnFamily(getColumnFamily(name));
+		columnFamilies.remove(name);
+	}
+
+	private DBOptions buildOptions() throws RocksDBException {
+		final String optionsFilePath = pathRocksDB.toString() + ".ini";
 
 		DBOptions options = new DBOptions();
 		if (Files.exists(Paths.get(optionsFilePath))) {
@@ -86,11 +99,11 @@ public class RocksDBDatabase {
 		return options.setCreateIfMissing(true);
 	}
 
-	private static List<ColumnFamilyDescriptor> getColumnFamilyDescriptors(Path pathDatabase) throws RocksDBException {
+	private List<ColumnFamilyDescriptor> getColumnFamilyDescriptors() throws RocksDBException {
 		List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
 
 		try (Options options = new Options()) {
-			for (byte[] columnFamilyName : RocksDB.listColumnFamilies(options, pathDatabase.toString())) {
+			for (byte[] columnFamilyName : RocksDB.listColumnFamilies(options, pathRocksDB.toString())) {
 				columnFamilyDescriptors.add(new ColumnFamilyDescriptor(columnFamilyName));
 			}
 		}
@@ -102,4 +115,8 @@ public class RocksDBDatabase {
 		return columnFamilyDescriptors;
 	}
 
+	@Override
+	public void close() {
+		rocksDB.close();
+	}
 }
