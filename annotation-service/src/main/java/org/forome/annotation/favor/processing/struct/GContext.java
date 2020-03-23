@@ -25,6 +25,7 @@ import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,6 +40,8 @@ public class GContext {
 	private List<String> _lazyHgmdAccNums;
 	private String _lazyHgmdAccNumHg38;
 	private HgmdConnector.Data _lazyHgmdData;
+
+	private String[] _lazyGenes;
 
 	public GContext(HgmdConnector hgmdConnector, Row row) {
 		this.hgmdConnector = hgmdConnector;
@@ -98,4 +101,18 @@ public class GContext {
 		return _lazyHgmdData;
 	}
 
+	public String[] getGenes() {
+		if (_lazyGenes == null) {
+			String genInfo = row.getValue("GENCODE.Info");
+			if (genInfo == null || genInfo.isEmpty()) {
+				_lazyGenes = new String[0];
+			} else {
+				_lazyGenes = Arrays.stream(genInfo.replaceAll("\\(([^\\)]*)\\)", "").split(","))
+						.map(s -> s.trim())
+						.filter(s -> !s.isEmpty())
+						.toArray(String[]::new);
+			}
+		}
+		return _lazyGenes;
+	}
 }

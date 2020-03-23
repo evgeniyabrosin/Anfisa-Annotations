@@ -79,7 +79,7 @@ public class GRecordFilters {
 	@GraphQLField
 	@GraphQLName("genes")
 	public String[] getGenes() {
-		return new String[]{ row.getValue("GeneName") };
+		return gContext.getGenes();
 	}
 
 	@GraphQLField
