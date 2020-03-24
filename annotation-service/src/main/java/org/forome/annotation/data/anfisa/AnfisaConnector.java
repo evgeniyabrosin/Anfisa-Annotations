@@ -73,7 +73,7 @@ public class AnfisaConnector implements AutoCloseable {
 	private final static Logger log = LoggerFactory.getLogger(AnfisaConnector.class);
 
 	private static final Map<String, String> trustedSubmitters = new HashMap<String, String>() {{
-		put("lmm", "Laboratory for Molecular Medicine,Partners HealthCare Personalized Medicine");
+		put("lmm", "Laboratory for Molecular Medicine, Partners HealthCare Personalized Medicine");
 		put("gene_dx", "GeneDx");
 	}};
 
