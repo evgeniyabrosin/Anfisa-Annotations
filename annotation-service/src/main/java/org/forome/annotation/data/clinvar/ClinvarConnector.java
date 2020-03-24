@@ -47,7 +47,7 @@ public class ClinvarConnector implements AutoCloseable {
 
 	private static final Logger log = LoggerFactory.getLogger(ClinvarConnector.class);
 
-	private static final String SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar`.`CV_Submitters` NATURAL JOIN `clinvar`.`ClinVar2Sub_Sig` WHERE RCVaccession IN (%s)";
+	private static final String SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar2`.`CV_Submitters` NATURAL JOIN `clinvar2`.`ClinVar2Sub_Sig` WHERE RCVaccession IN (%s)";
 
 	private static final String QUERY_BASE = "SELECT " +
 			"`Start`," +
@@ -61,7 +61,7 @@ public class ClinvarConnector implements AutoCloseable {
 			"RCVaccession, " +
 			"ReferenceAllele, " +
 			"VariationID " +
-			"FROM clinvar.variant_summary AS v " +
+			"FROM clinvar2.variant_summary AS v " +
 			"WHERE " +
 			"Assembly = 'GRCh37' AND " +
 			"Chromosome='%s' AND " +
@@ -72,7 +72,7 @@ public class ClinvarConnector implements AutoCloseable {
 	private static final String QUERY_NA = QUERY_0 + " AND AlternateAllele = 'na'";
 
 	private static final String QUERY_VARIANT_SUMMARY =
-			"select ReviewStatus, NumberSubmitters, Guidelines from clinvar.variant_summary where Chromosome='%s' AND Start = %s and Stop = %s";
+			"select ReviewStatus, NumberSubmitters, Guidelines from clinvar2.variant_summary where Chromosome='%s' AND Start = %s and Stop = %s";
 
 	private static final String CLINVAR_TYPE_SNV = "single nucleotide variant";
 	private static final String CLINVAR_TYPE_DELETION = "deletion";
