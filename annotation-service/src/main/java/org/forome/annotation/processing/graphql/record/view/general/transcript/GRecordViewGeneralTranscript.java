@@ -20,42 +20,76 @@ package org.forome.annotation.processing.graphql.record.view.general.transcript;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import org.forome.annotation.struct.variant.vep.VariantVep;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @GraphQLName("record_view_general_transcript")
 public class GRecordViewGeneralTranscript {
 
-	public final String id;
-	public final String gene;
-	public final List<String> transcriptAnnotations;
+	private final VariantVep variantVep;
+	private final JSONArray jTranscripts;
+	private final JSONObject jTranscript;
 
-	public GRecordViewGeneralTranscript(
-			String id,
-			String gene,
-			List<String> transcriptAnnotations
-	) {
-		this.id = id;
-		this.gene = gene;
-		this.transcriptAnnotations = transcriptAnnotations;
+	public GRecordViewGeneralTranscript(VariantVep variantVep, JSONArray jTranscripts, JSONObject jTranscript) {
+		this.variantVep = variantVep;
+		this.jTranscripts = jTranscripts;
+		this.jTranscript = jTranscript;
 	}
 
 	@GraphQLField
 	@GraphQLName("id")
 	public String getId() {
-		return id;
+		return jTranscript.getAsString("transcript_id");
 	}
 
 	@GraphQLField
 	@GraphQLName("gene")
 	public String getGene() {
-		return gene;
+		return jTranscript.getAsString("gene_symbol");
 	}
 
 	@GraphQLField
 	@GraphQLName("transcript_annotations")
 	public List<String> getTranscriptAnnotation() {
-		return transcriptAnnotations;
+		return ((JSONArray) jTranscript.get("consequence_terms")).stream().map(o -> (String) o).collect(Collectors.toList());
+	}
+
+	@GraphQLField
+	@GraphQLName("is_worst")
+	public boolean isWorst() {
+		String mostSevereConsequence = variantVep.getMostSevereConsequence();
+
+		JSONArray jTranscriptConsequenceTerms = (JSONArray) jTranscript.get("consequence_terms");
+
+		Set<String> transcriptConsequenceTerms = (jTranscriptConsequenceTerms == null) ?
+				Collections.emptySet() :
+				jTranscriptConsequenceTerms.stream().map(o -> (String) o).collect(Collectors.toSet());
+
+		boolean isMostSevere = ("protein_coding".equals(jTranscript.getAsString("biotype"))
+				&& transcriptConsequenceTerms.contains(mostSevereConsequence));
+
+		String source = jTranscript.getAsString("source");
+		boolean worst = (isMostSevere && ("Ensembl".equals(source) || "RefSeq".equals(source)));
+
+		return worst;
+	}
+
+	@GraphQLField
+	@GraphQLName("is_canonical")
+	public boolean isCanonical() {
+		if (!"protein_coding".equals(jTranscript.getAsString("biotype"))) {
+			return false;
+		}
+
+		boolean canonical = jTranscript.containsKey("canonical");
+
+		return canonical;
 	}
 
 }

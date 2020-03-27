@@ -177,10 +177,6 @@ public class AnfisaResultView {
         public List<String> spliceRegion;
         public String[] genes;
         public String worstAnnotation;
-        public List<String> refseqTranscriptWorst = new ArrayList<>();
-        public List<String> ensemblTranscriptsWorst = new ArrayList<>();
-        public List<String> refseqTranscriptCanonical = new ArrayList<>();
-        public List<String> ensemblTranscriptsCanonical = new ArrayList<>();
         public List<String> geneSplicer;
         public List<String> pposWorst = new ArrayList<>();
         public List<String> pposCanonical = new ArrayList<>();
@@ -202,7 +198,6 @@ public class AnfisaResultView {
 			JSONObject out = new JSONObject();
 			out.put("proband_genotype", probandGenotype);
 			out.put("canonical_annotation", canonicalAnnotation);
-			out.put("ensembl_transcripts_canonical", ensemblTranscriptsCanonical);
 			if (alt != null) {
 				out.put("alt", alt);
 			}
@@ -222,14 +217,11 @@ public class AnfisaResultView {
 			out.put("worst_annotation", worstAnnotation);
 			out.put("cpos_canonical", cposCanonical);
 			out.put("variant_exon_canonical", variantExonCanonical);
-			out.put("refseq_transcript_worst", refseqTranscriptWorst);
-			out.put("refseq_transcript_canonical", refseqTranscriptCanonical);
 			out.put("gene_splicer", geneSplicer);
 			out.put("ppos_worst", pposWorst);
 			out.put("ppos_other", pposOther);
 			out.put("hg38", hg38);
 			out.put("hg19", hg19);
-			out.put("ensembl_transcripts_worst", ensemblTranscriptsWorst);
 			if (spliceAltering != null) {
 				out.put("splice_altering", spliceAltering.orElse(null));
 			}

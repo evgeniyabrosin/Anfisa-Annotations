@@ -19,6 +19,8 @@
                 id
                 gene
                 transcript_annotations
+                is_worst
+                is_canonical
             }
         }
         bioinformatics {
