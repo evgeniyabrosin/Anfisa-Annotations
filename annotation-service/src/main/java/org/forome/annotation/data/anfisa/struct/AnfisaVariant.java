@@ -38,13 +38,13 @@ public class AnfisaVariant {
 			"transcript_amplification",
 			"inframe_insertion",
 			"inframe_deletion",
-			"missense_variant",
+			"missense_variant", //missense - когда замена нуклиотида(ов), меняет создаваемы белок
 			"protein_altering_variant"
 	);
 
 	public static final ImmutableList<String> CSQ_BENIGN1 = ImmutableList.of(
 			"splice_region_variant",
-			"synonymous_variant",
+			"synonymous_variant", //Ситуация, когда замена нуклиотида(ов), не влияет на белок(когда одна и таже аминокислота кодируется разными способами)
 			"stop_retained_variant",
 			"coding_sequence_variant",
 			"TF_binding_site_variant",

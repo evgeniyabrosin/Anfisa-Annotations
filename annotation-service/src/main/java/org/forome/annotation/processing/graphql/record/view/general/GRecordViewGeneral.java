@@ -28,7 +28,6 @@ import org.forome.annotation.struct.variant.vep.VariantVep;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @GraphQLName("record_view_general")
 public class GRecordViewGeneral {
@@ -43,15 +42,14 @@ public class GRecordViewGeneral {
 	@GraphQLName("transcripts")
 	public List<GRecordViewGeneralTranscript> getTranscripts() {
 		if (variant instanceof VariantVep) {
-			List<GRecordViewGeneralTranscript> transcripts = new ArrayList<>();
+			VariantVep variantVep = (VariantVep) variant;
+			JSONArray jTranscripts = (JSONArray) variantVep.getVepJson().get("transcript_consequences");
 
-			JSONObject vepJson = ((VariantVep) variant).getVepJson();
-			for (Object ojTranscript: (JSONArray) vepJson.get("transcript_consequences")) {
+			List<GRecordViewGeneralTranscript> transcripts = new ArrayList<>();
+			for (Object ojTranscript : jTranscripts) {
 				JSONObject jTranscript = (JSONObject) ojTranscript;
 				transcripts.add(new GRecordViewGeneralTranscript(
-						jTranscript.getAsString("transcript_id"),
-						jTranscript.getAsString("gene_symbol"),
-						((JSONArray)jTranscript.get("consequence_terms")).stream().map(o -> (String)o).collect(Collectors.toList())
+						variantVep, jTranscripts, jTranscript
 				));
 			}
 			return transcripts;
