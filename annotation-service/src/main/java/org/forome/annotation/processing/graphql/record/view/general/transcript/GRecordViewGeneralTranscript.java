@@ -24,9 +24,7 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @GraphQLName("record_view_general_transcript")
@@ -63,21 +61,21 @@ public class GRecordViewGeneralTranscript {
 	@GraphQLField
 	@GraphQLName("is_worst")
 	public boolean isWorst() {
-		String mostSevereConsequence = variantVep.getMostSevereConsequence();
+		if (!"protein_coding".equals(jTranscript.getAsString("biotype"))) {
+			return false;
+		}
 
 		JSONArray jTranscriptConsequenceTerms = (JSONArray) jTranscript.get("consequence_terms");
+		if (jTranscriptConsequenceTerms == null) {
+			return false;
+		}
 
-		Set<String> transcriptConsequenceTerms = (jTranscriptConsequenceTerms == null) ?
-				Collections.emptySet() :
-				jTranscriptConsequenceTerms.stream().map(o -> (String) o).collect(Collectors.toSet());
-
-		boolean isMostSevere = ("protein_coding".equals(jTranscript.getAsString("biotype"))
-				&& transcriptConsequenceTerms.contains(mostSevereConsequence));
+		String mostSevereConsequence = variantVep.getMostSevereConsequence();
+		boolean isMostSevere = jTranscriptConsequenceTerms.stream()
+				.map(o -> (String) o).filter(s -> s.equals(mostSevereConsequence)).findFirst().isPresent();
 
 		String source = jTranscript.getAsString("source");
-		boolean worst = (isMostSevere && ("Ensembl".equals(source) || "RefSeq".equals(source)));
-
-		return worst;
+		return (isMostSevere && ("Ensembl".equals(source) || "RefSeq".equals(source)));
 	}
 
 	@GraphQLField
@@ -87,9 +85,7 @@ public class GRecordViewGeneralTranscript {
 			return false;
 		}
 
-		boolean canonical = jTranscript.containsKey("canonical");
-
-		return canonical;
+		return jTranscript.containsKey("canonical");
 	}
 
 }
