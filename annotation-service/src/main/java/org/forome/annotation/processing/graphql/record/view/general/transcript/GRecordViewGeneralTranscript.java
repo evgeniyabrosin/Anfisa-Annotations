@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @GraphQLName("record_view_general_transcript")
 public class GRecordViewGeneralTranscript {
 
-	private final VariantVep variantVep;
+	protected final VariantVep variantVep;
 	protected final JSONObject jTranscript;
 
 	protected final String biotype;
