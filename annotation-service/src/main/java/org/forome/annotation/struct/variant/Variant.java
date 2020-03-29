@@ -34,7 +34,7 @@ public abstract class Variant {
 
 	public abstract int getStart();
 
-    public abstract VariantType getVariantType();
+	public abstract VariantType getVariantType();
 
 	public Genotype getGenotype(Sample sample) {
 		return getGenotype(sample.id);
@@ -56,4 +56,18 @@ public abstract class Variant {
 
 	public abstract String getMostSevereConsequence();
 
+	@Override
+	public String toString() {
+		StringBuilder sBuilder = new StringBuilder();
+		sBuilder.append("Variant{")
+				.append(chromosome.getChromosome()).append(':')
+				.append(getStart()).append(' ')
+				.append(getRef()).append('>')
+				.append(getStrAlt());
+		if (getId() != null) {
+			sBuilder.append(" (").append(getId()).append(')');
+		}
+		sBuilder.append('}');
+		return sBuilder.toString();
+	}
 }

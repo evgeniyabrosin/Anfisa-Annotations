@@ -42,6 +42,7 @@ import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
+import org.forome.annotation.processing.graphql.record.view.transcripts.item.GRecordViewTranscriptsItem;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.HasVariant;
@@ -75,30 +76,6 @@ public class AnfisaConnector implements AutoCloseable {
 	private static final Map<String, String> trustedSubmitters = new HashMap<String, String>() {{
 		put("lmm", "Laboratory for Molecular Medicine, Partners HealthCare Personalized Medicine");
 		put("gene_dx", "GeneDx");
-	}};
-
-	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
-		put("Ala", "A");
-		put("Arg", "R");
-		put("Asn", "N");
-		put("Asp", "D");
-		put("Cys", "C");
-		put("Gln", "Q");
-		put("Glu", "E");
-		put("Gly", "G");
-		put("His", "H");
-		put("Ile", "I");
-		put("Leu", "L");
-		put("Lys", "K");
-		put("Met", "M");
-		put("Phe", "F");
-		put("Pro", "P");
-		put("Ser", "S");
-		put("Thr", "T");
-		put("Trp", "W");
-		put("Tyr", "Y");
-		put("Val", "V");
-
 	}};
 
 	public final GnomadConnector gnomadConnector;
@@ -1411,7 +1388,7 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 		String x = str.split(pattern)[1];
 		if ("p".equals(type)) {
-			x = convert_p(x);
+			x = GRecordViewTranscriptsItem.convertPPos(x);
 		}
 
 		if (withPattern) {
@@ -1419,40 +1396,6 @@ public class AnfisaConnector implements AutoCloseable {
 		} else {
 			return x;
 		}
-	}
-
-	private static String convert_p(String x) {
-		List<Character> protein1 = new ArrayList<>();
-		List<Character> pos = new ArrayList<>();
-		List<Character> protein2 = new ArrayList<>();
-		int state = 0;
-		for (char c : x.toCharArray()) {
-			if (state == 0) {
-				if (Character.isLetter(c)) {
-					protein1.add(c);
-					continue;
-				}
-				state = 2;
-			}
-			if (state == 2) {
-				if (Character.isDigit(c)) {
-					pos.add(c);
-					continue;
-				}
-				state = 3;
-			}
-			if (state == 3) {
-				protein2.add(c);
-			} else {
-				break;
-			}
-		}
-		String p1 = protein1.stream().map(c -> c.toString()).collect(Collectors.joining());
-		String p2 = protein2.stream().map(c -> c.toString()).collect(Collectors.joining());
-		String rpos = pos.stream().map(c -> c.toString()).collect(Collectors.joining());
-		String rprotein1 = proteins_3_to_1.getOrDefault(p1, p1);
-		String rprotein2 = proteins_3_to_1.getOrDefault(p2, p2);
-		return String.format("%s%s%s", rprotein1, rpos, rprotein2);
 	}
 
 	private static List<String> getPos(VariantVep variantVep, String type, String kind) {

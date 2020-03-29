@@ -24,6 +24,12 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.processing.graphql.record.view.general.transcript.GRecordViewGeneralTranscript;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @GraphQLName("record_view_transcripts_item")
 public class GRecordViewTranscriptsItem extends GRecordViewGeneralTranscript {
 
@@ -56,10 +62,113 @@ public class GRecordViewTranscriptsItem extends GRecordViewGeneralTranscript {
 		return source;
 	}
 
-//	@GraphQLField
-//	@GraphQLName("cpos")
-//	public String getCPos() {
-//		return jTranscript.getAsString("amino_acids");
-//	}
+	@GraphQLField
+	@GraphQLName("cpos")
+	public String getCPos() {
+		String hgvsc = jTranscript.getAsString("hgvsc");
+		if (hgvsc == null) {
+			return null;
+		}
 
+		String[] splitHgvsc = hgvsc.split(":");
+		if (splitHgvsc.length != 2) {
+			throw new RuntimeException("Unsupported situation, " + variantVep
+					+ ", transcript.id: " + getId() + ", hgvsc: " + hgvsc);
+		}
+
+		return splitHgvsc[1];
+	}
+
+	@GraphQLField
+	@GraphQLName("ppos")
+	public String getPPos() {
+		String hgvsp = jTranscript.getAsString("hgvsp");
+		if (hgvsp == null) {
+			return null;
+		}
+
+		String[] splitHgvsp = hgvsp.split(":");
+		if (splitHgvsp.length != 2) {
+			throw new RuntimeException("Unsupported state, " + variantVep
+					+ ", transcript.id: " + getId() + ", hgvsp: " + splitHgvsp);
+		}
+
+		String value = splitHgvsp[1];
+		if (!value.startsWith("p.")) {
+			throw new RuntimeException("Unsupported state, " + variantVep
+					+ ", transcript.id: " + getId() + ", hgvsp: " + splitHgvsp);
+		}
+
+		return "p." + convertPPos(value.substring(2));
+	}
+
+	@GraphQLField
+	@GraphQLName("variant_exon")
+	public String getVariantExon() {
+		return jTranscript.getAsString("exon");
+	}
+
+	@GraphQLField
+	@GraphQLName("variant_intron")
+	public String getVariantIntron() {
+		return jTranscript.getAsString("intron");
+	}
+
+
+	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
+		put("Ala", "A");
+		put("Arg", "R");
+		put("Asn", "N");
+		put("Asp", "D");
+		put("Cys", "C");
+		put("Gln", "Q");
+		put("Glu", "E");
+		put("Gly", "G");
+		put("His", "H");
+		put("Ile", "I");
+		put("Leu", "L");
+		put("Lys", "K");
+		put("Met", "M");
+		put("Phe", "F");
+		put("Pro", "P");
+		put("Ser", "S");
+		put("Thr", "T");
+		put("Trp", "W");
+		put("Tyr", "Y");
+		put("Val", "V");
+	}};
+
+	public static String convertPPos(String x) {
+		List<Character> protein1 = new ArrayList<>();
+		List<Character> pos = new ArrayList<>();
+		List<Character> protein2 = new ArrayList<>();
+		int state = 0;
+		for (char c : x.toCharArray()) {
+			if (state == 0) {
+				if (Character.isLetter(c)) {
+					protein1.add(c);
+					continue;
+				}
+				state = 2;
+			}
+			if (state == 2) {
+				if (Character.isDigit(c)) {
+					pos.add(c);
+					continue;
+				}
+				state = 3;
+			}
+			if (state == 3) {
+				protein2.add(c);
+			} else {
+				break;
+			}
+		}
+		String p1 = protein1.stream().map(c -> c.toString()).collect(Collectors.joining());
+		String p2 = protein2.stream().map(c -> c.toString()).collect(Collectors.joining());
+		String rpos = pos.stream().map(c -> c.toString()).collect(Collectors.joining());
+		String rprotein1 = proteins_3_to_1.getOrDefault(p1, p1);
+		String rprotein2 = proteins_3_to_1.getOrDefault(p2, p2);
+		return String.format("%s%s%s", rprotein1, rpos, rprotein2);
+	}
 }

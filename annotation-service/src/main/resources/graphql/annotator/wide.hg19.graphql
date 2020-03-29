@@ -33,8 +33,10 @@
                 is_canonical
                 transcript_source
                 transcript_annotations
-#                cpos
-#                ppos
+                cpos
+                ppos
+                variant_exon
+                variant_intron
             }
         }
     }
