@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
  *
  *  Developed by Vladimir Ulitin and Michael Bouzinier
  *
@@ -16,39 +16,39 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.graphql.record.view.general;
+package org.forome.annotation.processing.graphql.record.view.transcripts;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.processing.graphql.record.view.general.transcript.GRecordViewGeneralTranscript;
+import org.forome.annotation.processing.graphql.record.view.transcripts.item.GRecordViewTranscriptsItem;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@GraphQLName("record_view_general")
-public class GRecordViewGeneral {
+@GraphQLName("record_view_transcripts")
+public class GRecordViewTranscripts {
 
 	public final Variant variant;
 
-	public GRecordViewGeneral(Variant variant) {
+	public GRecordViewTranscripts(Variant variant) {
 		this.variant = variant;
 	}
 
 	@GraphQLField
-	@GraphQLName("transcripts")
-	public List<GRecordViewGeneralTranscript> getTranscripts() {
+	@GraphQLName("items")
+	public List<GRecordViewTranscriptsItem> getItems() {
 		if (variant instanceof VariantVep) {
 			VariantVep variantVep = (VariantVep) variant;
 			JSONArray jTranscripts = (JSONArray) variantVep.getVepJson().get("transcript_consequences");
 
-			List<GRecordViewGeneralTranscript> transcripts = new ArrayList<>();
+			List<GRecordViewTranscriptsItem> transcripts = new ArrayList<>();
 			for (Object ojTranscript : jTranscripts) {
 				JSONObject jTranscript = (JSONObject) ojTranscript;
-				transcripts.add(new GRecordViewGeneralTranscript(
+				transcripts.add(new GRecordViewTranscriptsItem(
 						variantVep, jTranscript
 				));
 			}
@@ -57,5 +57,4 @@ public class GRecordViewGeneral {
 			return null;
 		}
 	}
-
 }

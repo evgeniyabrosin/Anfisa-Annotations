@@ -31,13 +31,17 @@ import java.util.stream.Collectors;
 public class GRecordViewGeneralTranscript {
 
 	private final VariantVep variantVep;
-	private final JSONArray jTranscripts;
-	private final JSONObject jTranscript;
+	protected final JSONObject jTranscript;
 
-	public GRecordViewGeneralTranscript(VariantVep variantVep, JSONArray jTranscripts, JSONObject jTranscript) {
+	protected final String biotype;
+	protected final String source;
+
+	public GRecordViewGeneralTranscript(VariantVep variantVep, JSONObject jTranscript) {
 		this.variantVep = variantVep;
-		this.jTranscripts = jTranscripts;
 		this.jTranscript = jTranscript;
+
+		this.biotype = jTranscript.getAsString("biotype");
+		this.source = jTranscript.getAsString("source");
 	}
 
 	@GraphQLField
@@ -53,15 +57,9 @@ public class GRecordViewGeneralTranscript {
 	}
 
 	@GraphQLField
-	@GraphQLName("transcript_annotations")
-	public List<String> getTranscriptAnnotation() {
-		return ((JSONArray) jTranscript.get("consequence_terms")).stream().map(o -> (String) o).collect(Collectors.toList());
-	}
-
-	@GraphQLField
 	@GraphQLName("is_worst")
 	public boolean isWorst() {
-		if (!"protein_coding".equals(jTranscript.getAsString("biotype"))) {
+		if (!"protein_coding".equals(biotype)) {
 			return false;
 		}
 
@@ -74,18 +72,23 @@ public class GRecordViewGeneralTranscript {
 		boolean isMostSevere = jTranscriptConsequenceTerms.stream()
 				.map(o -> (String) o).filter(s -> s.equals(mostSevereConsequence)).findFirst().isPresent();
 
-		String source = jTranscript.getAsString("source");
 		return (isMostSevere && ("Ensembl".equals(source) || "RefSeq".equals(source)));
 	}
 
 	@GraphQLField
 	@GraphQLName("is_canonical")
 	public boolean isCanonical() {
-		if (!"protein_coding".equals(jTranscript.getAsString("biotype"))) {
+		if (!"protein_coding".equals(biotype)) {
 			return false;
 		}
 
 		return jTranscript.containsKey("canonical");
+	}
+
+	@GraphQLField
+	@GraphQLName("transcript_annotations")
+	public List<String> getTranscriptAnnotation() {
+		return ((JSONArray) jTranscript.get("consequence_terms")).stream().map(o -> (String) o).collect(Collectors.toList());
 	}
 
 }

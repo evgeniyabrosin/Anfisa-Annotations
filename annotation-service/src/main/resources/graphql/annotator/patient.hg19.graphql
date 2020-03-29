@@ -18,13 +18,28 @@
             transcripts {
                 id
                 gene
-                transcript_annotations
                 is_worst
                 is_canonical
+                transcript_annotations
             }
         }
         bioinformatics {
             zygosity
+        }
+        transcripts {
+            items {
+                id
+                gene
+                biotype
+                codons
+                amino_acids
+                is_worst
+                is_canonical
+                transcript_source
+                transcript_annotations
+#                cpos
+#                ppos
+            }
         }
     }
 }
