@@ -101,9 +101,9 @@ class Hg38_Reader:
             self.mCurLetters = None
             self.mCurDiap = None
             return False
-        assert all([len(letter_seq) == 50 for letter_seq in lines[:-1]])
+        assert all(len(letter_seq) == 50 for letter_seq in lines[:-1])
         assert len(lines[-1]) == 50 or (len(lines[-1]) < 50 and (
-                not self.mCurLine or self.mCurLine.startswith('>')))
+            not self.mCurLine or self.mCurLine.startswith('>')))
         self.mCurLetters = ''.join(lines)
         first_pos = self.mCurDiap[1]
         self.mCurDiap = [first_pos, first_pos + base_count]
@@ -119,11 +119,11 @@ class Converter:
     def hg19(self, ch, pos):
         ch = str(ch).upper()
         if (ch.isdigit() or ch == 'X' or ch == 'Y'):
-            ch = "chr{}".format(ch)
+            ch = "chr%s" % str(ch)
         try:
             coord  = self.lo.convert_coordinate(ch, pos - 1)
-        except:
-            print ("WARNING: HG38 conversion at {}:{}".format(ch, pos))
+        except Exception:
+            print("WARNING: HG38 conversion at %s:%d" % (ch, pos))
             coord = None
         if (not coord):
             return None
@@ -155,7 +155,7 @@ def ingestHg38(db_host, db_port, user, password, database, fasta_file):
     converter = Converter()
 
     curs = conn.cursor()
-    print (INSTR_CREATE)
+    print(INSTR_CREATE)
     curs.execute(INSTR_CREATE)
 
     #========================================
@@ -166,11 +166,11 @@ def ingestHg38(db_host, db_port, user, password, database, fasta_file):
 
     while rd.read():
         list_of_values = []
-        for position in range (rd.getCurDiap()[0],rd.getCurDiap()[1]):
-            Chrom = rd.getCurChrom()
-            r = converter.hg19(Chrom, position)
+        for position in range(rd.getCurDiap()[0], rd.getCurDiap()[1]):
+            chrom = rd.getCurChrom()
+            r = converter.hg19(chrom, position)
 
-            values = [Chrom, position, rd.getLetter(position), r]
+            values = [chrom, position, rd.getLetter(position), r]
             list_of_values.append(values)
 
         total += execute_insert(conn, INSTR_INSERT, list_of_values)
@@ -180,6 +180,7 @@ def ingestHg38(db_host, db_port, user, password, database, fasta_file):
     if len(list_of_values) > 0:
         total += execute_insert(conn, INSTR_INSERT, tuple(list_of_values))
     reportTime("Done:", total, start_time)
+
 
 #========================================
 if __name__ == '__main__':

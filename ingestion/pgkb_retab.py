@@ -1,4 +1,4 @@
-import time,  re, sys
+import time, re
 import mysql.connector
 from binascii import crc32
 
@@ -6,9 +6,10 @@ from util import execute_insert, reportTime
 
 #========================================
 class Parsing:
-    '''Some tools to parse strings'''
+    # Some tools to parse strings
+
     sPattVar = re.compile(r"^rs\d+$")
-    
+
     @classmethod
     def checkGoodVar(cls, variant):
         if not variant:
@@ -19,7 +20,7 @@ class Parsing:
         return False
 
     @classmethod
-    def splitValues(cls,  value):
+    def splitValues(cls, value):
         if value.startswith('"'):
             assert value.endswith('"')
             return value[1:-1].split('","')
@@ -36,9 +37,10 @@ class Parsing:
 
 #========================================
 class TabWriter:
-    sBaseColumns = ["Variant", "AssocKind",  "AssocID"]
+    sBaseColumns = ["Variant", "AssocKind", "AssocID"]
 
-    def __init__(self,  conn,  table,  spec_columns,  instr_create, feed_mode = None):
+    def __init__(self, conn, table, spec_columns, instr_create,
+            feed_mode = None):
         self.mConn = conn
         self.mTable = table
         self.mSpecColumns = spec_columns
@@ -46,37 +48,37 @@ class TabWriter:
         assert 1 <= len(self.mSpecColumns) <= 2
 
         self.mConn.cursor().execute(instr_create)
-    
+
         columns = self.sBaseColumns + self.mSpecColumns
-        self.mInstrInsert = ("INSERT INTO " + self.mTable + " " 
-            + "(" + ",".join(columns)+")" 
+        self.mInstrInsert = ("INSERT INTO " + self.mTable + " "
+            + "(" + ",".join(columns)+")"
             + " VALUES (" + ", ".join(['%s'] * len(columns)) + ");")
         self.mValues = []
         self.mTotal = 0
-        
+
     def flush(self):
         if len(self.mValues) > 0:
-            self.mTotal += execute_insert(self.mConn, 
+            self.mTotal += execute_insert(self.mConn,
                 self.mInstrInsert, self.mValues)
-            self.mValues = []
-    
+        self.mValues = []
+
     def close(self):
         assert len(self.mValues) == 0
         self.mValues = None
         return self.mTotal
 
-    def feed(self,  assoc_kind,  assoc_id, variant, value):
-        if value in ("",  None):
+    def feed(self, assoc_kind, assoc_id, variant, value):
+        if value in ("", None):
             return
         assert Parsing.checkGoodVar(variant)
         if (self.mFeedMode == "single"
-                or (self.mFeedMode == "int?" and isinstance(value,  int))):
+                or (self.mFeedMode == "int?" and isinstance(value, int))):
             assert len(self.mSpecColumns) == 1
-            self.mValues.append([variant,  assoc_kind,  assoc_id,  value])
+            self.mValues.append([variant, assoc_kind, assoc_id, value])
             return
         for val in Parsing.splitValues(value):
             val = val.strip()
-            res_list = [variant,  assoc_kind,  assoc_id]
+            res_list = [variant, assoc_kind, assoc_id]
             if len(self.mSpecColumns) == 1:
                 res_list.append(val.strip())
             else:
@@ -85,19 +87,19 @@ class TabWriter:
 
 #========================================
 class TabScanner:
-    def __init__(self, assoc_kind,  table, columns, tab_writers):
+    def __init__(self, assoc_kind, table, columns, tab_writers):
         self.mAssocKind = assoc_kind
         self.mTable = table
         self.mColumns = columns
         self.mTabWriters = tab_writers
         self.mCurId = None
-        
-    def scan(self,  conn):
+
+    def scan(self, conn):
         while True:
             if self.scanPortion(conn) == 0:
                 break
-        
-    def scanPortion(self,  conn):
+
+    def scanPortion(self, conn):
         instr = "SELECT " + ", ".join(self.mColumns) + " FROM " + self.mTable
         if self.mCurId is not None:
             instr += " WHERE " + self.mColumns[0] + " > " + str(self.mCurId)
@@ -113,13 +115,13 @@ class TabScanner:
                 writer.flush()
         return count
 
-    def processOne(self,  fields):
-        self.mCurId,  variant = fields[:2]
+    def processOne(self, fields):
+        self.mCurId, variant = fields[:2]
         if not Parsing.checkGoodVar(variant):
             return
-        for idx,  writer in enumerate(self.mTabWriters):
-            writer.feed(self.mAssocKind,  self.mCurId,  variant,  fields[2 + idx])
- 
+        for idx, writer in enumerate(self.mTabWriters):
+            writer.feed(self.mAssocKind, self.mCurId, variant, fields[2 + idx])
+
 #========================================
 def pgkbReTab(db_host, db_port, user, password, database):
     conn = mysql.connector.connect(
@@ -135,8 +137,8 @@ def pgkbReTab(db_host, db_port, user, password, database):
     start_time = time.time()
 
     tab_writers = [
-        TabWriter(conn, "CHEMICALS", ["ChTitle",  "ChID"], 
-            instr_create = """CREATE TABLE IF NOT EXISTS CHEMICALS(
+        TabWriter(conn, "CHEMICALS", ["ChTitle", "ChID"],
+          instr_create = """CREATE TABLE IF NOT EXISTS CHEMICALS(
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,
@@ -144,8 +146,8 @@ def pgkbReTab(db_host, db_port, user, password, database):
             ChID VARCHAR(20),
             PRIMARY KEY (AssocKind, AssocID, ChID),
             KEY (Variant));"""),
-        TabWriter(conn, "DISEASES", ["DisTitle",  "DisID"], 
-            instr_create = """CREATE TABLE IF NOT EXISTS DISEASES(
+        TabWriter(conn, "DISEASES", ["DisTitle", "DisID"],
+          instr_create = """CREATE TABLE IF NOT EXISTS DISEASES(
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,
@@ -153,45 +155,45 @@ def pgkbReTab(db_host, db_port, user, password, database):
             DisID VARCHAR(20),
             PRIMARY KEY (AssocKind, AssocID, DisID),
             KEY (Variant));"""),
-        TabWriter(conn, "PMIDS", ["PMID"], 
-            instr_create = """CREATE TABLE IF NOT EXISTS PMIDS(
+        TabWriter(conn, "PMIDS", ["PMID"],
+          instr_create = """CREATE TABLE IF NOT EXISTS PMIDS(
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,
             PMID int(10),
             PRIMARY KEY (AssocKind, AssocID, PMID),
-            KEY (Variant));""",  feed_mode = "int?"),
-        TabWriter(conn, "NOTES", ["Note"], 
-            instr_create = """CREATE TABLE IF NOT EXISTS NOTES(
+            KEY (Variant));""", feed_mode = "int?"),
+        TabWriter(conn, "NOTES", ["Note"],
+          instr_create = """CREATE TABLE IF NOT EXISTS NOTES(
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,
             Note TEXT,
             PRIMARY KEY (AssocKind, AssocID),
-            KEY (Variant));""",  feed_mode = "single")]
-            
+            KEY (Variant));""", feed_mode = "single")]
 
     for scanner in (
-            TabScanner("clinical", "CAmeta", 
-                ["CAID",  "LOC", "RC",  "RD", "PMIDS", "AT"],  tab_writers), 
-            TabScanner("drug", "VDA", 
-                ["AID", "VAR", "CHEM", "NULL", "PMID", "NOTES"],  tab_writers), 
-            TabScanner("fa", "VFA", 
-                ["AID", "VAR", "CHEM", "NULL", "PMID", "NOTES"],  tab_writers), 
-            TabScanner("pheno", "VPA", 
-                ["AID", "VAR", "CHEM", "NULL", "PMID", "NOTES"],  tab_writers)):
+            TabScanner("clinical", "CAmeta",
+                ["CAID", "LOC", "RC", "RD", "PMIDS", "AT"], tab_writers),
+            TabScanner("drug", "VDA",
+                ["AID", "VAR", "CHEM", "NULL", "PMID", "NOTES"], tab_writers),
+            TabScanner("fa", "VFA",
+                ["AID", "VAR", "CHEM", "NULL", "PMID", "NOTES"], tab_writers),
+            TabScanner("pheno", "VPA",
+                ["AID", "VAR", "CHEM", "NULL", "PMID", "NOTES"], tab_writers)):
         scanner.scan(conn)
-        
+
     total = 0
     for writer in tab_writers:
         total += writer.close()
     reportTime("Done:", total, start_time)
 
+
 #========================================
 if __name__ == '__main__':
     pgkbReTab(
-        db_host  = "localhost",
-        db_port  = 3306,
-        user     = 'test',
+        db_host = "localhost",
+        db_port = 3306,
+        user   = 'test',
         password = 'test',
         database = "pharmgkb")

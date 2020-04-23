@@ -1,50 +1,29 @@
-'''
-Create table <name> in db pharmgkb and insert data into it
-FILE NAME                    TABLE NAME
-var_pheno_ann.py             VPA
-
-COLUMN                      COLUMN NAME         TYPE
-Annotation ID            	 AID                INT(10)
-Variant                  	 VAR                TEXT
-Gene                     	 GENE               TEXT
-Chemical                 	 CHEM               TEXT
-PMID                     	 PMID               INT(10)
-Phenotype Category       	 PCAT               VARCHAR(37)
-Significance             	 SIGN               VARCHAR(10)
-Notes                    	 NOTES              TEXT
-Sentence                 	 SENT               TEXT
-StudyParameters          	 corresponds with the Study Parameters ID in the study_parameters.tsv file 
-Alleles                  	 AL                 TEXT
-Chromosome               	 CHROM              VARCHAR(5)
-'''
-
+# Create table <name> in db pharmgkb and insert data into it
+# FILE NAME                    TABLE NAME
+# var_pheno_ann.py             VPA
+#
+# COLUMN                      COLUMN NAME         TYPE
+# Annotation ID            	 AID                INT(10)
+# Variant                  	 VAR                TEXT
+# Gene                     	 GENE               TEXT
+# Chemical                 	 CHEM               TEXT
+# PMID                     	 PMID               INT(10)
+# Phenotype Category       	 PCAT               VARCHAR(37)
+# Significance             	 SIGN               VARCHAR(10)
+# Notes                    	 NOTES              TEXT
+# Sentence                 	 SENT               TEXT
+# StudyParameters          	 corresponds with the Study Parameters ID
+#                               in the study_parameters.tsv file
+# Alleles                  	 AL                 TEXT
+# Chromosome               	 CHROM              VARCHAR(5)
 
 import mysql.connector
 import time
 
-#=== execute insert function ================
-def execute_insert(conn, sql, list_of_values):
-    rowcount = 0
-    c = conn.cursor()
-    if (len(list_of_values) == 1):
-        c.execute(sql, list_of_values[0])
-        rowcount += c.rowcount
-    else:
-        c.executemany(sql, list_of_values)
-        rowcount += c.rowcount
-    c.close()
-    return rowcount
-
-#=== timing report ================
-def reportTime(note, total, start_time):
-    dt = time.time() - start_time
-    print ("{} Records: {} Time: {}; Rate: {:.2f}".format(
-        note, total, dt, total / (dt + .0001)))
-
-
+from util import execute_insert, reportTime
 #=== table VFA ============
 
-INSTR_CREATE = """CREATE TABLE IF NOT EXISTS VPA(
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS VPA (
     AID                INT(10),
     VAR                VARCHAR(124),
     GENE               VARCHAR(167),
@@ -56,7 +35,7 @@ INSTR_CREATE = """CREATE TABLE IF NOT EXISTS VPA(
     SENT               TEXT,
     AL                VARCHAR(167),
     CHROM              VARCHAR(5),
-    PRIMARY KEY (AID));"""
+    PRIMARY KEY(AID));"""
 
 COLUMNS = [
     "AID",
@@ -72,12 +51,12 @@ COLUMNS = [
     "CHROM"
     ]
 
-INSTR_INSERT = "INSERT INTO VPA (%s) VALUES (%s)" % (
+INSTR_INSERT = "INSERT INTO VPA(%s) VALUES(%s)" % (
     ", ".join(COLUMNS),
     ", ".join(['%s' for _ in COLUMNS]))
 
 #========================================
-def new_record (chrom, pos, lst):
+def new_record(chrom, pos, lst):
     rec = []
     rec.append(chrom)
     rec.append(pos)
@@ -103,10 +82,10 @@ def ingestVPA(db_host, db_port, user, password, database,
     print('Connected to %s...' % database)
 
     curs = conn.cursor()
-    print (INSTR_CREATE)
+    print(INSTR_CREATE)
     curs.execute(INSTR_CREATE)
 
-    with open (filename,'r') as file1:
+    with open(filename, 'r') as file1:
         list_of_records = []
         total, cnt, row_label = 0, 0, 0
         start_time = time.time()
@@ -119,7 +98,8 @@ def ingestVPA(db_host, db_port, user, password, database,
                 del row[9]
                 list_of_records.append(row)
                 if len(list_of_records) >= batch_size:
-                    total += execute_insert(conn, INSTR_INSERT,list_of_records)
+                    total += execute_insert(
+                        conn, INSTR_INSERT, list_of_records)
                     list_of_records = []
                     cnt += 1
                     if cnt >= 10:

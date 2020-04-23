@@ -3,14 +3,14 @@
 import gzip
 import mysql.connector
 import time
-import sys
 from util import execute_insert, reportTime
 from util import detectFileChrom, extendFileList
 
 #========================================
 #--- table FACETS ----------------
 
-facets_fields = [1, 2, 3, 4, 30, 31, 41, 72, 73, 74, 79, 81, 82, 83, 84, 85, 89, 90, 91]
+facets_fields = [1, 2, 3, 4, 30, 31, 41, 72, 73, 74, 79,
+    81, 82, 83, 84, 85, 89, 90, 91]
 #print(len(facets_fields))
 #sys.exit()
 
@@ -65,7 +65,7 @@ INSTR_INSERT_FACETS = "INSERT INTO FACETS (%s) VALUES (%s)" % (
     ", ".join(['%s' for _ in COLUMNS_FACETS]))
 
 
-def new_record_FACETS (records, fac_no):
+def new_record_FACETS(records, fac_no):
     rec = []
     rec.append(fac_no)
     for field in records:
@@ -79,8 +79,8 @@ def new_record_FACETS (records, fac_no):
 #========================================
 #--- table VARIANTS ----------------
 
-variants_fields = [1, 2, 3, 4, 53, 55, 92, 102, 104, 105, 106, 114, 115, 116, 117, 118, 119, 374, 375, 376] 
-
+variants_fields = [1, 2, 3, 4, 53, 55, 92,
+    102, 104, 105, 106, 114, 115, 116, 117, 118, 119, 374, 375, 376]
 
 INSTR_CREATE_VARIANTS = """CREATE TABLE IF NOT EXISTS VARIANTS(
     chr                             VARCHAR(4),
@@ -133,7 +133,7 @@ INSTR_INSERT_VARIANTS = "INSERT INTO VARIANTS (%s) VALUES (%s)" % (
     ", ".join(['%s' for _ in COLUMNS_VARIANTS]))
 
 
-def new_record_VARIANTS (records):
+def new_record_VARIANTS(records):
     rec = []
     for field in records:
         if field == '.':
@@ -146,8 +146,8 @@ def new_record_VARIANTS (records):
 #========================================
 #--- table TRANSCRIPTS ----------------
 
-transcripts_fields = [1, 14, 15, 16, 17, 19, 20, 21, 22, 26, 37, 39, 40, 42,\
-                      43, 45, 46, 48,  58, 60, 61, 63,  88] 
+transcripts_fields = [1, 14, 15, 16, 17, 19, 20, 21, 22, 26, 37, 39, 40, 42,
+    43, 45, 46, 48,  58, 60, 61, 63,  88]
 
 
 INSTR_CREATE_TRANSCRIPTS = """CREATE TABLE IF NOT EXISTS TRANSCRIPTS(
@@ -211,7 +211,7 @@ INSTR_INSERT_TRANSCRIPTS = "INSERT INTO TRANSCRIPTS (%s) VALUES (%s)" % (
     ", ".join(['%s' for _ in COLUMNS_TRANSCRIPTS]))
 
 
-def new_record_TRANSCRIPTS (records, abs_tr_id, current_tr_no):
+def new_record_TRANSCRIPTS(records, abs_tr_id, current_tr_no):
     rec = []
     rec.append(abs_tr_id)
     rec.append(current_tr_no)
@@ -224,9 +224,81 @@ def new_record_TRANSCRIPTS (records, abs_tr_id, current_tr_no):
     return rec
 
 #========================================
+class DataCollector:
+    def __init__(self, conn, batch_size):
+        self.mConn = conn
+        self.mBatchSize = batch_size
+        self.mFACETS = []
+        self.mTRANSCRIPTS = []
+        self.mVARIANTS = []
+        self.mTotal_FACETS = 0
+        self.mTotal_TRANSCRIPTS = 0
+        self.mTotal_VARIANTS = 0
+        self.mCurVariant = None
+        self.mCurFacetNo = 0
+
+    def getTotal_FACETS(self):
+        return self.mTotal_FACETS
+
+    def getTotal_TRANSCRIPTS(self):
+        return self.mTotal_TRANSCRIPTS
+
+    def getTotal_VARIANTS(self):
+        return self.mTotal_VARIANTS
+
+    def flushData(self):
+        if len(self.mFACETS) > 0:
+            self.mTotal_FACETS += execute_insert(self.mConn,
+                INSTR_INSERT_FACETS, self.mFACETS)
+            self.mFACETS = []
+        if len(self.mTRANSCRIPTS) > 0:
+            self.mTotal_TRANSCRIPTS += execute_insert(self.mConn,
+                INSTR_INSERT_TRANSCRIPTS, self.mTRANSCRIPTS)
+            self.mTRANSCRIPTS = []
+        if len(self.mVARIANTS) > 0:
+            self.mTotal_VARIANTS += execute_insert(self.mConn,
+                INSTR_INSERT_VARIANTS, self.mVARIANTS)
+            self.mVARIANTS = []
+
+    def ingestLine(self, line):
+        # TRANSCRIPTS
+        fields = line.split('\t')
+        records = [fields[i].strip('\n') for i in range(len(fields))]
+        transcripts_records = [records[i-1] for i in transcripts_fields]
+        current_record = [transcripts_records[0]]
+        current_record_length = len(transcripts_records[1].split(';'))
+
+        #FACETS
+        current_facets_record = [records[i-1] for i in facets_fields]
+        self.mFACETS.append(
+            new_record_FACETS(current_facets_record, self.mCurFacetNo))
+        self.mCurFacetNo += 1
+
+        # VARIANTS
+        current_variants_record = [records[i-1] for i in variants_fields]
+        if (current_variants_record != self.mCurVariant):
+            self.mVARIANTS.append(
+                new_record_VARIANTS(current_variants_record))
+            self.mCurVariant = current_variants_record
+
+        for i in range(1, (len(transcripts_records))):
+            record = transcripts_records[i]
+            current_records = record.split(';')
+            while (len(current_records) < current_record_length
+                    and current_records == ['.']):
+                current_records.append(current_records[0])
+            current_record.append(current_records)
+
+        for tr_no in range(current_record_length):
+            self.mTRANSCRIPTS.append(new_record_TRANSCRIPTS(
+                current_record, self.mCurFacetNo, tr_no))
+        if len(self.mTRANSCRIPTS) >= self.mBatchSize:
+            self.flushData()
+
+#========================================
 def ingestDBNSFP4(db_host, db_port, user, password, database,
         batch_size, file_list):
-    exceptions = 0     
+    exceptions = 0
     conn = mysql.connector.connect(
         host = db_host,
         port = db_port,
@@ -238,85 +310,37 @@ def ingestDBNSFP4(db_host, db_port, user, password, database,
     print('Connected to %s...' % database)
 
     curs = conn.cursor()
-    print (INSTR_CREATE_FACETS)
+    print(INSTR_CREATE_FACETS)
     curs.execute(INSTR_CREATE_FACETS)
-    print (INSTR_CREATE_TRANSCRIPTS)
+    print(INSTR_CREATE_TRANSCRIPTS)
     curs.execute(INSTR_CREATE_TRANSCRIPTS)
-    print (INSTR_CREATE_VARIANTS)
+    print(INSTR_CREATE_VARIANTS)
     curs.execute(INSTR_CREATE_VARIANTS)
     for chrom_file in extendFileList(file_list):
         chrom = detectFileChrom('chr', chrom_file)  # change parameter here!
         print("Evaluation of", chrom, "in", chrom_file)
-        with gzip.open (chrom_file,'rt') as text_inp:
-            line_no = 0
-            list_of_records_FACETS = []
-            list_of_records_TRANSCRIPTS = []
-            list_of_records_VARIANTS = []
-            total_FACETS, total_TRANSCRIPTS, total_VARIANTS, cnt = 0, 0, 0, 0
+        with gzip.open(chrom_file, 'rt') as text_inp:
             start_time = time.time()
-            for line in text_inp:
-                line_no += 1
-                facet_no = line_no - 1 
-                if line_no == 1:
+            collector = DataCollector(conn, batch_size)
+            for line_no, line in enumerate(text_inp):
+                if line_no == 0:
                     continue
-                else:
-                    try:
-                        # TRANSCRIPTS
-                        fields = line.split('\t')
-                        records = [fields[i].strip('\n') for i in range(len(fields))]
-                        transcripts_records = [records[i-1] for i in transcripts_fields]
-                        current_record = [transcripts_records[0]] 
-                        current_record_length = len(transcripts_records[1].split(';'))
-                        #FACETS
-                        current_facets_record = [records[i-1] for i in facets_fields]
-                        list_of_records_FACETS.append(new_record_FACETS(current_facets_record, facet_no))
+                try:
+                    collector.ingestLine(line)
+                    if (line_no % 100) == 0:
+                        reportTime("",
+                            collector.getTotal_TRANSCRIPTS(), start_time)
+                except IndexError:
+                    exceptions += 1
+            collector.flushData()
+            reportTime("Done_TRANSCRIPTS:",
+                collector.getTotal_TRANSCRIPTS(), start_time)
+            reportTime("Done_VARIANTS:",
+                collector.getTotal_VARIANTS(), start_time)
+            reportTime("Done_FACETS:",
+                collector.getTotal_FACETS(), start_time)
+            print('exceptions =', exceptions)
 
-                        # VARIANTS
-                        if line_no == 2:
-                            previous_variants_record = [records[i-1] for i in variants_fields]
-                            list_of_records_VARIANTS.append(new_record_VARIANTS(previous_variants_record))
-                        if line_no > 2:
-                            current_variants_record = [records[i-1] for i in variants_fields]
-                            if current_variants_record != previous_variants_record:
-                                list_of_records_VARIANTS.append(new_record_VARIANTS(current_variants_record))
-                                previous_variants_record = current_variants_record
-                                #======================
-                        for i in range(1,(len(transcripts_records))):
-                            record = transcripts_records[i]
-                            current_records = record.split(';')
-                            if len(current_records) != current_record_length and current_records == ['.']:
-                                [current_records.append(current_records[0]) for i in range(current_record_length-1)]
-                                                                                                                    
-                            current_record.append(current_records)
-                        for i in range(current_record_length):
-                            tr_no = i
-                            list_of_records_TRANSCRIPTS.append(new_record_TRANSCRIPTS(current_record, facet_no, tr_no))
-                        if len(list_of_records_TRANSCRIPTS) >= batch_size:
-                            total_FACETS += execute_insert(conn, INSTR_INSERT_FACETS, list_of_records_FACETS)
-                            total_TRANSCRIPTS += execute_insert(conn, INSTR_INSERT_TRANSCRIPTS, list_of_records_TRANSCRIPTS)
-                            total_VARIANTS += execute_insert(conn, INSTR_INSERT_VARIANTS, list_of_records_VARIANTS)
-                            list_of_records_FACETS = []
-                            list_of_records_TRANSCRIPTS = []
-                            list_of_records_VARIANTS = []
-                            cnt += 1
-                            if cnt >= 100: 
-                                cnt = 0
-                                reportTime("", total_TRANSCRIPTS, start_time)
-                    except IndexError:
-                        exceptions += 1
-                        continue
-            if len(list_of_records_TRANSCRIPTS) > 0:
-                total_TRANSCRIPTS += execute_insert(conn, INSTR_INSERT_TRANSCRIPTS, list_of_records_TRANSCRIPTS)
-            if len(list_of_records_VARIANTS) > 0:
-                total_VARIANTS += execute_insert(conn, INSTR_INSERT_VARIANTS, list_of_records_VARIANTS)
-            if len(list_of_records_FACETS) > 0:
-                total_FACETS += execute_insert(conn, INSTR_INSERT_FACETS, list_of_records_FACETS)
-                
-                reportTime("Done_TRANSCRIPTS:", total_TRANSCRIPTS, start_time)
-                reportTime("Done_VARIANTS:", total_VARIANTS, start_time)
-                reportTime("Done_FACETS:", total_FACETS, start_time)
-
-                print('exceptions = {}'.format(exceptions))
 
 #========================================
 if __name__ == '__main__':
@@ -327,5 +351,5 @@ if __name__ == '__main__':
         password = 'test',
         database = "dbnsfp4",
         batch_size = 1000,
-        file_list = ["/home/trosman/work/dbNSFP4.0/dbNSFP4.0a_variant.chr*.gz"])
-
+        file_list = [
+            "/home/trosman/work/dbNSFP4.0/dbNSFP4.0a_variant.chr*.gz"])

@@ -1,53 +1,32 @@
-'''
-Create table <name> in db pharmgkb and insert data into it
-FILE NAME                    TABLE NAME
-clinical_ann_metadata.tsv     CAmeta
-
-COLUMN                      COLUMN NAME         TYPE
-Clinical Annotation Id      CAID                INT(10)
-Location                    LOC                 TEXT
-Gene                        GEN                 TEXT
-Level of Evidence           LOE                 VARCHAR(2)
-Clinical Annotation Types   CAT                 VARCHAR(50)
-Genotype-Phenotypes IDs     -----numbers correspond with the clinical_ann.tsv file.
-Annotation Text             AT                  TEXT
-Variant Annotations IDs     VAIDS               TEXT
-Variant Annotations         VA                  TEXT
-PMIDs                       PMIDS               TEXT
-Evidence Count              EC                  INT(3)
-Related Chemicals           RC                  TEXT
-Related Diseases            RD                  TEXT
-Race                        RACE                VARCHAR(51)
-Chromosome                  CHR                 VARCHAR(5)
-'''
-
+# Create table <name> in db pharmgkb and insert data into it
+# FILE NAME                    TABLE NAME
+# clinical_ann_metadata.tsv     CAmeta
+#
+# COLUMN                      COLUMN NAME         TYPE
+# Clinical Annotation Id      CAID                INT(10)
+# Location                    LOC                 TEXT
+# Gene                        GEN                 TEXT
+# Level of Evidence           LOE                 VARCHAR(2)
+# Clinical Annotation Types   CAT                 VARCHAR(50)
+# Genotype-Phenotypes IDs     -----numbers correspond
+#                               with the clinical_ann.tsv file.
+# Annotation Text             AT                  TEXT
+# Variant Annotations IDs     VAIDS               TEXT
+# Variant Annotations         VA                  TEXT
+# PMIDs                       PMIDS               TEXT
+# Evidence Count              EC                  INT(3)
+# Related Chemicals           RC                  TEXT
+# Related Diseases            RD                  TEXT
+# Race                        RACE                VARCHAR(51)
+# Chromosome                  CHR                 VARCHAR(5)
 
 import mysql.connector
 import time
 
-#=== execute insert function ================
-def execute_insert(conn, sql, list_of_values):
-    rowcount = 0
-    c = conn.cursor()
-    if (len(list_of_values) == 1):
-        c.execute(sql, list_of_values[0])
-        rowcount += c.rowcount
-    else:
-        c.executemany(sql, list_of_values)
-        rowcount += c.rowcount
-    c.close()
-    return rowcount
+from util import execute_insert, reportTime
+#=== table CAmeta ============
 
-#=== timing report ================
-def reportTime(note, total, start_time):
-    dt = time.time() - start_time
-    print ("{} Records: {} Time: {}; Rate: {:.2f}".format(
-        note, total, dt, total / (dt + .0001)))
-
-
-#=== table CA ============
-
-INSTR_CREATE = """CREATE TABLE IF NOT EXISTS CAmeta(
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS CAmeta (
     CAID                INT(10),
     LOC                 TEXT,
     GEN                 TEXT,
@@ -62,7 +41,7 @@ INSTR_CREATE = """CREATE TABLE IF NOT EXISTS CAmeta(
     RD                  TEXT,
     RACE                VARCHAR(51),
     CHR                 VARCHAR(5),
-    PRIMARY KEY (CAID));"""
+    PRIMARY KEY(CAID));"""
 
 COLUMNS = [
     "CAID",
@@ -81,12 +60,12 @@ COLUMNS = [
     "CHR",
     ]
 
-INSTR_INSERT = "INSERT INTO CAmeta (%s) VALUES (%s)" % (
+INSTR_INSERT = "INSERT INTO CAmeta(%s) VALUES(%s)" % (
     ", ".join(COLUMNS),
     ", ".join(['%s' for _ in COLUMNS]))
 
 #========================================
-def new_record (chrom, pos, lst):
+def new_record(chrom, pos, lst):
     rec = []
     rec.append(chrom)
     rec.append(pos)
@@ -112,10 +91,10 @@ def ingestCAmeta(db_host, db_port, user, password, database,
     print('Connected to %s...' % database)
 
     curs = conn.cursor()
-    print (INSTR_CREATE)
+    print(INSTR_CREATE)
     curs.execute(INSTR_CREATE)
 
-    with open (filename,'r') as file1:
+    with open(filename, 'r') as file1:
         list_of_records = []
         total, cnt, row_label = 0, 0, 0
         start_time = time.time()
@@ -128,7 +107,8 @@ def ingestCAmeta(db_host, db_port, user, password, database,
                 del row[5]
                 list_of_records.append(row)
                 if len(list_of_records) >= batch_size:
-                    total += execute_insert(conn, INSTR_INSERT,list_of_records)
+                    total += execute_insert(
+                        conn, INSTR_INSERT, list_of_records)
                     list_of_records = []
                     cnt += 1
                     if cnt >= 10:

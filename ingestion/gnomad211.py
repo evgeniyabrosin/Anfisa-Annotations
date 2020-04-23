@@ -9,10 +9,12 @@ from util import extendFileList, detectFileChrom
 #--- table VARIANTS ----------------
 # --------------------- creating all columns  ---------------------------
 source_fields = ['SOURCE']
-main_fields = ['CHROM','POS','ALT','REF']
-info_fields = ['nhomalt','faf95','faf99','AC','AN','AF','hem']
-prefix_fields = ['AC','AN','AF']   
-suffix_fileds = ['afr','amr','asj','eas','fin','nfe','sas','oth','raw','male','female']
+main_fields = ['CHROM', 'POS', 'ALT', 'REF']
+info_fields = ['nhomalt', 'faf95', 'faf99', 'AC', 'AN', 'AF', 'hem']
+prefix_fields = ['AC', 'AN', 'AF']
+suffix_fileds = ['afr', 'amr', 'asj', 'eas', 'fin', 'nfe',
+    'sas', 'oth', 'raw', 'male', 'female']
+
 columns = {
     'SOURCE':   'varchar(1)',
     'CHROM':    'varchar(4)',
@@ -29,20 +31,29 @@ columns = {
     }
 for prefix in prefix_fields:
     for suffix in suffix_fileds:
-        columns[prefix + '_' + suffix] = columns[prefix] # creating info_columns prefix_suffix and adding them to dict info_columns, 
-        info_fields.append(prefix + '_' + suffix)                                      # their type is the same as in prefix columns (from info_columns). 
-                                                                     # For example:'AC_afr':'int(11)'
-fields = source_fields + main_fields + info_fields
-column_string = ", ".join(["{} {}".format(field, columns[field]) for field in fields])
-INSTR_CREATE = "CREATE TABLE IF NOT EXISTS VARIANTS ({}, PRIMARY KEY (POS, CHROM, SOURCE, ALT, REF));".format(column_string) #here we can change PRIMARY KEY
-INSTR_INSERT = "INSERT INTO VARIANTS ({}) VALUES ({})".format( 
-                ", ".join(fields),
-                ", ".join(['%s' for c in fields]))
+        # creating info_columns prefix_suffix
+        # and adding them to dict info_columns,
+        columns[prefix + '_' + suffix] = columns[prefix]
+        info_fields.append(prefix + '_' + suffix)
+        # their type is the same as in prefix columns(from info_columns).
+        # For example:'AC_afr':'int(11)'
 
+fields = source_fields + main_fields + info_fields
+
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS VARIANTS(
+    %s,
+    PRIMARY KEY(POS, CHROM, SOURCE, ALT, REF));""" % (
+    ", ".join(["%s %s" % (field, columns[field])
+    for field in fields]))
+#   here we can change PRIMARY KEY
+
+INSTR_INSERT = "INSERT INTO VARIANTS(%s) VALUES(%s)" % (
+    ", ".join(fields),
+    ", ".join(['%s' for c in fields]))
 
 #===============================================
-def new_record (current_file, current_record): 
-    '''Extracts fields in current vcf record to record list''' 
+def new_record(current_file, current_record):
+    # Extracts fields in current vcf record to record list
     rec = []
     if 'exomes' in current_file:
         rec.append('e')
@@ -67,10 +78,11 @@ def new_record (current_file, current_record):
                 rec.append(value)
         except KeyError:
             rec.append(None)
-    return rec 
-#===========================================================
+    return rec
 
-def ingestGnomAD(db_host, db_port, user, password, database,batch_size, file_list):
+#===========================================================
+def ingestGnomAD(db_host, db_port, user, password,
+        database, batch_size, file_list):
 
     conn = mysql.connector.connect(
         host = db_host,
@@ -83,12 +95,14 @@ def ingestGnomAD(db_host, db_port, user, password, database,batch_size, file_lis
     print('Connected to %s...' % database)
 
     curs = conn.cursor()
-    print (INSTR_CREATE)
+    print(INSTR_CREATE)
     curs.execute(INSTR_CREATE)
     for vcf_file in extendFileList(file_list):
-        chrom = detectFileChrom('exomes.sites.', vcf_file)  #!!!! change parameter here !!!!
+        #!!!! change parameter here !!!!
+        chrom = detectFileChrom('exomes.sites.', vcf_file)
         print("Evaluation of", chrom, "in", vcf_file)
-        vcf_reader = pyvcf.Reader(filename = vcf_file, compressed = True) # !!! change compressed to True for .bgz files  !!!
+        # !!! change compressed to True for .bgz files  !!!
+        vcf_reader = pyvcf.Reader(filename = vcf_file, compressed = True)
         start_time = time.time()
         list_of_records = []
         total, cnt = 0, 0
@@ -104,12 +118,11 @@ def ingestGnomAD(db_host, db_port, user, password, database,batch_size, file_lis
                     reportTime("Records:", total, start_time)
         if len(list_of_records) > 0:
             total += execute_insert(conn, INSTR_INSERT, list_of_records)
-            reportTime("Done:", total, start_time)        
-            total, cnt = 0, 0  
-            list_of_records = [] 
+            reportTime("Done:", total, start_time)
+            total, cnt = 0, 0
+            list_of_records = []
     conn.close()
-    
-#,
+
 
 #========================================
 if __name__ == '__main__':
@@ -120,4 +133,5 @@ if __name__ == '__main__':
         password = 'test',
         database = 'gnom2',
         batch_size = 1000,
-        file_list = ['/home/trosman/work/gnomad211_fields/headers_exomes/head.exomes.sites.*.vcf.bgz',])
+        file_list = ['/home/trosman/work/gnomad211_fields/headers_exomes/'
+            + 'head.exomes.sites.*.vcf.bgz'])

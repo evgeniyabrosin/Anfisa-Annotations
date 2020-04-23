@@ -1,55 +1,33 @@
-'''
-Create table <name> in db pharmgkb and insert data into it
-FILE NAME                    TABLE NAME
-study_parameters.tsv         SPA
-
-COLUMN                           COLUMN NAME         TYPE
-Study Parameters ID      	     SPID                INT(10)
-Study Type               	     ST                  VARCHAR(56)
-Study Cases              	     SC                  VARCHAR(6)
-Study Controls             	     SCT                 VARCHAR(6)
-Characteristics          	     CH                  TEXT
-Characteristics Type     	     CHT                 VARCHAR(12)
-Frequency In Cases       	     FIC                 VARCHAR(9)
-Allele Of Frequency In Cases     AFCS           	 VARCHAR(57)
-Frequency In Controls    	     FICT                VARCHAR(10)
-Allele Of Frequency In Controls	 AFCT                VARCHAR(57)
-P Value Operator         	     PVO                 VARCHAR(59)
-P Value                  	     PV                  VARCHAR(10)
-Ratio Stat Type          	     RST                 VARCHAR(7)
-Ratio Stat               	     RS                  VARCHAR(8)
-Confidence Interval Start	     CSTART              VARCHAR(10)
-Confidence Interval Stop 	     CSTOP               VARCHAR(13)
-Race(s)                  	     RACE                VARCHAR(61)
-'''
-
+# Create table <name> in db pharmgkb and insert data into it
+# FILE NAME                    TABLE NAME
+# study_parameters.tsv         SPA
+#
+# COLUMN                           COLUMN NAME         TYPE
+# Study Parameters ID      	     SPID                INT(10)
+# Study Type               	     ST                  VARCHAR(56)
+# Study Cases              	     SC                  VARCHAR(6)
+# Study Controls             	     SCT             VARCHAR(6)
+# Characteristics          	     CH                  TEXT
+# Characteristics Type     	     CHT                 VARCHAR(12)
+# Frequency In Cases       	     FIC                 VARCHAR(9)
+# Allele Of Frequency In Cases     AFCS           	 VARCHAR(57)
+# Frequency In Controls    	     FICT                VARCHAR(10)
+# Allele Of Frequency In Controls	 AFCT            VARCHAR(57)
+# P Value Operator         	     PVO                 VARCHAR(59)
+# P Value                  	     PV                  VARCHAR(10)
+# Ratio Stat Type          	     RST                 VARCHAR(7)
+# Ratio Stat               	     RS                  VARCHAR(8)
+# Confidence Interval Start	     CSTART              VARCHAR(10)
+# Confidence Interval Stop 	     CSTOP               VARCHAR(13)
+# Race(s)                  	     RACE                VARCHAR(61)
 
 import mysql.connector
 import time
 
-#=== execute insert function ================
-def execute_insert(conn, sql, list_of_values):
-    rowcount = 0
-    c = conn.cursor()
-    if (len(list_of_values) == 1):
-        c.execute(sql, list_of_values[0])
-        rowcount += c.rowcount
-    else:
-        c.executemany(sql, list_of_values)
-        rowcount += c.rowcount
-    c.close()
-    return rowcount
-
-#=== timing report ================
-def reportTime(note, total, start_time):
-    dt = time.time() - start_time
-    print ("{} Records: {} Time: {}; Rate: {:.2f}".format(
-        note, total, dt, total / (dt + .0001)))
-
-
+from util import execute_insert, reportTime
 #=== table SPA ============
 
-INSTR_CREATE = """CREATE TABLE IF NOT EXISTS SPA(
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS SPA (
     SPID                INT(10),
     ST                  VARCHAR(56),
     SC                  VARCHAR(6),
@@ -67,7 +45,7 @@ INSTR_CREATE = """CREATE TABLE IF NOT EXISTS SPA(
     CSTART              VARCHAR(10),
     CSTOP               VARCHAR(13),
     RACE                VARCHAR(61),
-    PRIMARY KEY (SPID));"""
+    PRIMARY KEY(SPID));"""
 
 COLUMNS = [
     "SPID",
@@ -89,12 +67,12 @@ COLUMNS = [
     "RACE"
     ]
 
-INSTR_INSERT = "INSERT INTO SPA (%s) VALUES (%s)" % (
+INSTR_INSERT = "INSERT INTO SPA(%s) VALUES(%s)" % (
     ", ".join(COLUMNS),
     ", ".join(['%s' for _ in COLUMNS]))
 
 #========================================
-def new_record (chrom, pos, lst):
+def new_record(chrom, pos, lst):
     rec = []
     rec.append(chrom)
     rec.append(pos)
@@ -120,10 +98,10 @@ def ingestSPA(db_host, db_port, user, password, database,
     print('Connected to %s...' % database)
 
     curs = conn.cursor()
-    print (INSTR_CREATE)
+    print(INSTR_CREATE)
     curs.execute(INSTR_CREATE)
 
-    with open (filename,'r') as file1:
+    with open(filename, 'r') as file1:
         list_of_records = []
         total, cnt, row_label = 0, 0, 0
         start_time = time.time()
@@ -138,7 +116,8 @@ def ingestSPA(db_host, db_port, user, password, database,
                     del row[5]
                 list_of_records.append(row)
                 if len(list_of_records) >= batch_size:
-                    total += execute_insert(conn, INSTR_INSERT,list_of_records)
+                    total += execute_insert(conn,
+                        INSTR_INSERT, list_of_records)
                     list_of_records = []
                     cnt += 1
                     if cnt >= 10:

@@ -1,55 +1,34 @@
-'''
-Create table <name> in db pharmgkb and insert data into it
-FILE NAME                    TABLE NAME 
-var_drug_ann.tsv             VPA2SPA
-
-COLUMN                      COLUMN NAME          TYPE
-Annotation Id               AID_VPA              INT(10)
-StudyParameters:            SPID_SPA             INT(10)
-'''
+# Create table <name> in db pharmgkb and insert data into it
+# FILE NAME                    TABLE NAME
+# clinical_ann_metadata.tsv     CAmeta2CA
+#
+# COLUMN                      COLUMN NAME         TYPE
+# Clinical Annotation Id      CAID_CAmeta         INT(10)
+# Genotype-Phenotype ID       GPID_CA             INT(10)
 
 import mysql.connector
 import time
 
-#=== execute insert function ================
-def execute_insert(conn, sql, list_of_values):
-    rowcount = 0
-    c = conn.cursor()
-    if (len(list_of_values) == 1):
-        c.execute(sql, list_of_values[0])
-        rowcount += c.rowcount
-    else:
-        c.executemany(sql, list_of_values)
-        rowcount += c.rowcount
-    c.close()
-    return rowcount
+from util import execute_insert, reportTime
+#=== table CAID_CAmeta ============
 
-#=== timing report ================
-def reportTime(note, total, start_time):
-    dt = time.time() - start_time
-    print ("{} Records: {} Time: {}; Rate: {:.2f}".format(
-        note, total, dt, total / (dt + .0001)))
-
-
-#=== table VPA2SPA ============
-
-INSTR_CREATE = """CREATE TABLE IF NOT EXISTS VPA2SPA(
-    AID_VPA              INT(10),
-    SPID_SPA             INT(10),
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS CAmeta2CA (
+    CAID_CAmeta         INT(10),
+    GPID_CA             INT(10),
     CONSTRAINT meta_to_CA
-    PRIMARY KEY (AID_VPA, SPID_SPA));"""
+    PRIMARY KEY(CAID_CAmeta, GPID_CA));"""
 
 COLUMNS = [
-    "AID_VPA ",
-    "SPID_SPA"
+    "CAID_CAmeta ",
+    "GPID_CA"
     ]
 
-INSTR_INSERT = "INSERT INTO VPA2SPA (%s) VALUES (%s)" % (
+INSTR_INSERT = "INSERT INTO CAmeta2CA(%s) VALUES(%s)" % (
     ", ".join(COLUMNS),
     ", ".join(['%s' for _ in COLUMNS]))
 
 #========================================
-def new_record (chrom, pos, lst):
+def new_record(chrom, pos, lst):
     rec = []
     rec.append(chrom)
     rec.append(pos)
@@ -61,7 +40,7 @@ def new_record (chrom, pos, lst):
     return rec
 
 #========================================
-def ingestVPA2SPA(db_host, db_port, user, password, database,
+def ingestCAmeta2CA(db_host, db_port, user, password, database,
         batch_size, filename):
 
     conn = mysql.connector.connect(
@@ -75,10 +54,10 @@ def ingestVPA2SPA(db_host, db_port, user, password, database,
     print('Connected to %s...' % database)
 
     curs = conn.cursor()
-    print (INSTR_CREATE)
+    print(INSTR_CREATE)
     curs.execute(INSTR_CREATE)
 
-    with open (filename,'r') as file1:
+    with open(filename, 'r') as file1:
         list_of_records = []
         total, cnt, row_label = 0, 0, 0
         start_time = time.time()
@@ -86,16 +65,14 @@ def ingestVPA2SPA(db_host, db_port, user, password, database,
             for line in file1:
                 row = line.strip('\n').split('\t')
                 if row_label == 0:
-                 row_label += 1
-                 continue
-                record = []
-                if row[9] == '':
+                    row_label += 1
                     continue
-                gpids = [int(i) for i in row[9].replace('\"', '').split(',')]
+                gpids = [int(i) for i in row[5].replace('\"', '').split(',')]
                 for i in range(len(gpids)):
-                    list_of_records.append([row[0],gpids[i]])
+                    list_of_records.append([row[0], gpids[i]])
                 if len(list_of_records) >= batch_size:
-                    total += execute_insert(conn, INSTR_INSERT,list_of_records)
+                    total += execute_insert(
+                        conn, INSTR_INSERT, list_of_records)
                     list_of_records = []
                     cnt += 1
                     if cnt >= 10:
@@ -111,11 +88,11 @@ def ingestVPA2SPA(db_host, db_port, user, password, database,
 
 #========================================
 if __name__ == '__main__':
-    ingestVPA2SPA(
+    ingestCAmeta2CA(
         db_host  = "localhost",
         db_port  = 3306,
         user     = 'test',
         password = 'test',
         database = "pharmgkb",
         batch_size = 100,
-        filename = "/db/data/PharmGKB/annotations/var_pheno_ann.tsv")
+        filename = "/db/data/PharmGKB/annotations/clinical_ann_metadata.tsv")

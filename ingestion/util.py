@@ -17,25 +17,25 @@ def execute_insert(conn, sql, list_of_values):
 #=== timing report ================
 def reportTime(note, total, start_time):
     dt = time.time() - start_time
-    print ("{} Records: {} Time: {}; Rate: {:.2f}".format(
-        note, total, dt, total / (dt + .0001)))
+    print("%s Records: %d Time: %s; Rate: %.2f" % (
+        note, total, str(dt), total / (dt + .0001)))
 
 #=== chromosome detection ================
 
 def detectFileChrom(parameter, filename):
-    sChromPatt = re.compile("(\\b|\\W){}(\w+)(\\b|\\W)".format(parameter), re.I)
-    CHROM_LIST = {str(idx) for idx in range(1, 23)} | {"M", "X", "Y"}
-    qq = sChromPatt.search(os.path.basename(filename))
-    assert qq is not None and qq.group(2).upper() in CHROM_LIST, (
+    chrom_patt = re.compile(r"(\b|\W)%s(\w+)(\b|\W)" % parameter, re.I)
+    chrom_list = {str(idx) for idx in range(1, 23)} | {"M", "X", "Y"}
+    qq = chrom_patt.search(os.path.basename(filename))
+    assert qq is not None and qq.group(2).upper() in chrom_list, (
         "Failed to detect chrom in filename: " + filename)
     return qq.group(2).upper()
 
 #=== file list extension ================
 def extendFileList(files):
-   result = []
-   for fname in files:
-       if '*' in fname:
-           result += list(glob(fname))
-       else:
-           result.append(fname)
-   return sorted(result)
+    result = []
+    for fname in files:
+        if '*' in fname:
+            result += list(glob(fname))
+        else:
+            result.append(fname)
+    return sorted(result)

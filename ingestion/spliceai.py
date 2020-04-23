@@ -1,10 +1,10 @@
-import argparse, time, sys
+import time, sys
 import mysql.connector
 import vcf as pyvcf
 from util import execute_insert, reportTime, extendFileList
 
 #=============== table SPLICEAI =========================
-DS_list = ['DS_AG', 'DS_AL','DS_DG','DS_DL']
+DS_list = ['DS_AG', 'DS_AL', 'DS_DG', 'DS_DL']
 vcf_columns = {
     "CHROM":    "varchar(4)",
     "POS":      "INT",
@@ -12,7 +12,7 @@ vcf_columns = {
     "REF":      "varchar(512)",
     "ALT":      "varchar(2048)"
     }
-    
+
 info_columns = {
     'DP_AG':   "INT",
     'DP_AL':   "INT",
@@ -23,10 +23,10 @@ info_columns = {
     'DS_DG':   "FLOAT",
     'DS_DL':   "FLOAT",
     'SYMBOL':  "varchar(20)",
-    'TYPE' :   "varchar(1)",
+    'TYPE':    "varchar(1)",
     'STRAND':  "varchar(1)"
     }
-    
+
 max_columns = {
     'MAX_DS':   "FLOAT"
     }
@@ -34,37 +34,43 @@ columns = vcf_columns.copy()
 columns.update(info_columns)
 columns.update(max_columns)
 fields = columns.keys()
-column_string = ", ".join(["{} {}".format(field, columns[field]) for field in fields])
- 
-INSTR_CREATE = "CREATE TABLE IF NOT EXISTS SPLICEAI ({},  UNIQUE INDEX PosIdx (POS, CHROM, REF, ALT,ID), INDEX RsIdIdx (ID));".format(column_string)
-INSTR_INSERT = "INSERT INTO SPLICEAI ({}) VALUES ({})".format( 
-                ", ".join(fields),
-                ", ".join(['%s' for c in fields]))
+
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS SPLICEAI (
+    %s,
+    UNIQUE INDEX PosIdx (POS, CHROM, REF, ALT,ID),
+    INDEX RsIdIdx (ID));""" % ", ".join(
+    ["%s %s" % (field, columns[field]) for field in fields])
+
+INSTR_INSERT = "INSERT INTO SPLICEAI (%s) VALUES (%s)" % (
+    ", ".join(fields),
+    ", ".join(['%s' for c in fields]))
+
 #============================================================
 def new_record(record):
     values = []
     info = record.INFO
     for column in columns:
         if (column in vcf_columns):
-            v = getattr(record,column)    
+            v = getattr(record, column)
             if column == 'ALT':
-                if len(v)>1:
-                    print >> sys.stderr, 'longALT:', repr(v)
-                assert len(v)==1
-                v=str(v[0])
+                if len(v) > 1:
+                    print('longALT:', repr(v), file = sys.stderr)
+                assert len(v) == 1
+                v = str(v[0])
             values.append(v)
-        elif (column in info_columns):
+        elif column in info_columns:
             v = info[column]
             values.append(v)
-        elif (column in max_columns):
+        elif column in max_columns:
             v = max(info[key] for key in DS_list)
             values.append(v)
         else:
-            raise Exception("{} is {}".format(column, v))
+            raise Exception("%s is %s" % (str(column), str(v)))
     return values
 #===========================================================
 
-def ingestSpliceAI(db_host, db_port, user, password, database,batch_size, file_list):
+def ingestSpliceAI(db_host, db_port, user, password,
+        database, batch_size, file_list):
     conn = mysql.connector.connect(
         host = db_host,
         port = db_port,
@@ -76,12 +82,12 @@ def ingestSpliceAI(db_host, db_port, user, password, database,batch_size, file_l
     print('Connected to %s...' % database)
 
     curs = conn.cursor()
-    print (INSTR_CREATE)
+    print(INSTR_CREATE)
     curs.execute(INSTR_CREATE)
-    
+
     for vcf_file in extendFileList(file_list):
-        print('vcf_file = {}'.format(vcf_file))
-        vcf_reader = pyvcf.Reader(filename = vcf_file,compressed = True)
+        print('vcf_file = %s' % vcf_file)
+        vcf_reader = pyvcf.Reader(filename = vcf_file, compressed = True)
         start_time = time.time()
         list_of_records = []
         total, cnt = 0, 0
@@ -89,7 +95,7 @@ def ingestSpliceAI(db_host, db_port, user, password, database,batch_size, file_l
             try:
                 values = new_record(record)
                 list_of_records.append(values)
-            except:
+            except Exception:
                 raise
             if len(list_of_records) >= batch_size:
                 total += execute_insert(conn, INSTR_INSERT, list_of_records)
@@ -100,15 +106,16 @@ def ingestSpliceAI(db_host, db_port, user, password, database,batch_size, file_l
                     reportTime("Records:", total, start_time)
         if len(list_of_records) > 0:
             total += execute_insert(conn, INSTR_INSERT, list_of_records)
-            reportTime("Done:", total, start_time)      
+            reportTime("Done:", total, start_time)
 
+
+#===========================================================
 if __name__ == '__main__':
     ingestSpliceAI(
         db_host  = 'localhost',
         db_port  = 3306,
-        user     = 'test', 
+        user     = 'test',
         password = 'test',
         database = 'spliceai',
         batch_size = 1000,
-        file_list = ['/home/trosman/work/spliceai/*.vcf.gz',])
-
+        file_list = ['/home/trosman/work/spliceai/*.vcf.gz'])

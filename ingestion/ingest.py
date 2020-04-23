@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 assert os.path.exists(args.config[0]), (
     "Config file not found: " + str(args.config[0]))
-    
+
 with open(args.config[0], "r", encoding = "utf-8") as inp:
     config = json.loads(inp.read())
 
@@ -73,18 +73,18 @@ if args.mode == "gnomad":
     sys.exit()
 #========================================
 if args.mode == "pharmgkb":
-    from pharmgkb.CA import ingestCA
-    from pharmgkb.CAmeta import ingestCAmeta
-    from pharmgkb.CAmeta2CA import ingestCAmeta2CA
-    from pharmgkb.SPA import ingestSPA
-    from pharmgkb.VDA import ingestVDA
-    from pharmgkb.VDA2SPA import ingestVDA2SPA
-    from pharmgkb.VFA import ingestVFA
-    from pharmgkb.VFA2SPA import ingestVFA2SPA
-    from pharmgkb.VPA import ingestVPA
-    from pharmgkb.VPA2SPA import ingestVPA2SPA
+    from pharmgkb.ca import ingestCA
+    from pharmgkb.ca_meta import ingestCAmeta
+    from pharmgkb.ca_meta2ca import ingestCAmeta2CA
+    from pharmgkb.spa import ingestSPA
+    from pharmgkb.vda import ingestVDA
+    from pharmgkb.vda2spa import ingestVDA2SPA
+    from pharmgkb.vfa import ingestVFA
+    from pharmgkb.vfa2spa import ingestVFA2SPA
+    from pharmgkb.vpa import ingestVPA
+    from pharmgkb.vpa2spa import ingestVPA2SPA
     from pgkb_retab import pgkbReTab
-    
+
     ingestCA(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
         db_port    = config.get("pharmgkb.db.port", std_db_port),
@@ -93,7 +93,7 @@ if args.mode == "pharmgkb":
         database   = config["pharmgkb.database"],
         batch_size = config["pharmgkb.batch_size"],
         filename   = config["pharmgkb.path"] + '/clinical_ann.tsv')
-    
+
     ingestCAmeta(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
         db_port    = config.get("pharmgkb.db.port", std_db_port),
@@ -102,7 +102,7 @@ if args.mode == "pharmgkb":
         database   = config["pharmgkb.database"],
         batch_size = config["pharmgkb.batch_size"],
         filename   = config["pharmgkb.path"] + '/clinical_ann_metadata.tsv')
-    
+
     ingestCAmeta2CA(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
         db_port    = config.get("pharmgkb.db.port", std_db_port),
@@ -111,7 +111,7 @@ if args.mode == "pharmgkb":
         database   = config["pharmgkb.database"],
         batch_size = config["pharmgkb.batch_size"],
         filename   = config["pharmgkb.path"] + '/clinical_ann_metadata.tsv')
-        
+
     ingestSPA(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
         db_port    = config.get("pharmgkb.db.port", std_db_port),
@@ -128,8 +128,8 @@ if args.mode == "pharmgkb":
         password   = config.get("pharmgkb.db.password", std_password),
         database   = config["pharmgkb.database"],
         batch_size = config["pharmgkb.batch_size"],
-        filename   = config["pharmgkb.path"] + '/var_drug_ann.tsv')   
-        
+        filename   = config["pharmgkb.path"] + '/var_drug_ann.tsv')
+
     ingestVDA2SPA(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
         db_port    = config.get("pharmgkb.db.port", std_db_port),
@@ -137,7 +137,7 @@ if args.mode == "pharmgkb":
         password   = config.get("pharmgkb.db.password", std_password),
         database   = config["pharmgkb.database"],
         batch_size = config["pharmgkb.batch_size"],
-        filename   = config["pharmgkb.path"] + '/var_drug_ann.tsv')   
+        filename   = config["pharmgkb.path"] + '/var_drug_ann.tsv')
 
     ingestVFA(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
@@ -146,7 +146,7 @@ if args.mode == "pharmgkb":
         password   = config.get("pharmgkb.db.password", std_password),
         database   = config["pharmgkb.database"],
         batch_size = config["pharmgkb.batch_size"],
-        filename   = config["pharmgkb.path"] + '/var_fa_ann.tsv')         
+        filename   = config["pharmgkb.path"] + '/var_fa_ann.tsv')
 
     ingestVFA2SPA(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
@@ -155,8 +155,8 @@ if args.mode == "pharmgkb":
         password   = config.get("pharmgkb.db.password", std_password),
         database   = config["pharmgkb.database"],
         batch_size = config["pharmgkb.batch_size"],
-        filename   = config["pharmgkb.path"] + '/var_fa_ann.tsv')    
-        
+        filename   = config["pharmgkb.path"] + '/var_fa_ann.tsv')
+
     ingestVPA(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
         db_port    = config.get("pharmgkb.db.port", std_db_port),
@@ -164,8 +164,8 @@ if args.mode == "pharmgkb":
         password   = config.get("pharmgkb.db.password", std_password),
         database   = config["pharmgkb.database"],
         batch_size = config["pharmgkb.batch_size"],
-        filename   = config["pharmgkb.path"] + '/var_pheno_ann.tsv')     
-        
+        filename   = config["pharmgkb.path"] + '/var_pheno_ann.tsv')
+
     ingestVPA2SPA(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
         db_port    = config.get("pharmgkb.db.port", std_db_port),
@@ -173,16 +173,17 @@ if args.mode == "pharmgkb":
         password   = config.get("pharmgkb.db.password", std_password),
         database   = config["pharmgkb.database"],
         batch_size = config["pharmgkb.batch_size"],
-        filename   = config["pharmgkb.path"] + '/var_pheno_ann.tsv')  
+        filename   = config["pharmgkb.path"] + '/var_pheno_ann.tsv')
+
     pgkbReTab(
         db_host    = config.get("pharmgkb.db.host", std_db_host),
         db_port    = config.get("pharmgkb.db.port", std_db_port),
         user       = config.get("pharmgkb.db.user", std_user),
         password   = config.get("pharmgkb.db.password", std_password),
-        database   = config["pharmgkb.database"])    
-                   
+        database   = config["pharmgkb.database"])
+
     sys.exit()
- 
+
 #========================================
 if args.mode == "gtex":
     from gtex import ingestGTEX
@@ -194,8 +195,8 @@ if args.mode == "gtex":
         database   = config["gtex.database"],
         batch_size = config["gtex.batch_size"],
         filename  = config["gtex.filename"])
-    sys.exit()   
-    
+    sys.exit()
+
 #========================================
 if args.mode == "spliceai":
     from spliceai import ingestSpliceAI
@@ -241,4 +242,3 @@ if args.mode == "clinvar":
 # ensembl
 
 assert False, "Unsupported ingest mode: " + str(args.mode)
-
