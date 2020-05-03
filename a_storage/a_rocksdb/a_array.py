@@ -17,9 +17,9 @@ class AArray:
             self.mFilteringSet |= set(schema_h.getFilteringProperties())
             self.mSchemaSeq.append(schema_h)
             if db_key_type is not None:
-                assert schema_h.getDBKeyType() ==  db_key_type, (
-                "Conflict dbkeys in %s: %s/%s" %(self.mName,
-                schema_h.getDBKeyType(), str(db_key_type)))
+                assert schema_h.getDBKeyType() == db_key_type, (
+                    "Conflict dbkeys in %s: %s/%s" % (self.mName,
+                    schema_h.getDBKeyType(), str(db_key_type)))
             db_key_type = schema_h.getDBKeyType()
             logging.info("Activate schema %s in %s"
                 % (schema_name, self.mName))

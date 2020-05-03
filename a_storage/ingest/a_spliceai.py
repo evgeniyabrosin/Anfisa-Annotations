@@ -1,4 +1,4 @@
-import json
+import json, gzip
 import vcf as pyvcf
 from datetime import datetime
 
@@ -44,7 +44,7 @@ def new_single_record(in_record):
 #===========================================================
 class InputDataReader:
     def __init__(self, fname):
-        self.mReader = pyvcf.Reader(open(fname, 'r'), compressed = False)
+        self.mReader = pyvcf.Reader(gzip.open(fname, 'rt'), compressed = False)
         self.mCurRecord = new_single_record(next(self.mReader))
 
     def isOver(self):
@@ -78,17 +78,19 @@ def processSpliceAI(file_list):
     total, count = 0, 0
     while True:
         min_key = None
-        for idx, buf in enumerate(buffers):
+        for idx in range(len(readers)):
+            buf = buffers[idx]
             if buf is None:
-                buf = buffers[idx] = readers[idx].getNext()
-            if buf is None:
-                continue
-            if min_key is None or min_key > buf[0]:
-                min_key = buf[0]
+                buffers[idx] = readers[idx].getNext()
+                buf = buffers[idx]
+            if buf is not None:
+                if min_key is None or min_key > buf[0]:
+                    min_key = buf[0]
         if min_key is None:
             break
         res_seq = []
-        for idx, buf in enumerate(buffers):
+        for idx in range(len(readers)):
+            buf = buffers[idx]
             if buf is not None and min_key == buf[0]:
                 res_seq += buf[1]
                 buffers[idx] = None

@@ -80,7 +80,6 @@ class ASchema:
     def getRecord(self, key, filtering = None):
         data_seq = self.mDbConnector.getData(key, self.mColNames)
         if data_seq[0] is None:
-            print(self.mName, "None:", data_seq, self.mDbConnector.getXKey(key).hex())
             return None
         decode_env = ADecodeEnv(data_seq[1] if len(data_seq) > 1 else None)
         ret = self.mCodec.decode(json.loads(data_seq[0]), decode_env)

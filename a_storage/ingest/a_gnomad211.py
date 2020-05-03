@@ -1,4 +1,5 @@
-import json, logging
+import json, logging, traceback
+from io import StringIO
 import vcf as pyvcf
 from datetime import datetime
 
@@ -41,6 +42,7 @@ class InputDataReader:
         self.mFName = fname
         self.mReader = pyvcf.Reader(open(fname, 'rb'), compressed = True)
         self.mCurRecord = self.new_variant(next(self.mReader))
+        self.mTotal = 0
 
     def getFName(self):
         return self.mFName
@@ -80,8 +82,14 @@ class InputDataReader:
         while True:
             try:
                 in_record = next(self.mReader)
+                self.mTotal += 1
             except Exception:
                 self.mCurRecord = None
+                logging.info("File %s ends with %d records" %
+                    (self.mFName, self.mTotal))
+                rep = StringIO()
+                traceback.print_exc(file = rep)
+                logging.info("End exc: " + rep.getvalue())
                 return [key, seq]
             self.mCurRecord = self.new_variant(in_record)
             if self.mCurRecord[0] == key:
@@ -123,17 +131,19 @@ def processGNOMAD211(genome_file_list, exome_file_list,
         total, count = 0, 0
         while True:
             min_key = None
-            for idx, buf in enumerate(buffers):
+            for idx in range(len(readers)):
+                buf = buffers[idx]
                 if buf is None:
-                    buf = buffers[idx] = readers[idx].getNext()
-                if buf is None:
-                    continue
-                if min_key is None or min_key > buf[0]:
-                    min_key = buf[0]
+                    buffers[idx] = readers[idx].getNext()
+                    buf = buffers[idx]
+                if buf is not None:
+                    if min_key is None or min_key > buf[0]:
+                        min_key = buf[0]
             if min_key is None:
                 break
             res_seq = []
-            for idx, buf in enumerate(buffers):
+            for idx in range(len(readers)):
+                buf = buffers[idx]
                 if buf is not None and min_key == buf[0]:
                     res_seq += buf[1]
                     buffers[idx] = None
