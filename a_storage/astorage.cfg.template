@@ -1,0 +1,87 @@
+{
+    "file-path-def": {
+        "TEST": "/home/trifon/work/MD/data_ex",
+        "WORK": "/home/trifon/work/MD/anno/Anfisa-Annotations"
+    },
+
+    "db-dir": "${WORK}/ADB",
+    "schema-dir": "${WORK}/ADB/.schemae",
+    
+    "db-options": {
+        "create_if_missing": true,
+        "error_if_exists": false,
+        "max_open_files": 3000,
+        "write_buffer_size": 67108864,
+        "max_write_buffer_number": 3,
+        "target_file_size_base": 67108864,
+        "max_total_wal_size": 104857600
+        //"compression": "lz4_compression"
+    },
+    "col-options": {
+        "base": {
+            //"compression": "lz4_compression"
+        },
+        "str": {
+            //"compression": "lz4_compression"
+        }
+    },
+    "samples-count": 100,
+    
+    "create": {
+        "Gerp": {
+            "file_list": "${TEST}/Gerp/chr1.maf.rates"
+        },
+        "SpliceAI": {
+            "file_list": "${TEST}/spliceai/*.vcf.gz"
+        },
+        "dbNSFP": {
+            "file_list": "${TEST}/dbNSFP/dbNSFP4.0a_variant.chr*.gz"
+        },
+        "gnomAD": {
+            "genome_file_list": "${TEST}/gnomad/gnomad.genomes.r2.1.1.sites.*.vcf.bgz",
+            "exome_file_list": "${TEST}/gnomad/gnomad.exomes.r2.1.1.sites.*.vcf.bgz",
+            "max_count": 10000
+        }
+    },
+    
+    "service": {
+        "arrays": {
+            "hg38": [
+                {"schema": "SpliceAI", "dbname": "SpliceAI"},
+                {"schema": "dbNSFP"}
+            ],
+            "hg19": [
+                {"schema": "Gerp"},
+                {"schema": "gnomAD"}
+            ]
+        }
+    }, 
+    
+    "host": "0.0.0.0",
+    "port": 8290,
+    "dir-files": [],
+    "logging": { 
+        "version": 1,
+        "disable_existing_loggers": false,
+        "formatters": { 
+                "standard": { 
+                "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+            }
+        },
+        "handlers": { 
+            "default": { 
+                "level": "INFO",
+                "formatter": "standard",
+                "class": "logging.FileHandler",
+                "filename": "${WORK}/ADB/logs/astorage.log"
+            }
+        },
+        "loggers": { 
+            "": { 
+                "handlers": ["default"],
+                "level": "INFO",
+                "propagate": true
+            }
+        } 
+    }
+}
