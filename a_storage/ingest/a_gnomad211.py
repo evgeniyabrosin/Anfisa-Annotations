@@ -1,9 +1,10 @@
-import json, logging, traceback
-from io import StringIO
-import vcf as pyvcf
+import sys, logging, traceback, gzip, json
 from datetime import datetime
+from io import StringIO
+import cyvcf2 as pyvcf
 
-from .a_util import reportTime, detectFileChrom, extendFileList
+from .a_util import (detectFileChrom, extendFileList,
+    JoinedReader, dumpReader, reportTime)
 #========================================
 MAIN_FIELDS_TAB = [
     ('AC',      int),
@@ -40,12 +41,15 @@ class InputDataReader:
         self.mChrom = chrom
         self.mSource = source
         self.mFName = fname
-        self.mReader = pyvcf.Reader(open(fname, 'rb'), compressed = True)
+        self.mReader = pyvcf.VCF(fname)
         self.mCurRecord = self.new_variant(next(self.mReader))
         self.mTotal = 0
 
     def getFName(self):
         return self.mFName
+
+    def close(self):
+        self.mReader.close()
 
     def isOver(self):
         return self.mCurRecord is None
@@ -100,72 +104,100 @@ class InputDataReader:
             return [key, seq]
 
 #===========================================================
-def processGNOMAD211(genome_file_list, exome_file_list,
-        chrom_loc = "sites.", max_count = -1):
-    genome_files = dict()
-    for fname in extendFileList(genome_file_list):
-        chrom = detectFileChrom(chrom_loc, fname)
-        assert chrom not in genome_files
-        genome_files[chrom] = fname
-    exome_files = dict()
-    for fname in extendFileList(exome_file_list):
-        chrom = detectFileChrom(chrom_loc, fname)
-        assert chrom not in exome_files
-        exome_files[chrom] = fname
-    chrom_set = set(genome_files.keys()) | set(exome_files.keys())
-    assert len(chrom_set) > 0
+class ReaderGNOMAD211:
+    def __init__(self, genome_file_list, exome_file_list,
+            chrom_loc = "sites.", max_count = -1):
+        self.mGenomeFiles = dict()
+        for fname in extendFileList(genome_file_list):
+            chrom = detectFileChrom(chrom_loc, fname)
+            assert chrom not in self.mGenomeFiles
+            self.mGenomeFiles[chrom] = fname
+        self.mExomeFiles = dict()
+        for fname in extendFileList(exome_file_list):
+            chrom = detectFileChrom(chrom_loc, fname)
+            assert chrom not in self.mExomeFiles
+            self.mExomeFiles[chrom] = fname
+        self.mChromSeq = sorted(
+            set(self.mGenomeFiles.keys()) | set(self.mExomeFiles.keys()),
+            reverse = True)
+        self.mMaxCount = max_count
+        assert len(self.mChromSeq) > 0
 
-    for chrom in sorted(chrom_set):
-        readers = []
+    def read(self):
+        for chrom in self.mChromSeq:
+            readers = []
 
-        fname = genome_files.get(chrom)
-        if fname:
-            readers.append(InputDataReader(chrom, "g", fname))
-        fname = exome_files.get(chrom)
-        if fname:
-            readers.append(InputDataReader(chrom, "e", fname))
-        logging.info(("Evaluation of %s chromosome:" % chrom)
-            + " ".join([reader.getFName() for reader in readers]))
-        buffers = [reader.getNext() for reader in readers]
-        start_time = datetime.now()
-        total, count = 0, 0
-        while True:
-            min_key = None
-            for idx in range(len(readers)):
-                buf = buffers[idx]
-                if buf is None:
-                    buffers[idx] = readers[idx].getNext()
-                    buf = buffers[idx]
-                if buf is not None:
-                    if min_key is None or min_key > buf[0]:
-                        min_key = buf[0]
-            if min_key is None:
-                break
-            res_seq = []
-            for idx in range(len(readers)):
-                buf = buffers[idx]
-                if buf is not None and min_key == buf[0]:
-                    res_seq += buf[1]
-                    buffers[idx] = None
-            total += len(res_seq)
-            count += 1
-            if max_count > 0 and count >= max_count:
-                break
-            if count % 100000 == 0:
-                reportTime("Chr" + chrom, total, start_time)
-            yield [min_key, res_seq]
-        reportTime("Done " + chrom, total, start_time)
+            fname = self.mGenomeFiles.get(chrom)
+            if fname:
+                readers.append(InputDataReader(chrom, "g", fname))
+            fname = self.mExomeFiles.get(chrom)
+            if fname:
+                readers.append(InputDataReader(chrom, "e", fname))
+            logging.info(("Evaluation of %s chromosome:" % chrom)
+                + " ".join([reader.getFName() for reader in readers]))
+            join_reader = JoinedReader("chr%s" % chrom,
+                readers, self.mMaxCount)
+            while not join_reader.isDone():
+                ret = join_reader.nextOne()
+                if ret is not None:
+                    yield ret
+            join_reader.close()
 
+#========================================
+class DirectReaderGNOMAD211:
+    def __init__(self, file_list):
+        self.mFNames = sorted(extendFileList(file_list), reverse = True)
+
+    def read(self):
+        for fname in self.mFNames:
+            start_time = datetime.now()
+            count = 0
+            logging.info("Loading: " + fname)
+            with gzip.open(fname, "rt", encoding = "utf-8") as inp:
+                for line in inp:
+                    key, rec = json.loads(line)
+                    count += 1
+                    if count % 100000 == 0:
+                        reportTime("", count, start_time)
+                    yield [tuple(key), rec]
+            reportTime("Done:" + fname, count, start_time)
+
+#========================================
+def reader_GNOMAD211(properties):
+    if "direct_file_list" in properties:
+        return DirectReaderGNOMAD211(properties["direct_file_list"])
+
+    return ReaderGNOMAD211(
+        properties["genome_file_list"],
+        properties["exome_file_list"],
+        properties.get("chrom_loc", "sites."),
+        properties.get("max_count", -1))
+
+#========================================
+def prepareDirectFiles(genome_file_list, exome_file_list, out_dir):
+    reader = ReaderGNOMAD211(genome_file_list, exome_file_list)
+    cur_chrom, cur_outp = None, None
+    for key, rec in reader.read():
+        if key[0] != cur_chrom:
+            if cur_outp is not None:
+                cur_outp.close()
+            cur_chrom = key[0]
+            fname = "%s/gnomad_dir_%s.js.gz" % (out_dir, cur_chrom)
+            logging.info("Writing %s..." % fname)
+            cur_outp = gzip.open(fname, "wt", encoding = "utf-8")
+        print(json.dumps([key, rec], sort_keys = True,
+            ensure_ascii = False), file = cur_outp)
+    cur_outp.close()
+    logging.info("File preparation done")
 
 #========================================
 if __name__ == '__main__':
-    for key, record in processGNOMAD211(
-            genome_file_list = "/home/trifon/work/MD/data_ex/gnomad/"
-            + "gnomad.genomes.r2.1.1.sites.*.vcf.bgz",
-            exome_file_list = "/home/trifon/work/MD/data_ex/gnomad/"
-            + "gnomad.exomes.r2.1.1.sites.*.vcf.bgz",
-            max_count = 100):
-        print(json.dumps({"key": list(key)},
-            ensure_ascii = False, sort_keys = True))
-        print(json.dumps(record,
-            ensure_ascii = False, sort_keys = True))
+    logging.root.setLevel(logging.INFO)
+    if sys.argv[1] == "DIR":
+        prepareDirectFiles(sys.argv[2], sys.argv[3], sys.argv[4])
+    else:
+        reader = reader_GNOMAD211({
+            "genome_file_list": sys.argv[1],
+            "exome_file_list": sys.argv[2],
+            "max_count": 100})
+        dumpReader(reader)

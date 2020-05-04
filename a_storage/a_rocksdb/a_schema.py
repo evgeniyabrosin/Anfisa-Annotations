@@ -101,9 +101,9 @@ class ASchema:
         with open(smp_fname, "w", encoding = "utf-8") as outp:
             cnt_bad = 0
             for key, record in self.mSamples:
-                encode_env = AEncodeEnv()
                 repr0 = json.dumps(record,
                     sort_keys = True, ensure_ascii = False)
+                encode_env = AEncodeEnv()
                 int_rec = self.mCodec.encode(record, encode_env)
                 decode_env = ADecodeEnv(encode_env.getBuf())
                 rec1 = self.mCodec.decode(json.loads(int_rec), decode_env)
@@ -114,7 +114,7 @@ class ASchema:
                    sort_keys = True, ensure_ascii = False)
                 if repr1 != repr2:
                     cnt_bad += 1
-                report = {"_rep": True, "key": key, "ok": repr0 == repr1,
+                report = {"_rep": True, "key": key, "ok": repr1 == repr2,
                     "xkey": self.mDbConnector.getXKey(key).hex()}
                 print(json.dumps(report, sort_keys = True,
                     ensure_ascii = False), file = outp)

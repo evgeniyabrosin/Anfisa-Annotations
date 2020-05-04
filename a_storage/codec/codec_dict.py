@@ -38,7 +38,7 @@ class CodecDict(_Codec):
                     it_repr = it.encode(it_val, encode_env)
             items_repr.append(it_repr)
         while len(items_repr) > 0 and items_repr[-1] == "null":
-            del items_repr[1]
+            del items_repr[-1]
         return '[' + ','.join(items_repr) + ']'
 
     def updateWStat(self, encode_env):

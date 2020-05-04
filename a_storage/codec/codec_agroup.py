@@ -52,14 +52,14 @@ class CodecAGroup(_Codec):
             for it in self.mItemCodecs:
                 it_repr = "null"
                 if it.isAggregate():
-                    it_repr = it.encode(value, encode_env)
+                    it_repr = it.encode(it_dict, encode_env)
                 else:
-                    it_val = value.get(it.getName())
+                    it_val = it_dict.get(it.getName())
                     if it_val is not None:
                         it_repr = it.encode(it_val, encode_env)
                 items_repr.append(it_repr)
             while len(items_repr) > 0 and items_repr[-1] == "null":
-                del items_repr[1]
+                del items_repr[-1]
             ret_repr.append('[' + ','.join(items_repr) + ']')
         return '[' + ','.join(ret_repr) + ']'
 
@@ -81,10 +81,10 @@ class CodecAGroup(_Codec):
                 if it.isAggregate():
                     if it_obj is not None:
                         grp_obj.update(it.decode(it_obj, decode_env))
-            else:
-                if it_obj is not None:
-                    grp_obj[it.getName()] = it.decode(it_obj, decode_env)
                 else:
-                    grp_obj[it.getName()] = None
+                    if it_obj is not None:
+                        grp_obj[it.getName()] = it.decode(it_obj, decode_env)
+                    else:
+                        grp_obj[it.getName()] = None
             ret[name] = grp_obj
         return ret

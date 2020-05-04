@@ -83,6 +83,7 @@ _VARIANT_PROPERTIES = [
 SCHEMA_DBNSFP_4 = {
     "name": "DBNSFP",
     "key": "hg38",
+    "block": 10,
     "filter-list": {"ref": "REF", "alt": "ALT"},
     "top": {
         "tp": "list",

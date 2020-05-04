@@ -40,7 +40,7 @@ class CodecList(_Codec):
         items_repr = [self.mItemCodec.encode(it, encode_env)
             for it in value]
         while len(items_repr) > 0 and items_repr[-1] == "null":
-            del items_repr[1]
+            del items_repr[-1]
         return '[' + ','.join(items_repr) + ']'
 
     def updateWStat(self, encode_env):

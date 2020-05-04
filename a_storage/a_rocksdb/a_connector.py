@@ -33,9 +33,11 @@ class AConnector:
     def _colOptions(self, col_type):
         col_options = rocksdb.ColumnFamilyOptions()
         col_options.OptimizeLevelStyleCompaction()
-        col_options.SetLZ4Compression()
         for key, val in self.mStorage.getColumnOptions(col_type):
-            setattr(col_options, key, val)
+            if key == "compression":
+                col_options.set_compression(val)
+            else:
+                setattr(col_options, key, val)
         return col_options
 
     def getName(self):

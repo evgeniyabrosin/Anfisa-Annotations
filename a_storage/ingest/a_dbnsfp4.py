@@ -1,7 +1,7 @@
-import json, gzip, logging
+import sys, gzip, logging
 from datetime import datetime
 
-from .a_util import reportTime, detectFileChrom, extendFileList
+from .a_util import reportTime, detectFileChrom, extendFileList, dumpReader
 #========================================
 VARIANT_TAB = [
     ("REF",                             str,    3),
@@ -149,41 +149,49 @@ class DataCollector:
         return self.mCurRecord
 
 #========================================
-def processDBNSFP4(file_list, chrom_loc = "chr"):
-    exceptions = 0
-    for chrom_file in extendFileList(file_list):
-        chrom = detectFileChrom(chrom_loc, chrom_file)
-        print("Evaluation of", chrom, "in", chrom_file)
-        with gzip.open(chrom_file, 'rt') as text_inp:
-            start_time = datetime.now()
-            collector = DataCollector()
-            for line_no, line in enumerate(text_inp):
-                if line_no == 0:
-                    continue
-                try:
-                    info = collector.ingestLine(line)
-                    if info is not None:
-                        yield info
-                    if (line_no % 10000) == 0:
-                        _, _, total_tr = collector.getCounts()
-                        reportTime("", total_tr, start_time)
-                except IndexError:
-                    exceptions += 1
-            info = collector.finishUp()
-            if info:
-                yield info
-            total_var, total_facets, total_tr = collector.getCounts()
-            reportTime("Done (transripts:", total_tr, start_time)
-            logging.info("variants: %d, facets: %d, exceptions: %d"
-                % (total_var, total_facets, exceptions))
+#========================================
+class ReaderDBNSFP4:
+    def __init__(self, file_list, chrom_loc = "chr"):
+        self.mFiles = extendFileList(file_list)
+        self.mChromLoc = chrom_loc
+
+    def read(self):
+        exceptions = 0
+        for chrom_file in self.mFiles:
+            chrom = detectFileChrom(self.mChromLoc, chrom_file)
+            print("Evaluation of", chrom, "in", chrom_file)
+            with gzip.open(chrom_file, 'rt') as text_inp:
+                start_time = datetime.now()
+                collector = DataCollector()
+                for line_no, line in enumerate(text_inp):
+                    if line_no == 0:
+                        continue
+                    try:
+                        info = collector.ingestLine(line)
+                        if info is not None:
+                            yield info
+                        if (line_no % 10000) == 0:
+                            total_var, _, _ = collector.getCounts()
+                            reportTime("", total_var, start_time)
+                    except IndexError:
+                        exceptions += 1
+                info = collector.finishUp()
+                if info:
+                    yield info
+                total_var, total_facets, total_tr = collector.getCounts()
+                reportTime("Done (transripts:", total_var, start_time)
+                logging.info("transcripts: %d, facets: %d, exceptions: %d"
+                    % (total_tr, total_facets, exceptions))
+
+#========================================
+def reader_dbNSFP4(properties):
+    return ReaderDBNSFP4(
+        properties["file_list"],
+        properties.get("chrom_loc", "chr"))
 
 
 #========================================
 if __name__ == '__main__':
-    for key, record in processDBNSFP4(
-            file_list = "/home/trifon/work/MD/data_ex/dbNSFP/"
-            + "dbNSFP4.0a_variant.chr*.gz"):
-        print(json.dumps({"key": list(key)},
-            ensure_ascii = False, sort_keys = True))
-        print(json.dumps(record,
-            ensure_ascii = False, sort_keys = True))
+    logging.root.setLevel(logging.INFO)
+    reader = reader_dbNSFP4({"file_list": sys.argv[1]})
+    dumpReader(reader)
