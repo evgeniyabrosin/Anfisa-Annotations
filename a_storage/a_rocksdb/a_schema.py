@@ -1,6 +1,6 @@
 import os, json, random, logging
 
-from codec import createDataCodec
+from codec import createDataCodec, createBlockCodec
 #========================================
 class ASchema:
     def __init__(self, storage, name, dbname,
@@ -38,6 +38,9 @@ class ASchema:
         if "str" in self.mRequirements:
             self.mColNames.append(self.mDbConnector._regColumn(
                 self.mName + "_str", "str"))
+
+        self.mBlocker = createBlockCodec(self, self.mSchemaDescr["blocking"])
+        self.mSchemaDescr["blocking"] = self.mBlocker.getDescr()
 
     def close(self):
         schema_fname = self.mStorage.getSchemaFilePath(self.mName + ".json")
