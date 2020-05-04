@@ -1,6 +1,6 @@
 import os, json, random, logging
 
-from codec import createCodec
+from codec import createDataCodec
 #========================================
 class ASchema:
     def __init__(self, storage, name, dbname,
@@ -26,7 +26,7 @@ class ASchema:
                 os.remove(schema_fname)
 
         self.mRequirements = set()
-        self.mCodec = createCodec(self, None, self.mSchemaDescr["top"],
+        self.mCodec = createDataCodec(self, None, self.mSchemaDescr["top"],
             self.mSchemaDescr["name"])
         self.mSchemaDescr["top"] = self.mCodec.getSchemaDescr()
         self.mFilters = self.mSchemaDescr.get("filter-list", dict())

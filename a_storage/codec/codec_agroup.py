@@ -1,12 +1,12 @@
-from ._codec import _Codec
+from ._codec_data import _CodecData
 #===============================================
-class CodecAGroup(_Codec):
+class CodecAGroup(_CodecData):
     def __init__(self, master, parent, schema_instr, default_name):
-        _Codec.__init__(self, master, parent, schema_instr, default_name)
+        _CodecData.__init__(self, master, parent, schema_instr, default_name)
         self.mGroup = self._getProperty("group")
         self.mGroupName = self._getProperty("group-name")
         self.mItemCodecs = [
-            _Codec.create(self.getMaster(), self, it_instr, None)
+            _CodecData.create(self.getMaster(), self, it_instr, None)
             for it_instr in self._getProperty("items")]
         if not self.mGroupName.startswith('<'):
             self.mGroupName = "<%s>" % self.mGroupName

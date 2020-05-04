@@ -1,11 +1,11 @@
-from ._codec import _Codec
+from ._codec_data import _CodecData
 #===============================================
-class CodecDict(_Codec):
+class CodecDict(_CodecData):
     def __init__(self, master, parent, schema_instr, default_name):
-        _Codec.__init__(self, master, parent, schema_instr, default_name)
+        _CodecData.__init__(self, master, parent, schema_instr, default_name)
 
         self.mItemCodecs = [
-            _Codec.create(self.getMaster(), self, it_instr, None)
+            _CodecData.create(self.getMaster(), self, it_instr, None)
             for it_instr in self._getProperty("items")]
         self._updateProperty("items",
             [it.getSchemaDescr() for it in self.mItemCodecs])

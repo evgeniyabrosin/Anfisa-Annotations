@@ -1,9 +1,9 @@
-from ._codec import _Codec
+from ._codec_data import _CodecData
 #===============================================
-class CodecList(_Codec):
+class CodecList(_CodecData):
     def __init__(self, master, parent, schema_instr, default_name):
-        _Codec.__init__(self, master, parent, schema_instr, default_name)
-        self.mItemCodec = _Codec.create(self.getMaster(), self,
+        _CodecData.__init__(self, master, parent, schema_instr, default_name)
+        self.mItemCodec = _CodecData.create(self.getMaster(), self,
             self._getProperty("item"), default_name = "")
         self._updateProperty("item", self.mItemCodec.getSchemaDescr())
         self.mStatNoneCount = 0

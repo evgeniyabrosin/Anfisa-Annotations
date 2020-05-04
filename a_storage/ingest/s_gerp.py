@@ -2,7 +2,10 @@
 SCHEMA_GERP = {
     "name": "Gerp",
     "key": "hg19",
-    "block": 400,
+    "blocking": {
+        "type": "segment",
+        "max-pos-count": 400
+    },
     "top": {
         "tp": "dict",
         "items": [

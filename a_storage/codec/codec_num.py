@@ -1,9 +1,9 @@
 import re
-from ._codec import _Codec
+from ._codec_data import _CodecData
 #===============================================
-class CodecNum(_Codec):
+class CodecNum(_CodecData):
     def __init__(self, master, parent, schema_instr, default_name):
-        _Codec.__init__(self, master, parent, schema_instr, default_name)
+        _CodecData.__init__(self, master, parent, schema_instr, default_name)
         self.mFormat = self._getProperty("format", "%.3e")
         self.mStatNoneCount = 0
         self.mStatValCount = 0

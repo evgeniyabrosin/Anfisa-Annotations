@@ -1,6 +1,6 @@
 import abc
 #===============================================
-class _Codec:
+class _CodecData:
     sCreateFunc = None
 
     @classmethod

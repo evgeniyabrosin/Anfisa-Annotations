@@ -26,7 +26,10 @@ VARIANT_ITEMS = [
 SCHEMA_GNOMAD_2_1 = {
     "name": "GnomAD",
     "key": "hg19",
-    "block": 200,
+    "blocking": {
+        "type": "cluster",
+        "max-var-count": 300
+    },
     "filter-list": {"ref": "REF", "alt": "ALT"},
     "top": {
         "tp": "list",

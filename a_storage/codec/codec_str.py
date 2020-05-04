@@ -1,8 +1,8 @@
-from ._codec import _Codec
+from ._codec_data import _CodecData
 #===============================================
-class CodecStr(_Codec):
+class CodecStr(_CodecData):
     def __init__(self, master, parent, schema_instr, default_name):
-        _Codec.__init__(self, master, parent, schema_instr, default_name)
+        _CodecData.__init__(self, master, parent, schema_instr, default_name)
         opt = self._getProperty("opt")
         if opt == "dict":
             self.mDictList = self._getProperty("dictlist", [])
