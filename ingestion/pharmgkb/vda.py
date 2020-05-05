@@ -23,7 +23,7 @@ import time
 from util import execute_insert, reportTime
 #=== table VDA ============
 
-INSTR_CREATE = """CREATE TABLE IF NOT EXISTS VDA (
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS PharmVDA (
     AID                INT(10),
     VAR                TEXT,
     GENE               TEXT,
@@ -51,7 +51,7 @@ COLUMNS = [
     "CHROM"
     ]
 
-INSTR_INSERT = "INSERT INTO VDA(%s) VALUES(%s)" % (
+INSTR_INSERT = "INSERT INTO PharmVDA(%s) VALUES(%s)" % (
     ", ".join(COLUMNS),
     ", ".join(['%s' for _ in COLUMNS]))
 

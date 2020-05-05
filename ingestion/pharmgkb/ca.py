@@ -13,7 +13,7 @@ import time
 from util import execute_insert, reportTime
 #=== table CA ============
 
-INSTR_CREATE = """CREATE TABLE IF NOT EXISTS CA (
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS PharmCA (
     GPID                INT(10),
     GTYPE               TEXT,
     CPTYPE              TEXT,
@@ -24,7 +24,7 @@ COLUMNS = [
     "GTYPE",
     "CPTYPE"]
 
-INSTR_INSERT = "INSERT INTO CA(%s) VALUES(%s)" % (
+INSTR_INSERT = "INSERT INTO PharmCA(%s) VALUES(%s)" % (
     ", ".join(COLUMNS),
     ", ".join(['%s' for _ in COLUMNS]))
 

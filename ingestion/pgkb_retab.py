@@ -173,13 +173,13 @@ def pgkbReTab(db_host, db_port, user, password, database):
             KEY (Variant));""", feed_mode = "single")]
 
     for scanner in (
-            TabScanner("clinical", "CAmeta",
+            TabScanner("clinical", "PharmCAmeta",
                 ["CAID", "LOC", "RC", "RD", "PMIDS", "AT"], tab_writers),
-            TabScanner("drug", "VDA",
+            TabScanner("drug", "PharmVDA",
                 ["AID", "VAR", "CHEM", "NULL", "PMID", "NOTES"], tab_writers),
-            TabScanner("fa", "VFA",
+            TabScanner("fa", "PharmVFA",
                 ["AID", "VAR", "CHEM", "NULL", "PMID", "NOTES"], tab_writers),
-            TabScanner("pheno", "VPA",
+            TabScanner("pheno", "PharmVPA",
                 ["AID", "VAR", "CHEM", "NULL", "PMID", "NOTES"], tab_writers)):
         scanner.scan(conn)
 

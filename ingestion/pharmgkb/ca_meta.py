@@ -26,7 +26,7 @@ import time
 from util import execute_insert, reportTime
 #=== table CAmeta ============
 
-INSTR_CREATE = """CREATE TABLE IF NOT EXISTS CAmeta (
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS PharmCAmeta (
     CAID                INT(10),
     LOC                 TEXT,
     GEN                 TEXT,
@@ -60,7 +60,7 @@ COLUMNS = [
     "CHR",
     ]
 
-INSTR_INSERT = "INSERT INTO CAmeta(%s) VALUES(%s)" % (
+INSTR_INSERT = "INSERT INTO PharmCAmeta(%s) VALUES(%s)" % (
     ", ".join(COLUMNS),
     ", ".join(['%s' for _ in COLUMNS]))
 
