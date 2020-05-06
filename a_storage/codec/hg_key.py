@@ -1,4 +1,4 @@
-from bisect import bisect_left
+from bisect import bisect
 
 #===============================================
 HG19_Tab = [
@@ -77,11 +77,11 @@ class FastaConvertor:
         if isinstance(chrom, tuple):
             chrom, pos = chrom
         long_pos = self.mDict[chrom] + pos
-        return (long_pos).to_bytes(4, byteorder='big')
+        return (long_pos).to_bytes(4, byteorder = 'big')
 
     def decode(self, key):
         long_pos = int.from_bytes(key, 'big')
-        idx = bisect_left(long_pos)
+        idx = bisect(self.mStarts, long_pos) - 1
         return (self.mTab[idx][0], long_pos - self.mStarts[idx])
 
 

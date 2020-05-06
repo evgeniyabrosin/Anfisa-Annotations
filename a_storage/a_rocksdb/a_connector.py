@@ -1,14 +1,13 @@
 import os, shutil, logging, json
 import pyrocksdb as rocksdb
 
-from codec import getKeyCodec
 #========================================
 class AConnector:
-    def __init__(self, storage, name, key_type, write_mode = False):
+    def __init__(self, storage, name, write_mode = False):
         self.mStorage = storage
         self.mName = name
+        self.mRefCount = 0
         self.mFilePath = self.mStorage.getDBFilePath(name)
-        self.mKeyCodec = getKeyCodec(key_type)
         self.mWriteMode = write_mode
         self.mColIndex = dict()
         self.mColDescriptors = rocksdb.VectorColumnFamilyDescriptor()
@@ -23,6 +22,16 @@ class AConnector:
                 shutil.rmtree(self.mFilePath)
             os.mkdir(self.mFilePath)
             self.mDB.open(self._dbOptions(), self.mFilePath)
+
+    def _incRefCount(self):
+        self.mRefCount += 1
+
+    def _decRefCount(self):
+        self.mRefCount -= 1
+        return self.mRefCount
+
+    def getName(self):
+        return self.mName
 
     def _dbOptions(self):
         options = rocksdb.Options()
@@ -39,9 +48,6 @@ class AConnector:
             else:
                 setattr(col_options, key, val)
         return col_options
-
-    def getName(self):
-        return self.mName
 
     def _regColumn(self, c_name, col_type):
         assert self.mColHandlers is None
@@ -77,9 +83,6 @@ class AConnector:
             del col_h
         self.mDB.close()
 
-    def getKeyType(self):
-        return self.mKeyCodec.getType()
-
     def getWriteMode(self):
         return self.mWriteMode
 
@@ -99,12 +102,8 @@ class AConnector:
             logging.info("Keys for %s/%s: %s"
                 % (self.mName, col_h.get_name(), json.dumps(seq)))
 
-    def getXKey(self, key):
-        return self.mKeyCodec.encode(key)
-
-    def putData(self, key, col_seq, data_seq, conv_bytes = True):
+    def putData(self, xkey, col_seq, data_seq, conv_bytes = True):
         assert self.mWriteMode
-        xkey = self.mKeyCodec.encode(key)
         for col_name, data in zip(col_seq, data_seq):
             if conv_bytes:
                 data = bytes(data, encoding = "utf-8")
@@ -112,8 +111,7 @@ class AConnector:
                 col_h = self.mColHandlers[self.mColIndex[col_name]]
                 self.mDB.put(self.mWrOpts, col_h, xkey, data)
 
-    def getData(self, key, col_seq, conv_bytes = True):
-        xkey = self.mKeyCodec.encode(key)
+    def getData(self, xkey, col_seq, conv_bytes = True):
         ret = []
         for col_name in col_seq:
             col_h = self.mColHandlers[self.mColIndex[col_name]]
@@ -123,3 +121,15 @@ class AConnector:
                 data = data.decode(encoding = "utf-8")
             ret.append(data)
         return ret
+
+    def seekData(self, xkey, col_name, conv_bytes):
+        col_h = self.mColHandlers[self.mColIndex[col_name]]
+        x_iter = self.mDB.iterator(self.mRdOpts, col_h)
+        x_iter.seek(xkey)
+        if x_iter.valid():
+            data = x_iter.value()
+            if conv_bytes and data is not None:
+                data = data.decode(encoding = "utf-8")
+            if data is not None:
+                return x_iter.key(), data
+        return None, None

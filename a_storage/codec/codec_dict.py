@@ -5,7 +5,7 @@ class CodecDict(_CodecData):
         _CodecData.__init__(self, master, parent, schema_instr, default_name)
 
         self.mItemCodecs = [
-            _CodecData.create(self.getMaster(), self, it_instr, None)
+            _CodecData.create(self.getMaster(), self, it_instr, "?")
             for it_instr in self._getProperty("items")]
         self._updateProperty("items",
             [it.getSchemaDescr() for it in self.mItemCodecs])

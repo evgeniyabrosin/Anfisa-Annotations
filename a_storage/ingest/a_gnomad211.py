@@ -74,7 +74,7 @@ class InputDataReader:
                 continue
             record[group_name] = sub_grp
         if self.mChrom in ("X", "Y"):
-            val = getField(info, "nhomalt_male")
+            val = getField(info, "nhomalt_male", int)
             record["hem"] = val if val else 0
         return [("chr" + self.mChrom, pos), record]
 
@@ -189,6 +189,7 @@ def prepareDirectFiles(genome_file_list, exome_file_list, out_dir):
             ensure_ascii = False), file = cur_outp)
     cur_outp.close()
     logging.info("File preparation done")
+
 
 #========================================
 if __name__ == '__main__':

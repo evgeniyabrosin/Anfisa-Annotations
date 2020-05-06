@@ -2,9 +2,9 @@
 SCHEMA_SPLICE_AI = {
     "name": "SpliceAI",
     "key": "hg38",
-    "blocking": {
-        "type": "cluster",
-        "max-var-count": 300
+    "io": {
+        "block-type": "segment",
+        "pos-frame": 200
     },
     "filter-list": {"ref": "REF", "alt": "ALT"},
     "top": {

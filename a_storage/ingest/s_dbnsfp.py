@@ -83,8 +83,8 @@ _VARIANT_PROPERTIES = [
 SCHEMA_DBNSFP_4 = {
     "name": "DBNSFP",
     "key": "hg38",
-    "blocking": {
-        "type": "cluster",
+    "io": {
+        "block-type": "cluster",
         "max-var-count": 50
     },
     "filter-list": {"ref": "REF", "alt": "ALT"},

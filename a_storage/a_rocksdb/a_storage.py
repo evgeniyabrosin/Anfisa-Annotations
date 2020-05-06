@@ -25,20 +25,21 @@ class AStorage:
     def getConnector(self, aspect_name):
         return self.mConnectors.get(aspect_name)
 
-    def openConnection(self, name, key_type, write_mode):
+    def openConnection(self, name, write_mode):
         if name not in self.mConnectors:
             self.mConnectors[name] = (
-                AConnector(self, name, key_type, write_mode))
+                AConnector(self, name, write_mode))
         ret = self.mConnectors[name]
-        assert (ret.getKeyType() == key_type
-            and ret.getWriteMode() == write_mode)
+        ret._incRefCount()
+        assert ret.getWriteMode() == write_mode
         return ret
 
     def closeConnection(self, connector_h):
         assert connector_h is self.mConnectors[connector_h.getName()]
-        del self.mConnectors[connector_h.getName()]
-        connector_h.close()
-        del connector_h
+        if connector_h._decRefCount() <= 0:
+            del self.mConnectors[connector_h.getName()]
+            connector_h.close()
+            del connector_h
 
     def activate(self):
         for connector_h in self.mConnectors.values():

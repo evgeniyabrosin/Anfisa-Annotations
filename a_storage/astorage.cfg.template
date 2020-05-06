@@ -1,11 +1,11 @@
 {
     "file-path-def": {
-        "TEST": "/home/trifon/work/MD/data_ex",
-        "WORK": "/home/trifon/work/MD/anno/Anfisa-Annotations"
+        "LOAD": "/db/download",
+        "WORK": "/projects/AStorage"
     },
 
-    "db-dir": "${WORK}/ADB",
-    "schema-dir": "${WORK}/ADB/.schemae",
+    "db-dir": "${WORK}/rdbs",
+    "schema-dir": "${WORK}/schema",
     
     "db-options": {
         "create_if_missing": true,
@@ -15,32 +15,34 @@
         "max_write_buffer_number": 3,
         "target_file_size_base": 67108864,
         "max_total_wal_size": 104857600
-        //"compression": "lz4_compression"
     },
     "col-options": {
         "base": {
-            //"compression": "lz4_compression"
+            "compression": "lz4_compression"
         },
         "str": {
-            //"compression": "lz4_compression"
+            "compression": "lz4_compression"
+        },
+        "sgidx": {
+            "compression": "no_compression"
         }
     },
     "samples-count": 100,
     
     "create": {
         "Gerp": {
-            "file_list": "${TEST}/Gerp/chr1.maf.rates"
+            "file_list": "${LOAD}/Gerp/chr*.maf.rates"
         },
         "SpliceAI": {
-            "file_list": "${TEST}/spliceai/*.vcf.gz"
+            "file_list": "${LOAD}/spliceAI/*.vcf.gz"
         },
         "dbNSFP": {
-            "file_list": "${TEST}/dbNSFP/dbNSFP4.0a_variant.chr*.gz"
+            "file_list": "${LOAD}/dbNSFP/dbNSFP4.0a_variant.chr*.gz"
         },
         "gnomAD": {
-            "genome_file_list": "${TEST}/gnomad/gnomad.genomes.r2.1.1.sites.*.vcf.bgz",
-            "exome_file_list": "${TEST}/gnomad/gnomad.exomes.r2.1.1.sites.*.vcf.bgz",
-            "max_count": 10000
+            //"genome_file_list": "${LOAD}/gnomad.2.1/gnomad.genomes.r2.1.1.sites.*.vcf.bgz",
+            //"exome_file_list": "${LOAD}/gnomad.2.1/gnomad.exomes.r2.1.1.sites.*.vcf.bgz"
+            "direct_file_list": "${LOAD}/gnomad/direct/*.js.gz"
         }
     },
     
@@ -59,6 +61,7 @@
     
     "host": "0.0.0.0",
     "port": 8290,
+    "html-base": "/",
     "dir-files": [],
     "logging": { 
         "version": 1,
@@ -73,7 +76,7 @@
                 "level": "INFO",
                 "formatter": "standard",
                 "class": "logging.FileHandler",
-                "filename": "${WORK}/ADB/logs/astorage.log"
+                "filename": "${WORK}/logs/astorage.log"
             }
         },
         "loggers": { 
