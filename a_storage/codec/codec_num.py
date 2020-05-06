@@ -44,7 +44,7 @@ class CodecNum(_CodecData):
             repr_val = repr_val[:-1]
         return repr_val
 
-    def updateWStat(self, encode_env):
+    def updateWStat(self):
         self._updateProperty("stat", {
             "null": self.mStatNoneCount,
             "int": self.mStatIntCount,

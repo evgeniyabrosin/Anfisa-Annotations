@@ -50,7 +50,7 @@ class CodecStr(_CodecData):
             v_idx = encode_env.addStr(value)
         return str(v_idx)
 
-    def updateWStat(self, encode_env):
+    def updateWStat(self):
         stat_info = {
             "null": self.mStatNoneCount,
             "val": self.mStatValCount,

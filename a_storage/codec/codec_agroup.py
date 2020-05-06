@@ -64,11 +64,13 @@ class CodecAGroup(_CodecData):
             ret_repr.append('[' + ','.join(items_repr) + ']')
         return '[' + ','.join(ret_repr) + ']'
 
-    def updateWStat(self, encode_env):
+    def updateWStat(self):
         stat_info = {
             "groups": self.mStatGrpCount,
             "val": self.mStatValCount}
         self._updateProperty("stat", stat_info)
+        for it in self.mItemCodecs:
+            it.updateWStat()
 
     def decode(self, group_obj, decode_env):
         ret = dict()

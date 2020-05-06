@@ -47,6 +47,7 @@ class ASchema:
         self.mIO.close()
         if self.mWriteMode:
             self.mSchemaDescr["total"] = self.mTotal
+            self.mCodec.updateWStat()
             with open(schema_fname, "w", encoding = "utf-8") as outp:
                 outp.write(json.dumps(self.mSchemaDescr, sort_keys = True,
                     indent = 4, ensure_ascii = False))

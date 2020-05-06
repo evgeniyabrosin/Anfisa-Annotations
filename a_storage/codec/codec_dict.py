@@ -41,11 +41,13 @@ class CodecDict(_CodecData):
             del items_repr[-1]
         return '[' + ','.join(items_repr) + ']'
 
-    def updateWStat(self, encode_env):
+    def updateWStat(self):
         stat_info = {
             "null": self.mStatNoneCount,
             "val": self.mStatValCount}
         self._updateProperty("stat", stat_info)
+        for it in self.mItemCodecs:
+            it.updateWStat()
 
     def decode(self, int_obj, decode_env):
         if int_obj is None:

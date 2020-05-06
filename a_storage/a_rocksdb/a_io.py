@@ -49,7 +49,7 @@ class AIOController:
     def _onDuty(self):
         assert not self.mOnDuty
         unused = set(self.mProperties.keys()) - set(self.mDescr.keys())
-        assert len(unused) == 0, (
+        assert not self.isWriteMode() or len(unused) == 0, (
             "Lost option(s) for %s blocker: %s"
             % (self.mSchema.getName(), ", ".join(sorted(unused))))
         self.mOnDuty = True

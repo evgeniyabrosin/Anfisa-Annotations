@@ -43,13 +43,14 @@ class CodecList(_CodecData):
             del items_repr[-1]
         return '[' + ','.join(items_repr) + ']'
 
-    def updateWStat(self, encode_env):
+    def updateWStat(self):
         stat_info = {
             "null": self.mStatNoneCount,
             "val": self.mStatValCount,
             "min-l": self.mStatMinL,
             "max-l": self.mStatMaxL}
         self._updateProperty("stat", stat_info)
+        self.mItemCodec.updateWStat()
 
     def decode(self, int_obj, decode_env):
         if int_obj is None:

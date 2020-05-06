@@ -43,7 +43,7 @@ class _CodecData:
     def _onDuty(self):
         assert not self.mOnDuty
         unused = set(self.mSchemaInstr.keys()) - set(self.mSchemaDescr.keys())
-        assert len(unused) == 0, (
+        assert not self.mMaster.isWriteMode() or len(unused) == 0, (
             "Lost option(s) for codec %s: %s"
             % (self.getPath(), ", ".join(sorted(unused))))
         self.mOnDuty = True
@@ -82,7 +82,7 @@ class _CodecData:
         return None
 
     @abc.abstractmethod
-    def updateWStat(self, encode_env):
+    def updateWStat(self):
         return None
 
     @abc.abstractmethod
