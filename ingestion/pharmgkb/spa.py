@@ -27,7 +27,7 @@ import time
 from util import execute_insert, reportTime
 #=== table SPA ============
 
-INSTR_CREATE = """CREATE TABLE IF NOT EXISTS SPA (
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS PharmSPA (
     SPID                INT(10),
     ST                  VARCHAR(56),
     SC                  VARCHAR(6),
@@ -67,7 +67,7 @@ COLUMNS = [
     "RACE"
     ]
 
-INSTR_INSERT = "INSERT INTO SPA(%s) VALUES(%s)" % (
+INSTR_INSERT = "INSERT INTO PharmSPA(%s) VALUES(%s)" % (
     ", ".join(COLUMNS),
     ", ".join(['%s' for _ in COLUMNS]))
 
