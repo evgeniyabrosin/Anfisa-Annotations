@@ -18,7 +18,7 @@
     },
     "col-options": {
         "base": {
-            "compression": "lz4_compression"
+            "compression": "bz2_compression"
         },
         "str": {
             "compression": "lz4_compression"

@@ -1,4 +1,4 @@
-import os, re, logging, json
+import os, re, logging, json, gzip
 from glob import glob
 from datetime import datetime
 
@@ -87,3 +87,38 @@ def dumpReader(reader):
             ensure_ascii = False, sort_keys = True))
         print(json.dumps(record,
             ensure_ascii = False, sort_keys = True))
+
+#========================================
+def writeDirect(reader, file_pattern, out_dir):
+    cur_chrom, cur_outp = None, None
+    for key, rec in reader.read():
+        if key[0] != cur_chrom:
+            if cur_outp is not None:
+                cur_outp.close()
+            cur_chrom = key[0]
+            fname = out_dir + "/" + (file_pattern % cur_chrom)
+            logging.info("Writing %s..." % fname)
+            cur_outp = gzip.open(fname, "wt", encoding = "utf-8")
+        print(json.dumps([key, rec], sort_keys = True,
+            ensure_ascii = False), file = cur_outp)
+    cur_outp.close()
+    logging.info("File preparation done")
+
+#========================================
+class DirectReader:
+    def __init__(self, file_list):
+        self.mFNames = sorted(extendFileList(file_list), reverse = True)
+
+    def read(self):
+        for fname in self.mFNames:
+            start_time = datetime.now()
+            count = 0
+            logging.info("Loading: " + fname)
+            with gzip.open(fname, "rt", encoding = "utf-8") as inp:
+                for line in inp:
+                    key, rec = json.loads(line)
+                    count += 1
+                    if count % 100000 == 0:
+                        reportTime("", count, start_time)
+                    yield [tuple(key), rec]
+            reportTime("Done:" + fname, count, start_time)

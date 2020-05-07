@@ -1,7 +1,8 @@
 import sys, logging
 import cyvcf2 as pyvcf
 
-from .a_util import JoinedReader, extendFileList, dumpReader
+from .a_util import (JoinedReader, extendFileList, dumpReader,
+    writeDirect, DirectReader)
 #========================================
 VCF_INFO_NAMES = (
     "ALT|SYMBOL|DS_AG|DS_AL|DS_DG|DS_DL|DP_AG|DP_AL|DP_DG|DP_DL".split('|'))
@@ -87,6 +88,9 @@ class ReaderSpliceAI:
 
 #========================================
 def reader_SpliceAI(properties):
+    if "direct_file_list" in properties:
+        return DirectReader(properties["direct_file_list"])
+
     return ReaderSpliceAI(
         properties["file_list"],
         properties.get("max_count", -1))
@@ -95,5 +99,9 @@ def reader_SpliceAI(properties):
 #========================================
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)
+    if sys.argv[1] == "DIR":
+        reader = reader_SpliceAI({
+            "file_list": sys.argv[2]})
+        writeDirect(reader, "gnomad_dir_%s.js.gz", sys.argv[4])
     reader = reader_SpliceAI({"file_list": sys.argv[1]})
     dumpReader(reader)

@@ -5,20 +5,21 @@ class BlockerSegment():
         self.mPosFrame = self.mIO._getProperty("pos-frame")
         self.mCurWriterKey = None
         if self.mIO.isWriteMode():
-            self.mStatSegments = 0
-            self.mStatPosGaps = 0
+            self.mCountSegments = 0
+            self.mCountPosGaps = 0
 
     def _addWriteStat(self, count_pos_gaps):
-        self.mStatSegments += 1
-        self.mStatPosGaps += count_pos_gaps
+        self.mCountSegments += 1
+        self.mCountPosGaps  += count_pos_gaps
 
     def getType(self):
         return "segment"
 
     def close(self):
         if self.mIO.isWriteMode():
-            self.mIO._updateProperty("stat-segments", self.mStatSegments)
-            self.mIO._updateProperty("stat-pos-gaps", self.mStatPosGaps)
+            self.mIO._updateProperty("stat", {
+                "segments": self.mCountSegments,
+                "pos-gaps": self.mCountPosGaps})
 
     def getIO(self):
         return self.mIO

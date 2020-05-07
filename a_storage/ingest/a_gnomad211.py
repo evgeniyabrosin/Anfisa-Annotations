@@ -1,10 +1,9 @@
-import sys, logging, traceback, gzip, json
-from datetime import datetime
+import sys, logging, traceback
 from io import StringIO
 import cyvcf2 as pyvcf
 
 from .a_util import (detectFileChrom, extendFileList,
-    JoinedReader, dumpReader, reportTime)
+    JoinedReader, dumpReader, DirectReader, writeDirect)
 #========================================
 MAIN_FIELDS_TAB = [
     ('AC',      int),
@@ -144,28 +143,9 @@ class ReaderGNOMAD211:
             join_reader.close()
 
 #========================================
-class DirectReaderGNOMAD211:
-    def __init__(self, file_list):
-        self.mFNames = sorted(extendFileList(file_list), reverse = True)
-
-    def read(self):
-        for fname in self.mFNames:
-            start_time = datetime.now()
-            count = 0
-            logging.info("Loading: " + fname)
-            with gzip.open(fname, "rt", encoding = "utf-8") as inp:
-                for line in inp:
-                    key, rec = json.loads(line)
-                    count += 1
-                    if count % 100000 == 0:
-                        reportTime("", count, start_time)
-                    yield [tuple(key), rec]
-            reportTime("Done:" + fname, count, start_time)
-
-#========================================
 def reader_GNOMAD211(properties):
     if "direct_file_list" in properties:
-        return DirectReaderGNOMAD211(properties["direct_file_list"])
+        return DirectReader(properties["direct_file_list"])
 
     return ReaderGNOMAD211(
         properties["genome_file_list"],
@@ -173,29 +153,15 @@ def reader_GNOMAD211(properties):
         properties.get("chrom_loc", "sites."),
         properties.get("max_count", -1))
 
-#========================================
-def prepareDirectFiles(genome_file_list, exome_file_list, out_dir):
-    reader = ReaderGNOMAD211(genome_file_list, exome_file_list)
-    cur_chrom, cur_outp = None, None
-    for key, rec in reader.read():
-        if key[0] != cur_chrom:
-            if cur_outp is not None:
-                cur_outp.close()
-            cur_chrom = key[0]
-            fname = "%s/gnomad_dir_%s.js.gz" % (out_dir, cur_chrom)
-            logging.info("Writing %s..." % fname)
-            cur_outp = gzip.open(fname, "wt", encoding = "utf-8")
-        print(json.dumps([key, rec], sort_keys = True,
-            ensure_ascii = False), file = cur_outp)
-    cur_outp.close()
-    logging.info("File preparation done")
-
 
 #========================================
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)
     if sys.argv[1] == "DIR":
-        prepareDirectFiles(sys.argv[2], sys.argv[3], sys.argv[4])
+        reader = reader_GNOMAD211({
+            "genome_file_list": sys.argv[2],
+            "exome_file_list": sys.argv[3]})
+        writeDirect(reader, "gnomad_dir_%s.js.gz", sys.argv[4])
     else:
         reader = reader_GNOMAD211({
             "genome_file_list": sys.argv[1],

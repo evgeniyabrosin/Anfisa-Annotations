@@ -126,10 +126,10 @@ class AConnector:
         col_h = self.mColHandlers[self.mColIndex[col_name]]
         x_iter = self.mDB.iterator(self.mRdOpts, col_h)
         x_iter.seek(xkey)
+        ret_key, ret_data = None, None
         if x_iter.valid():
-            data = x_iter.value()
-            if conv_bytes and data is not None:
-                data = data.decode(encoding = "utf-8")
-            if data is not None:
-                return x_iter.key(), data
-        return None, None
+            ret_key, ret_data = x_iter.key(), x_iter.value()
+            if conv_bytes and ret_data is not None:
+                ret_data = ret_data.decode(encoding = "utf-8")
+        del x_iter
+        return ret_key, ret_data

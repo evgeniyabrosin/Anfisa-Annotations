@@ -10,12 +10,12 @@ class BlockerCluster():
         self.mMaxPosCount = self.mIO._getProperty(
             "max-loc-count", self.MAX_POS_COUNT)
         if self.mIO.isWriteMode():
-            self.mStatBlocks = 0
-            self.mStatVariants = 0
+            self.mCountBlocks = 0
+            self.mCountVariants = 0
 
     def _addWriteStat(self, var_count):
-        self.mStatBlocks += 1
-        self.mStatVariants += var_count
+        self.mCountBlocks += 1
+        self.mCountVariants += var_count
 
     def writeCountsAreGood(self, pos_count, var_count):
         if pos_count + 1 >= self.mMaxPosCount:
@@ -30,18 +30,14 @@ class BlockerCluster():
 
     def close(self):
         if self.mIO.isWriteMode():
-            self.mIO._updateProperty("stat-blocks", self.mStatBlocks)
+            stat_info = {"blocks": self.mCountBlocks}
             if self.mMaxVarCount is not None:
-                self.mIO._updateProperty("stat-variants", self.mStatVariants)
+                stat_info["variants"] = self.mCountVariants
+            self.mIO._updateProperty("stat", stat_info)
 
     def addToIndex(self, chrom, pos_seq):
-        seq_xdelta = []
-        for idx in range(len(pos_seq) - 1, 0, -1):
-            delta = pos_seq[idx] - pos_seq[idx - 1] - 1
-            seq_xdelta.append(delta.to_bytes(1, byteorder = 'big'))
-        xdata = b''.join(seq_xdelta)
         self.mIO._putColumns((chrom, pos_seq[-1]),
-            [xdata], self.mIdxColumns, conv_bytes = False)
+            [pseq2bytes(pos_seq)], self.mIdxColumns, conv_bytes = False)
 
     def createWriteBlock(self, encode_env, key, codec):
         if (self.mCurWriterKey is not None
@@ -55,17 +51,34 @@ class BlockerCluster():
         key_base, data_base = self.mIO._seekColumn(key,
             self.mIdxColumns[0], conv_bytes = False)
         pos_seq = None
-        if key_base is not None:
-            delta_seq = [int.from_bytes(data_base[idx:idx + 1], 'big')
-                for idx in range(0, len(data_base))]
-            pos_seq = [key_base[1]]
-            for delta in delta_seq:
-                pos_seq.append(pos_seq[-1] - delta - 1)
-            pos_seq = pos_seq[-1::-1]
+        if key_base is not None and key_base[0] == key[0]:
+            pos_seq = bytes2pseq(key_base[1], data_base)
             data_seq = self.mIO._getColumns(key_base)
             return _ReadClusterBlock(self, key, pos_seq,
                 decode_env_class(data_seq))
         return _ReadClusterBlock(self, key)
+
+#===============================================
+def pseq2bytes(pos_seq):
+    xseq = [0, 0]
+    for idx in range(len(pos_seq) - 1, 0, -1):
+        delta = pos_seq[idx] - pos_seq[idx - 1] - 1
+        if xseq[-1] == delta and xseq[-2] < 255:
+            xseq[-2] += 1
+        else:
+            xseq += [1, delta]
+    if len(xseq) > 2 and xseq[0] == 0:
+        assert xseq[1] == 0
+        del xseq[:2]
+    return b''.join(n.to_bytes(1, 'big') for n in xseq)
+
+def bytes2pseq(pos0, xbytes):
+    pseq = [pos0]
+    for idx in range(0, len(xbytes), 2):
+        cnt, delta = xbytes[idx], xbytes[idx + 1]
+        for _ in range(cnt):
+            pseq.append(pseq[-1] - delta - 1)
+    return pseq[-1::-1]
 
 #===============================================
 class _WriteClusterBlock:
