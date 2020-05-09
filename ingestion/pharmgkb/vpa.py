@@ -31,7 +31,7 @@ INSTR_CREATE = """CREATE TABLE IF NOT EXISTS PharmVPA (
     PMID               INT(10),
     PCAT               VARCHAR(37),
     SIGN               VARCHAR(10),
-    NOTES              TEXT,
+    NOTES              BLOB,
     SENT               TEXT,
     AL                VARCHAR(167),
     CHROM              VARCHAR(5),
