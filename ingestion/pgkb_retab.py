@@ -71,10 +71,14 @@ class TabWriter:
         if value in ("", None):
             return
         assert Parsing.checkGoodVar(variant)
-        if (self.mFeedMode == "single"
-                or (self.mFeedMode == "int?" and isinstance(value, int))):
+        if self.mFeedMode == "single":
             assert len(self.mSpecColumns) == 1
             self.mValues.append([variant, assoc_kind, assoc_id, value])
+            return
+        if self.mFeedMode == "int?":
+            assert len(self.mSpecColumns) == 1
+            for v in str(value).split(';'):
+                self.mValues.append([variant, assoc_kind, assoc_id, v])
             return
         for val in Parsing.splitValues(value):
             val = val.strip()
