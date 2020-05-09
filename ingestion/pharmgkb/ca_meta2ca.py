@@ -67,7 +67,8 @@ def ingestCAmeta2CA(db_host, db_port, user, password, database,
                 if row_label == 0:
                     row_label += 1
                     continue
-                gpids = [int(i) for i in row[5].replace('\"', '').split(',')]
+                # gpids = [int(i) for i in row[5].replace('\"', '').split(',')]
+                gpids = [int(i) for i in row[5].split(';')]
                 for i in range(len(gpids)):
                     list_of_records.append([row[0], gpids[i]])
                 if len(list_of_records) >= batch_size:
