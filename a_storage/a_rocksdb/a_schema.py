@@ -1,6 +1,7 @@
 import os, json, random, logging
 
-from codec import createDataCodec, createBlockCodec
+from codec import createDataCodec
+from .a_io import AIOController
 #========================================
 class ASchema:
     def __init__(self, storage, name, dbname,
@@ -9,11 +10,6 @@ class ASchema:
         self.mName = name
         self.mSchemaDescr = schema_descr
         self.mWriteMode = write_mode
-        if self.mWriteMode:
-            self.mTotal = 0
-            self.mRH = random.Random(179)
-            self.mSmpCount = self.mStorage.getSamplesCount()
-            self.mSamples = []
 
         schema_fname = self.mStorage.getSchemaFilePath(self.mName + ".json")
         if not self.mWriteMode:
@@ -31,31 +27,47 @@ class ASchema:
         self.mSchemaDescr["top"] = self.mCodec.getSchemaDescr()
         self.mFilters = self.mSchemaDescr.get("filter-list", dict())
 
-        self.mDbConnector = self.mStorage.openConnection(
-            dbname, self.mSchemaDescr["key"], self.mWriteMode)
-        self.mColNames = [self.mDbConnector._regColumn(
-            self.mName + "_base", "base")]
-        if "str" in self.mRequirements:
-            self.mColNames.append(self.mDbConnector._regColumn(
-                self.mName + "_str", "str"))
+        if self.mWriteMode:
+            self.mTotal = 0
+            self.mRH = random.Random(179)
+            self.mSmpCount = self.mStorage.getSamplesCount()
+            self.mSamples = []
 
-        self.mBlocker = createBlockCodec(self, self.mSchemaDescr["blocking"])
-        self.mSchemaDescr["blocking"] = self.mBlocker.getDescr()
+        self.mIO = AIOController(self, dbname, self.mSchemaDescr["io"])
+        self.mSchemaDescr["io"] = self.mIO.getDescr()
+
+    def flush(self):
+        self.mIO.flush()
 
     def close(self):
+        self.mIO.flush()
         schema_fname = self.mStorage.getSchemaFilePath(self.mName + ".json")
-        with open(schema_fname, "w", encoding = "utf-8") as outp:
-            outp.write(json.dumps(self.mSchemaDescr, sort_keys = True,
-                indent = 4, ensure_ascii = False))
         if self.mWriteMode:
             self.careSamples()
-        self.mStorage.closeConnection(self.mDbConnector)
+        self.mIO.close()
+        if self.mWriteMode:
+            self.mSchemaDescr["total"] = self.mTotal
+            self.mCodec.updateWStat()
+            with open(schema_fname, "w", encoding = "utf-8") as outp:
+                outp.write(json.dumps(self.mSchemaDescr, sort_keys = True,
+                    indent = 4, ensure_ascii = False))
+
+    def getStorage(self):
+        return self.mStorage
 
     def getName(self):
         return self.mName
 
+    def isWriteMode(self):
+        return self.mWriteMode
+
     def getProperty(self, name):
         return self.mSchemaDescr.get(name)
+
+    def getTotal(self):
+        if self.mWriteMode:
+            return self.mTotal
+        return self.mSchemaDescr["total"]
 
     def addRequirement(self, rq):
         self.mRequirements.add(rq)
@@ -64,29 +76,24 @@ class ASchema:
         return self.mFilters.keys()
 
     def getDBKeyType(self):
-        return self.mDbConnector.getKeyType()
+        return self.mIO.getDBKeyType()
+
+    def isOptionRequired(self, opt):
+        return opt in self.mRequirements
 
     def putRecord(self, key, record):
-        encode_env = AEncodeEnv()
-        data_seq = [self.mCodec.encode(record, encode_env)]
-        if len(self.mColNames) > 1:
-            data_seq.append(encode_env.getBuf())
-        self.mDbConnector.putData(key, self.mColNames, data_seq)
+        self.mIO.putRecord(key, record, self.mCodec)
         self.mTotal += 1
         if len(self.mSamples) < self.mSmpCount:
             self.mSamples.append([key, record])
         else:
             idx = self.mRH.randrange(0, self.mTotal)
-            if idx < self.mSmpCount:
+            if 1 <= idx < self.mSmpCount:
                 self.mSamples[idx] = [key, record]
 
     def getRecord(self, key, filtering = None):
-        data_seq = self.mDbConnector.getData(key, self.mColNames)
-        if data_seq[0] is None:
-            return None
-        decode_env = ADecodeEnv(data_seq[1] if len(data_seq) > 1 else None)
-        ret = self.mCodec.decode(json.loads(data_seq[0]), decode_env)
-        if filtering is not None:
+        ret = self.mIO.getRecord(key, self.mCodec)
+        if ret is not None and filtering is not None:
             for key, value in filtering.items():
                 field = self.mFilters.get(key)
                 if field is None:
@@ -106,19 +113,15 @@ class ASchema:
             for key, record in self.mSamples:
                 repr0 = json.dumps(record,
                     sort_keys = True, ensure_ascii = False)
-                encode_env = AEncodeEnv()
-                int_rec = self.mCodec.encode(record, encode_env)
-                decode_env = ADecodeEnv(encode_env.getBuf())
-                rec1 = self.mCodec.decode(json.loads(int_rec), decode_env)
-                rec2 = self.getRecord(key)
+                rec1 = self.mIO.transformRecord(key, record, self.mCodec)
                 repr1 = json.dumps(rec1,
                     sort_keys = True, ensure_ascii = False)
+                rec2 = self.getRecord(key)
                 repr2 = json.dumps(rec2,
                    sort_keys = True, ensure_ascii = False)
                 if repr1 != repr2:
                     cnt_bad += 1
-                report = {"_rep": True, "key": key, "ok": repr1 == repr2,
-                    "xkey": self.mDbConnector.getXKey(key).hex()}
+                report = {"_rep": True, "key": key, "ok": repr1 == repr2}
                 print(json.dumps(report, sort_keys = True,
                     ensure_ascii = False), file = outp)
                 if repr0 != repr1:
@@ -131,24 +134,3 @@ class ASchema:
         else:
             logging.error("BAD! Samples check for %s: %d of %d"
                 % (self.mName, cnt_bad, self.mSmpCount))
-
-#========================================
-class AEncodeEnv:
-    def __init__(self):
-        self.mStrSeq = []
-
-    def addStr(self, txt):
-        ret = len(self.mStrSeq)
-        self.mStrSeq.append(txt)
-        return ret
-
-    def getBuf(self):
-        return '\0'.join(self.mStrSeq)
-
-#========================================
-class ADecodeEnv:
-    def __init__(self, str_buf = None):
-        self.mStrSeq = str_buf.split('\0') if str_buf is not None else []
-
-    def getStr(self, idx):
-        return self.mStrSeq[idx]

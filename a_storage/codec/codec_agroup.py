@@ -2,11 +2,12 @@ from ._codec_data import _CodecData
 #===============================================
 class CodecAGroup(_CodecData):
     def __init__(self, master, parent, schema_instr, default_name):
+        self.mGroupName = "?"
         _CodecData.__init__(self, master, parent, schema_instr, default_name)
         self.mGroup = self._getProperty("group")
         self.mGroupName = self._getProperty("group-name")
         self.mItemCodecs = [
-            _CodecData.create(self.getMaster(), self, it_instr, None)
+            _CodecData.create(self.getMaster(), self, it_instr, "?")
             for it_instr in self._getProperty("items")]
         if not self.mGroupName.startswith('<'):
             self.mGroupName = "<%s>" % self.mGroupName
@@ -63,11 +64,13 @@ class CodecAGroup(_CodecData):
             ret_repr.append('[' + ','.join(items_repr) + ']')
         return '[' + ','.join(ret_repr) + ']'
 
-    def updateWStat(self, encode_env):
+    def updateWStat(self):
         stat_info = {
             "groups": self.mStatGrpCount,
             "val": self.mStatValCount}
         self._updateProperty("stat", stat_info)
+        for it in self.mItemCodecs:
+            it.updateWStat()
 
     def decode(self, group_obj, decode_env):
         ret = dict()

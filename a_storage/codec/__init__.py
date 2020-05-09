@@ -36,9 +36,10 @@ def getKeyCodec(name):
     global sKeyCodecs
     return sKeyCodecs[name]
 
-def createBlockCodec(master, properties):
+def createBlockCodec(master, blocker_type):
     global sBlockCodecs
-    return sBlockCodecs[properties["type"]](master, properties)
+    return sBlockCodecs[blocker_type](master)
+
 
 #===============================================
 _CodecData.sCreateFunc = createDataCodec

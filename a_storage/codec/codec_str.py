@@ -3,14 +3,14 @@ from ._codec_data import _CodecData
 class CodecStr(_CodecData):
     def __init__(self, master, parent, schema_instr, default_name):
         _CodecData.__init__(self, master, parent, schema_instr, default_name)
-        opt = self._getProperty("opt")
+        opt = self._getProperty("opt", "")
         if opt == "dict":
             self.mDictList = self._getProperty("dictlist", [])
             self.mDict = {value: idx
                 for idx, value in enumerate(self.mDictList)}
         else:
             self.mDict = None
-            assert opt is None
+            assert not opt
         self.mStatNoneCount = 0
         self.mStatValCount = 0
         self.mStatMinL = None
@@ -50,7 +50,7 @@ class CodecStr(_CodecData):
             v_idx = encode_env.addStr(value)
         return str(v_idx)
 
-    def updateWStat(self, encode_env):
+    def updateWStat(self):
         stat_info = {
             "null": self.mStatNoneCount,
             "val": self.mStatValCount,

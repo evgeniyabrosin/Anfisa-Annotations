@@ -4,10 +4,10 @@ class _CodecData:
     sCreateFunc = None
 
     @classmethod
-    def create(cls, master, parent, schema_instr, default_name = None):
+    def create(cls, master, parent, schema_instr, default_name = "?"):
         return cls.sCreateFunc(master, parent, schema_instr, default_name)
 
-    def __init__(self, master, parent, schema_instr, default_name = None):
+    def __init__(self, master, parent, schema_instr, default_name = "?"):
         self.mMaster = master
         self.mParent = parent
         self.mSchemaInstr = schema_instr
@@ -15,7 +15,7 @@ class _CodecData:
         self.mOnDuty = False
         self._getProperty("tp")
         name = self._getProperty("name", default_name)
-        if default_name is not None:
+        if default_name != "?":
             assert name == default_name
 
     def _getProperty(self, name, default_value = None):
@@ -24,6 +24,9 @@ class _CodecData:
         if name in self.mSchemaInstr:
             self.mSchemaDescr[name] = self.mSchemaInstr[name]
         else:
+            assert default_value is not None, (
+                "Property %s is required for codec %s"
+                % (name, self.getPath()))
             self.mSchemaDescr[name] = default_value
         return self.mSchemaDescr[name]
 
@@ -40,7 +43,7 @@ class _CodecData:
     def _onDuty(self):
         assert not self.mOnDuty
         unused = set(self.mSchemaInstr.keys()) - set(self.mSchemaDescr.keys())
-        assert len(unused) == 0, (
+        assert not self.mMaster.isWriteMode() or len(unused) == 0, (
             "Lost option(s) for codec %s: %s"
             % (self.getPath(), ", ".join(sorted(unused))))
         self.mOnDuty = True
@@ -79,7 +82,7 @@ class _CodecData:
         return None
 
     @abc.abstractmethod
-    def updateWStat(self, encode_env):
+    def updateWStat(self):
         return None
 
     @abc.abstractmethod
