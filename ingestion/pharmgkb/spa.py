@@ -32,7 +32,7 @@ INSTR_CREATE = """CREATE TABLE IF NOT EXISTS PharmSPA (
     ST                  VARCHAR(56),
     SC                  VARCHAR(6),
     SCT                 VARCHAR(6),
-    CH                  TEXT,
+    CH                  BLOB,
     CHT                 VARCHAR(12),
     FIC                 VARCHAR(9),
     AFCS           	VARCHAR(57),
@@ -114,8 +114,12 @@ def ingestSPA(db_host, db_port, user, password, database,
                 while len(row) > 17:
                     row[4] += '_' + row[5]
                     del row[5]
+                #print(row)
                 list_of_records.append(row)
-                if len(list_of_records) >= batch_size:
+                if len(list_of_records) >= batch_size: # >= batch_size
+                    #if total >= 27000:
+                        #for item in list_of_records:
+                            #print (item[4])
                     total += execute_insert(conn,
                         INSTR_INSERT, list_of_records)
                     list_of_records = []

@@ -146,7 +146,7 @@ def pgkbReTab(db_host, db_port, user, password, database):
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,
-            ChTitle VARCHAR(80),
+            ChTitle TEXT,
             ChID VARCHAR(20),
             PRIMARY KEY (AssocKind, AssocID, ChID),
             KEY (Variant));"""),
@@ -155,7 +155,7 @@ def pgkbReTab(db_host, db_port, user, password, database):
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,
-            DisTitle VARCHAR(80),
+            DisTitle TEXT,
             DisID VARCHAR(20),
             PRIMARY KEY (AssocKind, AssocID, DisID),
             KEY (Variant));"""),
@@ -172,7 +172,7 @@ def pgkbReTab(db_host, db_port, user, password, database):
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,
-            Note TEXT,
+            Note BLOB,
             PRIMARY KEY (AssocKind, AssocID),
             KEY (Variant));""", feed_mode = "single")]
 
