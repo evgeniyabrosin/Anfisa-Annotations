@@ -6,6 +6,7 @@ from .codec_dict import CodecDict
 from .codec_agroup import CodecAGroup
 from .block_segment import BlockerSegment
 from .block_cluster import BlockerCluster
+from .block_frames import BlockerFrameIndex
 from .hg_key import Conv_HG19, Conv_HG38
 
 #===============================================
@@ -24,7 +25,8 @@ sKeyCodecs = {
 
 sBlockCodecs = {
     "cluster": BlockerCluster,
-    "segment": BlockerSegment
+    "segment": BlockerSegment,
+    "frame-idx": BlockerFrameIndex
 }
 #===============================================
 def createDataCodec(master, parent, schema_instr, default_name):

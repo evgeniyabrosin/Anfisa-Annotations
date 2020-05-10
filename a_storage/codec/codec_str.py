@@ -10,7 +10,11 @@ class CodecStr(_CodecData):
                 for idx, value in enumerate(self.mDictList)}
         else:
             self.mDict = None
-            assert not opt
+            if opt == "repeat":
+                self.mRepeatable = True
+            else:
+                self.mRepeatable = False
+                assert not opt
         self.mStatNoneCount = 0
         self.mStatValCount = 0
         self.mStatMinL = None
@@ -47,7 +51,7 @@ class CodecStr(_CodecData):
                 self.mDictList.append(value)
                 self.mDict[value] = v_idx
         else:
-            v_idx = encode_env.addStr(value)
+            v_idx = encode_env.addStr(value, self.mRepeatable)
         return str(v_idx)
 
     def updateWStat(self):

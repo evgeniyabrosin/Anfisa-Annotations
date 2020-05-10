@@ -1,8 +1,8 @@
 #===============================================
 _TRASCRIPT_PROPERTIES = [
-    {"name": "Ensembl_geneid",          "tp": "str"},
-    {"name": "Ensembl_transcriptid",    "tp": "str"},
-    {"name": "Ensembl_proteinid",       "tp": "str"},
+    {"name": "Ensembl_geneid",          "tp": "str", "opt": "repeat"},
+    {"name": "Ensembl_transcriptid",    "tp": "str", "opt": "repeat"},
+    {"name": "Ensembl_proteinid",       "tp": "str", "opt": "repeat"},
     {"name": "FATHMM_score",            "tp": "num"},
     {"name": "FATHMM_pred",             "tp": "str", "opt": "dict"},
     {"name": "GENCODE_basic",           "tp": "str"},
@@ -63,7 +63,7 @@ _VARIANT_PROPERTIES = [
     {"name": "Eigen_PC_raw_coding",             "tp": "num"},
     {"name": "Eigen_PC_raw_coding_rankscore",   "tp": "num"},
     {"name": "Eigen_PC_phred_coding",           "tp": "num"},
-    {"name": "GTEx_V7_gene",                "tp": "str"},
+    {"name": "GTEx_V7_gene",                "tp": "str", "opt": "repeat"},
     {"name": "GTEx_V7_tissue",              "tp": "str", "opt": "dict"},
     {"name": "MutationTaster_score",        "tp": "str"},
     {"name": "MutationTaster_pred",         "tp": "str"},

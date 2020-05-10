@@ -84,7 +84,8 @@ class _ReadSegmentBlock:
         self.mBlocker = blocker
         self.mChrom, pos = key
         self.mBasePos = self.mBlocker.basePos(pos)
-        data_seq = self.mBlocker.getIO()._getColumns((self.mChrom, self.mBasePos))
+        data_seq = self.mBlocker.getIO()._getColumns(
+            (self.mChrom, self.mBasePos))
         if data_seq[0] is None:
             self.mDecodeEnv = None
             return

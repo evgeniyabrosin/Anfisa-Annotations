@@ -4,75 +4,115 @@ from datetime import datetime
 from .a_util import reportTime, detectFileChrom, extendFileList, dumpReader
 #========================================
 VARIANT_TAB = [
-    ("REF",                             str,    3),
-    ("ALT",                             str,    4),
-    ("MutationTaster_score",            str,    53),
-    ("MutationTaster_pred",             str,    55),
-    ("PrimateAI_pred",                  str,    92),
-    ("CADD_raw",                        float,  102),
-    ("CADD_phred",                      float,  104),
-    ("DANN_score",                      float,  105),
-    ("DANN_rankscore",                  float,  106),
-    ("Eigen_raw_coding",                float,  114),
-    ("Eigen_raw_coding_rankscore",      float,  115),
-    ("Eigen_phred_coding",              float,  116),
-    ("Eigen_PC_raw_coding",             float,  117),
-    ("Eigen_PC_raw_coding_rankscore",   float,  118),
-    ("Eigen_PC_phred_coding",           float,  119),
-    ("GTEx_V7_gene",                    str,    374),
-    ("GTEx_V7_tissue",                  str,    375),
-    ("Geuvadis_eQTL_target_gene",       str,    376)
+    ["REF",                             str],
+    ["ALT",                             str],
+    ["MutationTaster_score",            str],
+    ["MutationTaster_pred",             str],
+    ["PrimateAI_pred",                  str],
+    ["CADD_raw",                        float],
+    ["CADD_phred",                      float],
+    ["DANN_score",                      float],
+    ["DANN_rankscore",                  float],
+    ["Eigen_raw_coding",                float],
+    ["Eigen_raw_coding_rankscore",      float],
+    ["Eigen_phred_coding",              float],
+    ["Eigen_PC_raw_coding",             float],
+    ["Eigen_PC_raw_coding_rankscore",   float],
+    ["Eigen_PC_phred_coding",           float],
+    ["GTEx_V7_gene",                    str],
+    ["GTEx_V7_tissue",                  str],
+    ["Geuvadis_eQTL_target_gene",       str]
 ]
 
 #========================================
 FACET_TAB = [
-    ("refcodon",                    str,    30),
-    ("codonpos",                    str,    31),
-    ("SIFT4G_converted_rankscore",  float,  41),
-    ("MetaLR_score",                float,  72),
-    ("MetaLR_rankscore",            float,  73),
-    ("MetaLR_pred",                 str,    74),
-    ("REVEL_score",                 float,  79),
-    ("MutPred_score",               str,    81),
-    ("MutPred_rankscore",           float,  82),
-    ("MutPred_protID",              str,    83),
-    ("MutPred_AAchange",            str,    84),
-    ("MutPred_Top5features",        str,    85),
-    ("MPC_rankscore",               float,  89),
-    ("PrimateAI_score",             float,  90),
-    ("PrimateAI_rankscore",         float,  91)
+    ["refcodon",                    str],
+    ["codonpos",                    str],
+    ["SIFT4G_converted_rankscore",  float],
+    ["MetaLR_score",                float],
+    ["MetaLR_rankscore",            float],
+    ["MetaLR_pred",                 str],
+    ["REVEL_score",                 float],
+    ["MutPred_score",               str],
+    ["MutPred_rankscore",           float],
+    ["MutPred_protID",              str],
+    ["MutPred_AAchange",            str],
+    ["MutPred_Top5features",        str],
+    ["MPC_rankscore",               float],
+    ["PrimateAI_score",             float],
+    ["PrimateAI_rankscore",         float]
 ]
 
 #========================================
 TRANSCRIPT_TAB = [
-    ("Ensembl_geneid",          str,    14),
-    ("Ensembl_transcriptid",    str,    15),
-    ("Ensembl_proteinid",       str,    16),
-    ("Uniprot_acc",             str,    17),
-    ("HGVSc_ANNOVAR",           str,    19),
-    ("HGVSp_ANNOVAR",           str,    20),
-    ("HGVSc_snpEff",            str,    21),
-    ("HGVSp_snpEff",            str,    22),
-    ("GENCODE_basic",           str,    26),
-    ("SIFT_score",              float,  37),
-    ("SIFT_pred",               str,    39),
-    ("SIFT4G_score",            float,  40),
-    ("SIFT4G_pred",             str,    42),
-    ("Polyphen2_HDIV_score",    float,  43),
-    ("Polyphen2_HDIV_pred",     str,    45),
-    ("Polyphen2_HVAR_score",    float,  46),
-    ("Polyphen2_HVAR_pred",     str,    48),
-    ("MutationAssessor_score",  float,  58),
-    ("MutationAssessor_pred",   str,    60),
-    ("FATHMM_score",            float,  61),
-    ("FATHMM_pred",             str,    63),
-    ("MPC_score",               float,  88)
+    ["Ensembl_geneid",          str],
+    ["Ensembl_transcriptid",    str],
+    ["Ensembl_proteinid",       str],
+    ["Uniprot_acc",             str],
+    ["HGVSc_ANNOVAR",           str],
+    ["HGVSp_ANNOVAR",           str],
+    ["HGVSc_snpEff",            str],
+    ["HGVSp_snpEff",            str],
+    ["GENCODE_basic",           str],
+    ["SIFT_score",              float],
+    ["SIFT_pred",               str],
+    ["SIFT4G_score",            float],
+    ["SIFT4G_pred",             str],
+    ["Polyphen2_HDIV_score",    float],
+    ["Polyphen2_HDIV_pred",     str],
+    ["Polyphen2_HVAR_score",    float],
+    ["Polyphen2_HVAR_pred",     str],
+    ["MutationAssessor_score",  float],
+    ["MutationAssessor_pred",   str],
+    ["FATHMM_score",            float],
+    ["FATHMM_pred",             str],
+    ["MPC_score",               float]
 ]
+
+ALL_TABS = [VARIANT_TAB, FACET_TAB, TRANSCRIPT_TAB]
+
+#========================================
+FLD_NAME_MAP = {
+    "ref": "REF",
+    "alt": "ALT",
+    "Eigen_pred_coding": "Eigen_phred_coding"
+}
+
+def _normFieldName(name):
+    global FLD_NAME_MAP
+    name = name.replace('-', '_')
+    return FLD_NAME_MAP.get(name, name)
+
+#========================================
+def setupFields(field_line):
+    global ALL_TABS, FLD_NAME_MAP
+    assert field_line.startswith('#')
+    field_names = field_line[1:].split()
+    assert field_names[0].startswith("chr")
+    assert field_names[1].startswith("pos")
+    fields_idxs = {_normFieldName(name): idx
+        for idx, name in enumerate(field_names)}
+    errors = 0
+    for tab in ALL_TABS:
+        for field_info in tab:
+            idx = fields_idxs.get(field_info[0])
+            if idx is None:
+                errors += 1
+                logging.error("No field registered: %s" % field_info[0])
+            else:
+                if len(field_info) == 2:
+                    field_info.append(idx)
+                else:
+                    field_info[2] = idx
+    if errors > 0:
+        logging.info("Available fields:\n=====\n"
+            + "\n".join(sorted(fields_idxs.keys())))
+    assert errors == 0
 
 #========================================
 def iterFields(fields, properties_tab):
     for name, tp, idx in properties_tab:
-        val = fields[idx - 1]
+        val = fields[idx]
         if val == '.':
             yield name, None
         else:
@@ -81,7 +121,7 @@ def iterFields(fields, properties_tab):
 def iterDeepFields(fields, properties_tab):
     for name, tp, idx in properties_tab:
         val_seq = []
-        for val in fields[idx-1].split(';'):
+        for val in fields[idx].split(';'):
             if val == '.':
                 val_seq.append(None)
             else:
@@ -159,12 +199,13 @@ class ReaderDBNSFP4:
         exceptions = 0
         for chrom_file in self.mFiles:
             chrom = detectFileChrom(self.mChromLoc, chrom_file)
-            print("Evaluation of", chrom, "in", chrom_file)
+            logging.info("Evaluation of %s in %s" % (chrom, chrom_file))
             with gzip.open(chrom_file, 'rt') as text_inp:
                 start_time = datetime.now()
                 collector = DataCollector()
                 for line_no, line in enumerate(text_inp):
                     if line_no == 0:
+                        setupFields(line)
                         continue
                     try:
                         info = collector.ingestLine(line)
@@ -179,7 +220,8 @@ class ReaderDBNSFP4:
                 if info:
                     yield info
                 total_var, total_facets, total_tr = collector.getCounts()
-                reportTime("Done (transripts:", total_var, start_time)
+                reportTime("Done %s (variants):"
+                    % chrom, total_var, start_time)
                 logging.info("transcripts: %d, facets: %d, exceptions: %d"
                     % (total_tr, total_facets, exceptions))
 

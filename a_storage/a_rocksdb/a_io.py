@@ -89,7 +89,7 @@ class AIOController:
         xkey = self.getXKey(key)
         if columns is None:
             columns = self.mColumns
-        return self.mDbConnector.getData(xkey, self.mColumns, conv_bytes)
+        return self.mDbConnector.getData(xkey, columns, conv_bytes)
 
     def _seekColumn(self, key, column, conv_bytes = True):
         xkey_seek = self.getXKey(key)
@@ -152,10 +152,19 @@ class AEncodeEnv:
     def __init__(self, with_str):
         self.mObjSeq = []
         self.mStrSeq = [] if with_str else None
+        self.mIntDict = None
 
-    def addStr(self, txt):
+    def addStr(self, txt, repeatable = False):
+        if repeatable:
+            if self.mIntDict is None:
+                self.mIntDict = dict()
+            else:
+                if txt in self.mIntDict:
+                    return self.mIntDict[txt]
         ret = len(self.mStrSeq)
         self.mStrSeq.append(txt)
+        if repeatable:
+            self.mIntDict[txt] = ret
         return ret
 
     def put(self, record, codec):
@@ -174,7 +183,7 @@ class AEncodeEnv:
 class ADecodeEnv:
     def __init__(self, data_seq):
         self.mObjSeq = data_seq[0].split('\0')
-        if len(data_seq) > 1:
+        if len(data_seq) > 1 and data_seq[1] is not None:
             self.mStrSeq = data_seq[1].split('\0')
         else:
             self.mStrSeq = None

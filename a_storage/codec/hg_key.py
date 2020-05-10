@@ -69,6 +69,7 @@ class FastaConvertor:
         self.mTab = fasta_tab
         self.mStarts = [it[1] for it in self.mTab]
         self.mDict = {it[0]: it[1] for it in self.mTab}
+        self.mDict["chrMT"] = self.mDict["chrM"]
 
     def getType(self):
         return self.mType

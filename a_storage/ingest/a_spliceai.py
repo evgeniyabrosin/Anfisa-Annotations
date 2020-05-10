@@ -102,6 +102,6 @@ if __name__ == '__main__':
     if sys.argv[1] == "DIR":
         reader = reader_SpliceAI({
             "file_list": sys.argv[2]})
-        writeDirect(reader, "gnomad_dir_%s.js.gz", sys.argv[4])
+        writeDirect(reader, "spliceai_dir_%s.js.gz", sys.argv[3])
     reader = reader_SpliceAI({"file_list": sys.argv[1]})
     dumpReader(reader)
