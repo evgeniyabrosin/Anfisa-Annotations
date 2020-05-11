@@ -11,7 +11,13 @@ class ASchema:
         self.mSchemaDescr = schema_descr
         self.mWriteMode = write_mode
 
-        schema_fname = self.mStorage.getSchemaFilePath(self.mName + ".json")
+        db_fpath = self.mStorage.getSchemaFilePath(dbname)
+        if not os.path.exists(db_fpath):
+            assert self.mWriteMode, (
+                "Schema is empty for reading " + self.mName)
+            os.mkdir(db_fpath)
+
+        schema_fname = db_fpath + "/" + self.mName + ".json"
         if not self.mWriteMode:
             assert os.path.exists(schema_fname), (
                 "Attempt to read from uninstalled database " + self.mName)
@@ -41,7 +47,8 @@ class ASchema:
 
     def close(self):
         self.mIO.flush()
-        schema_fname = self.mStorage.getSchemaFilePath(self.mName + ".json")
+        schema_fname = self.mStorage.getSchemaFilePath(
+            self.mIO.getDbName()) + "/" + self.mName + ".json"
         if self.mWriteMode:
             self.careSamples()
         self.mIO.close()
@@ -107,7 +114,7 @@ class ASchema:
 
     def careSamples(self):
         smp_fname = self.mStorage.getSchemaFilePath(
-            self.mName + ".samples")
+            self.mIO.getDbName()) + "/" + self.mName + ".samples"
         with open(smp_fname, "w", encoding = "utf-8") as outp:
             cnt_bad = 0
             for key, record in self.mSamples:

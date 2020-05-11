@@ -132,7 +132,7 @@ COLUMNS = [
     "SubmitterCategories",
     "VariationID"]
 
-INSTR_INSERT = "INSERT INTO variant_summary(%s) VALUES(%s)" % (
+INSTR_INSERT = "INSERT INTO variant_summary (%s) VALUES (%s)" % (
     ", ".join(COLUMNS),
     ", ".join(["%s" for _ in COLUMNS]))
 

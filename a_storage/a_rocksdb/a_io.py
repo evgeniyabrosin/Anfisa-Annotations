@@ -8,6 +8,7 @@ class AIOController:
 
     def __init__(self, schema, dbname, properties):
         self.mSchema = schema
+        self.mDbName = dbname
         self.mProperties = properties
         self.mDescr = dict()
         self.mOnDuty = False
@@ -81,6 +82,9 @@ class AIOController:
 
     def isWriteMode(self):
         return self.mSchema.isWriteMode()
+
+    def getDbName(self):
+        return self.mDbName
 
     def flush(self):
         if (self.mWriteBlockH is not None):

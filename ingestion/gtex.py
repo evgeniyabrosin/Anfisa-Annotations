@@ -55,15 +55,15 @@ COLUMNS_GENE2TISSUE = [
     "RelExp"
     ]
 #================================================
-INSTR_INSERT_GENE = "INSERT INTO GENE(%s) VALUES(%s)" % (
+INSTR_INSERT_GENE = "INSERT INTO GENE (%s) VALUES (%s)" % (
     ", ".join(COLUMNS_GENE),
     ", ".join(['%s' for _ in COLUMNS_GENE]))
 
-INSTR_INSERT_TISSUE = "INSERT INTO TISSUE(%s) VALUES(%s)" % (
+INSTR_INSERT_TISSUE = "INSERT INTO TISSUE (%s) VALUES (%s)" % (
     ", ".join(COLUMNS_TISSUE),
     ", ".join(['%s' for _ in COLUMNS_TISSUE]))
 
-INSTR_INSERT_GENE2TISSUE = "INSERT INTO GENE2TISSUE(%s) VALUES(%s)" % (
+INSTR_INSERT_GENE2TISSUE = "INSERT INTO GENE2TISSUE (%s) VALUES (%s)" % (
     ", ".join(COLUMNS_GENE2TISSUE),
     ", ".join(['%s' for _ in COLUMNS_GENE2TISSUE]))
 #========================================

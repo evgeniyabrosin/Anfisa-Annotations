@@ -52,9 +52,9 @@ class AStorage:
 
     def dropDB(self, db_name):
         done = False
-        schema_fname = self.getSchemaFilePath(db_name)
-        if os.path.exists(schema_fname):
-            os.remove(schema_fname)
+        schema_fdir = self.getSchemaFilePath(db_name)
+        if os.path.exists(schema_fdir):
+            shutil.rmtree(schema_fdir)
             done = True
         db_fdir = self.getDBFilePath(db_name)
         if os.path.exists(db_fdir):
