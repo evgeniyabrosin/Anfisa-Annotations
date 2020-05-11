@@ -10,8 +10,8 @@ class AStorage:
     def getDbOptions(self):
         return self.mConfig["db-options"].items()
 
-    def getColumnOptions(self, column_type):
-        return self.mConfig["col-options"][column_type].items()
+    def getDefaulColumnAttrs(self, column_type):
+        return self.mConfig["col-options"][column_type]
 
     def getDBFilePath(self, name):
         return self.mConfig["db-dir"] + '/' + name

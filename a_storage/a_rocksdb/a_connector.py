@@ -39,26 +39,26 @@ class AConnector:
             setattr(options, key, val)
         return options
 
-    def _colOptions(self, col_type):
+    def _colOptions(self, col_attrs):
         col_options = rocksdb.ColumnFamilyOptions()
         col_options.OptimizeLevelStyleCompaction()
-        for key, val in self.mStorage.getColumnOptions(col_type):
+        for key, val in col_attrs.items():
             if key == "compression":
                 col_options.set_compression(val)
             else:
                 setattr(col_options, key, val)
         return col_options
 
-    def _regColumn(self, c_name, col_type):
+    def _regColumn(self, c_name, col_attrs):
         assert self.mColHandlers is None
         col_name = bytes(c_name, encoding = "utf-8")
         assert col_name not in self.mColIndex
         self.mColIndex[col_name] = len(self.mColDescriptors)
         self.mColDescriptors.append(rocksdb.ColumnFamilyDescriptor(
-            col_name, self._colOptions(col_type)))
+            col_name, self._colOptions(col_attrs)))
         if self.mWriteMode:
             s, cf = self.mDB.create_column_family(
-                self._colOptions(col_type), col_name)
+                self._colOptions(col_attrs), col_name)
             del cf
         return col_name
 

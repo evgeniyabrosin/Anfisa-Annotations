@@ -49,8 +49,14 @@ class AIOController:
         return self.mDescr[name]
 
     def _regColumn(self, col_type):
+        col_key = col_type + "-col-options"
+        col_attrs = self._getProperty(col_key)
+        if col_attrs is None:
+            col_attrs = self.mSchema.getStorage().getDefaulColumnAttrs(
+                col_type).copy()
+            self._updateProperty(col_key, col_attrs)
         return self.mDbConnector._regColumn(
-            "%s_%s" % (self.mSchema.getName(), col_type), col_type)
+            "%s_%s" % (self.mSchema.getName(), col_type), col_attrs)
 
     def _updateProperty(self, key, val):
         self.mDescr[key] = val
