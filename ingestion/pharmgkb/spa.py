@@ -114,12 +114,8 @@ def ingestSPA(db_host, db_port, user, password, database,
                 while len(row) > 17:
                     row[4] += '_' + row[5]
                     del row[5]
-                #print(row)
                 list_of_records.append(row)
-                if len(list_of_records) >= batch_size: # >= batch_size
-                    #if total >= 27000:
-                        #for item in list_of_records:
-                            #print (item[4])
+                if len(list_of_records) >= batch_size:
                     total += execute_insert(conn,
                         INSTR_INSERT, list_of_records)
                     list_of_records = []

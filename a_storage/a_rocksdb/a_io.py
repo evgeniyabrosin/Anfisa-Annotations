@@ -24,6 +24,15 @@ class AIOController:
 
         if self.mSchema.isWriteMode():
             self.mWriteBlockH = None
+            self.mBaseBlockCount = 0
+            self.mBaseTotalLen = 0
+            self.mBaseMaxLen = 0
+            if self.mWithStr:
+                self.mStrTotalLen = 0
+                self.mStrMaxLen = 0
+                self.mStrTotalCount = 0
+                self.mStrMaxCount = 0
+
         self.mReadLock = Lock()
         self.mReadCache = []
         self.mReadCacheSize = self._getProperty("cache-size",
@@ -54,6 +63,16 @@ class AIOController:
             % (self.mSchema.getName(), ", ".join(sorted(unused))))
         self.mOnDuty = True
 
+    def _addWriteStat(self, base_len, str_len = None, str_count = None):
+        self.mBaseBlockCount += 1
+        self.mBaseTotalLen += base_len
+        self.mBaseMaxLen = max(self.mBaseMaxLen, base_len)
+        if self.mWithStr:
+            self.mStrTotalLen += str_len
+            self.mStrMaxLen = max(self.mStrMaxLen, str_len)
+            self.mStrTotalCount += str_count
+            self.mStrMaxCount = max(self.mStrMaxCount, str_count)
+
     def isWriteMode(self):
         return self.mSchema.isWriteMode()
 
@@ -65,6 +84,20 @@ class AIOController:
     def close(self):
         self.flush()
         self.mBlockCodec.close()
+        if self.mSchema.isWriteMode():
+            stat_info = self._getProperty("stat")
+            if stat_info is None:
+                stat_info = dict()
+            stat_info["total"] = self.mSchema.getTotal()
+            stat_info["base-blocks"] = self.mBaseBlockCount
+            stat_info["base-total-l"] = self.mBaseTotalLen
+            stat_info["base-max-l"] = self.mBaseMaxLen
+            if self.mWithStr:
+                stat_info["str-total-l"] = self.mStrTotalLen
+                stat_info["str-max-len"] = self.mStrMaxLen
+                stat_info["str-total-count"] = self.mStrTotalCount
+                stat_info["str-max-count"] = self.mStrMaxCount
+            self._updateProperty("stat", stat_info)
         self.mSchema.getStorage().closeConnection(self.mDbConnector)
 
     def getDescr(self):
@@ -99,7 +132,7 @@ class AIOController:
         return None, None
 
     def _putRecord(self, key, record, codec):
-        encode_env = AEncodeEnv(self.mWithStr)
+        encode_env = AEncodeEnv(self, self.mWithStr)
         encode_env.put(record, codec)
         self.mDbConnector.putData(self.getXKey(key),
             self.mColumns, encode_env.result())
@@ -119,7 +152,7 @@ class AIOController:
             self.mWriteBlockH = None
         if self.mWriteBlockH is None:
             self.mWriteBlockH = self.mBlockCodec.createWriteBlock(
-                AEncodeEnv(self.mWithStr), key, codec)
+                AEncodeEnv(self, self.mWithStr), key, codec)
         self.mWriteBlockH.addRecord(key, record, codec)
 
     def getRecord(self, key, codec):
@@ -142,14 +175,15 @@ class AIOController:
         return read_block_h.getRecord(key, codec)
 
     def transformRecord(self, key, record, codec):
-        encode_env = AEncodeEnv(self.mWithStr)
+        encode_env = AEncodeEnv(None, self.mWithStr)
         encode_env.put(record, codec)
         decode_env = ADecodeEnv(encode_env.result())
         return decode_env.get(0, codec)
 
 #========================================
 class AEncodeEnv:
-    def __init__(self, with_str):
+    def __init__(self, master, with_str):
+        self.mMaster = master
         self.mObjSeq = []
         self.mStrSeq = [] if with_str else None
         self.mIntDict = None
@@ -175,8 +209,13 @@ class AEncodeEnv:
 
     def result(self):
         ret = ['\0'.join(self.mObjSeq)]
+        stat_info = [len(ret[0])]
         if self.mStrSeq is not None:
             ret.append('\0'.join(self.mStrSeq))
+            stat_info += [len(ret[1]), len(self.mStrSeq)]
+        if self.mMaster is not None:
+            self.mMaster._addWriteStat(*stat_info)
+            self.mMaster = None
         return ret
 
 #========================================

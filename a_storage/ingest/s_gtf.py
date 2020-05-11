@@ -22,7 +22,7 @@ SCHEMA_GTF = {
                 {"name": "gene",        "tp": "str", "opt": "repeat"},
                 {"name": "biotype",     "tp": "str", "opt": "dict"},
                 {"name": "exon",        "tp": "num", "format": "%d"},
-                {"name": "transcript",  "tp": "str"}
+                {"name": "transcript",  "tp": "str", "opt": "repeat"}
             ]
         }
     }

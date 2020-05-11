@@ -1,4 +1,4 @@
-import sys, gzip, logging, json
+import sys, os, gzip, logging, json
 from datetime import datetime
 from subprocess import Popen, PIPE
 from io import TextIOWrapper
@@ -90,6 +90,7 @@ class ReaderGTF:
         self.mCurChrom = None
         self.mSortProc = None
         self.mSortOutput = None
+        logging.info("Using temporary file " + self.mTmpFile)
 
     def startSort(self):
         assert self.mSortProc is None
@@ -155,12 +156,14 @@ class ReaderGTF:
                             yield ("chr" + chrom, cur_pos), []
                         yield ("chr" + chrom, diap[1]), rec_list
                     assert out_rec_no == self.sRecNo
+        os.remove(self.mTmpFile)
 
 #========================================
 def reader_GTF(properties):
     if "direct_file_list" in properties:
         return DirectReader(properties["direct_file_list"])
     return ReaderGTF(properties["file_list"])
+
 
 #========================================
 if __name__ == '__main__':

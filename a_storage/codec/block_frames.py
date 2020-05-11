@@ -4,18 +4,33 @@ class BlockerFrameIndex():
         self.mIO = master_io
         self.mPosKeys = self.mIO._getProperty("pos-keys")
         self.mCurWriterKey = None
+        if self.mIO.isWriteMode():
+            self.mCountBlocks = 0
+            self.mMaxBlockLen = 0
+            self.mCountEmptyBlocks = 0
 
     def getType(self):
         return "frame-idx"
 
     def close(self):
-        pass
+        if self.mIO.isWriteMode():
+            self.mIO._updateProperty("stat", {
+                "blocks": self.mCountBlocks,
+                "max-block-len": self.mMaxBlockLen,
+                "blocks-empty": self.mCountEmptyBlocks})
 
     def getIO(self):
         return self.mIO
 
     def getPosKeys(self):
         return self.mPosKeys
+
+    def _addWriteStat(self, block_len):
+        if block_len > 0:
+            self.mCountBlocks += 1
+        else:
+            self.mCountEmptyBlocks += 1
+            self.mMaxBlockLen = max(self.mMaxBlockLen, block_len)
 
     def createWriteBlock(self, encode_env, key, codec):
         return _WriteFrameBlock(self, encode_env, key)
@@ -50,8 +65,10 @@ class _WriteFrameBlock:
 
     def finishUp(self):
         if not self.mEmpty:
+            res_list_seq = self.mEncodeEnv.result()
             self.mBlocker.getIO()._putColumns(
-                self.mKey, self.mEncodeEnv.result())
+                self.mKey, res_list_seq)
+            self.mBlocker._addWriteStat(len(res_list_seq[0]))
         del self.mEncodeEnv
 
 #===============================================
