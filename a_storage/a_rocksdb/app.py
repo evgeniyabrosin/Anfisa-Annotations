@@ -76,6 +76,9 @@ class AStorageApp:
             report = array_h.request(rq_args)
             return serv_h.makeResponse(mode = "json",
                 content = json.dumps(report))
+        if rq_path == "/meta":
+            return serv_h.makeResponse(mode = "json",
+                content = json.dumps(cls.sConfig["service"]["meta"]))
         return serv_h.makeResponse("Page not found",
             error = 404)
 

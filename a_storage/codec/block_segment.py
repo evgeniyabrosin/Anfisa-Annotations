@@ -19,7 +19,7 @@ class BlockerSegment():
         if self.mIO.isWriteMode():
             self.mIO._updateProperty("stat", {
                 "segments": self.mCountSegments,
-                "pos-gaps": self.mCountPosGaps})
+                "seg-pos-gaps": self.mCountPosGaps})
 
     def getIO(self):
         return self.mIO

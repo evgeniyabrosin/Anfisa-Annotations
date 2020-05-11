@@ -30,9 +30,9 @@ class BlockerCluster():
 
     def close(self):
         if self.mIO.isWriteMode():
-            stat_info = {"blocks": self.mCountBlocks}
+            stat_info = {"cluster-blocks": self.mCountBlocks}
             if self.mMaxVarCount is not None:
-                stat_info["variants"] = self.mCountVariants
+                stat_info["cluster-variants"] = self.mCountVariants
             self.mIO._updateProperty("stat", stat_info)
 
     def addToIndex(self, chrom, pos_seq):

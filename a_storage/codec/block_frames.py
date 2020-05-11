@@ -15,9 +15,9 @@ class BlockerFrameIndex():
     def close(self):
         if self.mIO.isWriteMode():
             self.mIO._updateProperty("stat", {
-                "blocks": self.mCountBlocks,
-                "max-block-len": self.mMaxBlockLen,
-                "blocks-empty": self.mCountEmptyBlocks})
+                "frames-blocks": self.mCountBlocks,
+                "frames-max-block-len": self.mMaxBlockLen,
+                "frames-blocks-empty": self.mCountEmptyBlocks})
 
     def getIO(self):
         return self.mIO
@@ -28,9 +28,9 @@ class BlockerFrameIndex():
     def _addWriteStat(self, block_len):
         if block_len > 0:
             self.mCountBlocks += 1
+            self.mMaxBlockLen = max(self.mMaxBlockLen, block_len)
         else:
             self.mCountEmptyBlocks += 1
-            self.mMaxBlockLen = max(self.mMaxBlockLen, block_len)
 
     def createWriteBlock(self, encode_env, key, codec):
         return _WriteFrameBlock(self, encode_env, key)
@@ -42,7 +42,7 @@ class BlockerFrameIndex():
             return _ReadFrameBlock(self, key)
         data_seq = [data_base]
         if len(columns) > 0:
-            data_seq += self.mIO._getColumns(key, columns[1:])
+            data_seq += self.mIO._getColumns(key_base, columns[1:])
         list_data = decode_env_class(data_seq).get(0, codec)
         return _ReadFrameBlock(self, key_base, key[1], list_data)
 
@@ -52,23 +52,23 @@ class _WriteFrameBlock:
         self.mBlocker = blocker
         self.mEncodeEnv = encode_env
         self.mKey = key
-        self.mEmpty = True
+        self.mBlockLen = None
 
     def goodToWrite(self, key):
-        return key == self.mKey and self.mEmpty
+        return key == self.mKey and self.mBlockLen is None
 
     def addRecord(self, key, record, codec):
         assert key == self.mKey
-        assert self.mEmpty
+        assert self.mBlockLen is None
         self.mEncodeEnv.put(record, codec)
-        self.mEmpty = False
+        self.mBlockLen = len(record)
 
     def finishUp(self):
-        if not self.mEmpty:
+        if self.mBlockLen is not None:
             res_list_seq = self.mEncodeEnv.result()
             self.mBlocker.getIO()._putColumns(
                 self.mKey, res_list_seq)
-            self.mBlocker._addWriteStat(len(res_list_seq[0]))
+            self.mBlocker._addWriteStat(self.mBlockLen)
         del self.mEncodeEnv
 
 #===============================================
