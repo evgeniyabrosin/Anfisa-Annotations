@@ -6,7 +6,7 @@ class BlockerCluster():
         self.mIO = master
         self.mMaxVarCount = self.mIO._getProperty("max-var-count")
         self.mCurWriterKey = None
-        self.mIdxColumns = [self.mIO._regColumn("sgidx")]
+        self.mIdxColNames = [self.mIO._regColumn("sgidx")]
         self.mMaxPosCount = self.mIO._getProperty(
             "max-loc-count", self.MAX_POS_COUNT)
         if self.mIO.isWriteMode():
@@ -37,7 +37,7 @@ class BlockerCluster():
 
     def addToIndex(self, chrom, pos_seq):
         self.mIO._putColumns((chrom, pos_seq[-1]),
-            [pseq2bytes(pos_seq)], self.mIdxColumns, conv_bytes = False)
+            [pseq2bytes(pos_seq)], self.mIdxColNames, conv_bytes = False)
 
     def createWriteBlock(self, encode_env, key, codec):
         if (self.mCurWriterKey is not None
@@ -47,9 +47,11 @@ class BlockerCluster():
         return _WriteClusterBlock(self, encode_env, key,
             self.mMaxVarCount is None)
 
-    def createReadBlock(self, decode_env_class, key, codec):
-        key_base, data_base = self.mIO._seekColumn(key,
-            self.mIdxColumns[0], conv_bytes = False)
+    def createReadBlock(self, decode_env_class, key, codec, last_pos = None):
+        assert last_pos is None
+        with self.mIO._seekColumn(key,
+                self.mIdxColNames[0], conv_bytes = False) as iter_h:
+            key_base, data_base = iter_h.getCurrent()
         pos_seq = None
         if key_base is not None and key_base[0] == key[0]:
             pos_seq = bytes2pseq(key_base[1], data_base)
@@ -124,13 +126,15 @@ class _ReadClusterBlock:
         self.mPosSeq = pos_seq
         self.mDecodeEnv = decode_env
 
-    def goodToRead(self, key):
+    def goodToRead(self, key, last_pos = None):
+        assert last_pos is None
         chrom, pos = key
         if chrom != self.mChrom or pos < self.mStartPos:
             return False
         return self.mPosSeq is None or pos <= self.mPosSeq[-1]
 
-    def getRecord(self, key, codec):
+    def getRecord(self, key, codec, last_pos = None):
+        assert last_pos is None
         chrom, pos = key
         assert self.mChrom == chrom
         if self.mDecodeEnv is not None and pos in self.mPosSeq:

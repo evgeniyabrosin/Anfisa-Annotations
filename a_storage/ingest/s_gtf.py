@@ -6,6 +6,8 @@ SCHEMA_GTF = {
         "block-type": "frame-idx",
         "pos-keys": ["start", "end"]
     },
+    "filter-list": {"feature": "feature"},
+    "use-last-pos": True,
     "top": {
         "tp": "list",
         "item": {

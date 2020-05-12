@@ -35,16 +35,37 @@ class BlockerFrameIndex():
     def createWriteBlock(self, encode_env, key, codec):
         return _WriteFrameBlock(self, encode_env, key)
 
-    def createReadBlock(self, decode_env_class, key, codec):
-        columns = self.mIO.getColumns()
-        key_base, data_base = self.mIO._seekColumn(key, columns[0])
-        if key_base is None or key_base[0] != key[0]:
-            return _ReadFrameBlock(self, key)
-        data_seq = [data_base]
-        if len(columns) > 0:
-            data_seq += self.mIO._getColumns(key_base, columns[1:])
-        list_data = decode_env_class(data_seq).get(0, codec)
-        return _ReadFrameBlock(self, key_base, key[1], list_data)
+    def createReadBlock(self, decode_env_class, key, codec, last_pos = None):
+        if last_pos is not None:
+            pos, last_pos = sorted([key[1], last_pos])
+            key = (key[0], pos)
+        col_names = self.mIO.getColumnNames()
+        chrom, init_pos = key
+
+        seek_pos_start, list_data, seek_pos_end = None, None, None
+        with self.mIO._seekColumn(key, col_names[0]) as iter_h:
+            seek_key, seek_data = iter_h.getCurrent()
+            if seek_key is not None and seek_key[0] == chrom:
+                seek_pos_start = seek_pos_end = seek_key[1]
+                data_seq = [seek_data]
+                if len(col_names) > 0:
+                    data_seq += self.mIO._getColumns(seek_key, col_names[1:])
+                list_data = decode_env_class(data_seq).get(0, codec)
+            while (last_pos is not None and seek_pos_end is not None
+                    and seek_pos_end < last_pos):
+                iter_h.seekNext()
+                seek_key, seek_data = iter_h.getCurrent()
+                if seek_key is not None and seek_key[0] == chrom:
+                    seek_pos_end = seek_key[1]
+                    data_seq = [seek_data]
+                    if len(col_names) > 0:
+                        data_seq += self.mIO._getColumns(
+                            seek_key, col_names[1:])
+                    list_data += decode_env_class(data_seq).get(0, codec)
+                else:
+                    seek_pos_end = None
+        return _ReadFrameBlock(self, chrom, init_pos,
+            seek_pos_start, seek_pos_end, list_data)
 
 #===============================================
 class _WriteFrameBlock:
@@ -73,26 +94,44 @@ class _WriteFrameBlock:
 
 #===============================================
 class _ReadFrameBlock:
-    def __init__(self, blocker, seek_key, init_pos = None, list_data = None):
+    def __init__(self, blocker, chrom, init_pos,
+            seek_pos = None, end_pos = None, list_data = None):
         self.mBlocker = blocker
-        self.mChrom, self.mEndPos = seek_key
+        self.mChrom = chrom
         self.mInitPos = init_pos
+        self.mSeekPos = seek_pos
+        self.mEndPos = end_pos
         self.mListData = list_data
 
-    def goodToRead(self, key):
+    def goodToRead(self, key, last_pos = None):
         chrom, pos = key
-        if chrom != self.mChrom or pos > self.mEndPos:
+        if chrom != self.mChrom:
             return False
-        return self.mInitPos is None or self.mInitPos <= pos
+        if last_pos is not None:
+            pos, last_pos = sorted([pos, last_pos])
+        if pos < self.mInitPos:
+            return False
+        if self.mEndPos is not None:
+            if pos > self.mEndPos:
+                return False
+            if last_pos is not None and last_pos > self.mEndPos:
+                return False
+        return True
 
-    def getRecord(self, key, codec):
-        chrom, pos = key
-        assert self.mChrom == chrom
+    def getRecord(self, key, codec, last_pos = None):
         if self.mListData is None:
             return []
+        chrom, pos = key
+        assert self.mChrom == chrom
         ret = []
         start_key, end_key = self.mBlocker.getPosKeys()
-        for data in self.mListData:
-            if data[start_key] <= pos <= data[end_key]:
-                ret.append(data)
+        if last_pos is not None:
+            pos, last_pos = sorted([pos, last_pos])
+            for data in self.mListData:
+                if max(data[start_key], pos) <= min(data[end_key], last_pos):
+                    ret.append(data)
+        else:
+            for data in self.mListData:
+                if data[start_key] <= pos <= data[end_key]:
+                    ret.append(data)
         return ret

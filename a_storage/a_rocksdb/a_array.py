@@ -9,12 +9,14 @@ class AArray:
         self.mDescr = descr
         self.mSchemaSeq = []
         self.mFilteringSet = set()
+        self.mUseLastPos = False
         db_key_type = None
         for schema_info in self.mDescr:
             schema_name = schema_info["schema"]
             schema_h = ASchema(self.mStorage, schema_name,
                 schema_info.get("dbname", schema_name), write_mode = False)
             self.mFilteringSet |= set(schema_h.getFilteringProperties())
+            self.mUseLastPos |= schema_h.useLastPos()
             self.mSchemaSeq.append(schema_h)
             if db_key_type is not None:
                 assert schema_h.getDBKeyType() == db_key_type, (
@@ -25,18 +27,30 @@ class AArray:
                 % (schema_name, self.mName))
 
     def request(self, rq_args):
-        chrom, pos = rq_args["loc"].split(':')
+        chrom, str_pos = rq_args["loc"].split(':')
         if not chrom.startswith("chr"):
             chrom = "chr" + chrom
-        pos = int(pos)
-        ret = {"chrom": chrom, "pos": pos, "array": self.mName}
+        if '-' in str_pos:
+            assert self.mUseLastPos, (
+                "Array %s: last position in diapason not supported: %s"
+                % (self.mName, rq_args["loc"]))
+            vpos, _, vlast = str_pos.partition('-')
+            pos, last_pos = int(vpos), int(vlast)
+        else:
+            pos, last_pos = int(str_pos), None
+        ret = {"chrom": chrom, "array": self.mName}
+        if last_pos is not None:
+            ret["start"] = pos
+            ret["end"] = last_pos
+        else:
+            ret["pos"] = pos
         filtering = dict()
         for flt_name in self.mFilteringSet:
             flt_val = rq_args.get(flt_name)
             if flt_val:
                 filtering[flt_name] = flt_val
         for schema_h in self.mSchemaSeq:
-            rec_data = schema_h.getRecord((chrom, pos), filtering)
+            rec_data = schema_h.getRecord((chrom, pos), filtering, last_pos)
             if rec_data is not None:
                 ret[schema_h.getName()] = rec_data
         return ret

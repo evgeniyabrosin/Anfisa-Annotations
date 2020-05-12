@@ -39,7 +39,8 @@ class BlockerSegment():
         self.mCurWriterKey = key
         return _WriteSegmentBlock(self, encode_env, key, codec.isAtomic())
 
-    def createReadBlock(self, decode_env_class, key, codec):
+    def createReadBlock(self, decode_env_class, key, codec, last_pos = None):
+        assert last_pos is None
         return _ReadSegmentBlock(self, decode_env_class, key, codec.isAtomic())
 
 #===============================================
@@ -97,10 +98,12 @@ class _ReadSegmentBlock:
                 self.mGapCount = int(check_val)
                 assert self.mGapCount > 0
 
-    def goodToRead(self, key):
+    def goodToRead(self, key, last_pos = None):
+        assert last_pos is None
         return self.mBlocker.isGoodKey(self.mChrom, self.mBasePos, key)
 
-    def getRecord(self, key, codec):
+    def getRecord(self, key, codec, last_pos = None):
+        assert last_pos is None
         chrom, pos = key
         assert self.mChrom == chrom
         if self.mDecodeEnv is None:
