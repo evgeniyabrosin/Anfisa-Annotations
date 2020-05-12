@@ -65,7 +65,7 @@ class InputDataReader:
         if self.mCurRecord is False:
             key, seq = None, None
         else:
-            key, seq = self.mCurRecord[0], [self.mCurRecord]
+            key, seq = self.mCurRecord[0], [self.mCurRecord[1]]
         while True:
             try:
                 in_record = next(self.mReader)
@@ -80,6 +80,9 @@ class InputDataReader:
                         self.mFName, in_record.CHROM, in_record.POS))
                 continue
             self.mCurRecord = new_single_record(in_record)
+            if key is None:
+                key, seq = self.mCurRecord[0], [self.mCurRecord[1]]
+                continue
             if self.mCurRecord[0] == key:
                 seq.append(self.mCurRecord[1])
                 continue

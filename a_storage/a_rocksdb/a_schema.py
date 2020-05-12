@@ -82,6 +82,9 @@ class ASchema:
     def getFilteringProperties(self):
         return self.mFilters.keys()
 
+    def useLastPos(self):
+        return self.mSchemaDescr.get("use-last-pos", False)
+
     def getDBKeyType(self):
         return self.mIO.getDBKeyType()
 
@@ -98,8 +101,8 @@ class ASchema:
             if 1 <= idx < self.mSmpCount:
                 self.mSamples[idx] = [key, record]
 
-    def getRecord(self, key, filtering = None):
-        ret = self.mIO.getRecord(key, self.mCodec)
+    def getRecord(self, key, filtering = None, last_pos = None):
+        ret = self.mIO.getRecord(key, self.mCodec, last_pos)
         if ret is not None and filtering is not None:
             for key, value in filtering.items():
                 field = self.mFilters.get(key)

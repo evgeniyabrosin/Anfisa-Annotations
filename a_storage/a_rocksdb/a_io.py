@@ -16,10 +16,10 @@ class AIOController:
 
         self.mDbConnector = self.mSchema.getStorage().openConnection(
             dbname, self.mSchema.isWriteMode())
-        self.mColumns = [self._regColumn("base")]
+        self.mColNames = [self._regColumn("base")]
         self.mWithStr = self.mSchema.isOptionRequired("str")
         if self.mWithStr:
-            self.mColumns.append(self._regColumn("str"))
+            self.mColNames.append(self._regColumn("str"))
         self.mBlockCodec = createBlockCodec(
             self, self._getProperty("block-type"))
 
@@ -116,39 +116,36 @@ class AIOController:
     def getDBKeyType(self):
         return self.mKeyCodec.getType()
 
-    def getColumns(self):
-        return self.mColumns
+    def getColumnNames(self):
+        return self.mColNames
 
     def getXKey(self, key):
         return self.mKeyCodec.encode(key)
 
-    def _putColumns(self, key, data_seq, columns = None, conv_bytes = True):
+    def _putColumns(self, key, data_seq, col_names = None, conv_bytes = True):
         xkey = self.getXKey(key)
-        if columns is None:
-            columns = self.mColumns
-        self.mDbConnector.putData(xkey, columns, data_seq, conv_bytes)
+        if col_names is None:
+            col_names = self.mColNames
+        self.mDbConnector.putData(xkey, col_names, data_seq, conv_bytes)
 
-    def _getColumns(self, key, columns = None, conv_bytes = True):
+    def _getColumns(self, key, col_names = None, conv_bytes = True):
         xkey = self.getXKey(key)
-        if columns is None:
-            columns = self.mColumns
-        return self.mDbConnector.getData(xkey, columns, conv_bytes)
+        if col_names is None:
+            col_names = self.mColNames
+        return self.mDbConnector.getData(xkey, col_names, conv_bytes)
 
-    def _seekColumn(self, key, column, conv_bytes = True):
-        xkey_seek = self.getXKey(key)
-        xkey, data = self.mDbConnector.seekData(xkey_seek, column, conv_bytes)
-        if xkey is not None:
-            return self.mKeyCodec.decode(xkey), data
-        return None, None
+    def _seekColumn(self, key, col_name, conv_bytes = True):
+        return AIO_Iterator(self.mDbConnector.seekData(
+            self.getXKey(key), col_name, conv_bytes), self.mKeyCodec)
 
     def _putRecord(self, key, record, codec):
         encode_env = AEncodeEnv(self, self.mWithStr)
         encode_env.put(record, codec)
         self.mDbConnector.putData(self.getXKey(key),
-            self.mColumns, encode_env.result())
+            self.mColNames, encode_env.result())
 
     def _getRecord(self, key, codec):
-        data_seq = self.mDbConnector.getData(self.getXKey(key), self.mColumns)
+        data_seq = self.mDbConnector.getData(self.getXKey(key), self.mColNames)
         if data_seq[0] is None:
             return None
         decode_env = ADecodeEnv(data_seq)
@@ -165,11 +162,11 @@ class AIOController:
                 AEncodeEnv(self, self.mWithStr), key, codec)
         self.mWriteBlockH.addRecord(key, record, codec)
 
-    def getRecord(self, key, codec):
+    def getRecord(self, key, codec, last_pos = None):
         read_block_h = None
         with self.mReadLock:
             for idx, rblock_h in enumerate(self.mReadCache):
-                if rblock_h.goodToRead(key):
+                if rblock_h.goodToRead(key, last_pos):
                     read_block_h = rblock_h
                     if idx > 0:
                         del self.mReadCache[idx]
@@ -177,18 +174,39 @@ class AIOController:
                     break
         if read_block_h is None:
             read_block_h = self.mBlockCodec.createReadBlock(
-                ADecodeEnv, key, codec)
+                ADecodeEnv, key, codec, last_pos)
             with self.mReadLock:
                 self.mReadCache.insert(0, read_block_h)
                 while len(self.mReadCache) > self.mReadCacheSize:
                     del self.mReadCache[-1]
-        return read_block_h.getRecord(key, codec)
+        return read_block_h.getRecord(key, codec, last_pos)
 
     def transformRecord(self, key, record, codec):
         encode_env = AEncodeEnv(None, self.mWithStr)
         encode_env.put(record, codec)
         decode_env = ADecodeEnv(encode_env.result())
         return decode_env.get(0, codec)
+
+#========================================
+class AIO_Iterator:
+    def __init__(self, db_iter, key_codec):
+        self.mIter = db_iter
+        self.mKeyCodec = key_codec
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, tp, value, traceback):
+        self.mIter.close()
+
+    def getCurrent(self):
+        xkey, data = self.mIter.getCurrent()
+        if xkey is None:
+            return None, None
+        return self.mKeyCodec.decode(xkey), data
+
+    def seekNext(self):
+        return self.mIter.seekNext()
 
 #========================================
 class AEncodeEnv:
