@@ -150,14 +150,14 @@ def ingestGTEX(db_host, db_port, user, password, database,
                     reportTime("Records_GENE2TISSUE",
                         total_gen2tis, start_time)
 
-            if len(gene_records) >= 0:
-                total_gene += execute_insert(conn,
-                    INSTR_INSERT_GENE, gene_records)
-                reportTime("Done_GENE", total_gene, start_time)
-            if len(gen2tis_records) >= 0:
-                total_gen2tis += execute_insert(conn,
-                    INSTR_INSERT_GENE2TISSUE, gen2tis_records)
-                reportTime("Done_GENE2TISSUE", total_gen2tis, start_time)
+        if len(gene_records) >= 0:
+            total_gene += execute_insert(conn,
+                INSTR_INSERT_GENE, gene_records)
+            reportTime("Done_GENE", total_gene, start_time)
+        if len(gen2tis_records) >= 0:
+            total_gen2tis += execute_insert(conn,
+                INSTR_INSERT_GENE2TISSUE, gen2tis_records)
+            reportTime("Done_GENE2TISSUE", total_gen2tis, start_time)
     c.close()
     curs.close()
 
