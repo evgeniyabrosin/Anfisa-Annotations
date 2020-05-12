@@ -141,8 +141,8 @@ def pgkbReTab(db_host, db_port, user, password, database):
     start_time = time.time()
 
     tab_writers = [
-        TabWriter(conn, "CHEMICALS", ["ChTitle", "ChID"],
-          instr_create = """CREATE TABLE IF NOT EXISTS CHEMICALS(
+        TabWriter(conn, "PharmCHEMICALS", ["ChTitle", "ChID"],
+          instr_create = """CREATE TABLE IF NOT EXISTS PharmCHEMICALS(
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,
@@ -150,8 +150,8 @@ def pgkbReTab(db_host, db_port, user, password, database):
             ChID VARCHAR(20),
             PRIMARY KEY (AssocKind, AssocID, ChID),
             KEY (Variant));"""),
-        TabWriter(conn, "DISEASES", ["DisTitle", "DisID"],
-          instr_create = """CREATE TABLE IF NOT EXISTS DISEASES(
+        TabWriter(conn, "PharmDISEASES", ["DisTitle", "DisID"],
+          instr_create = """CREATE TABLE IF NOT EXISTS PharmDISEASES(
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,
@@ -159,16 +159,16 @@ def pgkbReTab(db_host, db_port, user, password, database):
             DisID VARCHAR(20),
             PRIMARY KEY (AssocKind, AssocID, DisID),
             KEY (Variant));"""),
-        TabWriter(conn, "PMIDS", ["PMID"],
-          instr_create = """CREATE TABLE IF NOT EXISTS PMIDS(
+        TabWriter(conn, "PharmPMIDS", ["PMID"],
+          instr_create = """CREATE TABLE IF NOT EXISTS PharmPMIDS(
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,
             PMID int(10),
             PRIMARY KEY (AssocKind, AssocID, PMID),
             KEY (Variant));""", feed_mode = "int?"),
-        TabWriter(conn, "NOTES", ["Note"],
-          instr_create = """CREATE TABLE IF NOT EXISTS NOTES(
+        TabWriter(conn, "PharmNOTES", ["Note"],
+          instr_create = """CREATE TABLE IF NOT EXISTS PharmNOTES(
             Variant VARCHAR(20),
             AssocKind VARCHAR(10),
             AssocID int(10) NOT NULL,

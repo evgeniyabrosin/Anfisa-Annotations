@@ -231,8 +231,8 @@ if args.mode == "clinvar":
         password   = config.get("clinvar.db.password", std_password),
         database   = config["clinvar.database"],
         batch_size = config["clinvar.batch_size"],
-        variant_summary_file  = config["clinvar.variant_summary_file"],
-        XML_FILE = config["clinvar.XML_FILE"])
+        summary_fname  = config["clinvar.variant_summary_file"], # variant_summary_file  =
+        xml_fname = config["clinvar.XML_FILE"]) # XML_FILE =
     sys.exit()
 
 # More modes to add:
