@@ -4,7 +4,10 @@ SCHEMA_SPLICE_AI = {
     "key": "hg38",
     "io": {
         "block-type": "cluster",
-        "max-var-count": 300
+        "max-var-count": 250,
+        "str-col-options": {
+            "compression": "bz2_compression"
+        }
     },
     "filter-list": {"ref": "REF", "alt": "ALT"},
     "top": {
@@ -12,9 +15,9 @@ SCHEMA_SPLICE_AI = {
         "item": {
             "tp": "dict",
             "items": [
-                {"name": "ALT", "tp": "str"},
-                {"name": "REF", "tp": "str"},
-                {"name": "ID", "tp": "str"},
+                {"name": "ALT", "tp": "str", "opt": "repeat"},
+                {"name": "REF", "tp": "str", "opt": "repeat"},
+                {"name": "ID", "tp": "str", "opt": "repeat"},
                 {"name": "DP_AG",  "tp": "num", "format": "%d"},
                 {"name": "DP_AL",  "tp": "num", "format": "%d"},
                 {"name": "DP_DG",  "tp": "num", "format": "%d"},

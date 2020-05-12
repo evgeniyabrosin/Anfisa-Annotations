@@ -34,11 +34,14 @@ class JoinedReader:
     def __init__(self, name, readers, max_count = -1):
         self.mName = name
         self.mReaders = readers
-        self.mBuffers = [reader.getNext() for reader in self.mReaders]
+        self.mBuffers = None
         self.mDone = False
         self.mMaxCount = max_count
         self.mTotal, self.mCount = 0, 0
         self.mStartTime = datetime.now()
+
+    def iterReaders(self):
+        return iter(self.mReaders)
 
     def close(self):
         for reader in self.mReaders:
@@ -51,6 +54,8 @@ class JoinedReader:
     def nextOne(self):
         if self.mDone:
             return None
+        if self.mBuffers is None:
+            self.mBuffers = [reader.getNext() for reader in self.mReaders]
         min_key = None
         for idx, reader in enumerate(self.mReaders):
             buf = self.mBuffers[idx]
@@ -101,7 +106,8 @@ def writeDirect(reader, file_pattern, out_dir):
             cur_outp = gzip.open(fname, "wt", encoding = "utf-8")
         print(json.dumps([key, rec], sort_keys = True,
             ensure_ascii = False), file = cur_outp)
-    cur_outp.close()
+    if cur_outp is not None:
+        cur_outp.close()
     logging.info("File preparation done")
 
 #========================================

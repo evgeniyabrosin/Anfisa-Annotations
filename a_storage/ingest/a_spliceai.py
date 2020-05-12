@@ -44,8 +44,14 @@ def new_single_record(in_record):
 #===========================================================
 class InputDataReader:
     def __init__(self, fname):
+        self.mFName = fname
         self.mReader = pyvcf.VCF(fname)
-        self.mCurRecord = new_single_record(next(self.mReader))
+        self.mCurRecord = False
+        self.mSingleChrom = None
+        self.mSkipped = 0
+
+    def setSingleChrom(self, single_chrom):
+        self.mSingleChrom = single_chrom
 
     def isOver(self):
         return self.mCurRecord is None
@@ -55,20 +61,29 @@ class InputDataReader:
 
     def getNext(self):
         if self.mCurRecord is None:
-            return None
-        key = self.mCurRecord[0]
-        seq = [self.mCurRecord[1]]
+            return None, None
+        if self.mCurRecord is False:
+            key, seq = None, None
+        else:
+            key, seq = self.mCurRecord[0], [self.mCurRecord]
         while True:
             try:
                 in_record = next(self.mReader)
             except Exception:
                 self.mCurRecord = None
                 return [key, seq]
+            if (self.mSingleChrom is not None
+                    and in_record.CHROM != self.mSingleChrom):
+                self.mSkipped += 1
+                if self.mSkipped % 100000 == 0:
+                    logging.info("Skipped %d in %s at %s:%d" % (self.mSkipped,
+                        self.mFName, in_record.CHROM, in_record.POS))
+                continue
             self.mCurRecord = new_single_record(in_record)
             if self.mCurRecord[0] == key:
                 seq.append(self.mCurRecord[1])
                 continue
-            assert (key[0] != self.mCurRecord[0][0]
+            assert key is None or (key[0] != self.mCurRecord[0][0]
                 or key[1] < self.mCurRecord[0][1])
             return [key, seq]
 
@@ -79,10 +94,14 @@ class ReaderSpliceAI:
             for fname in extendFileList(file_list)]
         self.mJoinedReader = JoinedReader("", readers, max_count)
 
+    def setSingleChrom(self, single_chrom):
+        for reader in self.mJoinedReader.iterReaders():
+            reader.setSingleChrom(single_chrom)
+
     def read(self):
         while not self.mJoinedReader.isDone():
             ret = self.mJoinedReader.nextOne()
-            if ret is not None:
+            if ret is not None and ret[0] is not None:
                 yield ret
         self.mJoinedReader.close()
 
@@ -100,8 +119,12 @@ def reader_SpliceAI(properties):
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)
     if sys.argv[1] == "DIR":
+        logging.info("Using direct preparation in " + sys.argv[3])
         reader = reader_SpliceAI({
             "file_list": sys.argv[2]})
+        if len(sys.argv) > 4:
+            reader.setSingleChrom(sys.argv[4])
         writeDirect(reader, "spliceai_dir_%s.js.gz", sys.argv[3])
-    reader = reader_SpliceAI({"file_list": sys.argv[1]})
-    dumpReader(reader)
+    else:
+        reader = reader_SpliceAI({"file_list": sys.argv[1]})
+        dumpReader(reader)
