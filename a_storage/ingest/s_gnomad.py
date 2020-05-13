@@ -1,7 +1,7 @@
 #===============================================
 VARIANT_ITEMS = [
-    {"name": "ALT",     "tp": "str"},
-    {"name": "REF",     "tp": "str"},
+    {"name": "ALT",     "tp": "gene"},
+    {"name": "REF",     "tp": "gene"},
     {"name": "SOURCE",  "tp": "str", "opt": "dict"},
     {"name": "AC",      "tp": "num", "format": "%d"},
     {"name": "AN",      "tp": "num", "format": "%d"},

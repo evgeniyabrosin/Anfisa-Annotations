@@ -51,8 +51,8 @@ _FACETS_PROPERTIES = [
 
 #===============================================
 _VARIANT_PROPERTIES = [
-    {"name": "ALT", "tp": "str"},
-    {"name": "REF", "tp": "str"},
+    {"name": "ALT", "tp": "gene"},
+    {"name": "REF", "tp": "gene"},
     {"name": "CADD_raw",                        "tp": "num"},
     {"name": "CADD_phred",                      "tp": "num"},
     {"name": "DANN_score",                      "tp": "num"},
@@ -64,7 +64,7 @@ _VARIANT_PROPERTIES = [
     {"name": "Eigen_PC_raw_coding_rankscore",   "tp": "num"},
     {"name": "Eigen_PC_phred_coding",           "tp": "num"},
     {"name": "GTEx_V7_gene",                "tp": "str", "opt": "repeat"},
-    {"name": "GTEx_V7_tissue",              "tp": "str", "opt": "dict"},
+    {"name": "GTEx_V7_tissue",              "tp": "str"},
     {"name": "MutationTaster_score",        "tp": "str"},
     {"name": "MutationTaster_pred",         "tp": "str"},
     {"name": "PrimateAI_pred",              "tp": "str", "opt": "dict"},

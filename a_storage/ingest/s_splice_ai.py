@@ -15,8 +15,8 @@ SCHEMA_SPLICE_AI = {
         "item": {
             "tp": "dict",
             "items": [
-                {"name": "ALT", "tp": "str", "opt": "repeat"},
-                {"name": "REF", "tp": "str", "opt": "repeat"},
+                {"name": "ALT", "tp": "str", "opt": "gene"},
+                {"name": "REF", "tp": "str", "opt": "gene"},
                 {"name": "ID", "tp": "str", "opt": "repeat"},
                 {"name": "DP_AG",  "tp": "num", "format": "%d"},
                 {"name": "DP_AL",  "tp": "num", "format": "%d"},

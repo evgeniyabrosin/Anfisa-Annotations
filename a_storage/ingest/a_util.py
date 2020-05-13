@@ -39,6 +39,7 @@ class JoinedReader:
         self.mMaxCount = max_count
         self.mTotal, self.mCount = 0, 0
         self.mStartTime = datetime.now()
+        self.mFixedChrom = None
 
     def iterReaders(self):
         return iter(self.mReaders)
@@ -56,6 +57,12 @@ class JoinedReader:
             return None
         if self.mBuffers is None:
             self.mBuffers = [reader.getNext() for reader in self.mReaders]
+            for buf in self.mBuffers:
+                if buf is not None:
+                    if self.mFixedChrom is None:
+                        self.mFixedChrom = buf[0][0]
+                    else:
+                        assert self.mFixedChrom == buf[0][0]
         min_key = None
         for idx, reader in enumerate(self.mReaders):
             buf = self.mBuffers[idx]
@@ -68,6 +75,7 @@ class JoinedReader:
         if min_key is None:
             self.mDone = True
             return None
+        assert min_key[0] == self.mFixedChrom
         res_seq = []
         for idx in range(len(self.mReaders)):
             buf = self.mBuffers[idx]
@@ -81,6 +89,8 @@ class JoinedReader:
                 % (self.mName, self.mMaxCount))
             self.mDone = True
         if self.mCount % 100000 == 0:
+            if self.mCurChrom is None:
+                self.mCurChrom
             reportTime(self.mName + (" at %s:%s:" % min_key),
                 self.mTotal, self.mStartTime)
         return [min_key, res_seq]

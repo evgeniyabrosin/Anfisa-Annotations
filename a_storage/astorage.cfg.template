@@ -43,6 +43,10 @@
             //"genome_file_list": "${LOAD}/gnomad.2.1/gnomad.genomes.r2.1.1.sites.*.vcf.bgz",
             //"exome_file_list": "${LOAD}/gnomad.2.1/gnomad.exomes.r2.1.1.sites.*.vcf.bgz"
             "direct_file_list": "${LOAD}/gnomad/direct/*.js.gz"
+        },
+        "gtf": {
+            //"direct_file_list": "${LOAD}/gtf/gtf_dir_*.js.gz"
+            "file_list": "${LOAD}/Homo_sapiens.GRCh38.99.chr.gtf"
         }
     },
     
@@ -55,7 +59,35 @@
             "hg19": [
                 {"schema": "Gerp"},
                 {"schema": "gnomAD"}
+            ],
+            "gtf": [
+               {"schema": "gtf"}
             ]
+        },
+        "meta": {
+            "dbNSFP": {
+                "version": "4.0a",
+                "date": "2019-12-05"
+            },
+            "gnomAD": {
+                "version": "2.1.1",
+                "date": "2019-03-06"
+            },
+            "GERP": {
+                "version": "hg19.GERP_scores"
+            },
+            "SpliceAI": {
+                "version": "GRCh38",
+                "date": ""
+            },
+            "GTF": {
+                "version": "GRCh38.99",
+                "date": "2019-11-22"
+            }, 
+            "SpliceAI": {
+                "version": "1.3",
+                "date": "2019-10-12"
+            }
         }
     }, 
     
