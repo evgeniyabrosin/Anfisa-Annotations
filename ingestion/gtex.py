@@ -13,7 +13,7 @@ from util import execute_insert, reportTime
 
 #=== table GENE ============
 
-INSTR_CREATE_GENE = """CREATE TABLE IF NOT EXISTS GENE(
+INSTR_CREATE_GENE = """CREATE TABLE IF NOT EXISTS GTexGENE(
     GeneName       VARCHAR(24),
     Description    VARCHAR(19),
     TopT1          INT(2),
@@ -30,7 +30,7 @@ COLUMNS_GENE = [
     ]
 
 #=== table TISSUE ============
-INSTR_CREATE_TISSUE = """CREATE TABLE IF NOT EXISTS TISSUE(
+INSTR_CREATE_TISSUE = """CREATE TABLE IF NOT EXISTS GTexTISSUE(
     TissueNo        INT(2),
     Name            VARCHAR(41),
     PRIMARY KEY(TissueNo));"""
@@ -41,7 +41,7 @@ COLUMNS_TISSUE = [
     ]
 
 #=== table GENE2TISSUE ============
-INSTR_CREATE_GENE2TISSUE = """CREATE TABLE IF NOT EXISTS GENE2TISSUE(
+INSTR_CREATE_GENE2TISSUE = """CREATE TABLE IF NOT EXISTS GTexGENE2TISSUE(
     GeneName         VARCHAR(24),
     TissueNo         INT(2),
     Expression       FLOAT,
@@ -55,15 +55,15 @@ COLUMNS_GENE2TISSUE = [
     "RelExp"
     ]
 #================================================
-INSTR_INSERT_GENE = "INSERT INTO GENE (%s) VALUES (%s)" % (
+INSTR_INSERT_GENE = "INSERT INTO GTexGENE (%s) VALUES (%s)" % (
     ", ".join(COLUMNS_GENE),
     ", ".join(['%s' for _ in COLUMNS_GENE]))
 
-INSTR_INSERT_TISSUE = "INSERT INTO TISSUE (%s) VALUES (%s)" % (
+INSTR_INSERT_TISSUE = "INSERT INTO GTexTISSUE (%s) VALUES (%s)" % (
     ", ".join(COLUMNS_TISSUE),
     ", ".join(['%s' for _ in COLUMNS_TISSUE]))
 
-INSTR_INSERT_GENE2TISSUE = "INSERT INTO GENE2TISSUE (%s) VALUES (%s)" % (
+INSTR_INSERT_GENE2TISSUE = "INSERT INTO GTexGENE2TISSUE (%s) VALUES (%s)" % (
     ", ".join(COLUMNS_GENE2TISSUE),
     ", ".join(['%s' for _ in COLUMNS_GENE2TISSUE]))
 #========================================
@@ -147,7 +147,7 @@ def ingestGTEX(db_host, db_port, user, password, database,
                     total_gen2tis += execute_insert(
                         conn, INSTR_INSERT_GENE2TISSUE, gen2tis_records)
                     gen2tis_records = []
-                    reportTime("Records_GENE2TISSUE",
+                    reportTime("Records_GTexGENE2TISSUE",
                         total_gen2tis, start_time)
 
         if len(gene_records) >= 0:
@@ -157,7 +157,7 @@ def ingestGTEX(db_host, db_port, user, password, database,
         if len(gen2tis_records) >= 0:
             total_gen2tis += execute_insert(conn,
                 INSTR_INSERT_GENE2TISSUE, gen2tis_records)
-            reportTime("Done_GENE2TISSUE", total_gen2tis, start_time)
+            reportTime("Done_GTexGENE2TISSUE", total_gen2tis, start_time)
     c.close()
     curs.close()
 

@@ -49,12 +49,12 @@ INSTR_INSERT_SIG = "INSERT INTO ClinVar2Sub_Sig(%s) VALUES(%s)" % (
     ", ".join(COLUMN_SIG),
     ", ".join(["%s" for _ in COLUMN_SIG]))
 
-INSTR_CREATE_SUB = """CREATE TABLE IF NOT EXISTS CV_Submitters(
+INSTR_CREATE_SUB = """CREATE TABLE IF NOT EXISTS ClinVar_Submitters(
     SubmitterID                 INT,
     SubmitterName               TEXT CHARACTER SET utf8,
     INDEX Index0(SubmitterID));"""
 
-INSTR_INSERT_SUB = "INSERT INTO CV_Submitters(%s) VALUES(%s)" % (
+INSTR_INSERT_SUB = "INSERT INTO ClinVar_Submitters(%s) VALUES(%s)" % (
     ", ".join(COLUMN_SUB),
     ", ".join(["%s" for _ in COLUMN_SUB]))
 
@@ -62,7 +62,7 @@ INSTR_INSERT_SUB = "INSERT INTO CV_Submitters(%s) VALUES(%s)" % (
 #--- table variant_summary ----------------
 
 # capital letters?
-INSTR_CREATE = """CREATE TABLE IF NOT EXISTS variant_summary(
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS ClinVar_variant_summary(
     AlleleID                 INT(11),
     Type                     TEXT,
     Name                     TEXT,
@@ -132,7 +132,7 @@ COLUMNS = [
     "SubmitterCategories",
     "VariationID"]
 
-INSTR_INSERT = "INSERT INTO variant_summary (%s) VALUES (%s)" % (
+INSTR_INSERT = "INSERT INTO ClinVar_variant_summary (%s) VALUES (%s)" % (
     ", ".join(COLUMNS),
     ", ".join(["%s" for _ in COLUMNS]))
 
