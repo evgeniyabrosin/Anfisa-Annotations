@@ -4,7 +4,7 @@ SCHEMA_SPLICE_AI = {
     "key": "hg38",
     "io": {
         "block-type": "cluster",
-        "max-var-count": 250,
+        "max-var-count": 200,
         "str-col-options": {
             "compression": "bz2_compression"
         }
@@ -26,9 +26,8 @@ SCHEMA_SPLICE_AI = {
                 {"name": "DS_AL",  "tp": "num"},
                 {"name": "DS_DG",  "tp": "num"},
                 {"name": "DS_DL",  "tp": "num"},
-                {"name": "FAF95",  "tp": "num"},
-                {"name": "MAX_DS", "tp": "num"},
-                {"name": "SYMBOL", "tp": "str", "opt": "repeat"}
+                {"name": "MAX_DS", "tp": "num"}
+                #  {"name": "SYMBOL", "tp": "str", "opt": "repeat"}
             ]
         }
     }
