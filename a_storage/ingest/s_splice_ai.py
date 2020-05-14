@@ -17,17 +17,17 @@ SCHEMA_SPLICE_AI = {
             "items": [
                 {"name": "ALT", "tp": "str", "opt": "gene"},
                 {"name": "REF", "tp": "str", "opt": "gene"},
-                {"name": "ID", "tp": "str", "opt": "repeat"},
+                {"name": "ID", "tp": "str", "opt": "gene"},
+                {"name": "SYMBOL", "tp": "str", "opt": "repeat"},
                 {"name": "DP_AG",  "tp": "num", "format": "%d"},
                 {"name": "DP_AL",  "tp": "num", "format": "%d"},
                 {"name": "DP_DG",  "tp": "num", "format": "%d"},
                 {"name": "DP_DL",  "tp": "num", "format": "%d"},
+                {"name": "MAX_DS", "tp": "num"},
                 {"name": "DS_AG",  "tp": "num"},
-                {"name": "DS_AL",  "tp": "num"},
                 {"name": "DS_DG",  "tp": "num"},
-                {"name": "DS_DL",  "tp": "num"},
-                {"name": "MAX_DS", "tp": "num"}
-                #  {"name": "SYMBOL", "tp": "str", "opt": "repeat"}
+                {"name": "DS_AL",  "tp": "num"},
+                {"name": "DS_DL",  "tp": "num"}
             ]
         }
     }

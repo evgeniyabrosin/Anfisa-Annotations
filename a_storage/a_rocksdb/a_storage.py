@@ -3,8 +3,9 @@ import os, shutil, gc
 from .a_connector import AConnector
 #========================================
 class AStorage:
-    def __init__(self, config):
+    def __init__(self, config, dummy_mode = False):
         self.mConfig = config
+        self.mDummyMode = dummy_mode
         self.mConnectors = dict()
 
     def getDbOptions(self):
@@ -22,8 +23,14 @@ class AStorage:
     def getSamplesCount(self):
         return self.mConfig["samples-count"]
 
+    def getLoadKeepSchemaSec(self):
+        return self.mConfig["load-keep-schema-sec"]
+
     def getConnector(self, aspect_name):
         return self.mConnectors.get(aspect_name)
+
+    def isDummyMode(self):
+        return self.mDummyMode
 
     def openConnection(self, name, write_mode):
         if name not in self.mConnectors:

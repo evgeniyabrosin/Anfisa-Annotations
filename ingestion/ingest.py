@@ -71,6 +71,7 @@ if args.mode == "gnomad":
         batch_size = config["gnomad.batch_size"],
         file_list  = config["gnomad.file_list"])
     sys.exit()
+
 #========================================
 if args.mode == "pharmgkb":
     from pharmgkb.ca import ingestCA
@@ -209,6 +210,7 @@ if args.mode == "spliceai":
         batch_size = config["spliceai.batch_size"],
         file_list  = config["spliceai.file_list"])
     sys.exit()
+
 #========================================
 if args.mode == "dbnsfp4":
     from dbnsfp4 import ingestDBNSFP4
@@ -221,6 +223,7 @@ if args.mode == "dbnsfp4":
         batch_size = config["dbnsfp4.batch_size"],
         file_list  = config["dbnsfp4.file_list"])
     sys.exit()
+
 #========================================
 if args.mode == "clinvar":
     from clinvar import ingestCLINVAR
@@ -231,14 +234,8 @@ if args.mode == "clinvar":
         password   = config.get("clinvar.db.password", std_password),
         database   = config["clinvar.database"],
         batch_size = config["clinvar.batch_size"],
-        summary_fname  = config["clinvar.variant_summary_file"], # variant_summary_file  =
-        xml_fname = config["clinvar.XML_FILE"]) # XML_FILE =
+        summary_fname  = config["clinvar.variant_summary_file"],
+        xml_fname = config["clinvar.XML_FILE"])
     sys.exit()
-
-# More modes to add:
-# gnomad
-# spliceai
-# clinvar
-# ensembl
 
 assert False, "Unsupported ingest mode: " + str(args.mode)

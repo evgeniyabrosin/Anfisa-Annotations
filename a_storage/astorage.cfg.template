@@ -28,6 +28,7 @@
         }
     },
     "samples-count": 100,
+    "load-keep-schema-sec": 3600,
     
     "create": {
         "Gerp": {

@@ -17,8 +17,12 @@ class CodecAGroup(_CodecData):
         used_names = set()
         for it in self.mItemCodecs:
             it._checkNameUsage(used_names)
-        self.mStatValCount = 0
-        self.mStatGrpCount = {name: 0 for name in self.mGroup}
+        stat_info = self._getProperty("stat", dict())
+        self.mStatValCount = stat_info.get("val", 0)
+        self.mStatGrpCount = stat_info.get("groups")
+        if self.mStatGrpCount is None:
+            self.mStatGrpCount = {name: 0 for name in self.mGroup}
+            stat_info["groups"] = self.mStatGrpCount
         self._onDuty()
 
     def _checkNameUsage(self, used_names):
@@ -65,10 +69,9 @@ class CodecAGroup(_CodecData):
         return '[' + ','.join(ret_repr) + ']'
 
     def updateWStat(self):
-        stat_info = {
-            "groups": self.mStatGrpCount,
-            "val": self.mStatValCount}
-        self._updateProperty("stat", stat_info)
+        stat_info = self._getProperty("stat")
+        stat_info["groups"] = self.mStatGrpCount
+        stat_info["val"] = self.mStatValCount
         for it in self.mItemCodecs:
             it.updateWStat()
 

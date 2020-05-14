@@ -22,12 +22,16 @@ if __name__ == '__main__':
         default = "astorage.cfg")
     parser.add_argument("-d", "--dbname", help = "db name, "
         "by default equals to mode name")
+    parser.add_argument("--update",
+        action = "store_true", help = "Update mode")
+    parser.add_argument("--dummy",
+        action = "store_true", help = "Dummy DB mode")
     parser.add_argument("-m", "--mode",
         help = "Mode")
     args = parser.parse_args()
 
     db_config = loadJSonConfig(args.config)
-    a_storage = AStorage(db_config)
+    a_storage = AStorage(db_config, dummy_mode = args.dummy)
 
     db_name = args.dbname
     if not db_name:
@@ -35,8 +39,9 @@ if __name__ == '__main__':
     schema_cfg, reader_func = getIngestModeSetup(args.mode)
     reader_data = reader_func(db_config["create"][args.mode])
 
-    a_schema = ASchema(a_storage, args.mode, db_name,
-        schema_cfg, write_mode = True)
+    assert schema_cfg is not None
+    a_schema = ASchema(a_storage, args.mode, db_name, schema_cfg,
+        update_mode = args.update)
 
     a_storage.activate()
 

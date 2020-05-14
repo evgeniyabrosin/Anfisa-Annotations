@@ -5,7 +5,8 @@ class CodecStr(_CodecData):
         "A": "0",
         "C": "1",
         "G": "2",
-        "T": "3"
+        "T": "3",
+        None: "4"
     }
 
     def __init__(self, master, parent, schema_instr, default_name):
@@ -26,16 +27,17 @@ class CodecStr(_CodecData):
             elif opt == "gene":
                 self.mPreDict = self.sGeneLetters
                 self.mPreShift = len(self.mPreDict)
-                self.mPreBack = {int(val): str
-                    for str, val in self.mPreDict.items()}
+                self.mPreDecode = {int(val): key
+                    for key, val in self.mPreDict.items()}
             else:
                 self.mRepeatable = False
                 assert not opt
-        self.mStatNoneCount = 0
-        self.mStatValCount = 0
-        self.mStatMinL = None
-        self.mStatMaxL = None
-        self.mStatPre = 0
+        stat_info = self._getProperty("stat", dict())
+        self.mStatNoneCount = stat_info.get("null", 0)
+        self.mStatValCount = stat_info.get("val", 0)
+        self.mStatMinL = stat_info.get("min-l", 0)
+        self.mStatMaxL = stat_info.get("max-l", 0)
+        self.mStatPre = stat_info.get("pre-val", 0)
         self.getMaster().addRequirement("str")
         self._onDuty()
 
@@ -48,13 +50,13 @@ class CodecStr(_CodecData):
         return True
 
     def encode(self, value, encode_env):
+        if self.mPreShift > 0 and value in self.mPreDict:
+            self.mStatPre += 1
+            return self.mPreDict[value]
         if value is None:
             self.mStatNoneCount += 1
             return "null"
         self.mStatValCount += 1
-        if self.mPreShift > 0 and value in self.mPreDict:
-            self.mStatPre += 1
-            return self.mPreDict[value]
         v_len = len(value)
         if self.mStatMaxL is None:
             self.mStatMinL = self.mStatMaxL = v_len
@@ -75,17 +77,15 @@ class CodecStr(_CodecData):
         return str(v_idx + self.mPreShift)
 
     def updateWStat(self):
-        stat_info = {
-            "null": self.mStatNoneCount,
-            "val": self.mStatValCount,
-            "min-l": self.mStatMinL,
-            "max-l": self.mStatMaxL}
+        stat_info = self._getProperty("stat")
+        stat_info["null"] = self.mStatNoneCount
+        stat_info["val"] = self.mStatValCount
+        stat_info["min-l"] = self.mStatMinL
+        stat_info["max-l"] = self.mStatMaxL
         if self.mDict is not None:
             stat_info["dict-l"] = len(self.mDictList)
-            self._updateProperty("dictlist", self.mDictList[:])
         if self.mPreShift > 0:
             stat_info["pre-val"] = self.mStatPre
-        self._updateProperty("stat", stat_info)
 
     def decode(self, int_obj, decode_env):
         if int_obj is None:
@@ -93,7 +93,7 @@ class CodecStr(_CodecData):
         v_idx = int_obj
         if self.mPreShift > 0:
             if v_idx < self.mPreShift:
-                return self.mPreBack[v_idx]
+                return self.mPreDecode[v_idx]
             v_idx -= self.mPreShift
         if self.mDict is not None:
             return self.mDictList[v_idx]

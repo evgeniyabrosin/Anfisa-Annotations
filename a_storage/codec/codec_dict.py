@@ -12,8 +12,9 @@ class CodecDict(_CodecData):
         used_names = set()
         for it in self.mItemCodecs:
             it._checkNameUsage(used_names)
-        self.mStatNoneCount = 0
-        self.mStatValCount = 0
+        stat_info = self._getProperty("stat", dict())
+        self.mStatNoneCount = stat_info.get("null", 0)
+        self.mStatValCount = stat_info.get("val", 0)
         self._onDuty()
 
     def getType(self):
@@ -42,10 +43,9 @@ class CodecDict(_CodecData):
         return '[' + ','.join(items_repr) + ']'
 
     def updateWStat(self):
-        stat_info = {
-            "null": self.mStatNoneCount,
-            "val": self.mStatValCount}
-        self._updateProperty("stat", stat_info)
+        stat_info = self._getProperty("stat")
+        stat_info["null"] = self.mStatNoneCount
+        stat_info["val"] = self.mStatValCount
         for it in self.mItemCodecs:
             it.updateWStat()
 

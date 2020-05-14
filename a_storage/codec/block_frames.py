@@ -5,19 +5,24 @@ class BlockerFrameIndex():
         self.mPosKeys = self.mIO._getProperty("pos-keys")
         self.mCurWriterKey = None
         if self.mIO.isWriteMode():
-            self.mCountBlocks = 0
-            self.mMaxBlockLen = 0
-            self.mCountEmptyBlocks = 0
+            stat_info = self.mIO._getProperty("stat")
+            self.mCountBlocks = stat_info.get("frames-blocks", 0)
+            self.mMaxBlockLen = stat_info.get("frames-max-block-len", 0)
+            self.mCountEmptyBlocks = stat_info.get("frames-blocks-empty", 0)
 
     def getType(self):
         return "frame-idx"
 
+    def updateWStat(self):
+        if not self.mIO.isWriteMode():
+            return
+        stat_info = self.mIO._getProperty("stat")
+        stat_info["frames-blocks"] = self.mCountBlocks
+        stat_info["frames-max-block-len"] = self.mMaxBlockLen
+        stat_info["frames-blocks-empty"] = self.mCountEmptyBlocks
+
     def close(self):
-        if self.mIO.isWriteMode():
-            self.mIO._updateProperty("stat", {
-                "frames-blocks": self.mCountBlocks,
-                "frames-max-block-len": self.mMaxBlockLen,
-                "frames-blocks-empty": self.mCountEmptyBlocks})
+        self.updateWStat()
 
     def getIO(self):
         return self.mIO

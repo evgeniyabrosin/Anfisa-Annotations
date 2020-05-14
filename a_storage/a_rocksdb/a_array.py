@@ -14,7 +14,7 @@ class AArray:
         for schema_info in self.mDescr:
             schema_name = schema_info["schema"]
             schema_h = ASchema(self.mStorage, schema_name,
-                schema_info.get("dbname", schema_name), write_mode = False)
+                schema_info.get("dbname", schema_name))
             self.mFilteringSet |= set(schema_h.getFilteringProperties())
             self.mUseLastPos |= schema_h.useLastPos()
             self.mSchemaSeq.append(schema_h)

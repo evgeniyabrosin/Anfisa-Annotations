@@ -7,7 +7,7 @@ from .codec_agroup import CodecAGroup
 from .block_segment import BlockerSegment
 from .block_cluster import BlockerCluster
 from .block_frames import BlockerFrameIndex
-from .hg_key import Conv_HG19, Conv_HG38
+from .hg_key import Conv_HG19, Conv_HG38, Conv_ID
 
 #===============================================
 sDataCodecs = {
@@ -20,7 +20,8 @@ sDataCodecs = {
 
 sKeyCodecs = {
     "hg19": Conv_HG19,
-    "hg38": Conv_HG38
+    "hg38": Conv_HG38,
+    "id":   Conv_ID
 }
 
 sBlockCodecs = {

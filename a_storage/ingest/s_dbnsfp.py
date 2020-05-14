@@ -51,8 +51,8 @@ _FACETS_PROPERTIES = [
 
 #===============================================
 _VARIANT_PROPERTIES = [
-    {"name": "ALT", "tp": "gene"},
-    {"name": "REF", "tp": "gene"},
+    {"name": "ALT", "tp": "str", "opt": "gene"},
+    {"name": "REF", "tp": "str", "opt": "gene"},
     {"name": "CADD_raw",                        "tp": "num"},
     {"name": "CADD_phred",                      "tp": "num"},
     {"name": "DANN_score",                      "tp": "num"},

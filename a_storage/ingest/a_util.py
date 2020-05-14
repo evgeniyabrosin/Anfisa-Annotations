@@ -89,8 +89,6 @@ class JoinedReader:
                 % (self.mName, self.mMaxCount))
             self.mDone = True
         if self.mCount % 100000 == 0:
-            if self.mCurChrom is None:
-                self.mCurChrom
             reportTime(self.mName + (" at %s:%s:" % min_key),
                 self.mTotal, self.mStartTime)
         return [min_key, res_seq]

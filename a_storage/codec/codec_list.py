@@ -6,10 +6,11 @@ class CodecList(_CodecData):
         self.mItemCodec = _CodecData.create(self.getMaster(), self,
             self._getProperty("item"), default_name = "")
         self._updateProperty("item", self.mItemCodec.getSchemaDescr())
-        self.mStatNoneCount = 0
-        self.mStatValCount = 0
-        self.mStatMinL = None
-        self.mStatMaxL = None
+        stat_info = self._getProperty("stat", dict())
+        self.mStatNoneCount = stat_info.get("null", 0)
+        self.mStatValCount = stat_info.get("val", 0)
+        self.mStatMinL = stat_info.get("min-l", 0)
+        self.mStatMaxL = stat_info.get("max-l", 0)
         self._onDuty()
 
     def getType(self):
@@ -44,12 +45,11 @@ class CodecList(_CodecData):
         return '[' + ','.join(items_repr) + ']'
 
     def updateWStat(self):
-        stat_info = {
-            "null": self.mStatNoneCount,
-            "val": self.mStatValCount,
-            "min-l": self.mStatMinL,
-            "max-l": self.mStatMaxL}
-        self._updateProperty("stat", stat_info)
+        stat_info = self._getProperty("stat")
+        stat_info["null"] = self.mStatNoneCount
+        stat_info["val"] = self.mStatValCount
+        stat_info["min-l"] = self.mStatMinL
+        stat_info["max-l"] = self.mStatMaxL
         self.mItemCodec.updateWStat()
 
     def decode(self, int_obj, decode_env):

@@ -5,11 +5,12 @@ class CodecNum(_CodecData):
     def __init__(self, master, parent, schema_instr, default_name):
         _CodecData.__init__(self, master, parent, schema_instr, default_name)
         self.mFormat = self._getProperty("format", "%.3e")
-        self.mStatNoneCount = 0
-        self.mStatValCount = 0
-        self.mStatIntCount = 0
-        self.mStatMinVal = None
-        self.mStatMaxVal = None
+        stat_info = self._getProperty("stat", dict())
+        self.mStatNoneCount = stat_info.get("null", 0)
+        self.mStatValCount = stat_info.get("val", 0)
+        self.mStatIntCount = stat_info.get("int", 0)
+        self.mStatMinVal = stat_info.get("min", 0)
+        self.mStatMaxVal = stat_info.get("max", 0)
         self._onDuty()
 
     def getType(self):
@@ -45,12 +46,12 @@ class CodecNum(_CodecData):
         return repr_val
 
     def updateWStat(self):
-        self._updateProperty("stat", {
-            "null": self.mStatNoneCount,
-            "int": self.mStatIntCount,
-            "val": self.mStatValCount,
-            "min": self.mStatMinVal,
-            "max": self.mStatMaxVal})
+        stat_info = self._getProperty("stat")
+        stat_info["null"] = self.mStatNoneCount
+        stat_info["val"] = self.mStatValCount
+        stat_info["int"] = self.mStatIntCount
+        stat_info["min"] = self.mStatMinVal
+        stat_info["max"] = self.mStatMaxVal
 
     def decode(self, int_obj, decode_env):
         return int_obj

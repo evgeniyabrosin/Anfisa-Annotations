@@ -10,8 +10,9 @@ class BlockerCluster():
         self.mMaxPosCount = self.mIO._getProperty(
             "max-loc-count", self.MAX_POS_COUNT)
         if self.mIO.isWriteMode():
-            self.mCountBlocks = 0
-            self.mCountVariants = 0
+            stat_info = self.mIO._getProperty("stat")
+            self.mCountBlocks = stat_info.get("cluster-blocks", 0)
+            self.mCountVariants = stat_info.get("cluster-variants", 0)
 
     def _addWriteStat(self, var_count):
         self.mCountBlocks += 1
@@ -28,12 +29,15 @@ class BlockerCluster():
     def getIO(self):
         return self.mIO
 
+    def updateWStat(self):
+        if not self.mIO.isWriteMode():
+            return
+        stat_info = self.mIO._getProperty("stat")
+        stat_info["cluster-blocks"] = self.mCountBlocks
+        stat_info["cluster-variants"] = self.mCountVariants
+
     def close(self):
-        if self.mIO.isWriteMode():
-            stat_info = {"cluster-blocks": self.mCountBlocks}
-            if self.mMaxVarCount is not None:
-                stat_info["cluster-variants"] = self.mCountVariants
-            self.mIO._updateProperty("stat", stat_info)
+        self.updateWStat()
 
     def addToIndex(self, chrom, pos_seq):
         self.mIO._putColumns((chrom, pos_seq[-1]),

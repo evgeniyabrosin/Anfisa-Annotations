@@ -38,7 +38,11 @@ def new_single_record(in_record):
         record[fld_name] = VCF_INFO_TYPES[fld_name](fld_val)
 
     record["MAX_DS"] = max(record[key]
-        for key in ['DS_AG', 'DS_AL', 'DS_DG', 'DS_DL'])
+        for key in ["DS_AG", "DS_AL", "DS_DG", "DS_DL"])
+
+    for key in ["MAX_DS", "DS_AG", "DS_AL", "DS_DG", "DS_DL"]:
+        if record[key] == 0:
+            del record[key]
 
     return [("chr" + chrom, pos), record]
 
@@ -184,6 +188,7 @@ def splitPreparation(in_long_file, out_dir):
             output.close()
             logging.info("Done %s: %d records"
                 % (cur_fname, out_count))
+
 
 #========================================
 if __name__ == '__main__':

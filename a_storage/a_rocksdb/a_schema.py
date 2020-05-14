@@ -1,29 +1,33 @@
 import os, json, random, logging
+from datetime import datetime, timedelta
 
 from codec import createDataCodec
 from .a_io import AIOController
 #========================================
 class ASchema:
     def __init__(self, storage, name, dbname,
-            schema_descr = None, write_mode = True):
+            schema_descr = None, update_mode = False):
         self.mStorage = storage
         self.mName = name
         self.mSchemaDescr = schema_descr
-        self.mWriteMode = write_mode
+        self.mWriteMode = self.mSchemaDescr is not None
+        self.mUpdateMode = update_mode
+        assert not self.mUpdateMode or self.mWriteMode
 
         db_fpath = self.mStorage.getSchemaFilePath(dbname)
         if not os.path.exists(db_fpath):
-            assert self.mWriteMode, (
-                "Schema is empty for reading " + self.mName)
+            assert self.mWriteMode and not self.mUpdateMode, (
+                "No DB for reading (or update):" + db_fpath)
             os.mkdir(db_fpath)
 
         schema_fname = db_fpath + "/" + self.mName + ".json"
-        if not self.mWriteMode:
+        if not self.mWriteMode or self.mUpdateMode:
             assert os.path.exists(schema_fname), (
-                "Attempt to read from uninstalled database " + self.mName)
+                "Attempt to read from uninstalled database schema:"
+                + schema_fname)
             with open(schema_fname, "r", encoding = "utf-8") as inp:
                 self.mSchemaDescr = json.loads(inp.read())
-        else:
+        elif not self.mStorage.isDummyMode():
             if os.path.exists(schema_fname):
                 os.remove(schema_fname)
 
@@ -32,32 +36,49 @@ class ASchema:
             self.mSchemaDescr["name"])
         self.mSchemaDescr["top"] = self.mCodec.getSchemaDescr()
         self.mFilters = self.mSchemaDescr.get("filter-list", dict())
+        self.mTotal = self.mSchemaDescr.get("total", 0)
 
         if self.mWriteMode:
-            self.mTotal = 0
+            self.mNextKeepTime = None
+
+        if (self.mWriteMode and not self.mUpdateMode
+                and not self.mStorage.isDummyMode()):
+            self.mNextKeepTime = None
             self.mRH = random.Random(179)
             self.mSmpCount = self.mStorage.getSamplesCount()
             self.mSamples = []
+        else:
+            self.mSamples = None
 
         self.mIO = AIOController(self, dbname, self.mSchemaDescr["io"])
         self.mSchemaDescr["io"] = self.mIO.getDescr()
 
     def flush(self):
         self.mIO.flush()
+        self.keepSchema()
+
+    def keepSchema(self):
+        if not self.mWriteMode or self.mUpdateMode:
+            return
+        if self.mStorage.isDummyMode():
+            return
+        self.mSchemaDescr["total"] = self.mTotal
+        self.mCodec.updateWStat()
+        self.mIO.updateWStat()
+        schema_fname = self.mStorage.getSchemaFilePath(
+            self.mIO.getDbName()) + "/" + self.mName + ".json"
+        with open(schema_fname + ".new", "w", encoding = "utf-8") as outp:
+            outp.write(json.dumps(self.mSchemaDescr, sort_keys = True,
+                indent = 4, ensure_ascii = False))
+        if os.path.exists(schema_fname):
+            os.rename(schema_fname, schema_fname + '~')
+        os.rename(schema_fname + ".new", schema_fname)
+        logging.info("Schema %s kept, total = %d" % (self.mName, self.mTotal))
 
     def close(self):
         self.mIO.flush()
-        schema_fname = self.mStorage.getSchemaFilePath(
-            self.mIO.getDbName()) + "/" + self.mName + ".json"
-        if self.mWriteMode:
-            self.careSamples()
-        self.mIO.close()
-        if self.mWriteMode:
-            self.mSchemaDescr["total"] = self.mTotal
-            self.mCodec.updateWStat()
-            with open(schema_fname, "w", encoding = "utf-8") as outp:
-                outp.write(json.dumps(self.mSchemaDescr, sort_keys = True,
-                    indent = 4, ensure_ascii = False))
+        self.keepSchema()
+        self.careSamples()
 
     def getStorage(self):
         return self.mStorage
@@ -72,9 +93,7 @@ class ASchema:
         return self.mSchemaDescr.get(name)
 
     def getTotal(self):
-        if self.mWriteMode:
-            return self.mTotal
-        return self.mSchemaDescr["total"]
+        return self.mTotal
 
     def addRequirement(self, rq):
         self.mRequirements.add(rq)
@@ -94,12 +113,22 @@ class ASchema:
     def putRecord(self, key, record):
         self.mIO.putRecord(key, record, self.mCodec)
         self.mTotal += 1
-        if len(self.mSamples) < self.mSmpCount:
-            self.mSamples.append([key, record])
-        else:
-            idx = self.mRH.randrange(0, self.mTotal)
-            if 1 <= idx < self.mSmpCount:
-                self.mSamples[idx] = [key, record]
+        time_now = datetime.now()
+        if (self.mNextKeepTime is not None
+                and time_now >= self.mNextKeepTime):
+            self.keepSchema()
+            self.mNextKeepTime = None
+        if self.mNextKeepTime is None:
+            self.mNextKeepTime = (time_now
+                + timedelta(seconds = self.mStorage.getLoadKeepSchemaSec()))
+
+        if self.mSamples is not None:
+            if len(self.mSamples) < self.mSmpCount:
+                self.mSamples.append([key, record])
+            else:
+                idx = self.mRH.randrange(0, self.mTotal)
+                if 1 <= idx < self.mSmpCount:
+                    self.mSamples[idx] = [key, record]
 
     def getRecord(self, key, filtering = None, last_pos = None):
         ret = self.mIO.getRecord(key, self.mCodec, last_pos)
@@ -116,6 +145,10 @@ class ASchema:
         return ret
 
     def careSamples(self):
+        if not self.mWriteMode or self.mUpdateMode:
+            return
+        if self.mStorage.isDummyMode():
+            return
         smp_fname = self.mStorage.getSchemaFilePath(
             self.mIO.getDbName()) + "/" + self.mName + ".samples"
         with open(smp_fname, "w", encoding = "utf-8") as outp:

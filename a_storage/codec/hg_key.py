@@ -63,6 +63,17 @@ HG38_Tab = [
 ]
 
 #===============================================
+class IdConvertor:
+    def getType(self):
+        return "id"
+
+    def encode(self, xkey):
+        return xkey
+
+    def decode(self, xkey):
+        return xkey
+
+#===============================================
 class FastaConvertor:
     def __init__(self, fasta_tab, tp):
         self.mType = tp
@@ -89,3 +100,4 @@ class FastaConvertor:
 #===============================================
 Conv_HG19 = FastaConvertor(HG19_Tab, "hg19")
 Conv_HG38 = FastaConvertor(HG38_Tab, "hg38")
+Conv_ID = IdConvertor()

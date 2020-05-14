@@ -15,9 +15,13 @@ class AConnector:
             (rocksdb.DefaultColumnFamilyName, rocksdb.ColumnFamilyOptions()))
         self.mRdOpts = rocksdb.ReadOptions()
         self.mWrOpts = rocksdb.WriteOptions() if self.mWriteMode else None
-        self.mDB = rocksdb.DB()
+        if storage.isDummyMode():
+            self.mDB = None
+            logging.info("Attention: DB %s runs in dummy mode" % self.mName)
+        else:
+            self.mDB = rocksdb.DB()
         self.mColHandlers = None
-        if self.mWriteMode:
+        if self.mWriteMode and self.mDB is not None:
             if os.path.exists(self.mFilePath):
                 shutil.rmtree(self.mFilePath)
             os.mkdir(self.mFilePath)
@@ -56,7 +60,7 @@ class AConnector:
         self.mColIndex[col_name] = len(self.mColDescriptors)
         self.mColDescriptors.append(rocksdb.ColumnFamilyDescriptor(
             col_name, self._colOptions(col_attrs)))
-        if self.mWriteMode:
+        if self.mWriteMode and self.mDB is not None:
             s, cf = self.mDB.create_column_family(
                 self._colOptions(col_attrs), col_name)
             del cf
@@ -64,6 +68,8 @@ class AConnector:
 
     def activate(self):
         assert self.mColHandlers is None
+        if self.mDB is None:
+            return
         if self.mWriteMode:
             self.mDB.close()
             _, self.mColHandlers = self.mDB.open(
@@ -74,6 +80,8 @@ class AConnector:
         self._reportKeys()
 
     def close(self):
+        if self.mDB is None:
+            return
         self._reportKeys()
         if self.mWriteMode:
             compact_opt = rocksdb.CompactRangeOptions()
@@ -90,6 +98,8 @@ class AConnector:
         return len(self.mColNames)
 
     def _reportKeys(self):
+        if self.mDB is None:
+            return
         for col_h in self.mColHandlers:
             seq = []
             x_iter = self.mDB.iterator(self.mRdOpts, col_h)
@@ -104,6 +114,8 @@ class AConnector:
 
     def putData(self, xkey, col_seq, data_seq, conv_bytes = True):
         assert self.mWriteMode
+        if self.mDB is None:
+            return
         for col_name, data in zip(col_seq, data_seq):
             if conv_bytes:
                 data = bytes(data, encoding = "utf-8")
@@ -113,6 +125,8 @@ class AConnector:
 
     def getData(self, xkey, col_seq, conv_bytes = True):
         ret = []
+        if self.mDB is None:
+            return ret
         for col_name in col_seq:
             col_h = self.mColHandlers[self.mColIndex[col_name]]
             blob = self.mDB.get(self.mRdOpts, col_h, xkey)
@@ -123,6 +137,8 @@ class AConnector:
         return ret
 
     def seekData(self, xkey, col_name, conv_bytes):
+        if self.mDB is None:
+            return _AIterator(None)
         col_h = self.mColHandlers[self.mColIndex[col_name]]
         x_iter = self.mDB.iterator(self.mRdOpts, col_h)
         x_iter.seek(xkey)
@@ -130,12 +146,12 @@ class AConnector:
 
 #========================================
 class _AIterator:
-    def __init__(self, x_iter, conv_bytes):
+    def __init__(self, x_iter, conv_bytes = None):
         self.mIter = x_iter
         self.mConvBytes = conv_bytes
 
     def getCurrent(self):
-        if self.mIter.valid():
+        if self.mIter is not None and self.mIter.valid():
             ret_key, ret_data = self.mIter.key(), self.mIter.value()
             if self.mConvBytes and ret_data is not None:
                 ret_data = ret_data.decode(encoding = "utf-8")
