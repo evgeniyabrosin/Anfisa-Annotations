@@ -65,7 +65,8 @@ class CodecDict(_CodecData):
     def serializedEncode(self, value, encode_env):
         self.mStatValCount += 1
         items_repr = []
-        for it, it_val in zip(self.mSerialization, value):
+        for idx, it_val in enumerate(value):
+            it = self.mSerialization[idx]
             it_repr = "null"
             if it is not None:
                 it_repr = it.encode(it_val, encode_env)

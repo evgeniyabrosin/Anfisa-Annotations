@@ -6,7 +6,7 @@ class CodecStr(_CodecData):
         "C": "1",
         "G": "2",
         "T": "3",
-        ".": "4"
+        None: "4"
     }
 
     def __init__(self, master, parent, schema_instr, default_name):

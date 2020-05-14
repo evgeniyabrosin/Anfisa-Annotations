@@ -1,6 +1,7 @@
 import sys, logging, gzip
 import cyvcf2 as pyvcf
 from datetime import datetime
+from fastnumbers import fast_real
 
 from .a_util import (JoinedReader, extendFileList, dumpReader,
     writeDirect, DirectReader, detectFileChrom, reportTime)
@@ -11,14 +12,14 @@ from .a_util import (JoinedReader, extendFileList, dumpReader,
 VCF_INFO_TYPES = [
     ('ALT',     str),
     ('SYMBOL',  str),
-    ('DS_AG',   float),
-    ('DS_AL',   float),
-    ('DS_DG',   float),
-    ('DS_DL',   float),
-    ('DP_AG',   int),
-    ('DP_AL',   int),
-    ('DP_DG',   int),
-    ('DP_DL',   int)]
+    ('DS_AG',   fast_real),
+    ('DS_AL',   fast_real),
+    ('DS_DG',   fast_real),
+    ('DS_DL',   fast_real),
+    ('DP_AG',   fast_real),
+    ('DP_AL',   fast_real),
+    ('DP_DG',   fast_real),
+    ('DP_DL',   fast_real)]
 
 DB_FIELDS = [
     "ALT", "REF", "ID", "SYMBOL",
