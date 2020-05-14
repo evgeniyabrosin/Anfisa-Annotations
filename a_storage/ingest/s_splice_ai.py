@@ -14,6 +14,7 @@ SCHEMA_SPLICE_AI = {
         "tp": "list",
         "item": {
             "tp": "dict",
+            "label": "spliceai-rec",
             "items": [
                 {"name": "ALT", "tp": "str", "opt": "gene"},
                 {"name": "REF", "tp": "str", "opt": "gene"},

@@ -37,11 +37,11 @@ if __name__ == '__main__':
     if not db_name:
         db_name = args.mode
     schema_cfg, reader_func = getIngestModeSetup(args.mode)
-    reader_data = reader_func(db_config["create"][args.mode])
 
     assert schema_cfg is not None
     a_schema = ASchema(a_storage, args.mode, db_name, schema_cfg,
         update_mode = args.update)
+    reader_data = reader_func(db_config["create"][args.mode], a_schema)
 
     a_storage.activate()
 

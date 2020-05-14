@@ -143,7 +143,7 @@ class ReaderGNOMAD211:
             join_reader.close()
 
 #========================================
-def reader_GNOMAD211(properties):
+def reader_GNOMAD211(properties, schema_h = None):
     if "direct_file_list" in properties:
         return DirectReader(properties["direct_file_list"])
 

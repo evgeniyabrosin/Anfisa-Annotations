@@ -11,6 +11,7 @@ class CodecNum(_CodecData):
         self.mStatIntCount = stat_info.get("int", 0)
         self.mStatMinVal = stat_info.get("min", 0)
         self.mStatMaxVal = stat_info.get("max", 0)
+        self.mCheckE = ('e' in self.mFormat.lower())
         self._onDuty()
 
     def getType(self):
@@ -34,13 +35,17 @@ class CodecNum(_CodecData):
                 self.mStatMinVal = value
             if self.mStatMaxVal > value:
                 self.mStatMaxVal = value
+        if value == 0:
+            return "0"
         if isinstance(value, int):
             self.mStatIntCount += 1
             return str(value)
-        repr_val = self.sEZeroPatternPlus.sub("e", self.mFormat % value)
-        repr_val = self.sEZeroPatternMinus.sub("e-", repr_val)
-        if repr_val.endswith("e"):
-            repr_val = repr_val[:-1]
+        repr_val = self.mFormat % value
+        if self.mCheckE:
+            repr_val = self.sEZeroPatternPlus.sub("e", repr_val)
+            repr_val = self.sEZeroPatternMinus.sub("e-", repr_val)
+            if repr_val.endswith("e"):
+                repr_val = repr_val[:-1]
         if repr_val.endswith("."):
             repr_val = repr_val[:-1]
         return repr_val

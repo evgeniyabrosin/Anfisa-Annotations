@@ -32,6 +32,7 @@ class ASchema:
                 os.remove(schema_fname)
 
         self.mRequirements = set()
+        self.mCodecDict = dict()
         self.mCodec = createDataCodec(self, None, self.mSchemaDescr["top"],
             self.mSchemaDescr["name"])
         self.mSchemaDescr["top"] = self.mCodec.getSchemaDescr()
@@ -97,6 +98,13 @@ class ASchema:
 
     def addRequirement(self, rq):
         self.mRequirements.add(rq)
+
+    def setCodecByLabel(self, label, codec):
+        assert label not in self.mCodecDict
+        self.mCodecDict[label] = codec
+
+    def getCodecByLabel(self, label):
+        return self.mCodecDict.get(label)
 
     def getFilteringProperties(self):
         return self.mFilters.keys()

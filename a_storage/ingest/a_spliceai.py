@@ -5,44 +5,61 @@ from datetime import datetime
 from .a_util import (JoinedReader, extendFileList, dumpReader,
     writeDirect, DirectReader, detectFileChrom, reportTime)
 #========================================
-VCF_INFO_NAMES = (
-    "ALT|SYMBOL|DS_AG|DS_AL|DS_DG|DS_DL|DP_AG|DP_AL|DP_DG|DP_DL".split('|'))
+# VCF_INFO_NAMES = (
+#    "ALT|SYMBOL|DS_AG|DS_AL|DS_DG|DS_DL|DP_AG|DP_AL|DP_DG|DP_DL".split('|'))
 
-VCF_INFO_TYPES = {
-    'DP_AG':    int,
-    'DP_AL':    int,
-    'DP_DG':    int,
-    'DP_DL':    int,
-    'DS_AG':    float,
-    'DS_AL':    float,
-    'DS_DG':    float,
-    'DS_DL':    float,
-    'ALT':      str,
-    'SYMBOL':   str
-}
+VCF_INFO_TYPES = [
+    ('ALT',     str),
+    ('SYMBOL',  str),
+    ('DS_AG',   float),
+    ('DS_AL',   float),
+    ('DS_DG',   float),
+    ('DS_DL',   float),
+    ('DP_AG',   int),
+    ('DP_AL',   int),
+    ('DP_DG',   int),
+    ('DP_DL',   int)]
+
+DB_FIELDS = [
+    "ALT", "REF", "ID", "SYMBOL",
+    "DP_AG", "DP_AL", "DP_DG", "DP_DL",
+    "MAX_DS", "DS_AG", "DS_DG", "DS_AL", "DS_DL"]
+
+LEN_REC = len(DB_FIELDS)
+REC_SHEET = []
+
+for idx, fld_name in enumerate(DB_FIELDS):
+    rec_info = (None, None)
+    for pos, info in enumerate(VCF_INFO_TYPES):
+        nm, tp = info
+        if nm == fld_name:
+            rec_info = (pos, tp)
+            break
+    if rec_info[0] is None:
+        assert fld_name in ("REF", "ID", "MAX_DS")
+        assert idx in (1, 2, 8)
+    else:
+        REC_SHEET.append((idx, rec_info[0], rec_info[1]))
 
 #========================================
 def new_single_record(in_record):
-    global VCF_INFO_NAMES, VCF_INFO_TYPES
+    global REC_SHEET, LEN_REC
 
     chrom = in_record.CHROM
     pos = int(in_record.POS)
+    record = [None] * LEN_REC
+    record[1] = in_record.REF
+    record[2] = in_record.ID
 
-    record = {key: getattr(in_record, key)
-        for key in ("REF", "ID")}
-
-    for fld_name, fld_val in zip(VCF_INFO_NAMES,
-            in_record.INFO['SpliceAI'].split('|')):
-        if fld_name.startswith("#"):
-            continue
-        record[fld_name] = VCF_INFO_TYPES[fld_name](fld_val)
-
-    record["MAX_DS"] = max(record[key]
-        for key in ["DS_AG", "DS_AL", "DS_DG", "DS_DL"])
-
-    for key in ["MAX_DS", "DS_AG", "DS_AL", "DS_DG", "DS_DL"]:
-        if record[key] == 0:
-            del record[key]
+    info_fields = in_record.INFO['SpliceAI'].split('|')
+    for idx, pos, tp in REC_SHEET:
+        record[idx] = tp(info_fields[pos])
+    record[8] = max(record[9:])
+    if record[8] == 0:
+        record = record[:8]
+    else:
+        while record[-1] == 0:
+            del record[-1]
 
     return [("chr" + chrom, pos), record]
 
@@ -129,7 +146,11 @@ class ReaderSpliceAI:
             join_reader.close()
 
 #========================================
-def reader_SpliceAI(properties):
+def reader_SpliceAI(properties, schema_h = None):
+    if schema_h is not None:
+        schema_h.getCodecByLabel(
+            "spliceai-rec").setSerialization(DB_FIELDS)
+
     if "direct_file_list" in properties:
         return DirectReader(properties["direct_file_list"])
 

@@ -17,6 +17,9 @@ class _CodecData:
         name = self._getProperty("name", default_name)
         if default_name != "?":
             assert name == default_name
+        self.mLabel = schema_instr.get("label")
+        if self.mLabel is not None:
+            master.setCodecByLabel(self._getProperty("label"), self)
 
     def _getProperty(self, name, default_value = None):
         if name in self.mSchemaDescr:

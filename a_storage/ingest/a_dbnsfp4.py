@@ -226,7 +226,7 @@ class ReaderDBNSFP4:
                     % (total_tr, total_facets, exceptions))
 
 #========================================
-def reader_dbNSFP4(properties):
+def reader_dbNSFP4(properties, schema_h = None):
     return ReaderDBNSFP4(
         properties["file_list"],
         properties.get("chrom_loc", "chr"))

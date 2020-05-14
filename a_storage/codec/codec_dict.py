@@ -7,6 +7,8 @@ class CodecDict(_CodecData):
         self.mItemCodecs = [
             _CodecData.create(self.getMaster(), self, it_instr, "?")
             for it_instr in self._getProperty("items")]
+        self.mItemNameCodecs = [(it.getName(), it)
+            for it in self.mItemCodecs]
         self._updateProperty("items",
             [it.getSchemaDescr() for it in self.mItemCodecs])
         used_names = set()
@@ -15,7 +17,23 @@ class CodecDict(_CodecData):
         stat_info = self._getProperty("stat", dict())
         self.mStatNoneCount = stat_info.get("null", 0)
         self.mStatValCount = stat_info.get("val", 0)
+        self.mSerialization = None
         self._onDuty()
+
+    def setSerialization(self, names):
+        self.mSerialization = []
+        used_names = set()
+        for it_name, it in self.mItemNameCodecs:
+            if it_name not in names:
+                self.mSerialization.append(None)
+                continue
+            assert not it.isAggregate()
+            used_names.add(it_name)
+            self.mSerialization.append(it)
+        lost_names = set(names) - used_names
+        assert len(lost_names) == 0, (
+            "Serialization of %s, lost names: %s"
+            % (self.getPath(), " ".join(sorted(lost_names))))
 
     def getType(self):
         return "dict"
@@ -27,20 +45,35 @@ class CodecDict(_CodecData):
         if value is None:
             self.mStatNoneCount += 1
             return "null"
+        if self.mSerialization is not None:
+            return self.serializedEncode(value, encode_env)
         self.mStatValCount += 1
         items_repr = []
-        for it in self.mItemCodecs:
+        for it_name, it in self.mItemNameCodecs:
             it_repr = "null"
             if it.isAggregate():
                 it_repr = it.encode(value, encode_env)
             else:
-                it_val = value.get(it.getName())
+                it_val = value.get(it_name)
                 if it_val is not None:
                     it_repr = it.encode(it_val, encode_env)
             items_repr.append(it_repr)
         while len(items_repr) > 0 and items_repr[-1] == "null":
             del items_repr[-1]
         return '[' + ','.join(items_repr) + ']'
+
+    def serializedEncode(self, value, encode_env):
+        self.mStatValCount += 1
+        items_repr = []
+        for it, it_val in zip(self.mSerialization, value):
+            it_repr = "null"
+            if it is not None:
+                it_repr = it.encode(it_val, encode_env)
+            items_repr.append(it_repr)
+        while len(items_repr) > 0 and items_repr[-1] == "null":
+            del items_repr[-1]
+        return '[' + ','.join(items_repr) + ']'
+
 
     def updateWStat(self):
         stat_info = self._getProperty("stat")

@@ -33,7 +33,7 @@ class ReaderGerp:
                 reportTime("Done:", position, start_time)
 
 #========================================
-def reader_Gerp(properties):
+def reader_Gerp(properties, schema_h = None):
     return ReaderGerp(
         properties["file_list"],
         properties.get("chrom_loc", "chr"))

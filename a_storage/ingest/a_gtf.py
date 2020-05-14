@@ -159,7 +159,7 @@ class ReaderGTF:
         os.remove(self.mTmpFile)
 
 #========================================
-def reader_GTF(properties):
+def reader_GTF(properties, schema_h = None):
     if "direct_file_list" in properties:
         return DirectReader(properties["direct_file_list"])
     return ReaderGTF(properties["file_list"])
