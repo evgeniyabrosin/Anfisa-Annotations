@@ -30,10 +30,10 @@ REC_SHEET = []
 
 for idx, fld_name in enumerate(DB_FIELDS):
     rec_info = (None, None)
-    for pos, info in enumerate(VCF_INFO_TYPES):
+    for vcf_idx, info in enumerate(VCF_INFO_TYPES):
         nm, tp = info
         if nm == fld_name:
-            rec_info = (pos, tp)
+            rec_info = (vcf_idx, tp)
             break
     if rec_info[0] is None:
         assert fld_name in ("REF", "ID", "MAX_DS")
@@ -52,8 +52,8 @@ def new_single_record(in_record):
     record[2] = in_record.ID
 
     info_fields = in_record.INFO['SpliceAI'].split('|')
-    for idx, pos, tp in REC_SHEET:
-        record[idx] = tp(info_fields[pos])
+    for idx, vcf_idx, tp in REC_SHEET:
+        record[idx] = tp(info_fields[vcf_idx])
     record[8] = max(record[9:])
     if record[8] == 0:
         record = record[:8]
