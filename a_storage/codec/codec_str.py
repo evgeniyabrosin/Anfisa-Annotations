@@ -22,6 +22,7 @@ class CodecStr(_CodecData):
             self.mDict = {value: idx
                 for idx, value in enumerate(self.mDictList)}
         else:
+            self.getMaster().addRequirement("str")
             if opt == "repeat":
                 self.mRepeatable = True
             elif opt == "gene":
@@ -33,12 +34,13 @@ class CodecStr(_CodecData):
                 self.mRepeatable = False
                 assert not opt
         stat_info = self._getProperty("stat", dict())
-        self.mStatNoneCount = stat_info.get("null", 0)
-        self.mStatValCount = stat_info.get("val", 0)
-        self.mStatMinL = stat_info.get("min-l", 0)
-        self.mStatMaxL = stat_info.get("max-l", 0)
         self.mStatPre = stat_info.get("pre-val", 0)
-        self.getMaster().addRequirement("str")
+        self.mStatNoneCount = stat_info.get("null", 0)
+        self.mStatDetails = not self.getMaster().getProperty("no-stat-details")
+        if self.mStatDetails:
+            self.mStatValCount = stat_info.get("val", 0)
+            self.mStatMinL = stat_info.get("min-l", 0)
+            self.mStatMaxL = stat_info.get("max-l", 0)
         self._onDuty()
 
     def getType(self):
@@ -56,15 +58,16 @@ class CodecStr(_CodecData):
         if value is None:
             self.mStatNoneCount += 1
             return "null"
-        self.mStatValCount += 1
-        v_len = len(value)
-        if self.mStatMaxL is None:
-            self.mStatMinL = self.mStatMaxL = v_len
-        else:
-            if self.mStatMinL < v_len:
-                self.mStatMinL = v_len
-            if self.mStatMaxL > v_len:
-                self.mStatMaxL = v_len
+        if self.mStatDetails:
+            self.mStatValCount += 1
+            v_len = len(value)
+            if self.mStatMaxL is None:
+                self.mStatMinL = self.mStatMaxL = v_len
+            else:
+                if self.mStatMinL < v_len:
+                    self.mStatMinL = v_len
+                if self.mStatMaxL > v_len:
+                    self.mStatMaxL = v_len
 
         if self.mDict is not None:
             v_idx = self.mDict.get(value)
@@ -79,9 +82,10 @@ class CodecStr(_CodecData):
     def updateWStat(self):
         stat_info = self._getProperty("stat")
         stat_info["null"] = self.mStatNoneCount
-        stat_info["val"] = self.mStatValCount
-        stat_info["min-l"] = self.mStatMinL
-        stat_info["max-l"] = self.mStatMaxL
+        if self.mStatDetails:
+            stat_info["val"] = self.mStatValCount
+            stat_info["min-l"] = self.mStatMinL
+            stat_info["max-l"] = self.mStatMaxL
         if self.mDict is not None:
             stat_info["dict-l"] = len(self.mDictList)
         if self.mPreShift > 0:

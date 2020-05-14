@@ -67,14 +67,12 @@ class CodecDict(_CodecData):
         items_repr = []
         for idx, it_val in enumerate(value):
             it = self.mSerialization[idx]
-            it_repr = "null"
             if it is not None:
                 it_repr = it.encode(it_val, encode_env)
+            else:
+                it_repr = "null"
             items_repr.append(it_repr)
-        while len(items_repr) > 0 and items_repr[-1] == "null":
-            del items_repr[-1]
         return '[' + ','.join(items_repr) + ']'
-
 
     def updateWStat(self):
         stat_info = self._getProperty("stat")

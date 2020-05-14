@@ -2,6 +2,7 @@
 SCHEMA_SPLICE_AI = {
     "name": "SpliceAI",
     "key": "hg38",
+    "no-stat-details": True,
     "io": {
         "block-type": "cluster",
         "max-var-count": 200,
