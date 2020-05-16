@@ -1,10 +1,10 @@
 Упаковка данных
 
-java -cp annotation_v.0.6.1.0-full.jar \
+nohup java -cp annotation_v.0.6.1.2-full.jar \
     org.forome.annotation.makedatabase.main.MainMakeDatabase \
     -database /projects/annotations/database/annotation-hg38 \
     -assembly GRCh38 \
-    -gerp38 /db/download/hg18.GERP_scores.tar.gz
+    -gerp38 /db/download/hg18.GERP_scores.tar.gz &
 
 ==================================================================
 При упоковке по 100 вариантов:

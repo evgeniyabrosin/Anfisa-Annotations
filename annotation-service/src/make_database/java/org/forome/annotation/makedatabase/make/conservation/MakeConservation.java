@@ -79,7 +79,10 @@ public class MakeConservation {
 				TarArchiveEntry entry;
 				while ((entry = (TarArchiveEntry) isTarGZ.getNextEntry()) != null) {
 					Chromosome chromosome = getChromosome(entry.getName());
-					if (chromosome == null) continue;
+					if (chromosome == null) {
+						log.debug("File entry: {} is ignored", entry.getName());
+						continue;
+					}
 
 					BufferedReader isItem = new BufferedReader(new InputStreamReader(isTarGZ));
 					try (AccumulationConservation accumulation = new AccumulationConservation(rocksDB, columnFamilyRecord, statistics)) {
@@ -118,7 +121,7 @@ public class MakeConservation {
 
 
 	private static Chromosome getChromosome(String entryName) {
-		Chromosome chromosome = Chromosome.of(entryName.split("\\.")[0]);
+		Chromosome chromosome = Chromosome.of(entryName.split("(\\.)|(_)")[0]);
 		if (chromosome.isSupport()) {
 			return chromosome;
 		} else {
