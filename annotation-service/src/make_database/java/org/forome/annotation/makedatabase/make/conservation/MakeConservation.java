@@ -54,6 +54,7 @@ import java.util.zip.GZIPInputStream;
  * <p>
  * Исходные данные:
  * nohup wget http://mendel.stanford.edu/SidowLab/downloads/gerp/hg19.GERP_scores.tar.gz . &
+ * nohup wget http://mendel.stanford.edu/SidowLab/downloads/gerp/hg18.GERP_scores.tar.gz &
  */
 public class MakeConservation {
 
