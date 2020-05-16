@@ -54,8 +54,14 @@ public class ParserArgument {
 				.addOption(Option.builder()
 						.longOpt(OPTION_SOURCE_GERP_HG19)
 						.hasArg(true)
-						.optionalArg(false)
+						.optionalArg(true)
 						.desc("Absolute path to data file: gerp hg19")
+						.build())
+				.addOption(Option.builder()
+						.longOpt(OPTION_SOURCE_GERP_HG38)
+						.hasArg(true)
+						.optionalArg(true)
+						.desc("Absolute path to data file: gerp hg38")
 						.build())
 
 				;
