@@ -25,6 +25,9 @@
         },
         "sgidx": {
             "compression": "no_compression"
+        },
+        "fasta": {
+            "compression": "bz2_compression"
         }
     },
     "samples-count": 100,
@@ -48,6 +51,10 @@
         "gtf": {
             //"direct_file_list": "${LOAD}/gtf/gtf_dir_*.js.gz"
             "file_list": "${LOAD}/Homo_sapiens.GRCh38.99.chr.gtf"
+        },
+        "fasta": {
+            "fasta_hg19": "${LOAD}/fasta/hg19.fasta.gz",
+            "fasta_hg38": "${LOAD}/fasta/hg38.fasta.gz"
         }
     },
     
@@ -62,7 +69,10 @@
                 {"schema": "gnomAD"}
             ],
             "gtf": [
-               {"schema": "gtf"}
+                {"schema": "gtf"}
+            ],
+            "fasta": [
+                {"schema": "fasta"}
             ]
         },
         "meta": {

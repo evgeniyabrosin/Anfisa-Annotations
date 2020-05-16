@@ -16,7 +16,10 @@ class AIOController:
 
         self.mDbConnector = self.mSchema.getStorage().openConnection(
             dbname, self.mSchema.isWriteMode())
-        self.mColNames = [self._regColumn("base")]
+        self.mColNames = []
+        self.mWithBase = self.mSchema.isOptionRequired("base")
+        if self.mWithBase:
+            self.mColNames.append(self._regColumn("base"))
         self.mWithStr = self.mSchema.isOptionRequired("str")
         if self.mWithStr:
             self.mColNames.append(self._regColumn("str"))
@@ -24,21 +27,26 @@ class AIOController:
         if self.mSchema.isWriteMode():
             self.mWriteBlockH = None
             stat_info = self._getProperty("stat", dict())
-            self.mBaseBlockCount = stat_info.get("base-blocks", 0)
-            self.mBaseTotalLen = stat_info.get("base-total-l", 0)
-            self.mBaseMaxLen = stat_info.get("base-max-l", 0)
+            if self.mWithBase:
+                self.mBaseBlockCount = stat_info.get("base-blocks", 0)
+                self.mBaseTotalLen = stat_info.get("base-total-l", 0)
+                self.mBaseMaxLen = stat_info.get("base-max-l", 0)
             if self.mWithStr:
                 self.mStrTotalLen = stat_info.get("str-total-l", 0)
                 self.mStrMaxLen = stat_info.get("str-max-len", 0)
                 self.mStrTotalCount = stat_info.get("str-total-count", 0)
                 self.mStrMaxCount = stat_info.get("str-max-count", 0)
 
-        self.mBlockCodec = createBlockCodec(
-            self, self._getProperty("block-type"))
-        self.mReadLock = Lock()
-        self.mReadCache = []
-        self.mReadCacheSize = self._getProperty("cache-size",
-            self.READ_BLOCK_CACHE_SIZE)
+        block_type = self._getProperty("block-type")
+        if block_type is not None:
+            self.mBlockCodec = createBlockCodec(
+                self, self._getProperty("block-type"))
+            self.mReadLock = Lock()
+            self.mReadCache = []
+            self.mReadCacheSize = self._getProperty("cache-size",
+                self.READ_BLOCK_CACHE_SIZE)
+        else:
+            self.mBlockCodec = None
         self._onDuty()
 
     def _getProperty(self, name, default_value = None):
@@ -50,15 +58,16 @@ class AIOController:
             self.mDescr[name] = default_value
         return self.mDescr[name]
 
-    def _regColumn(self, col_type):
+    def _regColumn(self, col_type, col_name = None):
         col_key = col_type + "-col-options"
         col_attrs = self._getProperty(col_key)
         if col_attrs is None:
             col_attrs = self.mSchema.getStorage().getDefaulColumnAttrs(
                 col_type).copy()
             self._updateProperty(col_key, col_attrs)
-        return self.mDbConnector._regColumn(
-            "%s_%s" % (self.mSchema.getName(), col_type), col_attrs)
+        if col_name is None:
+            col_name = "%s_%s" % (self.mSchema.getName(), col_type)
+        return self.mDbConnector._regColumn(col_name, col_attrs)
 
     def _updateProperty(self, key, val):
         self.mDescr[key] = val
@@ -72,9 +81,11 @@ class AIOController:
         self.mOnDuty = True
 
     def _addWriteStat(self, base_len, str_len = None, str_count = None):
-        self.mBaseBlockCount += 1
-        self.mBaseTotalLen += base_len
-        self.mBaseMaxLen = max(self.mBaseMaxLen, base_len)
+        assert self.mWithBase
+        if self.mWithBase:
+            self.mBaseBlockCount += 1
+            self.mBaseTotalLen += base_len
+            self.mBaseMaxLen = max(self.mBaseMaxLen, base_len)
         if self.mWithStr:
             self.mStrTotalLen += str_len
             self.mStrMaxLen = max(self.mStrMaxLen, str_len)
@@ -97,19 +108,22 @@ class AIOController:
             return
         stat_info = self._getProperty("stat")
         stat_info["total"] = self.mSchema.getTotal()
-        stat_info["base-blocks"] = self.mBaseBlockCount
-        stat_info["base-total-l"] = self.mBaseTotalLen
-        stat_info["base-max-l"] = self.mBaseMaxLen
+        if self.mWithBase:
+            stat_info["base-blocks"] = self.mBaseBlockCount
+            stat_info["base-total-l"] = self.mBaseTotalLen
+            stat_info["base-max-l"] = self.mBaseMaxLen
         if self.mWithStr:
             stat_info["str-total-l"] = self.mStrTotalLen
             stat_info["str-max-len"] = self.mStrMaxLen
             stat_info["str-total-count"] = self.mStrTotalCount
             stat_info["str-max-count"] = self.mStrMaxCount
-        self.mBlockCodec.updateWStat()
+        if self.mBlockCodec is not None:
+            self.mBlockCodec.updateWStat()
 
     def close(self):
         self.flush()
-        self.mBlockCodec.close()
+        if self.mBlockCodec is not None:
+            self.mBlockCodec.close()
         self.updateWStat()
         self.mSchema.getStorage().closeConnection(self.mDbConnector)
 

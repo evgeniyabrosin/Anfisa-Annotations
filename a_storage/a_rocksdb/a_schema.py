@@ -1,4 +1,4 @@
-import os, json, random, logging
+import json, random, logging
 from datetime import datetime, timedelta
 
 from codec import createDataCodec
@@ -9,29 +9,14 @@ class ASchema:
             schema_descr = None, update_mode = False):
         self.mStorage = storage
         self.mName = name
-        self.mSchemaDescr = schema_descr
-        self.mWriteMode = self.mSchemaDescr is not None
+        self.mWriteMode = schema_descr is not None
         self.mUpdateMode = update_mode
         assert not self.mUpdateMode or self.mWriteMode
 
-        db_fpath = self.mStorage.getSchemaFilePath(dbname)
-        if not os.path.exists(db_fpath):
-            assert self.mWriteMode and not self.mUpdateMode, (
-                "No DB for reading (or update):" + db_fpath)
-            os.mkdir(db_fpath)
+        self.mSchemaDescr = self.mStorage.preLoadSchemaData(
+            dbname, self.mName, schema_descr, self.mUpdateMode)
 
-        schema_fname = db_fpath + "/" + self.mName + ".json"
-        if not self.mWriteMode or self.mUpdateMode:
-            assert os.path.exists(schema_fname), (
-                "Attempt to read from uninstalled database schema:"
-                + schema_fname)
-            with open(schema_fname, "r", encoding = "utf-8") as inp:
-                self.mSchemaDescr = json.loads(inp.read())
-        elif not self.mStorage.isDummyMode():
-            if os.path.exists(schema_fname):
-                os.remove(schema_fname)
-
-        self.mRequirements = set()
+        self.mRequirements = {"base"}
         self.mCodecDict = dict()
         self.mCodec = createDataCodec(self, None, self.mSchemaDescr["top"],
             self.mSchemaDescr["name"])
@@ -59,21 +44,14 @@ class ASchema:
         self.keepSchema()
 
     def keepSchema(self):
-        if not self.mWriteMode or self.mUpdateMode:
-            return
-        if self.mStorage.isDummyMode():
+        if (not self.mWriteMode or self.mUpdateMode
+                or self.mStorage.isDummyMode()):
             return
         self.mSchemaDescr["total"] = self.mTotal
         self.mCodec.updateWStat()
         self.mIO.updateWStat()
-        schema_fname = self.mStorage.getSchemaFilePath(
-            self.mIO.getDbName()) + "/" + self.mName + ".json"
-        with open(schema_fname + ".new", "w", encoding = "utf-8") as outp:
-            outp.write(json.dumps(self.mSchemaDescr, sort_keys = True,
-                indent = 4, ensure_ascii = False))
-        if os.path.exists(schema_fname):
-            os.rename(schema_fname, schema_fname + '~')
-        os.rename(schema_fname + ".new", schema_fname)
+        self.mStorage.saveSchemaData(self.mIO.getDbName(),
+            self.mName, self.mSchemaDescr)
         logging.info("Schema %s kept, total = %d" % (self.mName, self.mTotal))
 
     def close(self):
@@ -153,13 +131,11 @@ class ASchema:
         return ret
 
     def careSamples(self):
-        if not self.mWriteMode or self.mUpdateMode:
+        if (not self.mWriteMode or self.mUpdateMode
+                or self.mStorage.isDummyMode()):
             return
-        if self.mStorage.isDummyMode():
-            return
-        smp_fname = self.mStorage.getSchemaFilePath(
-            self.mIO.getDbName()) + "/" + self.mName + ".samples"
-        with open(smp_fname, "w", encoding = "utf-8") as outp:
+        with self.mStorage.openSchemaSamplesFile(
+                self.mIO.getDbName(), self.mName) as outp:
             cnt_bad = 0
             for key, record in self.mSamples:
                 repr0 = json.dumps(record,

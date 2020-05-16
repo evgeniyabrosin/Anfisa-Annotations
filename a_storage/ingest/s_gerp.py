@@ -8,6 +8,7 @@ SCHEMA_GERP = {
     },
     "top": {
         "tp": "dict",
+        "label": "gerp-rec",
         "items": [
             {"name": "GerpN",  "tp": "num"},
             {"name": "GerpRS",  "tp": "num"}

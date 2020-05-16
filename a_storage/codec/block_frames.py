@@ -42,8 +42,7 @@ class BlockerFrameIndex():
 
     def createReadBlock(self, decode_env_class, key, codec, last_pos = None):
         if last_pos is not None:
-            pos, last_pos = sorted([key[1], last_pos])
-            key = (key[0], pos)
+            assert key[1] <= last_pos
         col_names = self.mIO.getColumnNames()
         chrom, init_pos = key
 
@@ -110,11 +109,9 @@ class _ReadFrameBlock:
 
     def goodToRead(self, key, last_pos = None):
         chrom, pos = key
-        if chrom != self.mChrom:
-            return False
         if last_pos is not None:
-            pos, last_pos = sorted([pos, last_pos])
-        if pos < self.mInitPos:
+            assert pos <= last_pos
+        if chrom != self.mChrom or pos < self.mInitPos:
             return False
         if self.mEndPos is not None:
             if pos > self.mEndPos:
@@ -131,7 +128,7 @@ class _ReadFrameBlock:
         ret = []
         start_key, end_key = self.mBlocker.getPosKeys()
         if last_pos is not None:
-            pos, last_pos = sorted([pos, last_pos])
+            assert last_pos >= pos
             for data in self.mListData:
                 if max(data[start_key], pos) <= min(data[end_key], last_pos):
                     ret.append(data)

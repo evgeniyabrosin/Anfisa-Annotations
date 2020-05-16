@@ -1,13 +1,13 @@
 import sys, csv, logging
 from datetime import datetime
+from fastnumbers import fast_real
 
 from .a_util import reportTime, detectFileChrom, extendFileList, dumpReader
 #========================================
+DB_FIELDS = ["GerpN", "GerpRS"]
 def new_record(chrom, pos, lst):
-    record = dict()
-    for idx, item in enumerate(lst):
-        record[["GerpN", "GerpRS"][idx]] = (
-            float(item) if item != "NA" else None)
+    record = [fast_real(item) if item != "NA" else None
+        for item in lst]
     return [("chr" + chrom, pos), record]
 
 #========================================
@@ -34,6 +34,9 @@ class ReaderGerp:
 
 #========================================
 def reader_Gerp(properties, schema_h = None):
+    global DB_FIELDS
+    if schema_h is not None:
+        schema_h.getCodecByLabel("gerp-rec").setSerialization(DB_FIELDS)
     return ReaderGerp(
         properties["file_list"],
         properties.get("chrom_loc", "chr"))
