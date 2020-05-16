@@ -30,6 +30,7 @@ public class ParserArgument {
 	public static final String OPTION_ASSEMBLY = "assembly";
 
 	public static final String OPTION_SOURCE_GERP_HG19 = "gerp19";
+	public static final String OPTION_SOURCE_GERP_HG38 = "gerp38";
 
 	public final Arguments arguments;
 

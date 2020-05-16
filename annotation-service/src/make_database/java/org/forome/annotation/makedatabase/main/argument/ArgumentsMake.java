@@ -32,8 +32,6 @@ public class ArgumentsMake extends Arguments {
 
 	public final Assembly assembly;
 
-	public final Path gerpHg19;
-
 	public ArgumentsMake(CommandLine cmd) {
 		super(cmd);
 
@@ -51,14 +49,32 @@ public class ArgumentsMake extends Arguments {
 			throw new IllegalArgumentException("Missing assembly");
 		}
 		assembly = Assembly.valueOf(strAssembly);
+	}
 
-		String strSourceGerpHg19 = cmd.getOptionValue(ParserArgument.OPTION_SOURCE_GERP_HG19);
-		if (Strings.isNullOrEmpty(strSourceGerpHg19)) {
-			throw new IllegalArgumentException("Missing Gerp(hg19) file");
-		}
-		gerpHg19 = Paths.get(strSourceGerpHg19).toAbsolutePath();
-		if (!Files.exists(gerpHg19)) {
-			throw new IllegalArgumentException("Gerp(hg19) file is not exists: " + gerpHg19);
+	public Path getGerpPath() {
+		switch (assembly) {
+			case GRCh37:
+				String strSourceGerpHg19 = cmd.getOptionValue(ParserArgument.OPTION_SOURCE_GERP_HG19);
+				if (Strings.isNullOrEmpty(strSourceGerpHg19)) {
+					throw new IllegalArgumentException("Missing Gerp(hg19) file");
+				}
+				Path gerpHg19 = Paths.get(strSourceGerpHg19).toAbsolutePath();
+				if (!Files.exists(gerpHg19)) {
+					throw new IllegalArgumentException("Gerp(hg19) file is not exists: " + gerpHg19);
+				}
+				return gerpHg19;
+			case GRCh38:
+				String strSourceGerpHg38 = cmd.getOptionValue(ParserArgument.OPTION_SOURCE_GERP_HG38);
+				if (Strings.isNullOrEmpty(strSourceGerpHg38)) {
+					throw new IllegalArgumentException("Missing Gerp(hg38) file");
+				}
+				Path gerpHg38 = Paths.get(strSourceGerpHg38).toAbsolutePath();
+				if (!Files.exists(gerpHg38)) {
+					throw new IllegalArgumentException("Gerp(hg38) file is not exists: " + gerpHg38);
+				}
+				return gerpHg38;
+			default:
+				throw new RuntimeException("Unknown assembly: " + assembly);
 		}
 	}
 }
