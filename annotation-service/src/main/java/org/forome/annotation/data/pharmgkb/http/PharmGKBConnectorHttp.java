@@ -16,25 +16,44 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.pharmgkb;
+package org.forome.annotation.data.pharmgkb.http;
 
 import org.forome.annotation.data.anfisa.struct.AnfisaResultView;
+import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.struct.SourceMetadata;
 
+import java.util.Collections;
 import java.util.List;
 
-public interface PharmGKBConnector extends AutoCloseable {
+public class PharmGKBConnectorHttp implements PharmGKBConnector {
 
-	List<SourceMetadata> getSourceMetadata();
+	@Override
+	public List<SourceMetadata> getSourceMetadata() {
+		return Collections.emptyList();
+	}
 
-	List<AnfisaResultView.Pharmacogenomics.Item> getNotes(String variantId);
+	@Override
+	public List<AnfisaResultView.Pharmacogenomics.Item> getNotes(String variantId) {
+		return Collections.emptyList();
+	}
 
-	List<AnfisaResultView.Pharmacogenomics.Item> getPmids(String variantId);
+	@Override
+	public List<AnfisaResultView.Pharmacogenomics.Item> getPmids(String variantId) {
+		return Collections.emptyList();
+	}
 
-	List<AnfisaResultView.Pharmacogenomics.Item> getDiseases(String variantId);
+	@Override
+	public List<AnfisaResultView.Pharmacogenomics.Item> getDiseases(String variantId) {
+		return Collections.emptyList();
+	}
 
-	List<AnfisaResultView.Pharmacogenomics.Item> getChemicals(String variantId);
+	@Override
+	public List<AnfisaResultView.Pharmacogenomics.Item> getChemicals(String variantId) {
+		return Collections.emptyList();
+	}
 
-	void close();
+	@Override
+	public void close() {
 
+	}
 }

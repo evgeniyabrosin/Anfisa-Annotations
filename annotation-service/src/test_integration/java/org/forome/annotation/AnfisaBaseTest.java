@@ -21,16 +21,20 @@ package org.forome.annotation;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
+import org.forome.annotation.data.clinvar.http.ClinvarConnectorHttp;
 import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.gnomad.GnomadConnector;
-import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
-import org.forome.annotation.data.gtex.GTEXConnector;
+import org.forome.annotation.data.gnomad.mysql.GnomadConnectorImpl;
+import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.hgmd.HgmdConnector;
+import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
+import org.forome.annotation.data.pharmgkb.http.PharmGKBConnectorHttp;
 import org.forome.annotation.data.ref.RefConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
+import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
@@ -56,7 +60,7 @@ public class AnfisaBaseTest {
 	protected static LiftoverConnector liftoverConnector;
 	protected static GTFConnector gtfConnector;
 	protected static RefConnector refConnector;
-	protected static GTEXConnector gtexConnector;
+	protected static GTEXConnectorMysql gtexConnector;
 	protected static PharmGKBConnector pharmGKBConnector;
 	protected static EnsemblVepService ensemblVepService;
 	protected static AnfisaConnector anfisaConnector;
@@ -74,18 +78,29 @@ public class AnfisaBaseTest {
 			log.error("Fail", e);
 			Assert.fail();
 		});
-		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
+
+		spliceAIConnector = new SpliceAIConnectorHttp();
+//		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
+
 		conservationConnector = new ConservationData(databaseConnectService);
-		hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
-		clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
+
+		hgmdConnector = new HgmdConnectorHttp();
+		//hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
+
+		clinvarConnector = new ClinvarConnectorHttp();
+		//clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
+
 		liftoverConnector = new LiftoverConnector();
 		gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});
 		refConnector = new RefConnector(databaseConnectService, serviceConfig.refConfigConnector);
-		gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
-		pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
+		gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.gtexConfigConnector);
+
+		pharmGKBConnector = new PharmGKBConnectorHttp();
+//		pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
+
 		ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector, refConnector);
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,

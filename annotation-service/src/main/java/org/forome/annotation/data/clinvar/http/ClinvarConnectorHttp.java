@@ -16,25 +16,42 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.clinvar;
+package org.forome.annotation.data.clinvar.http;
 
+import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.struct.ClinvarResult;
 import org.forome.annotation.data.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
 
+import java.util.Collections;
 import java.util.List;
 
-public interface ClinvarConnector extends AutoCloseable {
+public class ClinvarConnectorHttp implements ClinvarConnector {
 
-	List<SourceMetadata> getSourceMetadata();
+	@Override
+	public List<SourceMetadata> getSourceMetadata() {
+		return Collections.emptyList();
+	}
 
-	List<ClinvarResult> getExpandedData(Variant variant);
+	@Override
+	public List<ClinvarResult> getExpandedData(Variant variant) {
+		return Collections.emptyList();
+	}
 
-	List<ClinvarResult> getData(String chromosome, long qStart, long qEnd, String alt);
+	@Override
+	public List<ClinvarResult> getData(String chromosome, long qStart, long qEnd, String alt) {
+		return Collections.emptyList();
+	}
 
-	ClinvarVariantSummary getDataVariantSummary(Chromosome chromosome, long start, long end);
+	@Override
+	public ClinvarVariantSummary getDataVariantSummary(Chromosome chromosome, long start, long end) {
+		return null;
+	}
 
-	void close();
+	@Override
+	public void close() {
+
+	}
 }

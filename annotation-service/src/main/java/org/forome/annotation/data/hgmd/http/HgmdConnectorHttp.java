@@ -16,16 +16,39 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gtex;
+package org.forome.annotation.data.hgmd.http;
 
-import org.forome.annotation.data.gtex.struct.Tissue;
+import org.forome.annotation.data.hgmd.HgmdConnector;
+import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.struct.SourceMetadata;
 
+import java.util.Collections;
 import java.util.List;
 
-public interface GTEXConnector {
+public class HgmdConnectorHttp implements HgmdConnector {
 
-	List<SourceMetadata> getSourceMetadata();
+	@Override
+	public List<SourceMetadata> getSourceMetadata() {
+		return Collections.emptyList();
+	}
 
-	List<Tissue> getTissues(String gene);
+	@Override
+	public List<String> getAccNum(String chromosome, long start, long end) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public HgmdConnectorMysql.Data getDataForAccessionNumbers(List<String> accNums) {
+		return new HgmdConnectorMysql.Data(Collections.emptyList(), Collections.emptyList());
+	}
+
+	@Override
+	public List<Long[]> getHg38(List<String> accNums) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public void close() {
+
+	}
 }

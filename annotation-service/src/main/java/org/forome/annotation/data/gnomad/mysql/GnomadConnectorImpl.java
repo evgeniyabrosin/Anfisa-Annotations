@@ -1,22 +1,22 @@
 /*
- Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *
+ *  Developed by Vladimir Ulitin and Michael Bouzinier
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ * 	 http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
- Developed by Vladimir Ulitin and Michael Bouzinier
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-	 http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-*/
-
-package org.forome.annotation.data.gnomad.old;
+package org.forome.annotation.data.gnomad.mysql;
 
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.config.connector.GnomadConfigConnector;
@@ -41,25 +41,25 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
+public class GnomadConnectorImpl implements AutoCloseable, GnomadConnector {
 
-    private final static Logger log = LoggerFactory.getLogger(GnomadConnectorOld.class);
+    private final static Logger log = LoggerFactory.getLogger(GnomadConnectorImpl.class);
 
     private static final int MAX_THREAD_COUNT = Runtime.getRuntime().availableProcessors();
 
     private final DatabaseConnector databaseConnector;
 
-    private final GnomadDataConnectorOld gnomadDataConnector;
+    private final GnomadDataConnector gnomadDataConnector;
 
     private final ExecutorService threadPoolGnomadExecutor;
 
-    public GnomadConnectorOld(
+    public GnomadConnectorImpl(
             DatabaseConnectService databaseConnectService,
             GnomadConfigConnector gnomadConfigConnector,
             Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) throws Exception {
         databaseConnector = new DatabaseConnector(databaseConnectService, gnomadConfigConnector);
-        gnomadDataConnector = new GnomadDataConnectorOld(databaseConnector);
+        gnomadDataConnector = new GnomadDataConnector(databaseConnector);
         threadPoolGnomadExecutor = new DefaultThreadPoolExecutor(
                 MAX_THREAD_COUNT,
                 MAX_THREAD_COUNT,
@@ -72,10 +72,6 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
     }
 
     @Override
-    public List<SourceMetadata> getSourceMetadata(){
-        return databaseConnector.getSourceMetadata();
-    }
-
     public CompletableFuture<GnomadResult> request(Chromosome chromosome, long position, String reference, String alternative) {
         CompletableFuture<GnomadResult> future = new CompletableFuture();
         threadPoolGnomadExecutor.submit(() -> {
@@ -89,15 +85,20 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         return future;
     }
 
+    @Override
+    public List<SourceMetadata> getSourceMetadata(){
+        return databaseConnector.getSourceMetadata();
+    }
+
     private GnomadResult syncRequest(Chromosome chromosome, long position, String reference, String alternative) throws Exception {
-        List<GnomadDataConnectorOld.Result> exomes = gnomadDataConnector.getData(
-                chromosome, position, reference, alternative, "e", false
+        List<GnomadDataConnector.Result> exomes = gnomadDataConnector.getData(
+                chromosome, position, reference, alternative, "e"
         );
-        List<GnomadDataConnectorOld.Result> genomes = gnomadDataConnector.getData(
-                chromosome, position, reference, alternative, "g", false
+        List<GnomadDataConnector.Result> genomes = gnomadDataConnector.getData(
+                chromosome, position, reference, alternative, "g"
         );
 
-        List<GnomadDataConnectorOld.Result> overall = new ImmutableList.Builder().addAll(exomes).addAll(genomes).build();
+        List<GnomadDataConnector.Result> overall = new ImmutableList.Builder().addAll(exomes).addAll(genomes).build();
         if (overall.isEmpty()) {
             return null;
         }
@@ -108,7 +109,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
             long ac = countAC(exomes, null);
             double af = countAF(an, ac);
             long hom = countHom(exomes);
-            Long hem = countHem(chromosome, exomes);
+            Long hem = countHem(exomes);
             sumExomes = new GnomadResult.Sum(an, ac, af, hom, hem);
         }
 
@@ -118,7 +119,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
             long ac = countAC(genomes, null);
             double af = countAF(an, ac);
             long hom = countHom(genomes);
-            Long hem = countHem(chromosome, genomes);
+            Long hem = countHem(genomes);
             sumGenomes = new GnomadResult.Sum(an, ac, af, hom, hem);
         }
 
@@ -128,22 +129,19 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
             long ac = countAC(overall, null);
             double af = countAF(an, ac);
             long hom = countHom(overall);
-            Long hem = countHem(chromosome, overall);
+            Long hem = countHem(overall);
             sumOverall = new GnomadResult.Sum(an, ac, af, hom, hem);
         }
 
-        Object[] popmaxFromRows = countPopmaxFromRows(overall);
-        String popmax = (String) popmaxFromRows[0];
-        if (popmax == null) return null;
-        double popmaxAF = (double) popmaxFromRows[1];
-        long popmaxAN = (long) popmaxFromRows[2];
+        GnomadResult.Popmax popmax = countPopmaxFromRows(overall, GnamadGroup.Type.GENERAL);
+        GnomadResult.Popmax widePopmax = countPopmaxFromRows(overall, null);
 
         Set<GnomadResult.Url> urls = new HashSet<>();
-        for (GnomadDataConnectorOld.Result item : overall) {
-            String chrom = (String) item.columns.get("CHROM");
-            long pos = ((Number) item.columns.get("POS")).longValue();
-            String ref = (String) item.columns.get("REF");
-            String alt = (String) item.columns.get("ALT");
+        for (GnomadDataConnector.Result item : overall) {
+            String chrom = item.getValue("CHROM");
+            long pos = ((Number) item.getValue("POS")).longValue();
+            String ref = item.getValue("REF");
+            String alt = item.getValue("ALT");
 
             SequenceMatcher matcher = new SequenceMatcher(ref, alt);
             List<SequenceMatcher.Tuple3<Integer, Integer, Integer>> matches = matcher.getMatchingBlocks();
@@ -172,7 +170,7 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
 
         return new GnomadResult(
                 sumExomes, sumGenomes, sumOverall,
-                null, new GnomadResult.Popmax(GnamadGroup.valueOf(popmax), popmaxAF, popmaxAN),
+                popmax, widePopmax,
                 urls
         );
     }
@@ -182,23 +180,23 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         databaseConnector.close();
     }
 
-    private static long countAN(List<GnomadDataConnectorOld.Result> items, String group) {
+    private static long countAN(List<GnomadDataConnector.Result> items, GnamadGroup group) {
         long an = 0;
         String anColumn;
         if (group == null) {
             anColumn = "AN";
         } else {
-            anColumn = "AN_" + group;
+            anColumn = "AN_" + group.name();
         }
-        for (GnomadDataConnectorOld.Result item : items) {
-            Number value = (Number) item.columns.get(anColumn);
+        for (GnomadDataConnector.Result item : items) {
+            Number value = item.getValue(anColumn);
             if (value == null) continue;
             an += value.longValue();
         }
         return an;
     }
 
-    private static long countAC(List<GnomadDataConnectorOld.Result> items, String group) {
+    private static long countAC(List<GnomadDataConnector.Result> items, GnamadGroup group) {
         long ac = 0;
         String acColumn;
         if (group == null) {
@@ -206,8 +204,8 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         } else {
             acColumn = "AC_" + group;
         }
-        for (GnomadDataConnectorOld.Result item : items) {
-            Number value = (Number) item.columns.get(acColumn);
+        for (GnomadDataConnector.Result item : items) {
+            Number value = item.getValue(acColumn);
             if (value == null) continue;
             ac += value.longValue();
         }
@@ -224,45 +222,65 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         return af;
     }
 
-    private static Object[] countPopmaxFromRows(List<GnomadDataConnectorOld.Result> overall) {
-        String popmax = null;
+    private static GnomadResult.Popmax countPopmaxFromRows(List<GnomadDataConnector.Result> overall, GnamadGroup.Type type) {
+        GnamadGroup group = null;
         Double popmaxAF = null;
         long popmaxAN = 0;
 
-        for (String group : GnomadDataConnectorOld.ANCESTRIES) {
-            long an = countAN(overall, group);
-            long ac = countAC(overall, group);
+        GnamadGroup[] groups = (type == null) ? GnamadGroup.values() : GnamadGroup.getByType(type);
+        for (GnamadGroup iGroup : groups) {
+            long an = countAN(overall, iGroup);
+            long ac = countAC(overall, iGroup);
             if (an == 0) {
                 continue;
             }
-            double af = (double) ac / (double) an;
+            double af = (double) ac / ((double) an);
             if (popmaxAF == null || af > popmaxAF) {
-                popmax = group;
+                group = iGroup;
                 popmaxAF = af;
                 popmaxAN = an;
             }
         }
 
-        return new Object[]{
-                popmax, (popmaxAF == null) ? 0 : popmaxAF, popmaxAN
-        };
+        if (group == null) {
+            return null;
+        } else {
+            return new GnomadResult.Popmax(
+                    group, popmaxAF, popmaxAN
+            );
+        }
     }
 
-    private static long countHom(List<GnomadDataConnectorOld.Result> items) {
+    private static long countHom(List<GnomadDataConnector.Result> items) {
         long hom = 0;
-        String column = "Hom";
-        for (GnomadDataConnectorOld.Result item : items) {
-            Number value = (Number) item.columns.get(column);
+        String column = "nhomalt";
+        for (GnomadDataConnector.Result item : items) {
+            Number value = item.getValue(column);
             if (value == null) continue;
             hom += value.longValue();
         }
         return hom;
     }
 
-    private static Long countHem(Chromosome chromosome, List<GnomadDataConnectorOld.Result> items) {
-        if (chromosome.equals(Chromosome.CHR_X)) {
-            return countAC(items, "Male");
+    private static Long countHem(List<GnomadDataConnector.Result> items) {
+        Long hem = null;
+        String column = "hem";
+        for (GnomadDataConnector.Result item : items) {
+            Number value = item.getValue(column);
+            if (value == null) continue;
+            if (hem == null) {
+                hem = value.longValue();
+            } else {
+                hem += value.longValue();
+            }
         }
-        return null;
+        return hem;
     }
+
+//    private static Long countHem(String chromosome, List<GnomadDataConnector.Result> items) {
+//        if ("X".equals(chromosome.toUpperCase())) {
+//            return countAC(items, "Male");
+//        }
+//        return null;
+//    }
 }

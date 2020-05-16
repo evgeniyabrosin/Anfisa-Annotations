@@ -16,16 +16,20 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gtex;
+package org.forome.annotation.utils.bits;
 
-import org.forome.annotation.data.gtex.struct.Tissue;
-import org.forome.annotation.struct.SourceMetadata;
+import org.junit.Assert;
+import org.junit.Test;
 
-import java.util.List;
 
-public interface GTEXConnector {
+public class IntegerDynamicLengthBitsTest {
 
-	List<SourceMetadata> getSourceMetadata();
-
-	List<Tissue> getTissues(String gene);
+	@Test
+	public void testByUnsigned() {
+		for (int i = 0; i < 1000000; i++) {
+			byte[] bytes = IntegerDynamicLengthBits.toByteArray(i);
+			IntegerDynamicLengthBits.Value actualValue = IntegerDynamicLengthBits.fromByteArray(bytes, 0);
+			Assert.assertEquals(i, actualValue.value);
+		}
+	}
 }

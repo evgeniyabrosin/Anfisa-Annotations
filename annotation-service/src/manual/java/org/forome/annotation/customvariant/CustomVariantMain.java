@@ -23,15 +23,20 @@ import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
+import org.forome.annotation.data.clinvar.http.ClinvarConnectorHttp;
 import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.gnomad.GnomadConnector;
-import org.forome.annotation.data.gnomad.old.GnomadConnectorOld;
+import org.forome.annotation.data.gnomad.mysql.old.GnomadConnectorOld;
 import org.forome.annotation.data.gtex.GTEXConnector;
+import org.forome.annotation.data.gtex.http.GTEXConnectorHttp;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.hgmd.HgmdConnector;
+import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
+import org.forome.annotation.data.pharmgkb.http.PharmGKBConnectorHttp;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
+import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
@@ -77,14 +82,27 @@ public class CustomVariantMain {
 
 		gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 //      gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
-		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
+
+		spliceAIConnector = new SpliceAIConnectorHttp();
+//		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
+
 		conservationConnector = new ConservationData(databaseConnectService);
-		hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
-		clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
+
+		hgmdConnector = new HgmdConnectorHttp();
+//		hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
+
+		clinvarConnector = new ClinvarConnectorHttp();
+//		clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
+
 		liftoverConnector = new LiftoverConnector();
 		gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
-		gtexConnector = new GTEXConnector(databaseConnectService, serviceConfig.gtexConfigConnector);
-		pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
+
+		gtexConnector = new GTEXConnectorHttp();
+//		gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.gtexConfigConnector);
+
+		pharmGKBConnector = new PharmGKBConnectorHttp();
+//		pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
+
 		ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,

@@ -18,7 +18,7 @@
 
 package org.forome.annotation.data.gnomad;
 
-import org.forome.annotation.data.gnomad.old.GnomadDataConnectorOld;
+import org.forome.annotation.data.gnomad.mysql.old.GnomadDataConnectorOld;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

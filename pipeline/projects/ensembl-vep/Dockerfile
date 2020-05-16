@@ -3,13 +3,13 @@
 ###################################################
 FROM debian:buster as resources
 
-ENV BRANCH release/98
+ENV BRANCH release/99
 ARG ASSEMBLY
 
 #Add resources
 ADD pipeline/projects/ensembl-vep/homo_sapiens_merged_vep.tar.gz /opt/vep-cache/
 COPY pipeline/projects/ensembl-vep/Homo_sapiens.dna.primary_assembly.fa.gz /tmp/
-COPY pipeline/projects/ensembl-vep/dbNSFP.zip /tmp/
+#COPY pipeline/projects/ensembl-vep/dbNSFP.zip /tmp/
 
 RUN apt-get update \
     && apt-get -y install build-essential zlib1g-dev libbz2-dev git autotools-dev automake wget unzip tabix \
@@ -45,20 +45,20 @@ RUN apt-get update \
     && wget https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/LoFtool_scores.txt \
     \
     # Плагин dbNSFP
-    && wget -P /opt/vep-cache/Plugins/ https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/dbNSFP.pm \
-    && if [ "$ASSEMBLY" = "HG19" ] \
-        ; then \
-            cd /tmp/ \
-            && mkdir /opt/vep-cache/dbNSFP/ \
-            && unzip dbNSFP.zip \
-            && head -n1 dbNSFP3.5a_variant.chr1 > h \
-            && cat dbNSFP3.5a_variant.chr* | grep -v ^#chr | awk '$8 != "."' | sort -k8,8 -k9,9n - | cat h - | bgzip -c > /opt/vep-cache/dbNSFP/dbNSFP_hg19.gz \
-            && cd /opt/vep-cache/dbNSFP/ \
-            && tabix -s 8 -b 9 -e 9 dbNSFP_hg19.gz \
-        ; else \
-            echo Argument is $ASSEMBLY \
-        ; fi \
-    \
+    #&& wget -P /opt/vep-cache/Plugins/ https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/dbNSFP.pm \
+    #&& if [ "$ASSEMBLY" = "HG19" ] \
+    #    ; then \
+    #        cd /tmp/ \
+    #        && mkdir /opt/vep-cache/dbNSFP/ \
+    #        && unzip dbNSFP.zip \
+    #        && head -n1 dbNSFP3.5a_variant.chr1 > h \
+    #        && cat dbNSFP3.5a_variant.chr* | grep -v ^#chr | awk '$8 != "."' | sort -k8,8 -k9,9n - | cat h - | bgzip -c > /opt/vep-cache/dbNSFP/dbNSFP_hg19.gz \
+    #        && cd /opt/vep-cache/dbNSFP/ \
+    #        && tabix -s 8 -b 9 -e 9 dbNSFP_hg19.gz \
+    #    ; else \
+    #        echo Argument is $ASSEMBLY \
+    #    ; fi \
+    #\
     # Плагин SpliceRegion
     && wget -P /opt/vep-cache/Plugins/ https://raw.github.com/Ensembl/VEP_plugins/$BRANCH/SpliceRegion.pm \
     \
@@ -92,7 +92,7 @@ RUN apt-get update && apt-get -y install \
 ENV OPT /opt/vep
 ENV OPT_SRC $OPT/src
 ENV HTSLIB_DIR $OPT_SRC/htslib
-ENV BRANCH release/98
+ENV BRANCH release/99
 
 # Working directory
 WORKDIR $OPT_SRC

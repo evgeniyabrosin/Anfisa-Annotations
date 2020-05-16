@@ -44,6 +44,9 @@ public class GRecordViewTranscripts {
 		if (variant instanceof VariantVep) {
 			VariantVep variantVep = (VariantVep) variant;
 			JSONArray jTranscripts = (JSONArray) variantVep.getVepJson().get("transcript_consequences");
+			if (jTranscripts == null) {
+				return null;
+			}
 
 			List<GRecordViewTranscriptsItem> transcripts = new ArrayList<>();
 			for (Object ojTranscript : jTranscripts) {
