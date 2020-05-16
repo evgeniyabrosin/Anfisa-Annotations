@@ -19,6 +19,7 @@
 package org.forome.annotation.data.spliceai;
 
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.junit.Before;
@@ -37,6 +38,7 @@ public class SpliceAIBaseTest {
 		SSHConnectService sshTunnelService = new SSHConnectService();
 		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 
-		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
+		spliceAIConnector = new SpliceAIConnectorHttp();
+//		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 	}
 }

@@ -16,7 +16,7 @@
  limitations under the License.
 */
 
-package org.forome.annotation.data.spliceai;
+package org.forome.annotation.data.spliceai.mysql;
 
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.data.DatabaseConnector;
@@ -105,7 +105,7 @@ public class SpliceAIDataConnector implements Closeable {
 			max_ds = null;
 		} else {
 			max_ds = rows.stream().map(row -> row.max_ds).max(Float::compareTo).orElse(null);
-			if (max_ds < SpliceAIConnector.MAX_DS_UNLIKELY) {
+			if (max_ds < SpliceAIConnectorMysql.MAX_DS_UNLIKELY) {
 				cases = "unlikely";
 			} else if (max_ds < 0.5f) {
 				cases = "likely_pathogenic";

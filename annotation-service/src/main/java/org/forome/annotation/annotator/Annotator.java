@@ -56,6 +56,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+//curl "localhost:8290/get?array=hg38&loc=12:885081&alt=G"
+
+
 public class Annotator {
 
 	private final static Logger log = LoggerFactory.getLogger(Annotator.class);

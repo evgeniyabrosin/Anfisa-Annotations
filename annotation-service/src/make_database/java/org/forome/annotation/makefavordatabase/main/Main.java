@@ -20,6 +20,7 @@ package org.forome.annotation.makefavordatabase.main;
 
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.hgmd.HgmdConnector;
+import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.favor.processing.Processing;
 import org.forome.annotation.favor.utils.iterator.DumpIterator;
 import org.forome.annotation.favor.utils.source.Source;
@@ -70,7 +71,9 @@ public class Main {
 			ServiceConfig serviceConfig = new ServiceConfig();
 			SSHConnectService sshTunnelService = new SSHConnectService();
 			DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
-			HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
+
+			HgmdConnector hgmdConnector = new HgmdConnectorHttp();
+//			HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 
 //            Source source = new SourceRemote(Source.PATH_FILE);
 			Source source = new SourceLocal(arguments.sourceDump);

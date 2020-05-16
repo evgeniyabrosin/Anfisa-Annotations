@@ -40,6 +40,7 @@ import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
+import org.forome.annotation.data.spliceai.mysql.SpliceAIConnectorMysql;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.processing.graphql.record.view.transcripts.item.GRecordViewTranscriptsItem;
@@ -565,7 +566,7 @@ public class AnfisaConnector implements AutoCloseable {
 		data.totalExonIntronWorst = intronOrExonWorst[1];
 
 		if (filters.spliceAiDsmax != null) {
-			if (filters.spliceAiDsmax >= SpliceAIConnector.MAX_DS_UNLIKELY) {
+			if (filters.spliceAiDsmax >= SpliceAIConnectorMysql.MAX_DS_UNLIKELY) {
 				view.general.spliceAltering = Optional.ofNullable(getSpliceAltering(filters));
 			}
 		} else {

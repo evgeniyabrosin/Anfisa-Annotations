@@ -16,25 +16,37 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.clinvar;
+package org.forome.annotation.data.gnomad.http;
 
-import org.forome.annotation.data.clinvar.struct.ClinvarResult;
-import org.forome.annotation.data.clinvar.struct.ClinvarVariantSummary;
+import org.forome.annotation.data.gnomad.GnomadConnector;
+import org.forome.annotation.data.gnomad.struct.GnomadResult;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
-import org.forome.annotation.struct.variant.Variant;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-public interface ClinvarConnector extends AutoCloseable {
+public class GnomadConnectorHttp implements GnomadConnector {
 
-	List<SourceMetadata> getSourceMetadata();
+	@Override
+	public CompletableFuture<GnomadResult> request(Chromosome chromosome, long position, String reference, String alternative) {
+		return CompletableFuture.completedFuture(
+				new GnomadResult(
+						null, null, new GnomadResult.Sum(0,0,0, 0, null),
+						null, null,
+						Collections.emptySet()
+				)
+		);
+	}
 
-	List<ClinvarResult> getExpandedData(Variant variant);
+	@Override
+	public List<SourceMetadata> getSourceMetadata() {
+		return Collections.emptyList();
+	}
 
-	List<ClinvarResult> getData(String chromosome, long qStart, long qEnd, String alt);
+	@Override
+	public void close() {
 
-	ClinvarVariantSummary getDataVariantSummary(Chromosome chromosome, long start, long end);
-
-	void close();
+	}
 }

@@ -16,16 +16,30 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gtex;
+package org.forome.annotation.data.spliceai.http;
 
-import org.forome.annotation.data.gtex.struct.Tissue;
+import org.forome.annotation.data.spliceai.SpliceAIConnector;
+import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
+import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.SourceMetadata;
 
+import java.util.Collections;
 import java.util.List;
 
-public interface GTEXConnector {
+public class SpliceAIConnectorHttp implements SpliceAIConnector {
 
-	List<SourceMetadata> getSourceMetadata();
+	@Override
+	public List<SourceMetadata> getSourceMetadata() {
+		return Collections.emptyList();
+	}
 
-	List<Tissue> getTissues(String gene);
+	@Override
+	public SpliceAIResult getAll(String chromosome, long position, String ref, Allele altAllele) {
+		return new SpliceAIResult("None", null, Collections.emptyMap());
+	}
+
+	@Override
+	public void close() {
+
+	}
 }

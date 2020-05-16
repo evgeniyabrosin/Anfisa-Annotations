@@ -16,16 +16,24 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gtex;
+package org.forome.annotation.data.gtex.http;
 
+import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.struct.Tissue;
 import org.forome.annotation.struct.SourceMetadata;
 
+import java.util.Collections;
 import java.util.List;
 
-public interface GTEXConnector {
+public class GTEXConnectorHttp implements GTEXConnector {
 
-	List<SourceMetadata> getSourceMetadata();
+	@Override
+	public List<SourceMetadata> getSourceMetadata() {
+		return Collections.emptyList();
+	}
 
-	List<Tissue> getTissues(String gene);
+	@Override
+	public List<Tissue> getTissues(String gene) {
+		return Collections.emptyList();
+	}
 }

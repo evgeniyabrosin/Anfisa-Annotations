@@ -105,7 +105,7 @@ public class GRecordFilters {
 			if ("nan".equals(oMQAttribute)) {//В кейсе ipm0001 встретилась такая ситуация
 				return 0;
 			}
-			return MathUtils.toDouble(oMQAttribute);
+			return MathUtils.toPrimitiveDouble(oMQAttribute);
 		} else {
 			return 0;
 		}
