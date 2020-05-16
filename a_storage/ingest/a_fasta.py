@@ -63,7 +63,7 @@ class FastaReader:
             letter_count += len(self.mNextLetters)
             lines.append(self.mNextLetters)
             self.mNextLetters = None
-        while letter_count < block_size and not self.mCurLine:
+        while letter_count < block_size and self.mCurLine:
             if self.mCurLine.startswith('>'):
                 if letter_count > 0:
                     break
@@ -90,6 +90,7 @@ class FastaReader:
             assert not self.mCurLine and letter_count == 0
             self._eof()
             return False
+        assert self.mCurDiap is not None
         self.mCurLetters = ''.join(lines)
         assert len(self.mCurLetters) == letter_count
         if letter_count > block_size:
