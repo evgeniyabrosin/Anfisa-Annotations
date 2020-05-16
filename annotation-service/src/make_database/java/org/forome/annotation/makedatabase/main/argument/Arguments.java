@@ -23,7 +23,7 @@ import org.apache.commons.cli.Option;
 
 public abstract class Arguments {
 
-	private final CommandLine cmd;
+	protected final CommandLine cmd;
 
 	protected Arguments(CommandLine cmd) {
 		this.cmd = cmd;

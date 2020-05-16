@@ -24,6 +24,7 @@ import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.makedatabase.make.MakeDatabase;
 import org.forome.annotation.makedatabase.make.conservation.accumulation.AccumulationConservation;
 import org.forome.annotation.makedatabase.statistics.StatisticsCompression;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.OptimisticTransactionDB;
@@ -61,16 +62,19 @@ public class MakeConservation {
 	private final static Logger log = LoggerFactory.getLogger(MakeConservation.class);
 
 	private final MakeDatabase makeDatabase;
-	private final Path gerpHg19;
+	private final Assembly assembly;
+	private final Path gerpPath;
 
-	public MakeConservation(MakeDatabase makeDatabase, Path gerpHg19) {
+	//В класс необходимо передать файл нужной сборке
+	public MakeConservation(MakeDatabase makeDatabase, Assembly assembly, Path gerpPath) {
 		this.makeDatabase = makeDatabase;
-		this.gerpHg19 = gerpHg19;
+		this.assembly = assembly;
+		this.gerpPath = gerpPath;
 	}
 
 	public void build(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamilyRecord, StatisticsCompression statistics) throws IOException, RocksDBException {
 		log.debug("Write conservation...");
-		try (GZIPInputStream isGZ = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(gerpHg19)))) {
+		try (GZIPInputStream isGZ = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(gerpPath)))) {
 			try (TarArchiveInputStream isTarGZ = new TarArchiveInputStream(isGZ)) {
 				TarArchiveEntry entry;
 				while ((entry = (TarArchiveEntry) isTarGZ.getNextEntry()) != null) {
