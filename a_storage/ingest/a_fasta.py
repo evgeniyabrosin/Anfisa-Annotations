@@ -72,6 +72,7 @@ class FastaReader:
                 if '_' in chrom:
                     # extra chromosome information
                     self.mCurChrom = None
+                    self.mCurDiap = None
                 else:
                     if self.mChromIsInt:
                         self.mCurChrom = self.chromToInt(chrom)
@@ -86,6 +87,7 @@ class FastaReader:
                 lines.append(letters)
             self.mCurLine = self.mInput.readline()
         if self.mCurChrom is None:
+            assert self.mCurLine is None
             self._eof()
             return False
         self.mCurLetters = ''.join(lines)

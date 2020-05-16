@@ -38,7 +38,8 @@
             "file_list": "${LOAD}/Gerp/chr*.maf.rates"
         },
         "SpliceAI": {
-            "file_list": "${LOAD}/spliceAI/*.vcf.gz"
+            "indel_file_list": "${LOAD}/spliceAI/indel.spliceai.chr*.vcf.gz",
+            "snv_file_list": "${LOAD}/spliceAI/snv.spliceai.chr*.vcf.gz"
         },
         "dbNSFP": {
             "file_list": "${LOAD}/dbNSFP/dbNSFP4.0a_variant.chr*.gz"
