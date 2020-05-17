@@ -18,6 +18,7 @@
 
 package org.forome.annotation.inventory;
 
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.CasePlatform;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,6 +36,7 @@ public class InventoryTest {
 		Inventory inventory = new Inventory.Builder(inventoryFile).build();
 		Assert.assertEquals("bch0051", inventory.caseName);
 		Assert.assertEquals(CasePlatform.WGS, inventory.casePlatform);
+		Assert.assertEquals(Assembly.GRCh38, inventory.assembly);
 		Assert.assertEquals("bch0051.fam", inventory.famFile.getFileName().toString());
 		Assert.assertEquals("bch0051.csv", inventory.patientIdsFile.getFileName().toString());
 		Assert.assertEquals("bch0051.vcf", inventory.vcfFile.getFileName().toString());

@@ -45,6 +45,7 @@ import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.notification.NotificationService;
 import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.utils.AppVersion;
 import org.forome.annotation.utils.RuntimeExec;
@@ -68,6 +69,8 @@ public class AnnotationConsole {
 	private final static Logger log = LoggerFactory.getLogger(AnnotationConsole.class);
 
 	private final String caseName;
+
+	private final Assembly assembly;
 	private final CasePlatform casePlatform;
 
 	private final Path famFile;
@@ -108,7 +111,8 @@ public class AnnotationConsole {
 
 	public AnnotationConsole(
 			Path configFile,
-			String caseName, CasePlatform casePlatform,
+			String caseName,
+			Assembly assembly, CasePlatform casePlatform,
 			Path famFile, Path patientIdsFile,
 			Path pathCohorts,
 			Path vcfFile, Path vepJsonFile,
@@ -118,6 +122,8 @@ public class AnnotationConsole {
 			Supplier<String> arguments
 	) {
 		this.caseName = caseName;
+
+		this.assembly = assembly;
 		this.casePlatform = casePlatform;
 
 		this.famFile = famFile;
@@ -224,6 +230,7 @@ public class AnnotationConsole {
 			Annotator annotator = new Annotator(ensemblVepService, processing);
 			AnnotatorResult annotatorResult = annotator.exec(
 					caseName,
+					assembly,
 					casePlatform,
 					famFile,
 					patientIdsFile,

@@ -22,6 +22,7 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.CasePlatform;
 
 import java.io.BufferedReader;
@@ -45,6 +46,8 @@ public class Inventory {
 	);
 
 	public final String caseName;
+
+	public final Assembly assembly;
 	public final CasePlatform casePlatform;
 
 	public final Path famFile;
@@ -62,7 +65,8 @@ public class Inventory {
 	public final Path logFile;
 
 	private Inventory(
-			String caseName, CasePlatform casePlatform,
+			String caseName,
+			Assembly assembly, CasePlatform casePlatform,
 			Path famFile, Path patientIdsFile,
 			Path cohortsFile,
 			Path vcfFile, Path vepJsonFile,
@@ -71,6 +75,8 @@ public class Inventory {
 			Path logFile
 	) {
 		this.caseName = caseName;
+
+		this.assembly = assembly;
 		this.casePlatform = casePlatform;
 
 		this.famFile = famFile;
@@ -98,6 +104,8 @@ public class Inventory {
 				.withZone(ZoneId.systemDefault());
 
 		private String caseName;
+
+		private Assembly assembly;
 		private CasePlatform casePlatform;
 
 		private Path famFile;
@@ -177,6 +185,8 @@ public class Inventory {
 					throw ExceptionBuilder.buildInvalidValueInventoryException("case");
 				}
 
+				assembly = Assembly.valueOf(getValueWithAliase(jData.getAsString("assembly"), aliases));
+
 				casePlatform = CasePlatform.valueOf(getValueWithAliase(jData.getAsString("platform"), aliases).toUpperCase());
 
 				String pathFamFile = getValueWithAliase(jData.getAsString("fam"), aliases);
@@ -249,7 +259,8 @@ public class Inventory {
 
 		public Inventory build() {
 			return new Inventory(
-					caseName, casePlatform,
+					caseName,
+					assembly, casePlatform,
 					famFile, patientIdsFile,
 					cohortsFile,
 					vcfFile, vepJsonFile,

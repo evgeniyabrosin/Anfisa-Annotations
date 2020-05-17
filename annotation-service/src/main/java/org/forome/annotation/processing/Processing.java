@@ -99,7 +99,7 @@ public class Processing {
 		JSONObject result = new JSONObject();
 
 		AnfisaResult anfisaResult = anfisaConnector.build(
-				new AnfisaInput.Builder().withSamples(mCase).build(),
+				new AnfisaInput.Builder(mCase.assembly).withSamples(mCase).build(),
 				variant
 		);
 		result.merge(anfisaResult.toJSON());

@@ -22,6 +22,7 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
@@ -46,7 +47,7 @@ public class CaseUtils {
 	 * sample['sex']       = int(sex)
 	 * sample['affected']  = (int(affected) == 2)
 	 */
-	public static MCase parseFamFile(InputStream isFam, InputStream isFamSampleName, InputStream isCohorts) throws IOException, ParseException {
+	public static MCase parseFamFile(Assembly assembly, InputStream isFam, InputStream isFamSampleName, InputStream isCohorts) throws IOException, ParseException {
 		LinkedHashMap<String, Sample> samples = new LinkedHashMap<>();
 
 		Map<String, String> sampleNameMap = new HashMap<>();
@@ -133,7 +134,7 @@ public class CaseUtils {
 			}
 		}
 
-		return new MCase.Builder(samples, new ArrayList<>(cohortMaskSamples.keySet())).build();
+		return new MCase.Builder(assembly, samples, new ArrayList<>(cohortMaskSamples.keySet())).build();
 	}
 
 }

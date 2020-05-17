@@ -56,7 +56,7 @@ public class MakeDatabase implements AutoCloseable {
 
 		this.liftoverConnector = new LiftoverConnector();
 
-		this.makeConservation = new MakeConservation(this, assembly, argumentsMake.getGerpPath());
+		this.makeConservation = new MakeConservation(this, assembly, Assembly.GRCh37, argumentsMake.gerpHg19);
 
 		/*
 		ColumnFamilyHandle columnFamilyRecord = rocksDBConnector.getColumnFamily(RocksDBDatabase.COLUMN_FAMILY_RECORD);

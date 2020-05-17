@@ -71,7 +71,8 @@ public class AnnotatorScanInventory {
 
 		AnnotationConsole annotationConsole = new AnnotationConsole(
 				arguments.config,
-				inventory.caseName, inventory.casePlatform,
+				inventory.caseName,
+				inventory.assembly, inventory.casePlatform,
 				inventory.famFile, inventory.patientIdsFile,
 				inventory.cohortsFile,
 				inventory.vcfFile, inventory.vepJsonFile,

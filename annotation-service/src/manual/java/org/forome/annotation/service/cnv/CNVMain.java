@@ -46,6 +46,7 @@ import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +107,7 @@ public class CNVMain {
 			JSONObject vepJson = ensemblVepService.getVepJson(variant).get();
 			variant.setVepJson(vepJson);
 
-			AnfisaInput anfisaInput = new AnfisaInput.Builder().build();
+			AnfisaInput anfisaInput = new AnfisaInput.Builder(Assembly.GRCh37).build();
 			ProcessingResult processingResult = processing.exec(null, variant);
 			log.debug("processingResult: " + processingResult);
 		}

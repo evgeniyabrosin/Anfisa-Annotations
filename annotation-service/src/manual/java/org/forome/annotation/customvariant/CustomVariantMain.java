@@ -45,6 +45,7 @@ import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
@@ -135,7 +136,7 @@ public class CustomVariantMain {
 	}
 
 	private ProcessingResult build(VariantCustom variant) throws ExecutionException, InterruptedException {
-		MCase mCase = new MCase.Builder(new LinkedHashMap<>(), Collections.emptyList()).build();
+		MCase mCase = new MCase.Builder(Assembly.GRCh37, new LinkedHashMap<>(), Collections.emptyList()).build();
 
 		JSONObject vepJson = ensemblVepService.getVepJson(variant).get();
 		variant.setVepJson(vepJson);

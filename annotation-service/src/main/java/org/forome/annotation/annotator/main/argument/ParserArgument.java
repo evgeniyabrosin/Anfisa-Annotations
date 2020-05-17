@@ -30,6 +30,8 @@ public class ParserArgument {
 	public static final String OPTION_FILE_CONFIG = "config";
 
 	public static final String OPTION_CASE_NAME = "name";
+	public static final String OPTION_ASSEMBLY = "assembly";
+
 	public static final String OPTION_FILE_FAM = "fam";
 	public static final String OPTION_FILE_FAM_NAME = "famname";
 	public static final String OPTION_FILE_COHORT = "cohort";

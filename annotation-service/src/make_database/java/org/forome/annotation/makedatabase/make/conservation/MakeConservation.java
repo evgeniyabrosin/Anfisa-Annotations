@@ -26,6 +26,7 @@ import org.forome.annotation.makedatabase.make.conservation.accumulation.Accumul
 import org.forome.annotation.makedatabase.statistics.StatisticsCompression;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Position;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.OptimisticTransactionDB;
 import org.rocksdb.RocksDBException;
@@ -62,19 +63,28 @@ public class MakeConservation {
 	private final static Logger log = LoggerFactory.getLogger(MakeConservation.class);
 
 	private final MakeDatabase makeDatabase;
-	private final Assembly assembly;
-	private final Path gerpPath;
+
+	private final Assembly targetAssembly;
+
+	private final Assembly sourceAssembly;
+	private final Path sourceGerpPath;
 
 	//В класс необходимо передать файл нужной сборке
-	public MakeConservation(MakeDatabase makeDatabase, Assembly assembly, Path gerpPath) {
+	public MakeConservation(
+			MakeDatabase makeDatabase,
+			Assembly targetAssembly,
+			Assembly sourceAssembly, Path sourceGerpPath
+	) {
 		this.makeDatabase = makeDatabase;
-		this.assembly = assembly;
-		this.gerpPath = gerpPath;
+		this.targetAssembly = targetAssembly;
+
+		this.sourceAssembly = sourceAssembly;
+		this.sourceGerpPath = sourceGerpPath;
 	}
 
 	public void build(OptimisticTransactionDB rocksDB, ColumnFamilyHandle columnFamilyRecord, StatisticsCompression statistics) throws IOException, RocksDBException {
 		log.debug("Write conservation...");
-		try (GZIPInputStream isGZ = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(gerpPath)))) {
+		try (GZIPInputStream isGZ = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(sourceGerpPath)))) {
 			try (TarArchiveInputStream isTarGZ = new TarArchiveInputStream(isGZ)) {
 				TarArchiveEntry entry;
 				while ((entry = (TarArchiveEntry) isTarGZ.getNextEntry()) != null) {
@@ -88,9 +98,16 @@ public class MakeConservation {
 					try (AccumulationConservation accumulation = new AccumulationConservation(rocksDB, columnFamilyRecord, statistics)) {
 
 						String line;
-						int position = 0;
+						int sourcePosition = 0;
 						while ((line = isItem.readLine()) != null) {
-							position++;
+							sourcePosition++;
+
+							Position targetPosition = makeDatabase.liftoverConnector.convertPosition(
+									targetAssembly, sourceAssembly, new Position(chromosome, sourcePosition)
+							);
+							if (targetPosition == null) {
+								continue;
+							}
 
 							String[] sLine = line.split("\\t");
 							Float gerpN = null;
@@ -104,12 +121,12 @@ public class MakeConservation {
 
 							accumulation.add(
 									chromosome,
-									position,
+									targetPosition.value,
 									new Conservation(gerpRS, gerpN)
 							);
 
-							if (position % 1_000_000 == 0) {
-								log.debug("Write chromosome: {}, position: {}", chromosome.toString(), position);
+							if (sourcePosition % 1_000_000 == 0) {
+								log.debug("Write chromosome: {}, source position: {}", chromosome.toString(), sourcePosition);
 							}
 						}
 					}

@@ -53,6 +53,7 @@ import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalServi
 import org.forome.annotation.service.notification.NotificationService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.VariantType;
@@ -275,7 +276,7 @@ public class CustomInputMain {
 				requestIds.add(l0);
 			}
 
-			MCase mCase = new MCase.Builder(new LinkedHashMap<>(), Collections.emptyList()).build();
+			MCase mCase = new MCase.Builder(Assembly.GRCh37, new LinkedHashMap<>(), Collections.emptyList()).build();
 
 //			Path pathIds = Paths.get("/home/kris/processtech/tmp/10/variants2_ids.txt");
 //			try (OutputStream os = Files.newOutputStream(pathIds)){
