@@ -30,7 +30,6 @@ public class ParserArgument {
 	public static final String OPTION_ASSEMBLY = "assembly";
 
 	public static final String OPTION_SOURCE_GERP_HG19 = "gerp19";
-	public static final String OPTION_SOURCE_GERP_HG38 = "gerp38";
 
 	public final Arguments arguments;
 
@@ -56,12 +55,6 @@ public class ParserArgument {
 						.hasArg(true)
 						.optionalArg(true)
 						.desc("Absolute path to data file: gerp hg19")
-						.build())
-				.addOption(Option.builder()
-						.longOpt(OPTION_SOURCE_GERP_HG38)
-						.hasArg(true)
-						.optionalArg(true)
-						.desc("Absolute path to data file: gerp hg38")
 						.build())
 
 				;

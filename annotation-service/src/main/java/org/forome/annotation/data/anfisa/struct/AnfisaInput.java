@@ -18,6 +18,7 @@
 
 package org.forome.annotation.data.anfisa.struct;
 
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.mcase.MCase;
 
 import java.util.Collections;
@@ -34,10 +35,12 @@ public class AnfisaInput {
 
 	public static class Builder {
 
+		private final Assembly assembly;
 		private MCase mCase;
 
-		public Builder() {
-			this.mCase = new MCase.Builder(new LinkedHashMap<>(), Collections.emptyList()).build();
+		public Builder(Assembly assembly) {
+			this.assembly = assembly;
+			this.mCase = new MCase.Builder(assembly, new LinkedHashMap<>(), Collections.emptyList()).build();
 		}
 
 		public Builder withSamples(MCase mCase) {

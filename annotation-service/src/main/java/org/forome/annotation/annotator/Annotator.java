@@ -45,6 +45,7 @@ import org.forome.annotation.annotator.utils.CaseUtils;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.struct.mcase.MCase;
 import org.slf4j.Logger;
@@ -75,6 +76,7 @@ public class Annotator {
 
 	public AnnotatorResult exec(
 			String caseName,
+			Assembly assembly,
 			CasePlatform casePlatform,
 			Path pathFam,
 			Path pathFamSampleName,
@@ -114,6 +116,7 @@ public class Annotator {
 		) {
 			return exec(
 					caseName,
+					assembly,
 					casePlatform,
 					isFam,
 					isFamSampleName,
@@ -128,6 +131,7 @@ public class Annotator {
 
 	public AnnotatorResult exec(
 			String caseName,
+			Assembly assembly,
 			CasePlatform casePlatform,
 			InputStream isFam,
 			InputStream isFamSampleName,
@@ -138,7 +142,7 @@ public class Annotator {
 			int startPosition
 	) throws IOException, ParseException {
 
-		MCase samples = CaseUtils.parseFamFile(isFam, isFamSampleName, isCohorts);
+		MCase samples = CaseUtils.parseFamFile(assembly, isFam, isFamSampleName, isCohorts);
 
 		String caseId = String.format("%s_%s", caseName, casePlatform.name().toLowerCase());
 

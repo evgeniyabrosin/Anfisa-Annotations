@@ -18,6 +18,8 @@
 
 package org.forome.annotation.struct.mcase;
 
+import org.forome.annotation.struct.Assembly;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,28 +27,32 @@ import java.util.Map;
 
 public class MCase {
 
+	public final Assembly assembly;
 	public final Sample proband;
 	public final Map<String, Sample> samples;
 	public final List<Cohort> cohorts;
 
-	private MCase(Sample proband, Map<String, Sample> samples, List<Cohort> cohorts) {
-		this.proband = proband;
-		this.samples = Collections.unmodifiableMap(samples);
-		this.cohorts = Collections.unmodifiableList(cohorts);
+	private MCase(Builder builder) {
+		this.assembly = builder.assembly;
+		this.proband = builder.getProband();
+		this.samples = Collections.unmodifiableMap(builder.samples);
+		this.cohorts = Collections.unmodifiableList(builder.cohorts);
 	}
 
 	public static class Builder {
 
+		private Assembly assembly;
 		private LinkedHashMap<String, Sample> samples;
 		private List<Cohort> cohorts;
 
-		public Builder(LinkedHashMap<String, Sample> samples, List<Cohort> cohorts) {
+		public Builder(Assembly assembly, LinkedHashMap<String, Sample> samples, List<Cohort> cohorts) {
+			this.assembly = assembly;
 			this.samples = samples;
 			this.cohorts = cohorts;
 		}
 
 		public MCase build() {
-			return new MCase(getProband(), samples, cohorts);
+			return new MCase(this);
 		}
 
 		private Sample getProband() {

@@ -44,10 +44,7 @@ import org.forome.annotation.data.spliceai.mysql.SpliceAIConnectorMysql;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.processing.graphql.record.view.transcripts.item.GRecordViewTranscriptsItem;
-import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.HasVariant;
-import org.forome.annotation.struct.Interval;
+import org.forome.annotation.struct.*;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
@@ -993,11 +990,12 @@ public class AnfisaConnector implements AutoCloseable {
 	}
 
 	public Conservation buildConservation(AnfisaExecuteContext context) {
+		Assembly assembly = context.anfisaInput.mCase.assembly;
 		Variant variant = context.variant;
 		String ref = variant.getRef();
 		String alt = variant.getStrAlt();
 		Interval hgmdHG19 = getHg19Coordinates(context);
-		return conservationData.getConservation(hgmdHG19, ref, alt);
+		return conservationData.getConservation(assembly, hgmdHG19, ref, alt);
 	}
 
 	private static Map<String, Float> list_dsmax(AnfisaResultData data) {

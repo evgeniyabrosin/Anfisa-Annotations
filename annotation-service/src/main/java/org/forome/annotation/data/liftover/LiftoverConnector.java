@@ -160,6 +160,23 @@ public class LiftoverConnector implements AutoCloseable {
 	}
 
 	/**
+	 * Приведение координат к hg37, если будет передан hg37, то вернется без изменений
+	 * @param assembly
+	 * @param position
+	 * @return
+	 */
+	public Position toHG37(Assembly assembly, Position position) {
+		switch (assembly) {
+			case GRCh37:
+				return position;
+			case GRCh38:
+				return toHG37(position);
+			default:
+				throw new RuntimeException();
+		}
+	}
+
+	/**
 	 * Приведение координат к hg38, если будет передан hg38, то вернется без изменений
 	 * @param assembly
 	 * @param position
@@ -205,6 +222,17 @@ public class LiftoverConnector implements AutoCloseable {
 				return toHG37(positionHg38);
 			case GRCh38:
 				return positionHg38;
+			default:
+				throw new RuntimeException();
+		}
+	}
+
+	public Position convertPosition(Assembly targetAssembly, Assembly sourceAssembly, Position position){
+		switch (targetAssembly) {
+			case GRCh37:
+				return toHG37(sourceAssembly, position);
+			case GRCh38:
+				return toHG38(sourceAssembly, position);
 			default:
 				throw new RuntimeException();
 		}

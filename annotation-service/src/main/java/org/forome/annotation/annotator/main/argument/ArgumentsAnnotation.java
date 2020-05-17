@@ -19,6 +19,7 @@
 package org.forome.annotation.annotator.main.argument;
 
 import org.apache.commons.cli.CommandLine;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.CasePlatform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,8 @@ public class ArgumentsAnnotation extends Arguments {
 	public final Path config;
 
 	public final String caseName;
+
+	public final Assembly assembly;
 	public final CasePlatform casePlatform;
 
 	public final Path pathFam;
@@ -61,6 +64,8 @@ public class ArgumentsAnnotation extends Arguments {
 		} else {
 			caseName = dir.getFileName().toString();
 		}
+
+		assembly = Assembly.valueOf(cmd.getOptionValue(ParserArgument.OPTION_ASSEMBLY));
 
 		String strPathFamFile = cmd.getOptionValue(ParserArgument.OPTION_FILE_FAM);
 		if (strPathFamFile != null) {

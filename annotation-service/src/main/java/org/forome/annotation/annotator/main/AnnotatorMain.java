@@ -55,7 +55,8 @@ public class AnnotatorMain {
 			}
 			AnnotationConsole annotationConsole = new AnnotationConsole(
 					argumentsInventory.config,
-					inventory.caseName, inventory.casePlatform,
+					inventory.caseName,
+					inventory.assembly, inventory.casePlatform,
 					inventory.famFile, inventory.patientIdsFile,
 					inventory.cohortsFile,
 					inventory.vcfFile, inventory.vepJsonFile,
@@ -69,7 +70,8 @@ public class AnnotatorMain {
 			ArgumentsAnnotation argumentsAnnotation = (ArgumentsAnnotation) arguments;
 			AnnotationConsole annotationConsole = new AnnotationConsole(
 					argumentsAnnotation.config,
-					argumentsAnnotation.caseName, argumentsAnnotation.casePlatform,
+					argumentsAnnotation.caseName,
+					argumentsAnnotation.assembly, argumentsAnnotation.casePlatform,
 					argumentsAnnotation.pathFam, argumentsAnnotation.patientIdsFile,
 					argumentsAnnotation.cohortFile,
 					argumentsAnnotation.pathVcf, argumentsAnnotation.pathVepJson,

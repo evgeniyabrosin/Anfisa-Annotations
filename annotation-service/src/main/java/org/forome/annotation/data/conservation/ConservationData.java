@@ -63,20 +63,20 @@ public class ConservationData {
 		return Lists.newArrayList(new SourceMetadata("GERP", "hg19.GERP_scores", null));
 	}
 
-	public Conservation getConservation(Interval position, String ref, String alt) {
+	public Conservation getConservation(Assembly assembly, Interval position, String ref, String alt) {
 		if (alt.length() == 1 && ref.length() == 1) {
 			//Однобуквенный вариант
-			return getConservation(position);
+			return getConservation(assembly, position);
 		} else if (alt.length() > 1 && ref.length() == 1) {
 			//Инсерция
-			return getConservation(position);
+			return getConservation(assembly, position);
 		} else {
 			return null;
 		}
 	}
 
-	private Conservation getConservation(Interval pHG19) {
-		GerpData gerpData = getGerpDataFromRocksDB(Assembly.GRCh37, pHG19);
+	private Conservation getConservation(Assembly assembly, Interval interval) {
+		GerpData gerpData = getGerpDataFromRocksDB(assembly, interval);
 
 		if (gerpData != null) {
 			Float gerpRS = (gerpData != null) ? gerpData.gerpRS : null;
@@ -89,28 +89,28 @@ public class ConservationData {
 		}
 	}
 
-	private GerpData getGerpDataFromRocksDB(Assembly assembly, Interval pHG19) {
+	private GerpData getGerpDataFromRocksDB(Assembly assembly, Interval interval) {
 		long t1 = System.nanoTime();
 		try {
 			Source source = databaseConnectService.getSource(assembly);
 
 			int minPosition;
 			int maxPosition;
-			if (pHG19.start <= pHG19.end) {
-				minPosition = pHG19.start;
-				maxPosition = pHG19.end;
+			if (interval.start <= interval.end) {
+				minPosition = interval.start;
+				maxPosition = interval.end;
 			} else {
 				//Инсерция
 				//minPosition = maxPosition = pHG19.start;
-				minPosition = Math.min(pHG19.start, pHG19.end - 1);
-				maxPosition = Math.max(pHG19.start, pHG19.end - 1);
+				minPosition = Math.min(interval.start, interval.end - 1);
+				maxPosition = Math.max(interval.start, interval.end - 1);
 			}
 
 			Float maxGerpN = null;
 			Float maxGerpRS = null;
 			for (int pos = minPosition; pos <= maxPosition; pos++) {
 				Position position = new Position(
-						pHG19.chromosome,
+						interval.chromosome,
 						pos
 				);
 				Record record = source.getRecord(position);
