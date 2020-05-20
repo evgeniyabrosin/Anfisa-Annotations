@@ -6,13 +6,15 @@ class BlockerCluster():
         self.mIO = master
         self.mMaxVarCount = self.mIO._getProperty("max-var-count")
         self.mCurWriterKey = None
-        self.mIdxColNames = [self.mIO._regColumn("sgidx")]
+        self.mIdxColDescr = self.mIO._regColumn("sgidx", conv_bytes = False)
         self.mMaxPosCount = self.mIO._getProperty(
             "max-loc-count", self.MAX_POS_COUNT)
         if self.mIO.isWriteMode():
             stat_info = self.mIO._getProperty("stat")
             self.mCountBlocks = stat_info.get("cluster-blocks", 0)
             self.mCountVariants = stat_info.get("cluster-variants", 0)
+            self.mWriteColSeq = [
+                self.mIdxColDescr] + self.mIO.getMainColumnSeq()
 
     def _addWriteStat(self, var_count):
         self.mCountBlocks += 1
@@ -39,9 +41,11 @@ class BlockerCluster():
     def close(self):
         self.updateWStat()
 
-    def addToIndex(self, chrom, pos_seq):
-        self.mIO._putColumns((chrom, pos_seq[-1]),
-            [pseq2bytes(pos_seq)], self.mIdxColNames, conv_bytes = False)
+    def putBlock(self, chrom, pos_seq, main_data_seq, var_count):
+        self.getIO()._putColumns((chrom, pos_seq[-1]),
+            [pseq2bytes(pos_seq)] + main_data_seq,
+            col_seq = self.mWriteColSeq)
+        self._addWriteStat(var_count)
 
     def createWriteBlock(self, encode_env, key, codec):
         if (self.mCurWriterKey is not None
@@ -53,8 +57,7 @@ class BlockerCluster():
 
     def createReadBlock(self, decode_env_class, key, codec, last_pos = None):
         assert last_pos is None
-        with self.mIO._seekColumn(key,
-                self.mIdxColNames[0], conv_bytes = False) as iter_h:
+        with self.mIO._seekColumn(key, self.mIdxColDescr) as iter_h:
             key_base, data_base = iter_h.getCurrent()
         pos_seq = None
         if key_base is not None and key_base[0] == key[0]:
@@ -116,10 +119,8 @@ class _WriteClusterBlock:
 
     def finishUp(self):
         if len(self.mPosSeq) > 0:
-            self.mBlocker.getIO()._putColumns(
-                (self.mChrom, self.mPosSeq[-1]), self.mEncodeEnv.result())
-            self.mBlocker.addToIndex(self.mChrom, self.mPosSeq)
-            self.mBlocker._addWriteStat(self.mVarCount)
+            self.mBlocker.putBlock(self.mChrom, self.mPosSeq,
+                self.mEncodeEnv.result(), self.mVarCount)
         del self.mEncodeEnv
 
 #===============================================

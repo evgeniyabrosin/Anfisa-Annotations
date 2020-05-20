@@ -40,32 +40,35 @@ class BlockerFrameIndex():
     def createWriteBlock(self, encode_env, key, codec):
         return _WriteFrameBlock(self, encode_env, key)
 
+    def _completeData(self, seek_key, seek_data, main_columns,
+            decode_env_class, codec, list_data):
+        data_seq = [seek_data]
+        if len(main_columns) > 0:
+            data_seq += self.mIO._getColumns(
+                seek_key, main_columns[1:])
+        list_data += decode_env_class(data_seq).get(0, codec)
+
     def createReadBlock(self, decode_env_class, key, codec, last_pos = None):
         if last_pos is not None:
             assert key[1] <= last_pos
-        col_names = self.mIO.getColumnNames()
+        main_columns = self.mIO.getMainColumnSeq()
         chrom, init_pos = key
 
-        seek_pos_start, list_data, seek_pos_end = None, None, None
-        with self.mIO._seekColumn(key, col_names[0]) as iter_h:
+        seek_pos_start, seek_pos_end, list_data = None, None, []
+        with self.mIO._seekColumn(key, main_columns[0]) as iter_h:
             seek_key, seek_data = iter_h.getCurrent()
             if seek_key is not None and seek_key[0] == chrom:
                 seek_pos_start = seek_pos_end = seek_key[1]
-                data_seq = [seek_data]
-                if len(col_names) > 0:
-                    data_seq += self.mIO._getColumns(seek_key, col_names[1:])
-                list_data = decode_env_class(data_seq).get(0, codec)
+                self._completeData(seek_key, seek_data,
+                    main_columns, decode_env_class, codec, list_data)
             while (last_pos is not None and seek_pos_end is not None
                     and seek_pos_end < last_pos):
                 iter_h.seekNext()
                 seek_key, seek_data = iter_h.getCurrent()
                 if seek_key is not None and seek_key[0] == chrom:
                     seek_pos_end = seek_key[1]
-                    data_seq = [seek_data]
-                    if len(col_names) > 0:
-                        data_seq += self.mIO._getColumns(
-                            seek_key, col_names[1:])
-                    list_data += decode_env_class(data_seq).get(0, codec)
+                    self._completeData(seek_key, seek_data,
+                        main_columns, decode_env_class, codec, list_data)
                 else:
                     seek_pos_end = None
         return _ReadFrameBlock(self, chrom, init_pos,
@@ -121,7 +124,7 @@ class _ReadFrameBlock:
         return True
 
     def getRecord(self, key, codec, last_pos = None):
-        if self.mListData is None:
+        if not self.mListData:
             return []
         chrom, pos = key
         assert self.mChrom == chrom

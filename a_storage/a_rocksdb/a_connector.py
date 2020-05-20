@@ -49,7 +49,7 @@ class AConnector:
         for key, val in col_attrs.items():
             if key == "compression":
                 col_options.set_compression(val)
-            else:
+            elif not key.startswith('-'):
                 setattr(col_options, key, val)
         return col_options
 
@@ -112,50 +112,44 @@ class AConnector:
             logging.info("Keys for %s/%s: %s"
                 % (self.mName, col_h.get_name(), json.dumps(seq)))
 
-    def putData(self, xkey, col_seq, data_seq, conv_bytes = True):
+    def putData(self, xkey, col_seq, data_seq):
         assert self.mWriteMode
         if self.mDB is None:
             return
-        for col_name, data in zip(col_seq, data_seq):
-            if conv_bytes:
-                data = bytes(data, encoding = "utf-8")
+        for col_descr, data in zip(col_seq, data_seq):
+            data = col_descr.encode(data)
             if len(data) > 0:
-                col_h = self.mColHandlers[self.mColIndex[col_name]]
+                col_h = self.mColHandlers[self.mColIndex[col_descr.getName()]]
                 self.mDB.put(self.mWrOpts, col_h, xkey, data)
 
-    def getData(self, xkey, col_seq, conv_bytes = True):
+    def getData(self, xkey, col_seq):
         ret = []
         if self.mDB is None:
             return ret
-        for col_name in col_seq:
-            col_h = self.mColHandlers[self.mColIndex[col_name]]
+        for col_descr in col_seq:
+            col_h = self.mColHandlers[self.mColIndex[col_descr.getName()]]
             blob = self.mDB.get(self.mRdOpts, col_h, xkey)
             data = blob.data if blob.status.ok() else None
-            if conv_bytes and data is not None:
-                data = data.decode(encoding = "utf-8")
-            ret.append(data)
+            ret.append(col_descr.decode(data))
         return ret
 
-    def seekData(self, xkey, col_name, conv_bytes):
+    def seekData(self, xkey, col_descr):
         if self.mDB is None:
             return _AIterator(None)
-        col_h = self.mColHandlers[self.mColIndex[col_name]]
+        col_h = self.mColHandlers[self.mColIndex[col_descr.getName()]]
         x_iter = self.mDB.iterator(self.mRdOpts, col_h)
         x_iter.seek(xkey)
-        return _AIterator(x_iter, conv_bytes)
+        return _AIterator(x_iter, col_descr)
 
 #========================================
 class _AIterator:
-    def __init__(self, x_iter, conv_bytes = None):
+    def __init__(self, x_iter, col_descr = None):
         self.mIter = x_iter
-        self.mConvBytes = conv_bytes
+        self.mColDescr = col_descr
 
     def getCurrent(self):
         if self.mIter is not None and self.mIter.valid():
-            ret_key, ret_data = self.mIter.key(), self.mIter.value()
-            if self.mConvBytes and ret_data is not None:
-                ret_data = ret_data.decode(encoding = "utf-8")
-            return ret_key, ret_data
+            return self.mIter.key(), self.mColDescr.decode(self.mIter.value())
         return None, None
 
     def seekNext(self):

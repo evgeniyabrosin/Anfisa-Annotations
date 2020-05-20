@@ -20,11 +20,11 @@ class AFastaSchema:
 
         self.mTypes = dict()
         for idx, type_name in enumerate(self.mSchemaDescr["types"]):
-            tp_col_name = self.mIO._regColumn("fasta", type_name)
+            tp_col_descr = self.mIO._regColumn("fasta", type_name)
             tp_conv = getKeyCodec(type_name)
             if len(self.mTotals) <= idx:
                 self.mTotals.append(0)
-            tp_h = _FastaTypeHandler(type_name, tp_col_name, tp_conv, idx)
+            tp_h = _FastaTypeHandler(type_name, tp_col_descr, tp_conv, idx)
             self.mTypes[type_name] = tp_h
             if (self.mWriteMode and not self.mStorage.isDummyMode()):
                 tp_h.initSamples(self.mStorage.getSamplesCount())
@@ -99,7 +99,7 @@ class AFastaSchema:
                 assert prev_diap[1] == diap[0]
             assert (diap[0] - 1) % self.mBlockSize == 0
             self.mIO._putColumns(tp_h.encodeKey("chr" + chrom, diap[0] - 1),
-                [letters], tp_h.getColNames())
+                [letters], col_seq = tp_h.getColSeq())
             self.mTotals[tp_h.getIdx()] += 1
             tp_h.addSample(chrom, diap, letters)
             prev_diap = diap
@@ -117,7 +117,7 @@ class AFastaSchema:
             chrom = "chr" + chrom
 
         seq_l = self.mIO._getColumns(
-            tp_h.encodeKey(chrom, base_pos), tp_h.getColNames())
+            tp_h.encodeKey(chrom, base_pos), col_seq = tp_h.getColSeq())
 
         loc_pos = pos - 1 - base_pos
         letters = seq_l[0]
@@ -132,8 +132,8 @@ class AFastaSchema:
         while len(letters) == self.mBlockSize:
             base_pos += self.mBlockSize
             loc_last -= self.mBlockSize
-            seq_l = self.mIO._getColumns(
-                tp_h.encodeKey(chrom, base_pos), tp_h.getColNames())
+            seq_l = self.mIO._getColumns(tp_h.encodeKey(chrom, base_pos),
+                col_seq = tp_h.getColSeq())
             letters = seq_l[0]
             if letters is None:
                 break
@@ -172,9 +172,9 @@ class AFastaSchema:
 
 #========================================
 class _FastaTypeHandler:
-    def __init__(self, name, tp_col_name, tp_conv, idx):
+    def __init__(self, name, tp_col_descr, tp_conv, idx):
         self.mName = name
-        self.mColName = tp_col_name
+        self.mColDescr = tp_col_descr
         self.mHgConv = tp_conv
         self.mIdx = idx
         self.mSmpCount = None
@@ -192,8 +192,8 @@ class _FastaTypeHandler:
     def encodeKey(self, chrom, pos):
         return self.mHgConv.encode(chrom, pos)
 
-    def getColNames(self):
-        return [self.mColName]
+    def getColSeq(self):
+        return [self.mColDescr]
 
     def initSamples(self, smp_count):
         self.mRH = random.Random(179)

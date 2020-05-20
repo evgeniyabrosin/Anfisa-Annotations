@@ -5,10 +5,7 @@ SCHEMA_SPLICE_AI = {
     "no-stat-details": True,
     "io": {
         "block-type": "cluster",
-        "max-var-count": 200,
-        "str-col-options": {
-            "compression": "bz2_compression"
-        }
+        "max-var-count": 200
     },
     "filter-list": {"ref": "REF", "alt": "ALT"},
     "top": {

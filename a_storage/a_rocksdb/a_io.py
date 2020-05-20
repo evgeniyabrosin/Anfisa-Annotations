@@ -1,4 +1,4 @@
-import json
+import json, bz2
 from threading import Lock
 
 from codec import createBlockCodec, getKeyCodec
@@ -16,13 +16,13 @@ class AIOController:
 
         self.mDbConnector = self.mSchema.getStorage().openConnection(
             dbname, self.mSchema.isWriteMode())
-        self.mColNames = []
+        self.mMainColumnSeq = []
         self.mWithBase = self.mSchema.isOptionRequired("base")
         if self.mWithBase:
-            self.mColNames.append(self._regColumn("base"))
+            self.mMainColumnSeq.append(self._regColumn("base"))
         self.mWithStr = self.mSchema.isOptionRequired("str")
         if self.mWithStr:
-            self.mColNames.append(self._regColumn("str"))
+            self.mMainColumnSeq.append(self._regColumn("str"))
 
         if self.mSchema.isWriteMode():
             self.mWriteBlockH = None
@@ -58,7 +58,7 @@ class AIOController:
             self.mDescr[name] = default_value
         return self.mDescr[name]
 
-    def _regColumn(self, col_type, col_name = None):
+    def _regColumn(self, col_type, col_name = None, conv_bytes = True):
         col_key = col_type + "-col-options"
         col_attrs = self._getProperty(col_key)
         if col_attrs is None:
@@ -67,7 +67,8 @@ class AIOController:
             self._updateProperty(col_key, col_attrs)
         if col_name is None:
             col_name = "%s_%s" % (self.mSchema.getName(), col_type)
-        return self.mDbConnector._regColumn(col_name, col_attrs)
+        return AIO_ColumnDescr(self.mDbConnector._regColumn(
+            col_name, col_attrs), conv_bytes, col_attrs.get("-bz2"))
 
     def _updateProperty(self, key, val):
         self.mDescr[key] = val
@@ -133,36 +134,37 @@ class AIOController:
     def getDBKeyType(self):
         return self.mKeyCodec.getType()
 
-    def getColumnNames(self):
-        return self.mColNames
+    def getMainColumnSeq(self):
+        return self.mMainColumnSeq
 
     def getXKey(self, key):
         return self.mKeyCodec.encode(key)
 
-    def _putColumns(self, key, data_seq, col_names = None, conv_bytes = True):
+    def _putColumns(self, key, data_seq, col_seq = None):
         xkey = self.getXKey(key)
-        if col_names is None:
-            col_names = self.mColNames
-        self.mDbConnector.putData(xkey, col_names, data_seq, conv_bytes)
+        if col_seq is None:
+            col_seq = self.mMainColumnSeq
+        self.mDbConnector.putData(xkey, col_seq, data_seq)
 
-    def _getColumns(self, key, col_names = None, conv_bytes = True):
+    def _getColumns(self, key, col_seq = None):
         xkey = self.getXKey(key)
-        if col_names is None:
-            col_names = self.mColNames
-        return self.mDbConnector.getData(xkey, col_names, conv_bytes)
+        if col_seq is None:
+            col_seq = self.mMainColumnSeq
+        return self.mDbConnector.getData(xkey, col_seq)
 
-    def _seekColumn(self, key, col_name, conv_bytes = True):
+    def _seekColumn(self, key, col_descr):
         return AIO_Iterator(self.mDbConnector.seekData(
-            self.getXKey(key), col_name, conv_bytes), self.mKeyCodec)
+            self.getXKey(key), col_descr), self.mKeyCodec)
 
     def _putRecord(self, key, record, codec):
         encode_env = AEncodeEnv(self, self.mWithStr)
         encode_env.put(record, codec)
         self.mDbConnector.putData(self.getXKey(key),
-            self.mColNames, encode_env.result())
+            self.mMainColumnSeq, encode_env.result())
 
     def _getRecord(self, key, codec):
-        data_seq = self.mDbConnector.getData(self.getXKey(key), self.mColNames)
+        data_seq = self.mDbConnector.getData(
+            self.getXKey(key), self.mMainColumnSeq)
         if data_seq[0] is None:
             return None
         decode_env = ADecodeEnv(data_seq)
@@ -203,6 +205,30 @@ class AIOController:
         encode_env.put(record, codec)
         decode_env = ADecodeEnv(encode_env.result())
         return decode_env.get(0, codec)
+
+#========================================
+class AIO_ColumnDescr:
+    def __init__(self, name, conv_bytes, use_bzip):
+        self.mName = name
+        self.mConvBytes = conv_bytes
+        self.mUseBZip = use_bzip
+
+    def getName(self):
+        return self.mName
+
+    def encode(self, data):
+        if self.mConvBytes and data is not None:
+            data = bytes(data, encoding = "utf-8")
+        if self.mUseBZip and data is not None:
+            return bz2.compress(data)
+        return data
+
+    def decode(self, data):
+        if self.mUseBZip and data is not None:
+            data = bz2.decompress(data)
+        if self.mConvBytes and data is not None:
+            return data.decode(encoding = "utf-8")
+        return data
 
 #========================================
 class AIO_Iterator:
