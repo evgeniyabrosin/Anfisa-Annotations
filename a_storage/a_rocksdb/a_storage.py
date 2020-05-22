@@ -3,6 +3,20 @@ import os, shutil, gc, json, logging
 from .a_connector import AConnector
 #========================================
 class AStorage:
+    sDefaultColumnOptions = {
+        "base": {
+            "-compress": "bz2",
+        },
+        "str": {
+            "-compress": "bz2",
+        },
+        "sgidx": {
+        },
+        "fasta": {
+            "-compress": "bz2",
+        }
+    }
+
     def __init__(self, config,
             dummy_mode = False, deep_comp_mode = False):
         self.mConfig = config
@@ -13,8 +27,8 @@ class AStorage:
     def getDbOptions(self):
         return self.mConfig["db-options"].items()
 
-    def getDefaulColumnAttrs(self, column_type):
-        return self.mConfig["col-options"][column_type]
+    def getDefaulColumnOptions(self, column_type):
+        return self.sDefaultColumnOptions[column_type]
 
     def getDBFilePath(self, name):
         return self.mConfig["db-dir"] + '/' + name

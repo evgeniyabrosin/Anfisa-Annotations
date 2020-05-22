@@ -16,20 +16,6 @@
         "target_file_size_base": 67108864,
         "max_total_wal_size": 104857600
     },
-    "col-options": {
-        "base": {
-            "compression": "bz2_compression"
-        },
-        "str": {
-            "compression": "lz4_compression"
-        },
-        "sgidx": {
-            "compression": "no_compression"
-        },
-        "fasta": {
-            "compression": "bz2_compression"
-        }
-    },
     "samples-count": 100,
     "load-keep-schema-sec": 3600,
     

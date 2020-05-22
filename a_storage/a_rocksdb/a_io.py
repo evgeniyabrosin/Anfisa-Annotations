@@ -59,13 +59,14 @@ class AIOController:
         col_key = col_type + "-col-options"
         col_attrs = self._getProperty(col_key)
         if col_attrs is None:
-            col_attrs = self.mSchema.getStorage().getDefaulColumnAttrs(
+            assert self.isWriteMode()
+            col_attrs = self.mSchema.getStorage().getDefaulColumnOptions(
                 col_type).copy()
             self._updateProperty(col_key, col_attrs)
         if col_name is None:
             col_name = "%s_%s" % (self.mSchema.getName(), col_type)
         return AIO_ColumnHandler(self.mDbConnector._regColumn(
-            col_name, col_attrs), conv_bytes, col_attrs.get("-bz2"))
+            col_name, col_attrs), conv_bytes, col_attrs.get("-compression"))
 
     def _updateProperty(self, key, val):
         self.mDescr[key] = val
@@ -217,10 +218,10 @@ class AIOController:
 
 #========================================
 class AIO_ColumnHandler:
-    def __init__(self, name, conv_bytes, use_bzip):
+    def __init__(self, name, conv_bytes, compression = None):
         self.mName = name
         self.mConvBytes = conv_bytes
-        self.mUseBZip = use_bzip
+        self.mUseBZip = (compression == "bz2")
 
     def getName(self):
         return self.mName

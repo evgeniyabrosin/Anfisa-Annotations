@@ -53,10 +53,13 @@ class AConnector:
     def _colOptions(self, col_attrs):
         col_options = rocksdb.ColumnFamilyOptions()
         col_options.OptimizeLevelStyleCompaction()
+        col_options.set_compression("no_compression")
         for key, val in col_attrs.items():
+            if key.startswith('-'):
+               continue
             if key == "compression":
                 col_options.set_compression(val)
-            elif not key.startswith('-'):
+            else:
                 setattr(col_options, key, val)
         return col_options
 
