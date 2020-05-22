@@ -59,9 +59,11 @@ class AIOController:
         col_key = col_type + "-col-options"
         col_attrs = self._getProperty(col_key)
         if col_attrs is None:
-            assert self.isWriteMode()
-            col_attrs = self.mSchema.getStorage().getDefaulColumnOptions(
-                col_type).copy()
+            if self.isWriteMode():
+                col_attrs = self.mSchema.getStorage().getDefaulColumnOptions(
+                    col_type).copy()
+            else:
+                col_attrs = dict()
             self._updateProperty(col_key, col_attrs)
         if col_name is None:
             col_name = "%s_%s" % (self.mSchema.getName(), col_type)
