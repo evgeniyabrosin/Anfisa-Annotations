@@ -68,7 +68,7 @@ class AIOController:
         if col_name is None:
             col_name = "%s_%s" % (self.mSchema.getName(), col_type)
         return AIO_ColumnHandler(self.mDbConnector._regColumn(
-            col_name, col_attrs), conv_bytes, col_attrs.get("-compression"))
+            col_name, col_attrs), conv_bytes, col_attrs.get("-compress"))
 
     def _updateProperty(self, key, val):
         self.mDescr[key] = val
