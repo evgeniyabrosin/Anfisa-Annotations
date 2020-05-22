@@ -22,8 +22,8 @@ def reportTime(note, total, start_time):
 
 #=== chromosome detection ================
 
-def detectFileChrom(parameter, filename):
-    chrom_patt = re.compile(r"(\b|\W)%s(\w+)(\b|\W)" % parameter, re.I)
+def detectFileChrom(filename, chrom_loc):
+    chrom_patt = re.compile(r"(\b|\W)%s(\w+)(\b|\W)" % chrom_loc, re.I)
     chrom_list = {str(idx) for idx in range(1, 23)} | {"M", "X", "Y"}
     qq = chrom_patt.search(os.path.basename(filename))
     assert qq is not None and qq.group(2).upper() in chrom_list, (

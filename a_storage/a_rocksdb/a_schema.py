@@ -1,6 +1,7 @@
 import json, random, logging
 from datetime import datetime, timedelta
 
+from utils.log_err import logException
 from codec import createDataCodec
 from .a_io import AIOController
 #========================================
@@ -50,14 +51,19 @@ class ASchema:
         self.mSchemaDescr["total"] = self.mTotal
         self.mCodec.updateWStat()
         self.mIO.updateWStat()
-        self.mStorage.saveSchemaData(self.mIO.getDbName(),
-            self.mName, self.mSchemaDescr)
+        self.mStorage.saveSchemaData(self)
         logging.info("Schema %s kept, total = %d" % (self.mName, self.mTotal))
 
     def close(self):
         self.mIO.flush()
         self.keepSchema()
-        self.careSamples()
+        self.keepSamples()
+        if (self.mWriteMode
+                and not (self.mUpdateMode or self.mStorage.isDummyMode())):
+            self.checkSamples()
+
+    def _addDirectSample(self, key, record):
+        self.mSamples.append([key, record])
 
     def getStorage(self):
         return self.mStorage
@@ -73,6 +79,12 @@ class ASchema:
 
     def getTotal(self):
         return self.mTotal
+
+    def getIO(self):
+        return self.mIO
+
+    def getSchemaDescr(self):
+        return self.mSchemaDescr
 
     def addRequirement(self, rq):
         self.mRequirements.add(rq)
@@ -130,34 +142,72 @@ class ASchema:
                 ret = filtered
         return ret
 
-    def careSamples(self):
+    def keepSamples(self):
         if (not self.mWriteMode or self.mUpdateMode
                 or self.mStorage.isDummyMode()):
             return
-        with self.mStorage.openSchemaSamplesFile(
-                self.mIO.getDbName(), self.mName) as outp:
-            cnt_bad = 0
-            for key, record in self.mSamples:
-                repr0 = json.dumps(record,
+        ready_samples = []
+        with open(self.mStorage.getSchemaFilePath(self, "0.samples"),
+                "w", encoding = "utf-8") as output:
+            for idx, smp_info in enumerate(self.mSamples):
+                key, full_record = smp_info
+                record = self.getIO().normalizeSample(key, full_record)
+                ready_samples.append([key, record])
+                print(json.dumps({
+                    "no": idx + 1,
+                    "key": key}, ensure_ascii = False), file = output)
+                print(json.dumps(record, ensure_ascii = False), file = output)
+        with open(self.mStorage.getSchemaFilePath(self, "1.samples"),
+                "w", encoding = "utf-8") as output:
+            for idx, smp_info in enumerate(ready_samples):
+                key, record0 = smp_info
+                record1 = self.mIO.transformRecord(key, record0, self.mCodec)
+                presentations = [json.dumps(rec,
                     sort_keys = True, ensure_ascii = False)
-                rec1 = self.mIO.transformRecord(key, record, self.mCodec)
-                repr1 = json.dumps(rec1,
-                    sort_keys = True, ensure_ascii = False)
-                rec2 = self.getRecord(key)
-                repr2 = json.dumps(rec2,
-                   sort_keys = True, ensure_ascii = False)
-                if repr1 != repr2:
-                    cnt_bad += 1
-                report = {"_rep": True, "key": key, "ok": repr1 == repr2}
-                print(json.dumps(report, sort_keys = True,
-                    ensure_ascii = False), file = outp)
-                if repr0 != repr1:
-                    print(repr0, file = outp)
-                print(repr1, file = outp)
-                if repr2 != repr1:
-                    print(repr2, file = outp)
-        if cnt_bad == 0:
-            logging.info("Samples check for %s: OK" % self.mName)
+                    for rec in (record0, record1)]
+                print(json.dumps({
+                    "no": idx + 1,
+                    "same-orig": presentations[0] == presentations[1],
+                    "key": key}, ensure_ascii = False), file = output)
+                print(presentations[1], file = output)
+
+    def checkSamples(self):
+        if not self.getIO().properAccess():
+            return
+        smp_input = open(self.mStorage.getSchemaFilePath(self, "1.samples"),
+            "r", encoding = "utf-8")
+        cnt_ok, cnt_bad, cnt_fail = 0, 0, 0
+        with open(self.mStorage.getSchemaFilePath(self, "2.samples"),
+                "w", encoding = "utf-8") as output:
+            while True:
+                try:
+                    line_rep = smp_input.readline()
+                    if not line_rep:
+                        break
+                    rep_obj = json.loads(line_rep)
+                    record1 = json.loads(smp_input.readline())
+                    record2 = self.getRecord(tuple(rep_obj["key"]))
+                    presentations = [json.dumps(rec,
+                        sort_keys = True, ensure_ascii = False)
+                        for rec in (record1, record2)]
+                    rep_obj["ok"] = (presentations[0] == presentations[1])
+                    print(json.dumps(rep_obj, sort_keys = True), file = output)
+                    if rep_obj["ok"]:
+                        cnt_ok += 1
+                    else:
+                        cnt_bad += 1
+                        print(presentations[1], file = output)
+                except Exception:
+                    msg_txt = logException("Check samples")
+                    cnt_fail += 1
+                    print(json.dumps({"exception": msg_txt},
+                        ensure_ascii = False), file = output)
+            print(json.dumps({"tp": "result",
+                "ok": cnt_ok, "bad": cnt_bad, "fail": cnt_fail}),
+                file = output)
+        smp_input.close()
+        if cnt_bad + cnt_fail == 0:
+            logging.info("Samples check(%d) for %s: OK" % (cnt_ok, self.mName))
         else:
-            logging.error("BAD! Samples check for %s: %d of %d"
-                % (self.mName, cnt_bad, self.mSmpCount))
+            logging.error("BAD! Samples check for %s: %d of %d (+ %d failures)"
+                % (self.mName, cnt_bad, cnt_bad + cnt_ok, cnt_fail))

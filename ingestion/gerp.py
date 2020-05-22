@@ -56,7 +56,7 @@ def ingestGERP(db_host, db_port, user, password, database,
     print(INSTR_CREATE)
     curs.execute(INSTR_CREATE)
     for chrom_file in extendFileList(file_list):
-        chrom = detectFileChrom(chrom_file)
+        chrom = detectFileChrom(chrom_file, "chr")
         print("Evaluation of", chrom, "in", chrom_file)
         with open(chrom_file, 'r') as header:
             position = 0

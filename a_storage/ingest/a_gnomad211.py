@@ -108,12 +108,12 @@ class ReaderGNOMAD211:
             chrom_loc = "sites.", max_count = -1):
         self.mGenomeFiles = dict()
         for fname in extendFileList(genome_file_list):
-            chrom = detectFileChrom(chrom_loc, fname)
+            chrom = detectFileChrom(fname, chrom_loc)
             assert chrom not in self.mGenomeFiles
             self.mGenomeFiles[chrom] = fname
         self.mExomeFiles = dict()
         for fname in extendFileList(exome_file_list):
-            chrom = detectFileChrom(chrom_loc, fname)
+            chrom = detectFileChrom(fname, chrom_loc)
             assert chrom not in self.mExomeFiles
             self.mExomeFiles[chrom] = fname
         self.mChromSeq = sorted(

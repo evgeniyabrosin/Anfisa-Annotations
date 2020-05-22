@@ -1,10 +1,9 @@
 import sys, logging, gzip
 import cyvcf2 as pyvcf
-from datetime import datetime
 from fastnumbers import fast_real
 
 from .a_util import (JoinedReader, extendFileList, dumpReader,
-    writeDirect, DirectReader, detectFileChrom, reportTime)
+    writeDirect, DirectReader, detectFileChrom, TimeReport)
 #========================================
 # VCF_INFO_NAMES = (
 #    "ALT|SYMBOL|DS_AG|DS_AL|DS_DG|DS_DL|DP_AG|DP_AL|DP_DG|DP_DL".split('|'))
@@ -112,15 +111,15 @@ class InputDataReader:
 #===========================================================
 class ReaderSpliceAI:
     def __init__(self, indel_file_list, snv_file_list,
-            chrom_loc = "spliceai.chr"):
+            chrom_loc = ".chr"):
         self.mIndelFiles = dict()
         for fname in extendFileList(indel_file_list):
-            chrom = detectFileChrom(chrom_loc, fname)
+            chrom = detectFileChrom(fname, chrom_loc)
             assert chrom not in self.mIndelFiles
             self.mIndelFiles[chrom] = fname
         self.mSnvFiles = dict()
         for fname in extendFileList(snv_file_list):
-            chrom = detectFileChrom(chrom_loc, fname)
+            chrom = detectFileChrom(fname, chrom_loc)
             assert chrom not in self.mSnvFiles
             self.mSnvFiles[chrom] = fname
         self.mChromSeq = sorted(
@@ -152,6 +151,9 @@ def reader_SpliceAI(properties, schema_h = None):
         schema_h.getCodecByLabel(
             "spliceai-rec").setSerialization(DB_FIELDS)
 
+    if properties is None:
+        return None
+
     if "direct_file_list" in properties:
         return DirectReader(properties["direct_file_list"])
 
@@ -167,7 +169,6 @@ def splitPreparation(in_long_file, out_dir):
     out_count = None
     used_chroms = set()
     headers = []
-    start_time = datetime.now()
 
     if "indel" in in_long_file:
         mode = "indel"
@@ -176,9 +177,12 @@ def splitPreparation(in_long_file, out_dir):
     else:
         assert False, "Mode (indel/snv) not found"
     file_pattern = out_dir + "/" + mode + ".spliceai.chr%s.vcf.gz"
+    time_rep = TimeReport(mode)
+    last_line_no = 0
 
     with gzip.open(in_long_file, "rt") as inp:
         for line_no, line in enumerate(inp):
+            last_line_no = line_no
             if line.startswith('#'):
                 headers.append(line)
                 continue
@@ -205,11 +209,12 @@ def splitPreparation(in_long_file, out_dir):
                 out_count += 1
             if (line_no % 100000) == 0:
                 pos = line.split('\t')[1]
-                reportTime("At %s:%s:" % (cur_chrom, pos), line_no, start_time)
+                time_rep.portion(line_no, "%s:%s:" % (cur_chrom, pos))
         if output is not None:
             output.close()
             logging.info("Done %s: %d records"
                 % (cur_fname, out_count))
+    time_rep.done(last_line_no + 1)
 
 
 #========================================

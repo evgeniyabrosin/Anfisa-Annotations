@@ -1,20 +1,20 @@
+from ._block_agent import _BlockAgent
 #===============================================
-class BlockerCluster():
+class BlockerCluster(_BlockAgent):
     MAX_POS_COUNT = 50
 
-    def __init__(self, master):
-        self.mIO = master
-        self.mMaxVarCount = self.mIO._getProperty("max-var-count")
+    def __init__(self, master_io):
+        _BlockAgent.__init__(self, master_io)
+        self.mMaxVarCount = self._getProperty("max-var-count")
         self.mCurWriterKey = None
-        self.mIdxColDescr = self.mIO._regColumn("sgidx", conv_bytes = False)
-        self.mMaxPosCount = self.mIO._getProperty(
+        self.mIdxColH = self.getIO()._regColumn("sgidx", conv_bytes = False)
+        self.mAllColSeq = [self.mIdxColH] + self.getIO().getMainColumnSeq()
+        self.mMaxPosCount = self._getProperty(
             "max-loc-count", self.MAX_POS_COUNT)
-        if self.mIO.isWriteMode():
-            stat_info = self.mIO._getProperty("stat")
+        if self.isWriteMode():
+            stat_info = self._getProperty("stat")
             self.mCountBlocks = stat_info.get("cluster-blocks", 0)
             self.mCountVariants = stat_info.get("cluster-variants", 0)
-            self.mWriteColSeq = [
-                self.mIdxColDescr] + self.mIO.getMainColumnSeq()
 
     def _addWriteStat(self, var_count):
         self.mCountBlocks += 1
@@ -28,13 +28,13 @@ class BlockerCluster():
     def getType(self):
         return "cluster"
 
-    def getIO(self):
-        return self.mIO
+    def getAllColumnSeq(self):
+        return self.mAllColSeq
 
     def updateWStat(self):
-        if not self.mIO.isWriteMode():
+        if not self.isWriteMode():
             return
-        stat_info = self.mIO._getProperty("stat")
+        stat_info = self._getProperty("stat")
         stat_info["cluster-blocks"] = self.mCountBlocks
         stat_info["cluster-variants"] = self.mCountVariants
 
@@ -44,7 +44,7 @@ class BlockerCluster():
     def putBlock(self, chrom, pos_seq, main_data_seq, var_count):
         self.getIO()._putColumns((chrom, pos_seq[-1]),
             [pseq2bytes(pos_seq)] + main_data_seq,
-            col_seq = self.mWriteColSeq)
+            col_seq = self.mAllColSeq)
         self._addWriteStat(var_count)
 
     def createWriteBlock(self, encode_env, key, codec):
@@ -57,12 +57,12 @@ class BlockerCluster():
 
     def createReadBlock(self, decode_env_class, key, codec, last_pos = None):
         assert last_pos is None
-        with self.mIO._seekColumn(key, self.mIdxColDescr) as iter_h:
+        with self.getIO()._seekColumn(key, self.mIdxColH) as iter_h:
             key_base, data_base = iter_h.getCurrent()
         pos_seq = None
         if key_base is not None and key_base[0] == key[0]:
             pos_seq = bytes2pseq(key_base[1], data_base)
-            data_seq = self.mIO._getColumns(key_base)
+            data_seq = self.getIO()._getColumns(key_base)
             return _ReadClusterBlock(self, key, pos_seq,
                 decode_env_class(data_seq))
         return _ReadClusterBlock(self, key)

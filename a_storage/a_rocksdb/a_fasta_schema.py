@@ -1,8 +1,8 @@
 import json, random, logging
 
+from utils.log_err import logException
 from .a_io import AIOController
 from codec import getKeyCodec
-
 #========================================
 class AFastaSchema:
     def __init__(self, storage, name, dbname, schema_descr = None):
@@ -20,11 +20,11 @@ class AFastaSchema:
 
         self.mTypes = dict()
         for idx, type_name in enumerate(self.mSchemaDescr["types"]):
-            tp_col_descr = self.mIO._regColumn("fasta", type_name)
+            tp_col_h = self.mIO._regColumn("fasta", type_name)
             tp_conv = getKeyCodec(type_name)
             if len(self.mTotals) <= idx:
                 self.mTotals.append(0)
-            tp_h = _FastaTypeHandler(type_name, tp_col_descr, tp_conv, idx)
+            tp_h = _FastaTypeHandler(type_name, tp_col_h, tp_conv, idx)
             self.mTypes[type_name] = tp_h
             if (self.mWriteMode and not self.mStorage.isDummyMode()):
                 tp_h.initSamples(self.mStorage.getSamplesCount())
@@ -44,8 +44,7 @@ class AFastaSchema:
             return
         self.mSchemaDescr["total"] = self.mTotals
         self.mIO.updateWStat()
-        self.mStorage.saveSchemaData(self.mIO.getDbName(),
-            self.mName, self.mSchemaDescr)
+        self.mStorage.saveSchemaData(self)
         logging.info("Schema %s kept, total = %s"
             % (self.mName, ",".join(map(str, self.mTotals))))
 
@@ -56,7 +55,9 @@ class AFastaSchema:
                 "No data loaded for "
                 + " ".join(sorted(set(self.mTypes.keys()) - self.mTypesSet)))
         self.keepSchema()
-        self.careSamples()
+        self.keepSamples()
+        if self.mWriteMode and not self.mStorage.isDummyMode():
+            self.checkSamples()
 
     def getStorage(self):
         return self.mStorage
@@ -84,6 +85,12 @@ class AFastaSchema:
 
     def getDBKeyType(self):
         return self.mIO.getDBKeyType()
+
+    def getIO(self):
+        return self.mIO
+
+    def getSchemaDescr(self):
+        return self.mSchemaDescr
 
     def loadReader(self, reader):
         hg_type = reader.getName()
@@ -143,38 +150,68 @@ class AFastaSchema:
             ret.append(letters)
         return ''.join(ret)
 
-    def careSamples(self):
+    def keepSamples(self):
         if not self.mWriteMode or self.mStorage.isDummyMode():
             return
-        with self.mStorage.openSchemaSamplesFile(
-                self.mIO.getDbName(), self.mName) as outp:
+        with open(self.mStorage.getSchemaFilePath(self, "1.samples"),
+                "w", encoding = "utf-8") as output:
+            cnt = 0
             for tp_h in self.mTypes.values():
-                cnt_bad = 0
                 for chrom, diap, letters in tp_h.iterSamples():
-                    letters1 = self.getRecord((chrom, diap[0]),
-                        {"type": tp_h.getName()}, diap[1])
-                    if letters != letters1:
-                        cnt_bad += 1
                     print(json.dumps({
-                        "ok": letters != letters1,
+                        "no": cnt + 1,
                         "tp": tp_h.getName(),
                         "chrom": chrom,
                         "diap": diap,
-                        "letters": letters,
-                        "db-letters": letters1}), file = outp)
-                if cnt_bad == 0:
-                    logging.info("Samples check for %s/%s: OK"
-                        % (self.mName, tp_h.getName()))
-                else:
-                    logging.error("BAD! Samples check for %s/%s: %d of %d"
-                        % (self.mName, tp_h.getName(),
-                        cnt_bad, tp_h.getSmpCount()))
+                        "letters": letters}), file = output)
+                    cnt += 1
+
+    def checkSamples(self):
+        smp_input = open(self.mStorage.getSchemaFilePath(self, "1.samples"),
+            "r", encoding = "utf-8")
+
+        cnt_ok, cnt_bad, cnt_fail = 0, 0, 0
+        with open(self.mStorage.getSchemaFilePath(self, "2.samples"),
+                "w", encoding = "utf-8") as output:
+            while True:
+                try:
+                    line_rep = smp_input.readline()
+                    if not line_rep:
+                        break
+                    rep_obj = json.loads(line_rep)
+                    letters1 = self.getRecord(
+                        (rep_obj["chrom"], rep_obj["diap"][0]),
+                        {"type": rep_obj["tp"]}, rep_obj["diap"][1])
+                    if rep_obj["letters"] != letters1:
+                        cnt_bad += 1
+                        rep_obj["ok"] = False
+                        rep_obj["r-letters"] = letters1
+                    else:
+                        cnt_ok += 1
+                        rep_obj["ok"] = True
+                    print(json.dumps(rep_obj, ensure_ascii = False),
+                        file = output)
+                except Exception:
+                    msg_txt = logException("Check samples")
+                    cnt_fail += 1
+                    print(json.dumps({"exception": msg_txt},
+                        ensure_ascii = False), file = output)
+            print(json.dumps({"tp": "result",
+                "ok": cnt_ok, "bad": cnt_bad, "fail": cnt_fail}),
+                file = output)
+        smp_input.close()
+        if cnt_bad + cnt_fail == 0:
+            logging.info("Samples check(%d) for %s: OK" %
+                (cnt_ok, self.mName))
+        else:
+            logging.error("BAD! Samples check for %s: %d of %d (+ %d failures)"
+                % (self.mName, cnt_bad, cnt_bad + cnt_ok, cnt_fail))
 
 #========================================
 class _FastaTypeHandler:
-    def __init__(self, name, tp_col_descr, tp_conv, idx):
+    def __init__(self, name, tp_col_h, tp_conv, idx):
         self.mName = name
-        self.mColDescr = tp_col_descr
+        self.mColH = tp_col_h
         self.mHgConv = tp_conv
         self.mIdx = idx
         self.mSmpCount = None
@@ -193,7 +230,7 @@ class _FastaTypeHandler:
         return self.mHgConv.encode(chrom, pos)
 
     def getColSeq(self):
-        return [self.mColDescr]
+        return [self.mColH]
 
     def initSamples(self, smp_count):
         self.mRH = random.Random(179)

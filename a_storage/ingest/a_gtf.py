@@ -1,9 +1,8 @@
 import sys, os, gzip, logging, json
-from datetime import datetime
 from subprocess import Popen, PIPE
 from io import TextIOWrapper
 
-from .a_util import (reportTime, extendFileList,
+from .a_util import (TimeReport, extendFileList,
     dumpReader, DirectReader, writeDirect)
 #========================================
 def c_float(val):
@@ -60,9 +59,9 @@ def new_record(line, rec_no):
 
 #========================================
 def prepareSorted(reader, in_file):
-    print("Preparation reading of", in_file)
+    logging.info("Preparation reading of %s" % in_file)
+    time_rep = TimeReport("")
     with gzip.open(in_file, 'rt', encoding = "utf-8") as text_inp:
-        start_time = datetime.now()
         for line_no, line in enumerate(text_inp):
             if line.startswith('#'):
                 continue
@@ -73,9 +72,10 @@ def prepareSorted(reader, in_file):
                 reader.startSort()
             reader.putRecord(chrom, record)
             if (line_no % 10000) == 0:
-                reportTime("Preparation for %s" % chrom, line_no, start_time)
+                time_rep.portion(line_no, "chr" + chrom)
     reader.finishSort()
-    reportTime("Done (%s):" % in_file, line_no, start_time)
+    time_rep.done(line_no)
+    logging.info("Done reading of %s" % in_file)
     reader.sRecNo += 1
     yield True
 

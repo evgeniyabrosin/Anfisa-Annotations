@@ -3,14 +3,33 @@ from glob import glob
 from datetime import datetime
 
 #=== timing report ================
-def reportTime(note, total, start_time):
-    dt = datetime.now() - start_time
-    logging.info("%s Records: %d Time: %s; Rate: %.2f"
-        % (note, total, str(dt), total / (dt.seconds + .0001)))
+class TimeReport:
+    def __init__(self, name):
+        self.mName = name
+        self.mStartTime = datetime.now()
+        logging.info("Process %s started at %s"
+            % (self.mName, self.mStartTime))
+
+    def rate(self, total, dt):
+        return total / (dt.seconds + 1.)
+
+    def portion(self, total, at_msg = None):
+        dt = datetime.now() - self.mStartTime
+        note = self.mName
+        if at_msg:
+            note += " at:" + str(at_msg)
+        logging.info("%s Records: %d Time: %s; Rate: %.2f"
+            % (note, total, str(dt), self.rate(total, dt)))
+
+    def done(self, total):
+        end_time = datetime.now()
+        dt = end_time - self.mStartTime
+        logging.info("Process %s done at %s; Records: %d; Rate: %.2f"
+            % (self.mName, end_time, total, self.rate(total, dt)))
 
 #=== chromosome detection ================
-def detectFileChrom(parameter, filename):
-    chrom_patt = re.compile(r"(\b|\W)%s(\w+)(\b|\W)" % parameter, re.I)
+def detectFileChrom(filename, chrom_loc):
+    chrom_patt = re.compile(r"(\b|\W)%s(\w+)(\b|\W)" % chrom_loc, re.I)
     chrom_list = {str(idx) for idx in range(1, 23)} | {"M", "X", "Y"}
     qq = chrom_patt.search(os.path.basename(filename))
     assert qq is not None and qq.group(2).upper() in chrom_list, (
@@ -38,7 +57,7 @@ class JoinedReader:
         self.mDone = False
         self.mMaxCount = max_count
         self.mTotal, self.mCount = 0, 0
-        self.mStartTime = datetime.now()
+        self.mTimeReport = TimeReport(self.mName)
         self.mFixedChrom = None
 
     def iterReaders(self):
@@ -47,7 +66,7 @@ class JoinedReader:
     def close(self):
         for reader in self.mReaders:
             reader.close()
-        reportTime("Done %s" % self.mName, self.mTotal, self.mStartTime)
+        self.mTimeReport.done(self.mTotal)
 
     def isDone(self):
         return self.mDone
@@ -89,8 +108,7 @@ class JoinedReader:
                 % (self.mName, self.mMaxCount))
             self.mDone = True
         if self.mCount % 100000 == 0:
-            reportTime(self.mName + (" at %s:%s:" % min_key),
-                self.mTotal, self.mStartTime)
+            self.mTimeReport.portion(self.mTotal,  "%s:%s:" % min_key)
         return [min_key, res_seq]
 
 #=====================================
@@ -125,7 +143,7 @@ class DirectReader:
 
     def read(self):
         for fname in self.mFNames:
-            start_time = datetime.now()
+            time_rep = TimeReport(fname)
             count = 0
             logging.info("Loading: " + fname)
             with gzip.open(fname, "rt", encoding = "utf-8") as inp:
@@ -133,6 +151,6 @@ class DirectReader:
                     key, rec = json.loads(line)
                     count += 1
                     if count % 100000 == 0:
-                        reportTime("", count, start_time)
+                        time_rep.portion(count)
                     yield [tuple(key), rec]
-            reportTime("Done:" + fname, count, start_time)
+            time_rep.done(count)

@@ -18,6 +18,7 @@ class CodecStr(_CodecData):
 
         opt = self._getProperty("opt", "")
         if opt == "dict":
+            self.getMaster().addRequirement("ext-dict")
             self.mDictList = self._getProperty("dictlist", [])
             self.mDict = {value: idx
                 for idx, value in enumerate(self.mDictList)}

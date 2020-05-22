@@ -1,8 +1,7 @@
 import sys, csv, logging
-from datetime import datetime
 from fastnumbers import fast_real
 
-from .a_util import reportTime, detectFileChrom, extendFileList, dumpReader
+from .a_util import TimeReport, detectFileChrom, extendFileList, dumpReader
 #========================================
 DB_FIELDS = ["GerpN", "GerpRS"]
 def new_record(chrom, pos, lst):
@@ -18,19 +17,19 @@ class ReaderGerp:
 
     def read(self):
         for chrom_file in self.mFiles:
-            chrom = detectFileChrom(self.mChromLoc, chrom_file)
+            chrom = detectFileChrom(chrom_file, self.mChromLoc)
             logging.info("Evaluation of %s in %s"
                 % (chrom, chrom_file))
             with open(chrom_file, 'r') as header:
+                time_rep = TimeReport("chr" + chrom)
                 position = 0
                 reader = csv.reader(header, delimiter = '\t')
-                start_time = datetime.now()
                 for record in reader:
                     position += 1
                     yield new_record(chrom, position, record)
                     if position % 100000 == 0:
-                        reportTime("", position, start_time)
-                reportTime("Done:", position, start_time)
+                        time_rep.portion(position)
+                time_rep.done(position)
 
 #========================================
 def reader_Gerp(properties, schema_h = None):

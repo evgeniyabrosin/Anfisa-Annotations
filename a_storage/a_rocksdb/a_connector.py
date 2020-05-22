@@ -1,6 +1,7 @@
-import os, shutil, logging, json
+import logging, json
 import pyrocksdb as rocksdb
 
+from .deep_comp import DeepCompWriter
 #========================================
 class AConnector:
     def __init__(self, storage, name, write_mode = False):
@@ -15,17 +16,20 @@ class AConnector:
             (rocksdb.DefaultColumnFamilyName, rocksdb.ColumnFamilyOptions()))
         self.mRdOpts = rocksdb.ReadOptions()
         self.mWrOpts = rocksdb.WriteOptions() if self.mWriteMode else None
+        self.mDeepWriter = None
+        self.mDB = None
+        self.mColHandlers = None
         if storage.isDummyMode():
-            self.mDB = None
             logging.info("Attention: DB %s runs in dummy mode" % self.mName)
+        elif storage.isDeepCompMode():
+            assert self.mWriteMode
+            self.mStorage.newDB(self.mName)
+            self.mDeepWriter = DeepCompWriter(self.mFilePath + "/data.bin")
         else:
             self.mDB = rocksdb.DB()
-        self.mColHandlers = None
-        if self.mWriteMode and self.mDB is not None:
-            if os.path.exists(self.mFilePath):
-                shutil.rmtree(self.mFilePath)
-            os.mkdir(self.mFilePath)
-            self.mDB.open(self._dbOptions(), self.mFilePath)
+            if self.mWriteMode:
+                self.mStorage.newDB(self.mName)
+                self.mDB.open(self._dbOptions(), self.mFilePath)
 
     def _incRefCount(self):
         self.mRefCount += 1
@@ -36,6 +40,9 @@ class AConnector:
 
     def getName(self):
         return self.mName
+
+    def properAccess(self):
+        return self.mDB is not None
 
     def _dbOptions(self):
         options = rocksdb.Options()
@@ -77,12 +84,15 @@ class AConnector:
         else:
             _, self.mColHandlers = self.mDB.open_for_readonly(
                 self._dbOptions(), self.mFilePath, self.mColDescriptors)
-        self._reportKeys()
+        # self._reportKeys()
 
     def close(self):
+        if self.mDeepWriter is not None:
+            self.mDeepWriter.close()
+            self.mDeepWriter = None
         if self.mDB is None:
             return
-        self._reportKeys()
+        # self._reportKeys()
         if self.mWriteMode:
             compact_opt = rocksdb.CompactRangeOptions()
             for col_h in self.mColHandlers:
@@ -112,44 +122,49 @@ class AConnector:
             logging.info("Keys for %s/%s: %s"
                 % (self.mName, col_h.get_name(), json.dumps(seq)))
 
-    def putData(self, xkey, col_seq, data_seq):
+    def putData(self, xkey, col_seq, data_seq, use_encode = True):
         assert self.mWriteMode
+        if self.mDeepWriter is not None:
+            self.mDeepWriter.put(xkey, col_seq, [column_h.encode(data)
+                for column_h, data in zip(col_seq, data_seq)])
+            return
         if self.mDB is None:
             return
-        for col_descr, data in zip(col_seq, data_seq):
-            data = col_descr.encode(data)
+        for column_h, data in zip(col_seq, data_seq):
+            if use_encode:
+                data = column_h.encode(data)
             if len(data) > 0:
-                col_h = self.mColHandlers[self.mColIndex[col_descr.getName()]]
+                col_h = self.mColHandlers[self.mColIndex[column_h.getName()]]
                 self.mDB.put(self.mWrOpts, col_h, xkey, data)
 
     def getData(self, xkey, col_seq):
         ret = []
         if self.mDB is None:
             return ret
-        for col_descr in col_seq:
-            col_h = self.mColHandlers[self.mColIndex[col_descr.getName()]]
+        for column_h in col_seq:
+            col_h = self.mColHandlers[self.mColIndex[column_h.getName()]]
             blob = self.mDB.get(self.mRdOpts, col_h, xkey)
             data = blob.data if blob.status.ok() else None
-            ret.append(col_descr.decode(data))
+            ret.append(column_h.decode(data))
         return ret
 
-    def seekData(self, xkey, col_descr):
+    def seekData(self, xkey, column_h):
         if self.mDB is None:
             return _AIterator(None)
-        col_h = self.mColHandlers[self.mColIndex[col_descr.getName()]]
+        col_h = self.mColHandlers[self.mColIndex[column_h.getName()]]
         x_iter = self.mDB.iterator(self.mRdOpts, col_h)
         x_iter.seek(xkey)
-        return _AIterator(x_iter, col_descr)
+        return _AIterator(x_iter, column_h)
 
 #========================================
 class _AIterator:
-    def __init__(self, x_iter, col_descr = None):
+    def __init__(self, x_iter, column_h = None):
         self.mIter = x_iter
-        self.mColDescr = col_descr
+        self.mColH = column_h
 
     def getCurrent(self):
         if self.mIter is not None and self.mIter.valid():
-            return self.mIter.key(), self.mColDescr.decode(self.mIter.value())
+            return self.mIter.key(), self.mColH.decode(self.mIter.value())
         return None, None
 
     def seekNext(self):

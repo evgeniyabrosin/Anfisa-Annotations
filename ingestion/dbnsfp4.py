@@ -317,7 +317,7 @@ def ingestDBNSFP4(db_host, db_port, user, password, database,
     print(INSTR_CREATE_VARIANTS)
     curs.execute(INSTR_CREATE_VARIANTS)
     for chrom_file in extendFileList(file_list):
-        chrom = detectFileChrom('chr', chrom_file)  # change parameter here!
+        chrom = detectFileChrom(chrom_file, "chr")  # change parameter here!
         print("Evaluation of", chrom, "in", chrom_file)
         with gzip.open(chrom_file, 'rt') as text_inp:
             start_time = time.time()

@@ -1,11 +1,12 @@
+from ._block_agent import _BlockAgent
 #===============================================
-class BlockerFrameIndex():
+class BlockerFrameIndex(_BlockAgent):
     def __init__(self, master_io):
-        self.mIO = master_io
-        self.mPosKeys = self.mIO._getProperty("pos-keys")
+        _BlockAgent.__init__(self, master_io)
+        self.mPosKeys = self._getProperty("pos-keys")
         self.mCurWriterKey = None
-        if self.mIO.isWriteMode():
-            stat_info = self.mIO._getProperty("stat")
+        if self.isWriteMode():
+            stat_info = self._getProperty("stat")
             self.mCountBlocks = stat_info.get("frames-blocks", 0)
             self.mMaxBlockLen = stat_info.get("frames-max-block-len", 0)
             self.mCountEmptyBlocks = stat_info.get("frames-blocks-empty", 0)
@@ -14,18 +15,12 @@ class BlockerFrameIndex():
         return "frame-idx"
 
     def updateWStat(self):
-        if not self.mIO.isWriteMode():
+        if not self.isWriteMode():
             return
-        stat_info = self.mIO._getProperty("stat")
+        stat_info = self._getProperty("stat")
         stat_info["frames-blocks"] = self.mCountBlocks
         stat_info["frames-max-block-len"] = self.mMaxBlockLen
         stat_info["frames-blocks-empty"] = self.mCountEmptyBlocks
-
-    def close(self):
-        self.updateWStat()
-
-    def getIO(self):
-        return self.mIO
 
     def getPosKeys(self):
         return self.mPosKeys
@@ -44,18 +39,18 @@ class BlockerFrameIndex():
             decode_env_class, codec, list_data):
         data_seq = [seek_data]
         if len(main_columns) > 0:
-            data_seq += self.mIO._getColumns(
+            data_seq += self.getIO()._getColumns(
                 seek_key, main_columns[1:])
         list_data += decode_env_class(data_seq).get(0, codec)
 
     def createReadBlock(self, decode_env_class, key, codec, last_pos = None):
         if last_pos is not None:
             assert key[1] <= last_pos
-        main_columns = self.mIO.getMainColumnSeq()
+        main_columns = self.getIO().getMainColumnSeq()
         chrom, init_pos = key
 
         seek_pos_start, seek_pos_end, list_data = None, None, []
-        with self.mIO._seekColumn(key, main_columns[0]) as iter_h:
+        with self.getIO()._seekColumn(key, main_columns[0]) as iter_h:
             seek_key, seek_data = iter_h.getCurrent()
             if seek_key is not None and seek_key[0] == chrom:
                 seek_pos_start = seek_pos_end = seek_key[1]
@@ -73,6 +68,15 @@ class BlockerFrameIndex():
                     seek_pos_end = None
         return _ReadFrameBlock(self, chrom, init_pos,
             seek_pos_start, seek_pos_end, list_data)
+
+    def normalizeSample(self, key, record):
+        _, pos = key
+        start_key, end_key = self.mPosKeys
+        ret = []
+        for data in record:
+            if data[start_key] <= pos <= data[end_key]:
+                ret.append(data)
+        return ret
 
 #===============================================
 class _WriteFrameBlock:

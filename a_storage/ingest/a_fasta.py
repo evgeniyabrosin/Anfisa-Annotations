@@ -1,7 +1,6 @@
 import gzip
-from datetime import datetime
 
-from .a_util import reportTime
+from .a_util import TimeReport
 #========================================
 class FastaReader:
     @staticmethod
@@ -102,17 +101,17 @@ class FastaReader:
         return True
 
     def readAll(self, block_size = 0x2000):
-        start_time = datetime.now()
+        time_rep = TimeReport(self.mFName)
         cnt_blocks = 0
         while self.readNext(block_size):
             yield self.mCurChrom, self.mCurDiap, self.mCurLetters
             cnt_blocks += 1
             if cnt_blocks % 10000 == 0:
-                    reportTime("%s At %s:%d"
-                        % (self.mFName, self.mCurChrom, self.mCurDiap[0]),
-                        cnt_blocks, start_time)
-        reportTime("Done %s:" % self.mFName, cnt_blocks, start_time)
+                time_rep.portion(cnt_blocks,
+                    "%s:%d" % (self.mCurChrom, self.mCurDiap[0]))
+        time_rep.done(cnt_blocks)
         self.close()
+
 
 #========================================
 SCHEMA_FASTA = {
@@ -121,7 +120,7 @@ SCHEMA_FASTA = {
     "types": ["hg19", "hg38"],
     "block-size": 0x2000,
     "io": {
-        "block-type": None
+        "block-type": "idle"
     }
 }
 

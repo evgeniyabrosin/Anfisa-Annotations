@@ -3,9 +3,11 @@ import os, shutil, gc, json, logging
 from .a_connector import AConnector
 #========================================
 class AStorage:
-    def __init__(self, config, dummy_mode = False):
+    def __init__(self, config,
+            dummy_mode = False, deep_comp_mode = False):
         self.mConfig = config
         self.mDummyMode = dummy_mode
+        self.mDeepCompMode = deep_comp_mode
         self.mConnectors = dict()
 
     def getDbOptions(self):
@@ -17,7 +19,7 @@ class AStorage:
     def getDBFilePath(self, name):
         return self.mConfig["db-dir"] + '/' + name
 
-    def getSchemaFilePath(self, name):
+    def getSupportFilePath(self, name):
         return self.mConfig["schema-dir"] + '/' + name
 
     def getSamplesCount(self):
@@ -31,6 +33,9 @@ class AStorage:
 
     def isDummyMode(self):
         return self.mDummyMode
+
+    def isDeepCompMode(self):
+        return self.mDeepCompMode
 
     def openConnection(self, name, write_mode):
         if name not in self.mConnectors:
@@ -59,9 +64,18 @@ class AStorage:
         gc.collect()
         logging.info("Storage terminated")
 
+    def newDB(self, db_name):
+        if self.isDummyMode():
+            return
+        self.dropDB(db_name)
+        os.mkdir(self.getDBFilePath(db_name))
+        os.mkdir(self.getSupportFilePath(db_name))
+
     def dropDB(self, db_name):
+        if self.isDummyMode():
+            return False
         done = False
-        schema_fdir = self.getSchemaFilePath(db_name)
+        schema_fdir = self.getSupportFilePath(db_name)
         if os.path.exists(schema_fdir):
             shutil.rmtree(schema_fdir)
             done = True
@@ -74,13 +88,11 @@ class AStorage:
     def preLoadSchemaData(self, db_name, schema_name,
             schema_descr, update_mode = False):
         write_mode = (schema_descr is not None)
-        db_fpath = self.getSchemaFilePath(db_name)
-        if not os.path.exists(db_fpath):
-            assert write_mode and not update_mode, (
-                "No DB for reading (or update):" + db_fpath)
-            os.mkdir(db_fpath)
-
-        schema_fname = db_fpath + "/" + schema_name + ".json"
+        supp_fpath = self.getSupportFilePath(db_name)
+        if not (write_mode and not update_mode):
+            assert os.path.exists(supp_fpath), (
+                "No DB for reading (or update):" + supp_fpath)
+        schema_fname = supp_fpath + "/" + schema_name + ".json"
         if not write_mode or update_mode:
             assert os.path.exists(schema_fname), (
                 "Attempt to read from uninstalled database schema:"
@@ -93,17 +105,15 @@ class AStorage:
         assert schema_descr is not None
         return schema_descr
 
-    def saveSchemaData(self, db_name, schema_name, schema_descr):
-        schema_fname = (self.getSchemaFilePath(db_name)
-            + "/" + schema_name + ".json")
+    def getSchemaFilePath(self, schema_h, file_ext):
+        return (self.getSupportFilePath(schema_h.getIO().getDbName())
+            + ("/%s.%s" % (schema_h.getName(), file_ext)))
+
+    def saveSchemaData(self, schema_h):
+        schema_fname = self.getSchemaFilePath(schema_h, "json")
         with open(schema_fname + ".new", "w", encoding = "utf-8") as outp:
-            outp.write(json.dumps(schema_descr, sort_keys = True,
+            outp.write(json.dumps(schema_h.getSchemaDescr(), sort_keys = True,
                 indent = 4, ensure_ascii = False))
         if os.path.exists(schema_fname):
             os.rename(schema_fname, schema_fname + '~')
         os.rename(schema_fname + ".new", schema_fname)
-
-    def openSchemaSamplesFile(self, db_name, schema_name):
-        smp_fname = (self.getSchemaFilePath(db_name)
-            + "/" + schema_name + ".samples")
-        return open(smp_fname, "w", encoding = "utf-8")

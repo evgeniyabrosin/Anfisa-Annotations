@@ -99,7 +99,7 @@ def ingestGnomAD(db_host, db_port, user, password,
     curs.execute(INSTR_CREATE)
     for vcf_file in extendFileList(file_list):
         #!!!! change parameter here !!!!
-        chrom = detectFileChrom('exomes.sites.', vcf_file)
+        chrom = detectFileChrom(vcf_file, 'exomes.sites.')
         print("Evaluation of", chrom, "in", vcf_file)
         # !!! change compressed to True for .bgz files  !!!
         vcf_reader = pyvcf.Reader(filename = vcf_file, compressed = True)

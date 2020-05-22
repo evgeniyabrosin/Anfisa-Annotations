@@ -1,7 +1,6 @@
 import sys, gzip, logging
-from datetime import datetime
 
-from .a_util import reportTime, detectFileChrom, extendFileList, dumpReader
+from .a_util import TimeReport, detectFileChrom, extendFileList, dumpReader
 #========================================
 VARIANT_TAB = [
     ["REF",                             str],
@@ -198,10 +197,10 @@ class ReaderDBNSFP4:
     def read(self):
         exceptions = 0
         for chrom_file in self.mFiles:
-            chrom = detectFileChrom(self.mChromLoc, chrom_file)
+            chrom = detectFileChrom(chrom_file, self.mChromLoc)
             logging.info("Evaluation of %s in %s" % (chrom, chrom_file))
             with gzip.open(chrom_file, 'rt') as text_inp:
-                start_time = datetime.now()
+                time_rep = TimeReport("chr" + chrom)
                 collector = DataCollector()
                 for line_no, line in enumerate(text_inp):
                     if line_no == 0:
@@ -213,15 +212,14 @@ class ReaderDBNSFP4:
                             yield info
                         if (line_no % 10000) == 0:
                             total_var, _, _ = collector.getCounts()
-                            reportTime("", total_var, start_time)
+                            time_rep.portion(total_var)
                     except IndexError:
                         exceptions += 1
                 info = collector.finishUp()
                 if info:
                     yield info
                 total_var, total_facets, total_tr = collector.getCounts()
-                reportTime("Done %s (variants):"
-                    % chrom, total_var, start_time)
+                time_rep.done(total_var)
                 logging.info("transcripts: %d, facets: %d, exceptions: %d"
                     % (total_tr, total_facets, exceptions))
 

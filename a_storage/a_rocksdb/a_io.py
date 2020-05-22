@@ -37,16 +37,13 @@ class AIOController:
                 self.mStrTotalCount = stat_info.get("str-total-count", 0)
                 self.mStrMaxCount = stat_info.get("str-max-count", 0)
 
-        block_type = self._getProperty("block-type")
-        if block_type is not None:
-            self.mBlockCodec = createBlockCodec(
-                self, self._getProperty("block-type"))
+        self.mBlockCodec = createBlockCodec(
+            self, self._getProperty("block-type"))
+        if self.mBlockCodec.properAccess():
             self.mReadLock = Lock()
             self.mReadCache = []
             self.mReadCacheSize = self._getProperty("cache-size",
                 self.READ_BLOCK_CACHE_SIZE)
-        else:
-            self.mBlockCodec = None
         self._onDuty()
 
     def _getProperty(self, name, default_value = None):
@@ -67,7 +64,7 @@ class AIOController:
             self._updateProperty(col_key, col_attrs)
         if col_name is None:
             col_name = "%s_%s" % (self.mSchema.getName(), col_type)
-        return AIO_ColumnDescr(self.mDbConnector._regColumn(
+        return AIO_ColumnHandler(self.mDbConnector._regColumn(
             col_name, col_attrs), conv_bytes, col_attrs.get("-bz2"))
 
     def _updateProperty(self, key, val):
@@ -99,6 +96,13 @@ class AIOController:
     def getDbName(self):
         return self.mDbName
 
+    def normalizeSample(self, key, record):
+        return self.mBlockCodec.normalizeSample(key, record)
+
+    def properAccess(self):
+        return (self.mBlockCodec.properAccess()
+            and self.mDbConnector.properAccess())
+
     def flush(self):
         if (self.mWriteBlockH is not None):
             self.mWriteBlockH.finishUp()
@@ -118,13 +122,11 @@ class AIOController:
             stat_info["str-max-len"] = self.mStrMaxLen
             stat_info["str-total-count"] = self.mStrTotalCount
             stat_info["str-max-count"] = self.mStrMaxCount
-        if self.mBlockCodec is not None:
-            self.mBlockCodec.updateWStat()
+        self.mBlockCodec.updateWStat()
 
     def close(self):
         self.flush()
-        if self.mBlockCodec is not None:
-            self.mBlockCodec.close()
+        self.mBlockCodec.close()
         self.updateWStat()
         self.mSchema.getStorage().closeConnection(self.mDbConnector)
 
@@ -137,6 +139,9 @@ class AIOController:
     def getMainColumnSeq(self):
         return self.mMainColumnSeq
 
+    def getAllColumnSeq(self):
+        return self.mBlockCodec.getAllColumnSeq()
+
     def getXKey(self, key):
         return self.mKeyCodec.encode(key)
 
@@ -146,15 +151,18 @@ class AIOController:
             col_seq = self.mMainColumnSeq
         self.mDbConnector.putData(xkey, col_seq, data_seq)
 
+    def _directPut(self, xkey, col_seq, data_seq):
+        self.mDbConnector.putData(xkey, col_seq, data_seq, use_encode = False)
+
     def _getColumns(self, key, col_seq = None):
         xkey = self.getXKey(key)
         if col_seq is None:
             col_seq = self.mMainColumnSeq
         return self.mDbConnector.getData(xkey, col_seq)
 
-    def _seekColumn(self, key, col_descr):
+    def _seekColumn(self, key, column_h):
         return AIO_Iterator(self.mDbConnector.seekData(
-            self.getXKey(key), col_descr), self.mKeyCodec)
+            self.getXKey(key), column_h), self.mKeyCodec)
 
     def _putRecord(self, key, record, codec):
         encode_env = AEncodeEnv(self, self.mWithStr)
@@ -171,7 +179,7 @@ class AIOController:
         return decode_env.get(0, codec)
 
     def putRecord(self, key, record, codec):
-        assert self.mSchema.isWriteMode()
+        assert self.mSchema.isWriteMode() and self.mBlockCodec.properAccess()
         if (self.mWriteBlockH is not None
                 and not self.mWriteBlockH.goodToWrite(key)):
             self.mWriteBlockH.finishUp()
@@ -182,6 +190,7 @@ class AIOController:
         self.mWriteBlockH.addRecord(key, record, codec)
 
     def getRecord(self, key, codec, last_pos = None):
+        assert self.mBlockCodec.properAccess()
         read_block_h = None
         with self.mReadLock:
             for idx, rblock_h in enumerate(self.mReadCache):
@@ -207,7 +216,7 @@ class AIOController:
         return decode_env.get(0, codec)
 
 #========================================
-class AIO_ColumnDescr:
+class AIO_ColumnHandler:
     def __init__(self, name, conv_bytes, use_bzip):
         self.mName = name
         self.mConvBytes = conv_bytes
