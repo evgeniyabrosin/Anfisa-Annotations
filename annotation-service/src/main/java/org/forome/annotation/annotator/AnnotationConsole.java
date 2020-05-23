@@ -29,7 +29,7 @@ import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.http.GnomadConnectorHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
-import org.forome.annotation.data.gtex.http.GTEXConnectorHttp;
+import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.http.GTFConnectorHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
@@ -175,8 +175,8 @@ public class AnnotationConsole {
 			gtfConnector = new GTFConnectorHttp();
 //			gtfConnector = new GTFConnectorMysql(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, null, arguments));
 
-			gtexConnector = new GTEXConnectorHttp();
-//			gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.gtexConfigConnector);
+//			gtexConnector = new GTEXConnectorHttp();
+			gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
 			pharmGKBConnector = new PharmGKBConnectorHttp();
 //			pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);

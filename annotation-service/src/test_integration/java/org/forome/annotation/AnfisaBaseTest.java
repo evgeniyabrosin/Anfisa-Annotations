@@ -97,7 +97,8 @@ public class AnfisaBaseTest {
 			Assert.fail();
 		});
 		refConnector = new RefConnector(databaseConnectService, serviceConfig.refConfigConnector);
-		gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.gtexConfigConnector);
+
+		gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
 		pharmGKBConnector = new PharmGKBConnectorHttp();
 //		pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);

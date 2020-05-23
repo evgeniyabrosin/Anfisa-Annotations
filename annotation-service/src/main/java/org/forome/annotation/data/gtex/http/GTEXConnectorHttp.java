@@ -27,6 +27,10 @@ import java.util.List;
 
 public class GTEXConnectorHttp implements GTEXConnector {
 
+	public GTEXConnectorHttp() {
+		throw new RuntimeException();
+	}
+
 	@Override
 	public List<SourceMetadata> getSourceMetadata() {
 		return Collections.emptyList();
