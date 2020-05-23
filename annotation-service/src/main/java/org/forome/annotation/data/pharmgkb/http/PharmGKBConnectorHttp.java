@@ -27,6 +27,10 @@ import java.util.List;
 
 public class PharmGKBConnectorHttp implements PharmGKBConnector {
 
+	public PharmGKBConnectorHttp() {
+		throw new RuntimeException();
+	}
+
 	@Override
 	public List<SourceMetadata> getSourceMetadata() {
 		return Collections.emptyList();

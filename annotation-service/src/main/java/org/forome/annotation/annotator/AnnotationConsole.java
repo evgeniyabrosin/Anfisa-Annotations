@@ -36,7 +36,7 @@ import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
-import org.forome.annotation.data.pharmgkb.http.PharmGKBConnectorHttp;
+import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
 import org.forome.annotation.processing.Processing;
@@ -178,8 +178,8 @@ public class AnnotationConsole {
 //			gtexConnector = new GTEXConnectorHttp();
 			gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-			pharmGKBConnector = new PharmGKBConnectorHttp();
-//			pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
+//			pharmGKBConnector = new PharmGKBConnectorHttp();
+			pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
 			ensemblVepService = new EnsemblVepExternalService((t, e) -> fail(e, null, arguments));
 			anfisaConnector = new AnfisaConnector(
