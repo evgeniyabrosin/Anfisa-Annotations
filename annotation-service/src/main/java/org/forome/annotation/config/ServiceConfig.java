@@ -40,13 +40,14 @@ public class ServiceConfig {
 
 	public final EnsemblVepConfig ensemblVepConfigConnector;
 
+	public final ForomeConfigConnector foromeConfigConnector;
+
 	public final GnomadConfigConnector gnomadConfigConnector;
 	public final ClinVarConfigConnector clinVarConfigConnector;
 	public final HgmdConfigConnector hgmdConfigConnector;
 	public final GTFConfigConnector gtfConfigConnector;
 	public final SpliceAIConfigConnector spliceAIConfigConnector;
 	public final RefConfigConnector refConfigConnector;
-	public final GTEXConfigConnector gtexConfigConnector;
 	public final PharmGKBConfigConnector pharmGKBConfigConnector;
 
 	public final NotificationSlackConfig notificationSlackConfig;
@@ -71,13 +72,13 @@ public class ServiceConfig {
 		ensemblVepConfigConnector = new EnsemblVepConfig((JSONObject) configFileJson.get("ensembl-vep"));
 
 		JSONObject jConnectors = (JSONObject) configFileJson.get("connectors");
+		foromeConfigConnector = new ForomeConfigConnector((JSONObject) jConnectors.get("forome"));
 		gnomadConfigConnector = new GnomadConfigConnector((JSONObject) jConnectors.get("gnomad"));
 		clinVarConfigConnector = new ClinVarConfigConnector((JSONObject) jConnectors.get("clinvar"));
 		hgmdConfigConnector = new HgmdConfigConnector((JSONObject) jConnectors.get("hgmd"));
 		gtfConfigConnector = new GTFConfigConnector((JSONObject) jConnectors.get("gtf"));
 		spliceAIConfigConnector = new SpliceAIConfigConnector((JSONObject) jConnectors.get("spliceai"));
 		refConfigConnector = new RefConfigConnector((JSONObject) jConnectors.get("ref"));
-		gtexConfigConnector = new GTEXConfigConnector((JSONObject) jConnectors.get("gtex"));
 		pharmGKBConfigConnector = new PharmGKBConfigConnector((JSONObject) jConnectors.get("pharmgkb"));
 
 		JSONObject jNotifications = (JSONObject) configFileJson.get("notification");

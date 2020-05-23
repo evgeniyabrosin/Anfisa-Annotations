@@ -20,7 +20,7 @@ package org.forome.annotation.data.gtex.mysql;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.forome.annotation.config.connector.GTEXConfigConnector;
+import org.forome.annotation.config.connector.ForomeConfigConnector;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.struct.Tissue;
@@ -45,7 +45,7 @@ public class GTEXConnectorMysql implements GTEXConnector, AutoCloseable {
 
 	public GTEXConnectorMysql(
 			DatabaseConnectService databaseConnectService,
-			GTEXConfigConnector gtexConfigConnector
+			ForomeConfigConnector gtexConfigConnector
 	) throws Exception {
 		this.databaseConnector = new DatabaseConnector(databaseConnectService, gtexConfigConnector);
 
@@ -58,7 +58,8 @@ public class GTEXConnectorMysql implements GTEXConnector, AutoCloseable {
 
 	@Override
 	public List<SourceMetadata> getSourceMetadata(){
-		return databaseConnector.getSourceMetadata();
+		return Collections.emptyList();
+//		return databaseConnector.getSourceMetadata();
 	}
 
 	@Override
@@ -77,7 +78,7 @@ public class GTEXConnectorMysql implements GTEXConnector, AutoCloseable {
 
 	private List<Tissue> loadTissues(String gene) {
 		String sql = String.format(
-				"select TissueNo, Expression, RelExp from %s.GENE2TISSUE where GeneName = (select GeneName from %s.GENE where Description='%s')",
+				"select TissueNo, Expression, RelExp from %s.GTexGENE2TISSUE where GeneName = (select GeneName from %s.GTexGENE where Description='%s')",
 				databaseConnector.getDatabase(),
 				databaseConnector.getDatabase(),
 				gene
@@ -106,7 +107,7 @@ public class GTEXConnectorMysql implements GTEXConnector, AutoCloseable {
 
 	private static Map<Integer, String> buildTissueTypes(DatabaseConnector databaseConnector) {
 		String sql = String.format(
-				"SELECT TissueNo, Name FROM %s.TISSUE", databaseConnector.getDatabase()
+				"SELECT TissueNo, Name FROM %s.GTexTISSUE", databaseConnector.getDatabase()
 		);
 		Map<Integer, String> tissueTypes = new HashMap<>();
 		try (Connection connection = databaseConnector.createConnection()) {
