@@ -48,7 +48,6 @@ public class ServiceConfig {
 	public final GTFConfigConnector gtfConfigConnector;
 	public final SpliceAIConfigConnector spliceAIConfigConnector;
 	public final RefConfigConnector refConfigConnector;
-	public final PharmGKBConfigConnector pharmGKBConfigConnector;
 
 	public final NotificationSlackConfig notificationSlackConfig;
 
@@ -79,7 +78,6 @@ public class ServiceConfig {
 		gtfConfigConnector = new GTFConfigConnector((JSONObject) jConnectors.get("gtf"));
 		spliceAIConfigConnector = new SpliceAIConfigConnector((JSONObject) jConnectors.get("spliceai"));
 		refConfigConnector = new RefConfigConnector((JSONObject) jConnectors.get("ref"));
-		pharmGKBConfigConnector = new PharmGKBConfigConnector((JSONObject) jConnectors.get("pharmgkb"));
 
 		JSONObject jNotifications = (JSONObject) configFileJson.get("notification");
 		if (jNotifications != null) {

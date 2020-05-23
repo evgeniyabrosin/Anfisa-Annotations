@@ -18,7 +18,7 @@
 
 package org.forome.annotation.data.pharmgkb.mysql;
 
-import org.forome.annotation.config.connector.PharmGKBConfigConnector;
+import org.forome.annotation.config.connector.ForomeConfigConnector;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.anfisa.struct.AnfisaResultView;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
@@ -31,6 +31,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PharmGKBConnectorMysql implements PharmGKBConnector, AutoCloseable {
@@ -39,20 +40,21 @@ public class PharmGKBConnectorMysql implements PharmGKBConnector, AutoCloseable 
 
 	public PharmGKBConnectorMysql(
 			DatabaseConnectService databaseConnectService,
-			PharmGKBConfigConnector pharmGKBConfigConnector
+			ForomeConfigConnector foromeConfigConnector
 	) throws Exception {
-		this.databaseConnector = new DatabaseConnector(databaseConnectService, pharmGKBConfigConnector);
+		this.databaseConnector = new DatabaseConnector(databaseConnectService, foromeConfigConnector);
 	}
 
 	@Override
 	public List<SourceMetadata> getSourceMetadata(){
-		return databaseConnector.getSourceMetadata();
+		return Collections.emptyList();
+//		return databaseConnector.getSourceMetadata();
 	}
 
 	@Override
 	public List<AnfisaResultView.Pharmacogenomics.Item> getNotes(String variantId) {
 		String sql = String.format(
-				"select AssocKind, Note from %s.NOTES where Variant = '%s'",
+				"select AssocKind, Note from %s.PharmNOTES where Variant = '%s'",
 				databaseConnector.getDatabase(),
 				variantId
 		);
@@ -79,7 +81,7 @@ public class PharmGKBConnectorMysql implements PharmGKBConnector, AutoCloseable 
 	@Override
 	public List<AnfisaResultView.Pharmacogenomics.Item> getPmids(String variantId) {
 		String sql = String.format(
-				"select AssocKind, PMID from %s.PMIDS where Variant = '%s'",
+				"select AssocKind, PMID from %s.PharmPMIDS where Variant = '%s'",
 				databaseConnector.getDatabase(),
 				variantId
 		);
@@ -106,7 +108,7 @@ public class PharmGKBConnectorMysql implements PharmGKBConnector, AutoCloseable 
 	@Override
 	public List<AnfisaResultView.Pharmacogenomics.Item> getDiseases(String variantId) {
 		String sql = String.format(
-				"select AssocKind, DisTitle from %s.DISEASES where Variant = '%s'",
+				"select AssocKind, DisTitle from %s.PharmDISEASES where Variant = '%s'",
 				databaseConnector.getDatabase(),
 				variantId
 		);
@@ -133,7 +135,7 @@ public class PharmGKBConnectorMysql implements PharmGKBConnector, AutoCloseable 
 	@Override
 	public List<AnfisaResultView.Pharmacogenomics.Item> getChemicals(String variantId) {
 		String sql = String.format(
-				"select AssocKind, ChTitle from %s.CHEMICALS where Variant = '%s'",
+				"select AssocKind, ChTitle from %s.PharmCHEMICALS where Variant = '%s'",
 				databaseConnector.getDatabase(),
 				variantId
 		);
