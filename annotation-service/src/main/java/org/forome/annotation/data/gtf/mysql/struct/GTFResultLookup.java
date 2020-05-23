@@ -16,7 +16,7 @@
  limitations under the License.
 */
 
-package org.forome.annotation.data.gtf.struct;
+package org.forome.annotation.data.gtf.mysql.struct;
 
 public class GTFResultLookup {
 

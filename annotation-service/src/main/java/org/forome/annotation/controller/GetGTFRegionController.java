@@ -26,7 +26,7 @@ import org.forome.annotation.Service;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
 import org.forome.annotation.data.gtf.GTFConnector;
-import org.forome.annotation.data.gtf.struct.GTFRegion;
+import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.utils.ExecutorServiceUtils;

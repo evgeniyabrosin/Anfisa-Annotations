@@ -30,6 +30,7 @@ import org.forome.annotation.data.gnomad.http.GnomadConnectorHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.http.GTEXConnectorHttp;
 import org.forome.annotation.data.gtf.GTFConnector;
+import org.forome.annotation.data.gtf.http.GTFConnectorHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
@@ -148,7 +149,9 @@ public class Service {
 //		this.clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 
 		this.liftoverConnector = new LiftoverConnector();
-		this.gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
+
+		this.gtfConnector = new GTFConnectorHttp();
+//		this.gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
 
 		this.gtexConnector = new GTEXConnectorHttp();
 //		this.gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.gtexConfigConnector);

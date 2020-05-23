@@ -16,19 +16,22 @@
  limitations under the License.
 */
 
-package org.forome.annotation.data.gtf.struct;
+package org.forome.annotation.data.gtf.mysql.struct;
 
-public class GTFTranscriptRow {
+public class GTFTranscriptRowExternal extends GTFTranscriptRow {
 
-    public final String gene;
-    public final int start;
-    public final int end;
-    public final String feature;
+    public final String transcript;
 
-    public GTFTranscriptRow(String gene, int start, int end, String feature) {
-        this.gene = gene;
-        this.start = start;
-        this.end = end;
-        this.feature = feature;
+    public final String approved;
+
+    public GTFTranscriptRowExternal(
+            String transcript, String gene, String approved,
+            int start, int end,
+            String feature
+    ) {
+        super(gene, start, end, feature);
+
+        this.transcript = transcript;
+        this.approved = approved;
     }
 }

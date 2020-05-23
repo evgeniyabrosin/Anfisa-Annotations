@@ -29,6 +29,7 @@ import org.forome.annotation.data.gnomad.mysql.GnomadConnectorImpl;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.http.GTEXConnectorHttp;
 import org.forome.annotation.data.gtf.GTFConnector;
+import org.forome.annotation.data.gtf.http.GTFConnectorHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
@@ -73,7 +74,9 @@ public class VCFMain {
 //		ClinvarConnector clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 
 		LiftoverConnector liftoverConnector = new LiftoverConnector();
-		GTFConnector gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
+
+		GTFConnector gtfConnector = new GTFConnectorHttp();
+//		GTFConnector gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
 
 		GTEXConnector gtexConnector = new GTEXConnectorHttp();
 //		GTEXConnector gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.gtexConfigConnector);

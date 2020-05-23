@@ -27,6 +27,7 @@ import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.mysql.GnomadConnectorImpl;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
+import org.forome.annotation.data.gtf.mysql.GTFConnectorMysql;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
@@ -91,7 +92,7 @@ public class AnfisaBaseTest {
 		//clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 
 		liftoverConnector = new LiftoverConnector();
-		gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
+		gtfConnector = new GTFConnectorMysql(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});

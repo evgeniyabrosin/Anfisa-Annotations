@@ -16,28 +16,48 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gtf;
+package org.forome.annotation.data.gtf.http;
 
+import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResult;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResultLookup;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public interface GTFConnector extends AutoCloseable {
+public class GTFConnectorHttp implements GTFConnector {
 
-	List<GTFTranscriptRow> getTranscriptRows(String transcript);
 
-	CompletableFuture<GTFRegion> getRegion(String transcript, long position);
+	@Override
+	public List<GTFTranscriptRow> getTranscriptRows(String transcript) {
+		return Collections.emptyList();
+	}
 
-	Object[] lookup(long pos, String transcript);
+	@Override
+	public CompletableFuture<GTFRegion> getRegion(String transcript, long position) {
+		return CompletableFuture.completedFuture(null);
+	}
 
-	CompletableFuture<List<GTFResultLookup>> getRegionByChromosomeAndPositions(String chromosome, long[] positions);
+	@Override
+	public Object[] lookup(long pos, String transcript) {
+		return null;
+	}
 
-	CompletableFuture<GTFResult> request(String chromosome, long position);
+	@Override
+	public CompletableFuture<List<GTFResultLookup>> getRegionByChromosomeAndPositions(String chromosome, long[] positions) {
+		return CompletableFuture.completedFuture(Collections.emptyList());
+	}
 
-	void close();
+	@Override
+	public CompletableFuture<GTFResult> request(String chromosome, long position) {
+		return CompletableFuture.completedFuture(new GTFResult(null));
+	}
 
+	@Override
+	public void close() {
+
+	}
 }

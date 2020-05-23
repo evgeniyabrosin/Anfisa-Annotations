@@ -31,6 +31,7 @@ import org.forome.annotation.data.gnomad.http.GnomadConnectorHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.http.GTEXConnectorHttp;
 import org.forome.annotation.data.gtf.GTFConnector;
+import org.forome.annotation.data.gtf.http.GTFConnectorHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
@@ -170,7 +171,9 @@ public class AnnotationConsole {
 //			clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
 
 			liftoverConnector = new LiftoverConnector();
-			gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, null, arguments));
+
+			gtfConnector = new GTFConnectorHttp();
+//			gtfConnector = new GTFConnectorMysql(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, null, arguments));
 
 			gtexConnector = new GTEXConnectorHttp();
 //			gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.gtexConfigConnector);
