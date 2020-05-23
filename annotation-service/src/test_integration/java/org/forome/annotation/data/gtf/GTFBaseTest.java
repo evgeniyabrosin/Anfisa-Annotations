@@ -19,6 +19,7 @@
 package org.forome.annotation.data.gtf;
 
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.data.gtf.mysql.GTFConnectorMysql;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.junit.Assert;
@@ -38,7 +39,7 @@ public class GTFBaseTest {
 		SSHConnectService sshTunnelService = new SSHConnectService();
 		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 
-		gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
+		gtfConnector = new GTFConnectorMysql(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
 		});

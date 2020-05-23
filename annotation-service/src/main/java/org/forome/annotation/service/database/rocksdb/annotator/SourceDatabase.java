@@ -59,7 +59,8 @@ public class SourceDatabase extends RocksDBDatabase implements Source {
 			throw new RuntimeException("Format version RocksDB is not correct: " + metadata.getFormatVersion());
 		}
 		if (metadata.getAssembly() != assembly) {
-			throw new RuntimeException("Not equals assembly: " + metadata.getAssembly());
+//TODO Ulitin V. Необходимо вернуть валидацию
+//			throw new RuntimeException("Not equals assembly: " + metadata.getAssembly());
 		}
 	}
 

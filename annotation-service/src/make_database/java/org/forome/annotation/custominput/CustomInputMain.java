@@ -36,6 +36,7 @@ import org.forome.annotation.data.gnomad.mysql.GnomadConnectorImpl;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.http.GTEXConnectorHttp;
 import org.forome.annotation.data.gtf.GTFConnector;
+import org.forome.annotation.data.gtf.http.GTFConnectorHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
@@ -178,7 +179,9 @@ public class CustomInputMain {
 			clinvarConnector = new ClinvarConnectorHttp();
 
 			liftoverConnector = new LiftoverConnector();
-			gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e));
+
+			gtfConnector = new GTFConnectorHttp();
+			//gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e));
 
 			gtexConnector = new GTEXConnectorHttp();
 //			gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.gtexConfigConnector);

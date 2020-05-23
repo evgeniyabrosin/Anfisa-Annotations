@@ -16,13 +16,20 @@
  limitations under the License.
 */
 
-package org.forome.annotation.data.gtf.struct;
+package org.forome.annotation.data.gtf.mysql.struct;
 
-public class GTFResult {
+public class GTFRegion {
 
-	public final String symbol;
+    public static GTFRegion UPSTREAM = new GTFRegion("upstream", null);
 
-	public GTFResult(String symbol) {
-		this.symbol = symbol;
-	}
+    public static GTFRegion DOWNSTREAM = new GTFRegion("downstream", null);
+
+    public final String region;
+    public final Integer indexRegion;
+
+    public GTFRegion(String region, Integer indexRegion) {
+        this.region = region;
+        this.indexRegion = indexRegion;
+    }
 }
+

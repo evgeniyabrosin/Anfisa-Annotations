@@ -18,8 +18,8 @@
 
 package org.forome.annotation.data.gtf;
 
-import org.forome.annotation.data.gtf.struct.GTFRegion;
-import org.forome.annotation.data.gtf.struct.GTFResultLookup;
+import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
+import org.forome.annotation.data.gtf.mysql.struct.GTFResultLookup;
 import org.junit.Assert;
 import org.junit.Test;
 
