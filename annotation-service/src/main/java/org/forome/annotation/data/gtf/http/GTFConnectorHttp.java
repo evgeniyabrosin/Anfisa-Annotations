@@ -28,6 +28,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+
+/**
+ *curl "localhost:8290/get?array=gtf&loc=12:885081-985081&feature=exon"
+ */
 public class GTFConnectorHttp implements GTFConnector {
 
 

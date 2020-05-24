@@ -23,19 +23,19 @@ import org.forome.annotation.config.Config;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
-import org.forome.annotation.data.clinvar.http.ClinvarConnectorHttp;
+import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.http.GnomadConnectorHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
-import org.forome.annotation.data.gtex.http.GTEXConnectorHttp;
+import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.http.GTFConnectorHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
-import org.forome.annotation.data.pharmgkb.http.PharmGKBConnectorHttp;
+import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
 import org.forome.annotation.database.DatabaseService;
@@ -145,19 +145,19 @@ public class Service {
 		this.hgmdConnector = new HgmdConnectorHttp();
 //		this.hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 
-		this.clinvarConnector = new ClinvarConnectorHttp();
-//		this.clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
-
 		this.liftoverConnector = new LiftoverConnector();
+
+//		this.clinvarConnector = new ClinvarConnectorHttp();
+		this.clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
 		this.gtfConnector = new GTFConnectorHttp();
 //		this.gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
 
-		this.gtexConnector = new GTEXConnectorHttp();
-//		this.gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.gtexConfigConnector);
+//		this.gtexConnector = new GTEXConnectorHttp();
+		this.gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-		this.pharmGKBConnector = new PharmGKBConnectorHttp();
-//		this.pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
+//		this.pharmGKBConnector = new PharmGKBConnectorHttp();
+		this.pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
 		this.ensemblVepService = new EnsemblVepExternalService(uncaughtExceptionHandler);
 //        this.ensemblVepService = new EnsemblVepInlineService(
