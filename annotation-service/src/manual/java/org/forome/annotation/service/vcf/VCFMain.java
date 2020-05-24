@@ -22,19 +22,19 @@ import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
-import org.forome.annotation.data.clinvar.http.ClinvarConnectorHttp;
+import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.mysql.GnomadConnectorImpl;
 import org.forome.annotation.data.gtex.GTEXConnector;
-import org.forome.annotation.data.gtex.http.GTEXConnectorHttp;
+import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.http.GTFConnectorHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
-import org.forome.annotation.data.pharmgkb.http.PharmGKBConnectorHttp;
+import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
 import org.forome.annotation.iterator.vcf.VCFFileIterator;
@@ -70,19 +70,19 @@ public class VCFMain {
 		HgmdConnector hgmdConnector = new HgmdConnectorHttp();
 //		HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 
-		ClinvarConnector clinvarConnector = new ClinvarConnectorHttp();
-//		ClinvarConnector clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
-
 		LiftoverConnector liftoverConnector = new LiftoverConnector();
+
+//		ClinvarConnector clinvarConnector = new ClinvarConnectorHttp();
+		ClinvarConnector clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
 		GTFConnector gtfConnector = new GTFConnectorHttp();
 //		GTFConnector gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
 
-		GTEXConnector gtexConnector = new GTEXConnectorHttp();
-//		GTEXConnector gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.gtexConfigConnector);
+//		GTEXConnector gtexConnector = new GTEXConnectorHttp();
+		GTEXConnector gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-		PharmGKBConnector pharmGKBConnector = new PharmGKBConnectorHttp();
-//		PharmGKBConnector pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
+//		PharmGKBConnector pharmGKBConnector = new PharmGKBConnectorHttp();
+		PharmGKBConnector pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
 		EnsemblVepService ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
 		AnfisaConnector anfisaConnector = new AnfisaConnector(

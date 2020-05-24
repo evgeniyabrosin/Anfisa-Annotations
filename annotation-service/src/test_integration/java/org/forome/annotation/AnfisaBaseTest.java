@@ -21,7 +21,7 @@ package org.forome.annotation;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
-import org.forome.annotation.data.clinvar.http.ClinvarConnectorHttp;
+import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.mysql.GnomadConnectorImpl;
@@ -32,7 +32,7 @@ import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
-import org.forome.annotation.data.pharmgkb.http.PharmGKBConnectorHttp;
+import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.ref.RefConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
@@ -88,10 +88,12 @@ public class AnfisaBaseTest {
 		hgmdConnector = new HgmdConnectorHttp();
 		//hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 
-		clinvarConnector = new ClinvarConnectorHttp();
-		//clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
-
 		liftoverConnector = new LiftoverConnector();
+
+//		clinvarConnector = new ClinvarConnectorHttp();
+		clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
+
+
 		gtfConnector = new GTFConnectorMysql(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
 			log.error("Fail", e);
 			Assert.fail();
@@ -100,8 +102,8 @@ public class AnfisaBaseTest {
 
 		gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-		pharmGKBConnector = new PharmGKBConnectorHttp();
-//		pharmGKBConnector = new PharmGKBConnector(databaseConnectService, serviceConfig.pharmGKBConfigConnector);
+//		pharmGKBConnector = new PharmGKBConnectorHttp();
+		pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
 		ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector, refConnector);
 		anfisaConnector = new AnfisaConnector(
