@@ -24,7 +24,7 @@ if __name__ == '__main__':
         help = "AStrorage configuration file",
         default = "astorage.cfg")
     parser.add_argument("--metavar", action = "append", nargs = 2,
-        help='Meta variables for configuration interpretation')
+        help = "Meta variables for configuration interpretation")
     parser.add_argument("-d", "--dbname", help = "db name, "
         "by default equals to mode name")
     parser.add_argument("--update",

@@ -304,7 +304,8 @@ class AEncodeEnv:
 #========================================
 class ADecodeEnv:
     def __init__(self, data_seq):
-        self.mObjSeq = data_seq[0].split('\0')
+        self.mObjSeq = (data_seq[0].split('\0')
+            if data_seq is not None else [])
         if len(data_seq) > 1 and data_seq[1] is not None:
             self.mStrSeq = data_seq[1].split('\0')
         else:

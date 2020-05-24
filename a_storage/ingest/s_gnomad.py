@@ -28,7 +28,7 @@ SCHEMA_GNOMAD_2_1 = {
     "key": "hg19",
     "io": {
         "block-type": "cluster",
-        "max-var-count": 300
+        "max-var-count": 500
     },
     "filter-list": {"ref": "REF", "alt": "ALT"},
     "top": {

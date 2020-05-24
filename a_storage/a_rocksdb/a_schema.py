@@ -171,41 +171,47 @@ class ASchema:
                     "key": key}, ensure_ascii = False), file = output)
                 print(presentations[1], file = output)
 
-    def checkSamples(self):
+    def checkSamples(self, output_stream = None):
         if not self.getIO().properAccess():
             return
         smp_input = open(self.mStorage.getSchemaFilePath(self, "1.samples"),
             "r", encoding = "utf-8")
         cnt_ok, cnt_bad, cnt_fail = 0, 0, 0
-        with open(self.mStorage.getSchemaFilePath(self, "2.samples"),
-                "w", encoding = "utf-8") as output:
-            while True:
-                try:
-                    line_rep = smp_input.readline()
-                    if not line_rep:
-                        break
-                    rep_obj = json.loads(line_rep)
-                    record1 = json.loads(smp_input.readline())
-                    record2 = self.getRecord(tuple(rep_obj["key"]))
-                    presentations = [json.dumps(rec,
-                        sort_keys = True, ensure_ascii = False)
-                        for rec in (record1, record2)]
-                    rep_obj["ok"] = (presentations[0] == presentations[1])
-                    print(json.dumps(rep_obj, sort_keys = True), file = output)
-                    if rep_obj["ok"]:
-                        cnt_ok += 1
-                    else:
-                        cnt_bad += 1
-                        print(presentations[1], file = output)
-                except Exception:
-                    msg_txt = logException("Check samples")
-                    cnt_fail += 1
-                    print(json.dumps({"exception": msg_txt},
-                        ensure_ascii = False), file = output)
-            print(json.dumps({"tp": "result",
-                "ok": cnt_ok, "bad": cnt_bad, "fail": cnt_fail}),
-                file = output)
+        if output_stream is None:
+            output = open(self.mStorage.getSchemaFilePath(self, "2.samples"),
+                "w", encoding = "utf-8")
+        else:
+            output = output_stream
+        while True:
+            try:
+                line_rep = smp_input.readline()
+                if not line_rep:
+                    break
+                rep_obj = json.loads(line_rep)
+                record1 = json.loads(smp_input.readline())
+                record2 = self.getRecord(tuple(rep_obj["key"]))
+                presentations = [json.dumps(rec,
+                    sort_keys = True, ensure_ascii = False)
+                    for rec in (record1, record2)]
+                rep_obj["ok"] = (presentations[0] == presentations[1])
+                print(json.dumps(rep_obj, sort_keys = True), file = output)
+                if rep_obj["ok"]:
+                    cnt_ok += 1
+                else:
+                    cnt_bad += 1
+                    print(presentations[1], file = output)
+            except Exception:
+                msg_txt = logException("Check samples")
+                cnt_fail += 1
+                print(json.dumps({"exception": msg_txt},
+                    ensure_ascii = False), file = output)
+        print(json.dumps({"tp": "result",
+            "ok": cnt_ok, "bad": cnt_bad, "fail": cnt_fail}),
+            file = output)
         smp_input.close()
+        if output_stream is None:
+            output.close()
+
         if cnt_bad + cnt_fail == 0:
             logging.info("Samples check(%d) for %s: OK" % (cnt_ok, self.mName))
         else:

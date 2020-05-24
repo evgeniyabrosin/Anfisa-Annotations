@@ -4,7 +4,7 @@ SCHEMA_GERP = {
     "key": "hg19",
     "io": {
         "block-type": "segment",
-        "pos-frame": 400
+        "pos-frame": 1000
     },
     "top": {
         "tp": "dict",
