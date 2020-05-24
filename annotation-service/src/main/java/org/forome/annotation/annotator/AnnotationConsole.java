@@ -24,7 +24,7 @@ import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
-import org.forome.annotation.data.clinvar.http.ClinvarConnectorHttp;
+import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.http.GnomadConnectorHttp;
@@ -167,10 +167,10 @@ public class AnnotationConsole {
 			this.hgmdConnector = new HgmdConnectorHttp();
 //			this.hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
 
-			clinvarConnector = new ClinvarConnectorHttp();
-//			clinvarConnector = new ClinvarConnector(databaseConnectService, serviceConfig.clinVarConfigConnector);
-
 			liftoverConnector = new LiftoverConnector();
+
+//			clinvarConnector = new ClinvarConnectorHttp();
+			clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
 			gtfConnector = new GTFConnectorHttp();
 //			gtfConnector = new GTFConnectorMysql(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, null, arguments));

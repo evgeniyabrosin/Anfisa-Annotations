@@ -43,7 +43,6 @@ public class ServiceConfig {
 	public final ForomeConfigConnector foromeConfigConnector;
 
 	public final GnomadConfigConnector gnomadConfigConnector;
-	public final ClinVarConfigConnector clinVarConfigConnector;
 	public final HgmdConfigConnector hgmdConfigConnector;
 	public final GTFConfigConnector gtfConfigConnector;
 	public final SpliceAIConfigConnector spliceAIConfigConnector;
@@ -73,7 +72,6 @@ public class ServiceConfig {
 		JSONObject jConnectors = (JSONObject) configFileJson.get("connectors");
 		foromeConfigConnector = new ForomeConfigConnector((JSONObject) jConnectors.get("forome"));
 		gnomadConfigConnector = new GnomadConfigConnector((JSONObject) jConnectors.get("gnomad"));
-		clinVarConfigConnector = new ClinVarConfigConnector((JSONObject) jConnectors.get("clinvar"));
 		hgmdConfigConnector = new HgmdConfigConnector((JSONObject) jConnectors.get("hgmd"));
 		gtfConfigConnector = new GTFConfigConnector((JSONObject) jConnectors.get("gtf"));
 		spliceAIConfigConnector = new SpliceAIConfigConnector((JSONObject) jConnectors.get("spliceai"));

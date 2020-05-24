@@ -308,14 +308,15 @@ public class AnfisaConnector implements AutoCloseable {
 	}
 
 	private void callClinvar(AnfisaExecuteContext context, Record record, String _chromosome, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view, JSONObject json) {
+		Assembly assembly = context.anfisaInput.mCase.assembly;
 		Variant variant = context.variant;
 		Chromosome chromosome = variant.chromosome;
 
 		List<ClinvarResult> clinvarResults;
 		if (isSnv(variant)) {
-			clinvarResults = clinvarConnector.getData(_chromosome, variant.getStart(), variant.end, variant.getStrAlt());
+			clinvarResults = clinvarConnector.getData(assembly, _chromosome, variant.getStart(), variant.end, variant.getStrAlt());
 		} else {
-			clinvarResults = clinvarConnector.getExpandedData(variant);
+			clinvarResults = clinvarConnector.getExpandedData(assembly, variant);
 		}
 		record.clinvarResults = clinvarResults;
 		if (!clinvarResults.isEmpty()) {
@@ -387,7 +388,7 @@ public class AnfisaConnector implements AutoCloseable {
 			filters.clinvarTrustedBenign = Optional.ofNullable(benign);
 		}
 
-		ClinvarVariantSummary clinvarVariantSummary = clinvarConnector.getDataVariantSummary(chromosome, variant.getStart(), variant.end);
+		ClinvarVariantSummary clinvarVariantSummary = clinvarConnector.getDataVariantSummary(assembly, chromosome, variant.getStart(), variant.end);
 		if (clinvarVariantSummary != null) {
 			view.databases.clinvarReviewStatus = clinvarVariantSummary.reviewStatus.text;
 			filters.clinvarReviewStatus = clinvarVariantSummary.reviewStatus;

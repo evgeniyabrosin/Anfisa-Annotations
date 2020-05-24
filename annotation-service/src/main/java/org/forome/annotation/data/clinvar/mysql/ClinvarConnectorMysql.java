@@ -18,15 +18,18 @@
 
 package org.forome.annotation.data.clinvar.mysql;
 
-import org.forome.annotation.config.connector.ClinVarConfigConnector;
+import org.forome.annotation.config.connector.ForomeConfigConnector;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.struct.ClinvarResult;
 import org.forome.annotation.data.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.data.clinvar.struct.Row;
+import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantType;
@@ -37,10 +40,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,7 +48,7 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 
 	private static final Logger log = LoggerFactory.getLogger(ClinvarConnectorMysql.class);
 
-	private static final String SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar2`.`CV_Submitters` NATURAL JOIN `clinvar2`.`ClinVar2Sub_Sig` WHERE RCVaccession IN (%s)";
+	private static final String SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `ClinVar_Submitters` NATURAL JOIN `ClinVar2Sub_Sig` WHERE RCVaccession IN (%s)";
 
 	private static final String QUERY_BASE = "SELECT " +
 			"`Start`," +
@@ -62,7 +62,7 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 			"RCVaccession, " +
 			"ReferenceAllele, " +
 			"VariationID " +
-			"FROM clinvar2.variant_summary AS v " +
+			"FROM ClinVar_variant_summary AS v " +
 			"WHERE " +
 			"Assembly = 'GRCh37' AND " +
 			"Chromosome='%s' AND " +
@@ -73,20 +73,23 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 	private static final String QUERY_NA = QUERY_0 + " AND AlternateAllele = 'na'";
 
 	private static final String QUERY_VARIANT_SUMMARY =
-			"select ReviewStatus, NumberSubmitters, Guidelines from clinvar2.variant_summary where Chromosome='%s' AND Start = %s and Stop = %s";
+			"select ReviewStatus, NumberSubmitters, Guidelines from ClinVar_variant_summary where Chromosome='%s' AND Start = %s and Stop = %s";
 
 	private static final String CLINVAR_TYPE_SNV = "single nucleotide variant";
 	private static final String CLINVAR_TYPE_DELETION = "deletion";
 
+	private final LiftoverConnector liftoverConnector;
 	private final DatabaseConnector databaseConnector;
 
-	public ClinvarConnectorMysql(DatabaseConnectService databaseConnectService, ClinVarConfigConnector clinVarConfigConnector) throws Exception {
-		this.databaseConnector = new DatabaseConnector(databaseConnectService, clinVarConfigConnector);
+	public ClinvarConnectorMysql(DatabaseConnectService databaseConnectService, LiftoverConnector liftoverConnector, ForomeConfigConnector foromeConfigConnector) {
+		this.liftoverConnector = liftoverConnector;
+		this.databaseConnector = new DatabaseConnector(databaseConnectService, foromeConfigConnector);
 	}
 
 	@Override
 	public List<SourceMetadata> getSourceMetadata() {
-		return databaseConnector.getSourceMetadata();
+//		return databaseConnector.getSourceMetadata();
+		return Collections.emptyList();
 	}
 
 	private ClinvarResult getSubmitters(Row row) {
@@ -125,12 +128,19 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 	}
 
 	@Override
-	public List<ClinvarResult> getExpandedData(Variant variant) {
+	public List<ClinvarResult> getExpandedData(Assembly assembly, Variant variant) {
+		Position pStart = liftoverConnector.toHG37(assembly,
+				new Position(variant.chromosome, variant.getStart())
+		);
+		if (pStart == null) {
+			return Collections.emptyList();
+		}
+
 		List<Row> rows = new ArrayList<>();
 		try (Connection connection = databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
 				try (ResultSet resultSet = statement.executeQuery(String.format(
-						QUERY_BASE, variant.chromosome.getChar(), variant.getStart()
+						QUERY_BASE, variant.chromosome.getChar(), pStart.value
 				))) {
 					while (resultSet.next()) {
 						Row row = _build(resultSet);
@@ -156,18 +166,28 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 	}
 
 	@Override
-	public List<ClinvarResult> getData(String chromosome, long qStart, long qEnd, String alt) {
+	public List<ClinvarResult> getData(Assembly assembly, String chromosome, long qStart, long qEnd, String alt) {
+		Position pStart = liftoverConnector.toHG37(assembly,
+				new Position(Chromosome.of(chromosome), (int)qStart)
+		);
+		Position pEnd = liftoverConnector.toHG37(assembly,
+				new Position(Chromosome.of(chromosome), (int)qEnd)
+		);
+		if (pStart == null || pEnd == null) {
+			return Collections.emptyList();
+		}
+
 		List<Row> rows = new ArrayList<>();
 		try (Connection connection = databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_EXACT, chromosome, qStart, qEnd, alt))) {
+				try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_EXACT, chromosome, pStart.value, pEnd.value, alt))) {
 					while (resultSet.next()) {
 						rows.add(_build(resultSet));
 					}
 				}
 
 				if (rows.isEmpty()) {
-					try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_NA, chromosome, qStart, qEnd))) {
+					try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_NA, chromosome, pStart.value, pEnd.value))) {
 						while (resultSet.next()) {
 							rows.add(_build(resultSet));
 						}
@@ -203,8 +223,18 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 	}
 
 	@Override
-	public ClinvarVariantSummary getDataVariantSummary(Chromosome chromosome, long start, long end) {
-		String sql = String.format(QUERY_VARIANT_SUMMARY, chromosome.getChar(), start, end);
+	public ClinvarVariantSummary getDataVariantSummary(Assembly assembly, Chromosome chromosome, long start, long end) {
+		Position pStart = liftoverConnector.toHG37(assembly,
+				new Position(chromosome, (int)start)
+		);
+		Position pEnd = liftoverConnector.toHG37(assembly,
+				new Position(chromosome, (int)end)
+		);
+		if (pStart == null || pEnd == null) {
+			return null;
+		}
+
+		String sql = String.format(QUERY_VARIANT_SUMMARY, chromosome.getChar(), pStart.value, pEnd.value);
 		try (Connection connection = databaseConnector.createConnection()) {
 			try (Statement statement = connection.createStatement()) {
 				try (ResultSet resultSet = statement.executeQuery(sql)) {

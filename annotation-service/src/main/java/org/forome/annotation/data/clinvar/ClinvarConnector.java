@@ -20,6 +20,7 @@ package org.forome.annotation.data.clinvar;
 
 import org.forome.annotation.data.clinvar.struct.ClinvarResult;
 import org.forome.annotation.data.clinvar.struct.ClinvarVariantSummary;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
@@ -30,11 +31,11 @@ public interface ClinvarConnector extends AutoCloseable {
 
 	List<SourceMetadata> getSourceMetadata();
 
-	List<ClinvarResult> getExpandedData(Variant variant);
+	List<ClinvarResult> getExpandedData(Assembly assembly, Variant variant);
 
-	List<ClinvarResult> getData(String chromosome, long qStart, long qEnd, String alt);
+	List<ClinvarResult> getData(Assembly assembly, String chromosome, long qStart, long qEnd, String alt);
 
-	ClinvarVariantSummary getDataVariantSummary(Chromosome chromosome, long start, long end);
+	ClinvarVariantSummary getDataVariantSummary(Assembly assembly, Chromosome chromosome, long start, long end);
 
 	void close();
 }
