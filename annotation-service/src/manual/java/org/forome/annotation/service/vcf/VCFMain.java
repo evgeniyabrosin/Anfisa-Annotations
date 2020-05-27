@@ -31,7 +31,7 @@ import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.http.GTFConnectorHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
-import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
+import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
@@ -67,10 +67,10 @@ public class VCFMain {
 
 		ConservationData conservationConnector = new ConservationData(databaseConnectService);
 
-		HgmdConnector hgmdConnector = new HgmdConnectorHttp();
-//		HgmdConnector hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
-
 		LiftoverConnector liftoverConnector = new LiftoverConnector();
+
+//		HgmdConnector hgmdConnector = new HgmdConnectorHttp();
+		HgmdConnector hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);
 
 //		ClinvarConnector clinvarConnector = new ClinvarConnectorHttp();
 		ClinvarConnector clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);

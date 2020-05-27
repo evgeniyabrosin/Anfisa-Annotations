@@ -291,9 +291,10 @@ public class AnfisaConnector implements AutoCloseable {
 		return variant.getRef() + "/" + variant.getStrAlt();
 	}
 
-	private void callHgmd(Record record, AnfisaExecuteContext anfisaExecuteContext, AnfisaResultFilters filters, AnfisaResultData data) {
-		Variant variant = anfisaExecuteContext.variant;
-		List<String> accNums = hgmdConnector.getAccNum(variant.chromosome.getChar(), variant.getStart(), variant.end);
+	private void callHgmd(Record record, AnfisaExecuteContext context, AnfisaResultFilters filters, AnfisaResultData data) {
+		Assembly assembly = context.anfisaInput.mCase.assembly;
+		Variant variant = context.variant;
+		List<String> accNums = hgmdConnector.getAccNum(assembly, variant.chromosome.getChar(), variant.getStart(), variant.end);
 		if (accNums.size() > 0) {
 			HgmdConnector.Data hgmdData = hgmdConnector.getDataForAccessionNumbers(accNums);
 			record.hgmdData = hgmdData;

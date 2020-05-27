@@ -21,6 +21,7 @@ package org.forome.annotation.favor.processing.struct;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.favor.utils.struct.table.Row;
 import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
@@ -36,6 +37,7 @@ public class GContext {
 
 	public final Row row;
 
+	public final Assembly assembly;
 	private Variant _lazyVariant;
 	private List<String> _lazyHgmdAccNums;
 	private String _lazyHgmdAccNumHg38;
@@ -43,7 +45,9 @@ public class GContext {
 
 	private String[] _lazyGenes;
 
-	public GContext(HgmdConnector hgmdConnector, Row row) {
+	public GContext(Assembly assembly, HgmdConnector hgmdConnector, Row row) {
+		this.assembly = assembly;
+
 		this.hgmdConnector = hgmdConnector;
 
 		this.row = row;
@@ -70,7 +74,7 @@ public class GContext {
 	public List<String> getHgmdAccNums() {
 		if (_lazyHgmdAccNums == null) {
 			Variant variant = getVariant();
-			_lazyHgmdAccNums = hgmdConnector.getAccNum(variant.chromosome.getChar(), variant.getStart(), variant.end);
+			_lazyHgmdAccNums = hgmdConnector.getAccNum(assembly, variant.chromosome.getChar(), variant.getStart(), variant.end);
 		}
 		return _lazyHgmdAccNums;
 	}

@@ -30,6 +30,7 @@ import org.forome.annotation.favor.processing.graphql.record.GRecord;
 import org.forome.annotation.favor.processing.struct.GContext;
 import org.forome.annotation.favor.utils.struct.table.Row;
 import org.forome.annotation.processing.struct.ProcessingResult;
+import org.forome.annotation.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +72,7 @@ public class Processing {
 						.query(graphQLQuery)
 						.variables(Collections.emptyMap())
 						.context(new GContext(
+								Assembly.GRCh37,
 								hgmdConnector,
 								row
 						))
