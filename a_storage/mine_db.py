@@ -98,7 +98,6 @@ elif args.mode == "scan":
         x_iter.next()
 elif args.mode == "samples":
     schema_h.checkSamples(sys.stdout)
-
 else:
     assert False, "Bad evaluation mode: " + args.mode
 

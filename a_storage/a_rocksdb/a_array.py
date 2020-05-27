@@ -2,6 +2,7 @@ import logging
 
 from .a_schema import ASchema
 from .a_fasta_schema import AFastaSchema
+from .a_seg_schema import ASegmentedSchema
 #=====================================
 class AArray:
     def __init__(self, storage, name, descr):
@@ -13,10 +14,13 @@ class AArray:
         self.mUseLastPos = False
         db_key_type = None
         for schema_info in self.mDescr:
-            schema_name = schema_info["schema"]
+            schema_name = schema_info.get("schema")
             if schema_name == "fasta":
-                schema_h = AFastaSchema(self.mStorage, schema_name,
-                    schema_info.get("dbname", schema_name))
+                schema_h = AFastaSchema(self.mStorage, "fasta",
+                    schema_info.get("dbname", "fasta"))
+            elif "segments" in schema_info:
+                schema_h = ASegmentedSchema(self.mStorage,
+                    schema_name, schema_info["segments"])
             else:
                 schema_h = ASchema(self.mStorage, schema_name,
                     schema_info.get("dbname", schema_name))
@@ -28,8 +32,8 @@ class AArray:
                     "Conflict dbkeys in %s: %s/%s" % (self.mName,
                     schema_h.getDBKeyType(), str(db_key_type)))
             db_key_type = schema_h.getDBKeyType()
-            logging.info("Activate schema %s in %s"
-                % (schema_name, self.mName))
+            logging.info("Start schema %s in %s"
+                % (schema_h.getName(), self.mName))
 
     def request(self, rq_args):
         chrom, str_pos = rq_args["loc"].split(':')

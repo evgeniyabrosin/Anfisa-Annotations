@@ -23,6 +23,7 @@ class AStorage:
         self.mDummyMode = dummy_mode
         self.mDeepCompMode = deep_comp_mode
         self.mConnectors = dict()
+        self.mActivators = []
 
     def getDbOptions(self):
         return self.mConfig["db-options"].items()
@@ -67,9 +68,14 @@ class AStorage:
             connector_h.close()
             del connector_h
 
+    def regActivator(self, activator_h):
+        self.mActivators.append(activator_h)
+
     def activate(self):
         for connector_h in self.mConnectors.values():
             connector_h.activate()
+        for activator_h in self.mActivators:
+            activator_h.activate()
         logging.info("Storage activated")
 
     def deactivate(self):
