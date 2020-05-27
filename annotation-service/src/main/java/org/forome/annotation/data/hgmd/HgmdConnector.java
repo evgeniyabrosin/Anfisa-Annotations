@@ -20,6 +20,7 @@ package org.forome.annotation.data.hgmd;
 
 import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.hgmd.struct.HgmdPmidRow;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.SourceMetadata;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public interface HgmdConnector extends AutoCloseable {
 
 	List<SourceMetadata> getSourceMetadata();
 
-	List<String> getAccNum(String chromosome, long start, long end);
+	List<String> getAccNum(Assembly assembly, String chromosome, long start, long end);
 
 	HgmdConnectorMysql.Data getDataForAccessionNumbers(List<String> accNums);
 

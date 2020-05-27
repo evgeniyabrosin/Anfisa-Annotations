@@ -29,7 +29,7 @@ import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.mysql.GTFConnectorMysql;
 import org.forome.annotation.data.hgmd.HgmdConnector;
-import org.forome.annotation.data.hgmd.http.HgmdConnectorHttp;
+import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
@@ -85,10 +85,10 @@ public class AnfisaBaseTest {
 
 		conservationConnector = new ConservationData(databaseConnectService);
 
-		hgmdConnector = new HgmdConnectorHttp();
-		//hgmdConnector = new HgmdConnector(databaseConnectService, serviceConfig.hgmdConfigConnector);
-
 		liftoverConnector = new LiftoverConnector();
+
+//		hgmdConnector = new HgmdConnectorHttp();
+		hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);
 
 //		clinvarConnector = new ClinvarConnectorHttp();
 		clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);

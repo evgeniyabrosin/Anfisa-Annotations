@@ -48,7 +48,7 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 
 	private static final Logger log = LoggerFactory.getLogger(ClinvarConnectorMysql.class);
 
-	private static final String SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `ClinVar_Submitters` NATURAL JOIN `ClinVar2Sub_Sig` WHERE RCVaccession IN (%s)";
+	private static final String SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `forome`.`ClinVar_Submitters` NATURAL JOIN `forome`.`ClinVar2Sub_Sig` WHERE RCVaccession IN (%s)";
 
 	private static final String QUERY_BASE = "SELECT " +
 			"`Start`," +
@@ -62,7 +62,7 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 			"RCVaccession, " +
 			"ReferenceAllele, " +
 			"VariationID " +
-			"FROM ClinVar_variant_summary AS v " +
+			"FROM `forome`.ClinVar_variant_summary AS v " +
 			"WHERE " +
 			"Assembly = 'GRCh37' AND " +
 			"Chromosome='%s' AND " +
@@ -73,7 +73,7 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 	private static final String QUERY_NA = QUERY_0 + " AND AlternateAllele = 'na'";
 
 	private static final String QUERY_VARIANT_SUMMARY =
-			"select ReviewStatus, NumberSubmitters, Guidelines from ClinVar_variant_summary where Chromosome='%s' AND Start = %s and Stop = %s";
+			"select ReviewStatus, NumberSubmitters, Guidelines from `forome`.ClinVar_variant_summary where Chromosome='%s' AND Start = %s and Stop = %s";
 
 	private static final String CLINVAR_TYPE_SNV = "single nucleotide variant";
 	private static final String CLINVAR_TYPE_DELETION = "deletion";
