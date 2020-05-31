@@ -21,7 +21,6 @@ package org.forome.annotation.config;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.config.connector.ForomeConfigConnector;
-import org.forome.annotation.config.connector.GnomadConfigConnector;
 import org.forome.annotation.config.connector.HgmdConfigConnector;
 import org.forome.annotation.config.connector.RefConfigConnector;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
@@ -47,7 +46,6 @@ public class ServiceConfig {
 	public final ForomeConfigConnector foromeConfigConnector;
 	public final AStorageConfigConnector aStorageConfigConnector;
 
-	public final GnomadConfigConnector gnomadConfigConnector;
 	public final HgmdConfigConnector hgmdConfigConnector;
 	public final RefConfigConnector refConfigConnector;
 
@@ -75,7 +73,6 @@ public class ServiceConfig {
 		JSONObject jConnectors = (JSONObject) configFileJson.get("connectors");
 		foromeConfigConnector = new ForomeConfigConnector((JSONObject) jConnectors.get("forome"));
 		aStorageConfigConnector = new AStorageConfigConnector((JSONObject) jConnectors.get("astorage"));
-		gnomadConfigConnector = new GnomadConfigConnector((JSONObject) jConnectors.get("gnomad"));
 		hgmdConfigConnector = new HgmdConfigConnector((JSONObject) jConnectors.get("hgmd"));
 		refConfigConnector = new RefConfigConnector((JSONObject) jConnectors.get("ref"));
 

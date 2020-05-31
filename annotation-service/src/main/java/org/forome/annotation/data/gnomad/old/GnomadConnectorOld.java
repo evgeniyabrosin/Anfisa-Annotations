@@ -19,7 +19,6 @@
 package org.forome.annotation.data.gnomad.old;
 
 import com.google.common.collect.ImmutableList;
-import org.forome.annotation.config.connector.GnomadConfigConnector;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.struct.GnamadGroup;
@@ -56,10 +55,9 @@ public class GnomadConnectorOld implements GnomadConnector {
 
     public GnomadConnectorOld(
             DatabaseConnectService databaseConnectService,
-            GnomadConfigConnector gnomadConfigConnector,
             Thread.UncaughtExceptionHandler uncaughtExceptionHandler
     ) throws Exception {
-        databaseConnector = new DatabaseConnector(databaseConnectService, gnomadConfigConnector);
+        databaseConnector = new DatabaseConnector(databaseConnectService, null);
         gnomadDataConnector = new GnomadDataConnectorOld(databaseConnector);
         threadPoolGnomadExecutor = new DefaultThreadPoolExecutor(
                 MAX_THREAD_COUNT,
