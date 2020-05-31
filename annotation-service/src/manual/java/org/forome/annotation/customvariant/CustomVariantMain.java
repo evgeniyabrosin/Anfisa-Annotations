@@ -30,7 +30,8 @@ import org.forome.annotation.data.gnomad.old.GnomadConnectorOld;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
-import org.forome.annotation.data.gtf.http.GTFConnectorHttp;
+import org.forome.annotation.data.gtf.GTFConnectorImpl;
+import org.forome.annotation.data.gtf.datasource.http.GTFDataSourceHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
@@ -101,7 +102,10 @@ public class CustomVariantMain {
 //		clinvarConnector = new ClinvarConnectorHttp();
 		clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
-		gtfConnector = new GTFConnectorHttp();
+		gtfConnector = new GTFConnectorImpl(
+				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				(t, e) -> crash(e)
+		);
 //		gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
 
 //		gtexConnector = new GTEXConnectorHttp();

@@ -31,7 +31,8 @@ import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
-import org.forome.annotation.data.gtf.http.GTFConnectorHttp;
+import org.forome.annotation.data.gtf.GTFConnectorImpl;
+import org.forome.annotation.data.gtf.datasource.http.GTFDataSourceHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
@@ -85,7 +86,10 @@ public class CNVMain {
 //		ClinvarConnector clinvarConnector = new ClinvarConnectorHttp();
 		ClinvarConnector clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
-		GTFConnector gtfConnector = new GTFConnectorHttp();
+		GTFConnector gtfConnector = new GTFConnectorImpl(
+				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				(t, e) -> crash(e)
+		);
 //		GTFConnector gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
 
 //		GTEXConnector gtexConnector = new GTEXConnectorHttp();

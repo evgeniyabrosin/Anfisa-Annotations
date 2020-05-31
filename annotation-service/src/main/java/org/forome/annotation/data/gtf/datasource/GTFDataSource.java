@@ -16,30 +16,18 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gtf;
+package org.forome.annotation.data.gtf.datasource;
 
-import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
-import org.forome.annotation.data.gtf.mysql.struct.GTFResult;
-import org.forome.annotation.data.gtf.mysql.struct.GTFResultLookup;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Position;
 
+import java.io.Closeable;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-public interface GTFConnector extends AutoCloseable {
+public interface GTFDataSource extends Closeable {
 
-	List<GTFTranscriptRow> getTranscriptRows(String transcript);
-
-	CompletableFuture<GTFRegion> getRegion(Assembly assembly, Position position, String transcript);
-
-	Object[] lookup(Assembly assembly, Position pos, String transcript);
-
-	CompletableFuture<List<GTFResultLookup>> getRegionByChromosomeAndPositions(String chromosome, long[] positions);
-
-	CompletableFuture<GTFResult> request(String chromosome, long position);
+	List<GTFTranscriptRow> lookup(Assembly assembly, Position position, String transcript);
 
 	void close();
-
 }

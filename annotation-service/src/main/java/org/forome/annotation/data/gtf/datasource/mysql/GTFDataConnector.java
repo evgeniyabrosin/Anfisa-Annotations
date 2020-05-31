@@ -16,15 +16,17 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gtf.mysql;
+package org.forome.annotation.data.gtf.datasource.mysql;
 
 import org.forome.annotation.data.DatabaseConnector;
+import org.forome.annotation.data.gtf.datasource.GTFDataSource;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResult;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRowExternal;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.struct.Assembly;
+import org.forome.annotation.struct.Position;
 
-import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,7 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GTFDataConnector implements Closeable {
+public class GTFDataConnector implements GTFDataSource {
 
     private static final long GENE_BUCKET_SIZE = 1000000L;
 
@@ -164,7 +166,12 @@ public class GTFDataConnector implements Closeable {
         return transcripts;
     }
 
-    @Override
+	@Override
+	public List<GTFTranscriptRow> lookup(Assembly assembly, Position position, String transcript) {
+		throw new RuntimeException("Not implemented");
+	}
+
+	@Override
     public void close() {
         databaseConnector.close();
     }

@@ -27,7 +27,8 @@ import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
-import org.forome.annotation.data.gtf.mysql.GTFConnectorMysql;
+import org.forome.annotation.data.gtf.GTFConnectorImpl;
+import org.forome.annotation.data.gtf.datasource.http.GTFDataSourceHttp;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
@@ -105,10 +106,16 @@ public class AnfisaBaseTest {
 		clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
 
-		gtfConnector = new GTFConnectorMysql(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
-			log.error("Fail", e);
-			Assert.fail();
-		});
+		gtfConnector = new GTFConnectorImpl(
+				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				(t, e) -> {
+					log.error("Fail", e);
+					Assert.fail();
+				});
+//		gtfConnector = new GTFConnectorImpl(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
+//			log.error("Fail", e);
+//			Assert.fail();
+//		});
 		refConnector = new RefConnector(databaseConnectService, serviceConfig.refConfigConnector);
 
 		gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
