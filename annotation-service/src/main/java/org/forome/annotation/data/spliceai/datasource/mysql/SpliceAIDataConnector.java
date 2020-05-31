@@ -1,29 +1,31 @@
 /*
- Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *
+ *  Developed by Vladimir Ulitin and Michael Bouzinier
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ * 	 http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
- Developed by Vladimir Ulitin and Michael Bouzinier
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-	 http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-*/
-
-package org.forome.annotation.data.spliceai.mysql;
+package org.forome.annotation.data.spliceai.datasource.mysql;
 
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.data.DatabaseConnector;
+import org.forome.annotation.data.spliceai.datasource.SpliceAIDataSource;
 import org.forome.annotation.data.spliceai.struct.Row;
-import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.Assembly;
+import org.forome.annotation.struct.SourceMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +35,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class SpliceAIDataConnector implements Closeable {
+public class SpliceAIDataConnector implements SpliceAIDataSource, Closeable {
 
 	private static final Logger log = LoggerFactory.getLogger(SpliceAIDataConnector.class);
 
@@ -79,7 +79,12 @@ public class SpliceAIDataConnector implements Closeable {
 		this.databaseConnector = databaseConnector;
 	}
 
-	public SpliceAIResult getAll(String chromosome, long position, String ref, Allele altAllele) {
+	@Override
+	public List<Row> getAll(Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
+		if (assembly != Assembly.GRCh37) {
+			throw new RuntimeException("Not implemented");
+		}
+
 		String select_list = String.join(", ", COLUMNS);
 		String sql = String.format("SELECT DISTINCT %s FROM %s WHERE CHROM = '%s' AND POS = %s AND REF = '%s' AND ALT = '%s'",
 				select_list, TABLE, chromosome, position, ref, altAllele.getBaseString()
@@ -97,36 +102,12 @@ public class SpliceAIDataConnector implements Closeable {
 			throw ExceptionBuilder.buildExternalDatabaseException(ex);
 		}
 
-		String cases;
-		Float max_ds;
-		Map<String, SpliceAIResult.DictSql> dict_sql = new HashMap<>();
-		if (rows.isEmpty()) {
-			cases = "None";
-			max_ds = null;
-		} else {
-			max_ds = rows.stream().map(row -> row.max_ds).max(Float::compareTo).orElse(null);
-			if (max_ds < SpliceAIConnectorMysql.MAX_DS_UNLIKELY) {
-				cases = "unlikely";
-			} else if (max_ds < 0.5f) {
-				cases = "likely_pathogenic";
-			} else if (max_ds < 0.8f) {
-				cases = "pathogenic";
-			} else if (max_ds <= 1.0f) {
-				cases = "high_precision_pathogenic";
-			} else {
-				throw new RuntimeException("Not support value max_ds: " + max_ds);
-			}
-			for (Row row: rows) {
-				dict_sql.put(
-						String.format("%s/%s/%s/%s", row.alt, row.symbol, row.strand, row.type),
-						new SpliceAIResult.DictSql(
-								row.dp_ag, row.dp_al, row.dp_dg, row.dp_dl,
-								row.ds_ag, row.ds_al, row.ds_dg, row.ds_dl
-						)
-				);
-			}
-		}
-		return new SpliceAIResult(cases, max_ds, dict_sql);
+		return rows;
+	}
+
+	@Override
+	public List<SourceMetadata> getSourceMetadata() {
+		return databaseConnector.getSourceMetadata();
 	}
 
 	private static Row _build(ResultSet resultSet) throws SQLException {

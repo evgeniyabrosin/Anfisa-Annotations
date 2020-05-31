@@ -16,33 +16,21 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.spliceai.http;
+package org.forome.annotation.data.spliceai.datasource;
 
-import org.forome.annotation.data.spliceai.SpliceAIConnector;
-import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
+import org.forome.annotation.data.spliceai.struct.Row;
 import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.SourceMetadata;
 
-import java.util.Collections;
+import java.io.Closeable;
 import java.util.List;
 
-/**
- * curl "http://localhost:8290/get?array=hg38&loc=chr14:18967988"
- */
-public class SpliceAIConnectorHttp implements SpliceAIConnector {
+public interface SpliceAIDataSource extends Closeable {
 
-	@Override
-	public List<SourceMetadata> getSourceMetadata() {
-		return Collections.emptyList();
-	}
+	List<Row> getAll(Assembly assembly, String chromosome, int position, String ref, Allele altAllele);
 
-	@Override
-	public SpliceAIResult getAll(String chromosome, long position, String ref, Allele altAllele) {
-		return new SpliceAIResult("None", null, Collections.emptyMap());
-	}
+	List<SourceMetadata> getSourceMetadata();
 
-	@Override
-	public void close() {
-
-	}
+	void close();
 }

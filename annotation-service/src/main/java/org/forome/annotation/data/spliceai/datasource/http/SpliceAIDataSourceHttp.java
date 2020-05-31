@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gnomad.datasource.http;
+package org.forome.annotation.data.spliceai.datasource.http;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -34,33 +34,27 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
-import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
-import org.forome.annotation.data.gnomad.struct.DataResponse;
-import org.forome.annotation.data.gnomad.utils.GnomadUtils;
 import org.forome.annotation.data.liftover.LiftoverConnector;
+import org.forome.annotation.data.spliceai.datasource.SpliceAIDataSource;
+import org.forome.annotation.data.spliceai.struct.Row;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
-import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.struct.*;
+import org.forome.annotation.utils.MathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-/**
- * curl "localhost:8290/get?array=hg19&loc=18:67760501"
- * {"chrom": "chr18", "array": "hg19", "pos": 67760501, "Gerp": {"GerpN": 2.45, "GerpRS": -1.87}, "gnomAD": [{"ALT": "C", "REF": "A", "SOURCE": "g", "AC": 2, "AN": 31248, "AF": 6.4e-05, "nhomalt": 0, "faf95": 1.06e-05, "faf99": 1.096e-05, "male": {"AC": 1, "AN": 17400, "AF": 5.747e-05}, "female": {"AC": 1, "AN": 13848, "AF": 7.221e-05}, "afr": {"AC": 2, "AN": 8692, "AF": 0.0002301}, "amr": {"AC": 0, "AN": 842, "AF": 0}, "asj": {"AC": 0, "AN": 290, "AF": 0}, "eas": {"AC": 0, "AN": 1560, "AF": 0}, "fin": {"AC": 0, "AN": 3408, "AF": 0}, "nfe": {"AC": 0, "AN": 15380, "AF": 0}, "oth": {"AC": 0, "AN": 1076, "AF": 0}, "raw": {"AC": 2, "AN": 31416, "AF": 6.366e-05}, "hem": null}]}
- */
-public class GnomadDataSourceHttp implements GnomadDataSource {
+public class SpliceAIDataSourceHttp implements SpliceAIDataSource {
 
-	private final static Logger log = LoggerFactory.getLogger(GnomadDataSourceHttp.class);
+	private final static Logger log = LoggerFactory.getLogger(SpliceAIDataSourceHttp.class);
 
 	private final LiftoverConnector liftoverConnector;
 
@@ -70,7 +64,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	private final PoolingNHttpClientConnectionManager connectionManager;
 	private final HttpHost httpHost;
 
-	public GnomadDataSourceHttp(
+	public SpliceAIDataSourceHttp(
 			DatabaseConnectService databaseConnectService,
 			LiftoverConnector liftoverConnector,
 			AStorageConfigConnector aStorageConfigConnector
@@ -80,9 +74,9 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		aStorage = databaseConnectService.getAStorage(aStorageConfigConnector);
 
 		requestConfig = RequestConfig.custom()
-				.setConnectTimeout(2000)//Таймаут на подключение
-				.setSocketTimeout(1 * 15 * 1000)//Таймаут между пакетами
-				.setConnectionRequestTimeout(1 * 15 * 1000)//Таймаут на ответ
+				.setConnectTimeout(5000)//Таймаут на подключение
+				.setSocketTimeout(10 * 60 * 1000)//Таймаут между пакетами
+				.setConnectionRequestTimeout(10 * 60 * 1000)//Таймаут на ответ
 				.build();
 
 		connectionManager = new PoolingNHttpClientConnectionManager(new DefaultConnectingIOReactor());
@@ -90,88 +84,37 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		connectionManager.setDefaultMaxPerRoute(100);
 
 		httpHost = new HttpHost(aStorage.host, aStorage.port, "http");
+
 	}
 
 	@Override
-	public List<DataResponse> getData(
-			Assembly assembly,
-			Chromosome chromosome,
-			int position,
-			String ref,
-			String alt,
-			String fromWhat
-	) {
-		boolean isSNV = (ref.length() == 1 && alt.length() == 1);
-
-		Position pos37 = liftoverConnector.toHG37(assembly, new Position(chromosome, position));
-
-		List<JSONObject> records = getRecord(
-				pos37,
-				ref, alt,
-				fromWhat, isSNV
-		);
-
-		if (records.isEmpty() && !isSNV) {
-			records = getRecord(
-					new Position(pos37.chromosome, pos37.value - 1),
-					ref, alt,
-					fromWhat, isSNV
-			);
-		}
-
-		List<DataResponse> dataResponses = new ArrayList<>();
-		for (JSONObject record : records) {
-			String diff_ref_alt = GnomadUtils.diff(ref, alt);
-			if (Objects.equals(diff_ref_alt, GnomadUtils.diff(record.getAsString("REF"), record.getAsString("ALT")))
-					||
-					GnomadUtils.diff3(record.getAsString("REF"), record.getAsString("ALT"), diff_ref_alt)
-			) {
-				dataResponses.add(build(pos37, record));
-			}
-		}
-		return dataResponses;
-	}
-
-	private List<JSONObject> getRecord(Position pos37,
-									   String ref,
-									   String alt,
-									   String fromWhat,
-									   boolean isSNV
-	) {
+	public List<Row> getAll(Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
+		Position pos38 = liftoverConnector.toHG38(assembly, new Position(Chromosome.of(chromosome), position));
 
 		JSONObject response = request(
-				String.format("http://%s:%s/get?array=hg19&loc=%s:%s", aStorage.host, aStorage.port, pos37.chromosome.getChar(), pos37.value)
+				String.format("http://%s:%s/get?array=hg38&loc=%s:%s", aStorage.host, aStorage.port, pos38.chromosome.getChromosome(), pos38.value)
 		);
-		JSONArray jRecords = (JSONArray) response.get("gnomAD");
+		JSONArray jRecords = (JSONArray) response.get("SpliceAI");
 		if (jRecords == null) {
 			return Collections.emptyList();
 		}
 
-		List<JSONObject> records;
-		if (isSNV) {
-			records = jRecords.stream()
-					.map(o -> (JSONObject) o)
-					.filter(item ->
-							item.getAsString("REF").equals(ref) && item.getAsString("ALT").equals(alt)
-					).collect(Collectors.toList());
-		} else {
-			records = jRecords.stream()
-					.map(o -> (JSONObject) o)
-					.filter(item ->
-							item.getAsString("REF").contains(ref) && item.getAsString("ALT").contains(alt)
-					).collect(Collectors.toList());
-		}
+		List<JSONObject> records = jRecords.stream()
+				.map(o -> (JSONObject) o)
+				.filter(item -> item.getAsString("REF").equals(ref) && item.getAsString("ALT").equals(altAllele.getBaseString()))
+				.collect(Collectors.toList());
 
-		if (fromWhat != null) {
-			if (!(fromWhat.equals("e") || fromWhat.equals("g"))) {
-				throw new RuntimeException("Not support many fromWhat");
-			}
-			records = records.stream()
-					.filter(item -> item.getAsString("SOURCE").equals(fromWhat))
-					.collect(Collectors.toList());
-		}
+		return records.stream().map(jsonObject -> _build(pos38, jsonObject)).collect(Collectors.toList());
+	}
 
-		return records;
+	@Override
+	public List<SourceMetadata> getSourceMetadata() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public void close() {
+
 	}
 
 	private JSONObject request(String url) {
@@ -250,50 +193,31 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		}
 	}
 
-	@Override
-	public List<SourceMetadata> getSourceMetadata() {
-		return Collections.emptyList();
-	}
+	private static Row _build(Position pos38, JSONObject jsonObject) {
+		String chrom = pos38.chromosome.getChar();
+		int pos = pos38.value;
+		String ref = jsonObject.getAsString("REF");
+		String alt = jsonObject.getAsString("ALT");
+		String symbol = jsonObject.getAsString("SYMBOL");
+		String strand = "-";
+		String type = "-";
+		int dp_ag = MathUtils.toPrimitiveInteger(jsonObject.getAsNumber("DP_AG"));
+		int dp_al = MathUtils.toPrimitiveInteger(jsonObject.getAsNumber("DP_AL"));
+		int dp_dg = MathUtils.toPrimitiveInteger(jsonObject.getAsNumber("DP_DG"));
+		int dp_dl = MathUtils.toPrimitiveInteger(jsonObject.getAsNumber("DP_DL"));
+		float ds_ag = MathUtils.toPrimitiveFloat(jsonObject.getAsNumber("DS_AG"));
+		float ds_al = MathUtils.toPrimitiveFloat(jsonObject.getAsNumber("DS_AL"));
+		float ds_dg = MathUtils.toPrimitiveFloat(jsonObject.getAsNumber("DS_DG"));
+		float ds_dl = MathUtils.toPrimitiveFloat(jsonObject.getAsNumber("DS_DL"));
+		String id = jsonObject.getAsString("ID");
+		float max_ds = MathUtils.toPrimitiveFloat(jsonObject.getAsNumber("MAX_DS"));
 
-	@Override
-	public void close() {
-
-	}
-
-	private static DataResponse build(Position pos37, JSONObject record) {
-		Map<String, Object> columns = new HashMap<>();
-
-		columns.put("CHROM", pos37.chromosome.getChar());
-		columns.put("POS", pos37.value);
-		columns.put("REF", record.get("REF"));
-		columns.put("ALT", record.get("ALT"));
-
-		columns.put("AC", record.get("AC"));
-		columns.put("AF", record.get("AF"));
-		columns.put("AN", record.get("AN"));
-
-		addGroup(columns, record, "oth");
-		addGroup(columns, record, "amr");
-		addGroup(columns, record, "raw");
-		addGroup(columns, record, "fin");
-		addGroup(columns, record, "afr");
-		addGroup(columns, record, "nfe");
-		addGroup(columns, record, "eas");
-		addGroup(columns, record, "asj");
-		addGroup(columns, record, "female");
-		addGroup(columns, record, "male");
-
-		columns.put("nhomalt", record.get("nhomalt"));
-		columns.put("hem", record.get("hem"));
-
-		return new DataResponse(columns);
-	}
-
-	private static void addGroup(Map<String, Object> columns, JSONObject record, String group) {
-		JSONObject jGroup = (JSONObject) record.get(group);
-		if (jGroup == null) return;
-		columns.put("AC_" + group, jGroup.get("AC"));
-		columns.put("AF_" + group, jGroup.get("AF"));
-		columns.put("AN_" + group, jGroup.get("AN"));
+		return new Row(
+				chrom, pos, ref, alt,
+				symbol, strand, type,
+				dp_ag, dp_al, dp_dg, dp_dl,
+				ds_ag, ds_al, ds_dg, ds_dl,
+				id, max_ds
+		);
 	}
 }

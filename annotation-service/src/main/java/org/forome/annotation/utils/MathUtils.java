@@ -39,4 +39,44 @@ public class MathUtils {
 			return p;
 		}
 	}
+
+	public static Integer toInteger(Object value) {
+		if (value == null) return null;
+		if (value instanceof Number) {
+			return ((Number) value).intValue();
+		} else if (value instanceof String) {
+			return Integer.parseInt((String) value);
+		} else {
+			throw new RuntimeException("Not support type");
+		}
+	}
+
+	public static int toPrimitiveInteger(Object value) {
+		Integer p = toInteger(value);
+		if (p == null) {
+			return 0;
+		} else {
+			return p;
+		}
+	}
+
+	public static Float toFloat(Object value) {
+		if (value == null) return null;
+		if (value instanceof Number) {
+			return ((Number) value).floatValue();
+		} else if (value instanceof String) {
+			return Float.parseFloat((String) value);
+		} else {
+			throw new RuntimeException("Not support type");
+		}
+	}
+
+	public static float toPrimitiveFloat(Object value) {
+		Float p = toFloat(value);
+		if (p == null) {
+			return 0;
+		} else {
+			return p;
+		}
+	}
 }

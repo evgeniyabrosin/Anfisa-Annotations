@@ -35,7 +35,8 @@ import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.ref.RefConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
-import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
+import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
+import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
@@ -90,7 +91,9 @@ public class AnfisaBaseTest {
 //			Assert.fail();
 //		});
 
-		spliceAIConnector = new SpliceAIConnectorHttp();
+		spliceAIConnector = new SpliceAIConnectorImpl(
+				new SpliceAIDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector)
+		);
 //		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
 		conservationConnector = new ConservationData(databaseConnectService);
