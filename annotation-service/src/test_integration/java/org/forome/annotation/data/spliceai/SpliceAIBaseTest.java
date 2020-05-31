@@ -19,12 +19,15 @@
 package org.forome.annotation.data.spliceai;
 
 import org.forome.annotation.config.ServiceConfig;
-import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
+import org.forome.annotation.data.liftover.LiftoverConnector;
+import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.file.Paths;
 
 public class SpliceAIBaseTest {
 
@@ -34,11 +37,16 @@ public class SpliceAIBaseTest {
 
 	@Before
 	public void init() throws Throwable {
-		ServiceConfig serviceConfig = new ServiceConfig();
+		ServiceConfig serviceConfig = new ServiceConfig(
+				Paths.get("config.6.json").toAbsolutePath()
+		);
 		SSHConnectService sshTunnelService = new SSHConnectService();
 		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
+		LiftoverConnector liftoverConnector = new LiftoverConnector();
 
-		spliceAIConnector = new SpliceAIConnectorHttp();
+		spliceAIConnector = new SpliceAIConnectorImpl(
+				new SpliceAIDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector)
+		);
 //		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 	}
 }

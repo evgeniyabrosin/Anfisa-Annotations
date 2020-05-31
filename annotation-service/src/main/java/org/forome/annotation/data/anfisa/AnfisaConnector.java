@@ -40,7 +40,7 @@ import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
-import org.forome.annotation.data.spliceai.mysql.SpliceAIConnectorMysql;
+import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.processing.graphql.record.view.transcripts.item.GRecordViewTranscriptsItem;
@@ -128,7 +128,7 @@ public class AnfisaConnector implements AutoCloseable {
 		data.version = AppVersion.getVersionFormat();
 
 		callGnomAD(context, variant, anfisaInput.mCase, filters);
-		callSpliceai(data, filters, variant);
+		callSpliceai(context, data, filters, variant);
 		callHgmd(record, context, filters, data);
 		callClinvar(context, record, variant.chromosome.getChar(), filters, data, view, vepJson);
 		GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant);
@@ -500,8 +500,11 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private void callSpliceai(AnfisaResultData data, AnfisaResultFilters filters, Variant variant) {
+	private void callSpliceai(AnfisaExecuteContext context, AnfisaResultData data, AnfisaResultFilters filters, Variant variant) {
+		Assembly assembly = context.anfisaInput.mCase.assembly;
+
 		SpliceAIResult spliceAIResult = spliceAIConnector.getAll(
+				assembly,
 				variant.chromosome.getChar(),
 				lowest_coord(variant),
 				variant.getRef(),
@@ -567,7 +570,7 @@ public class AnfisaConnector implements AutoCloseable {
 		data.totalExonIntronWorst = intronOrExonWorst[1];
 
 		if (filters.spliceAiDsmax != null) {
-			if (filters.spliceAiDsmax >= SpliceAIConnectorMysql.MAX_DS_UNLIKELY) {
+			if (filters.spliceAiDsmax >= SpliceAIConnectorImpl.MAX_DS_UNLIKELY) {
 				view.general.spliceAltering = Optional.ofNullable(getSpliceAltering(filters));
 			}
 		} else {

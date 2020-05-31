@@ -38,7 +38,8 @@ import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
-import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
+import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
+import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
 import org.forome.annotation.iterator.cnv.CNVFileIterator;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
@@ -70,7 +71,9 @@ public class CNVMain {
 //		GnomadConnector gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 //        GnomadConnector gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 
-		SpliceAIConnector spliceAIConnector = new SpliceAIConnectorHttp();
+		SpliceAIConnector spliceAIConnector = new SpliceAIConnectorImpl(
+				new SpliceAIDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector)
+		);
 //		SpliceAIConnector spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
 		ConservationData conservationConnector = new ConservationData(databaseConnectService);

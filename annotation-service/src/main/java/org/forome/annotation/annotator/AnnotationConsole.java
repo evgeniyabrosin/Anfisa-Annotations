@@ -38,7 +38,8 @@ import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
-import org.forome.annotation.data.spliceai.http.SpliceAIConnectorHttp;
+import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
+import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.service.database.DatabaseConnectService;
@@ -164,7 +165,9 @@ public class AnnotationConsole {
 			);
 //			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, null, arguments));
 
-			spliceAIConnector = new SpliceAIConnectorHttp();
+			spliceAIConnector = new SpliceAIConnectorImpl(
+					new SpliceAIDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector)
+			);
 //			spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
 			conservationConnector = new ConservationData(databaseConnectService);

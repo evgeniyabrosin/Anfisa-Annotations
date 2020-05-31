@@ -20,6 +20,7 @@ package org.forome.annotation.data.spliceai;
 
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.SourceMetadata;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public interface SpliceAIConnector extends AutoCloseable {
 
 	List<SourceMetadata> getSourceMetadata();
 
-	SpliceAIResult getAll(String chromosome, long position, String ref, Allele altAllele);
+	SpliceAIResult getAll(Assembly assembly, String chromosome, int position, String ref, Allele altAllele);
 
 	void close();
 
