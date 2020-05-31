@@ -16,12 +16,14 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gnomad.mysql;
+package org.forome.annotation.data.gnomad.datasource.mysql;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import org.forome.annotation.data.DatabaseConnector;
+import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
+import org.forome.annotation.data.gnomad.struct.DataResponse;
+import org.forome.annotation.data.gnomad.utils.GnomadUtils;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
 import org.slf4j.Logger;
@@ -30,31 +32,12 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class GnomadDataConnector implements Closeable {
+public class GnomadDataConnector implements GnomadDataSource, Closeable {
 
 	private static final Logger log = LoggerFactory.getLogger(GnomadDataConnector.class);
 
 	private static final String TABLE = "gnom2.VARIANTS";
-
-	public class Result {
-
-		private final Map<String, Object> columns;
-
-		public Result(ResultSet resultSet) throws SQLException {
-			columns = new HashMap<>();
-			ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-			for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
-				String columnName = resultSetMetaData.getColumnName(i).toLowerCase();
-				columns.put(columnName, resultSet.getObject(i));
-			}
-		}
-
-		public <T> T getValue(String column) {
-			return (T) columns.get(column.toLowerCase());
-		}
-	}
 
 	private final DatabaseConnector databaseConnector;
 
@@ -66,12 +49,18 @@ public class GnomadDataConnector implements Closeable {
 		return databaseConnector.getSourceMetadata();
 	}
 
-	public List<Result> getData(
+	@Override
+	public List<DataResponse> getData(
+			Assembly assembly,
 			Chromosome chromosome,
-			long position,
+			int position,
 			String ref,
 			String alt,
-			String fromWhat) {
+			String fromWhat
+	) {
+		if (assembly != Assembly.GRCh37) {
+			throw new RuntimeException("Not implemented");
+		}
 
 		boolean isSNV = (ref.length() == 1 && alt.length() == 1);
 
@@ -121,15 +110,15 @@ public class GnomadDataConnector implements Closeable {
 				);
 			}
 
-			List<Result> results = new ArrayList<>();
+			List<DataResponse> results = new ArrayList<>();
 			resultSet.beforeFirst();
 			while (resultSet.next()) {
-				String diff_ref_alt = diff(ref, alt);
-				if (Objects.equals(diff_ref_alt, diff(resultSet.getString("REF"), resultSet.getString("ALT")))
+				String diff_ref_alt = GnomadUtils.diff(ref, alt);
+				if (Objects.equals(diff_ref_alt, GnomadUtils.diff(resultSet.getString("REF"), resultSet.getString("ALT")))
 						||
-						diff3(resultSet.getString("REF"), resultSet.getString("ALT"), diff_ref_alt)
+						GnomadUtils.diff3(resultSet.getString("REF"), resultSet.getString("ALT"), diff_ref_alt)
 				) {
-					results.add(new Result(resultSet));
+					results.add(build(resultSet));
 				}
 			}
 
@@ -147,53 +136,14 @@ public class GnomadDataConnector implements Closeable {
 		databaseConnector.close();
 	}
 
-
-	@VisibleForTesting
-	public static String diff(String s1, String s2) {
-		if (s1.equals(s2)) {
-			return "";
-		} else if (s2.contains(s1)) {
-			int idx = s2.indexOf(s1);
-			return s2.substring(0, idx) + s2.substring(idx + s1.length());
-		} else if (s1.length() < s2.length()) {
-			List<Character> x = new ArrayList<>();
-			List<Character> y = new ArrayList<>();
-			for (int i = 0; i < s2.length(); i++) {
-				int j = x.size();
-				if (j < s1.length() && s1.charAt(j) == s2.charAt(i)) {
-					x.add(s2.charAt(i));
-				} else {
-					y.add(s2.charAt(i));
-				}
-			}
-			if (!y.isEmpty()) {
-				return y.stream().map(e -> e.toString()).collect(Collectors.joining());
-			}
-			return null;
-		} else if (s2.length() < s1.length()) {
-			return "-" + diff(s2, s1);
-		} else {
-			return null;
+	private static DataResponse build(ResultSet resultSet) throws SQLException {
+		Map<String, Object> columns = new HashMap<>();
+		ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+		for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
+			String columnName = resultSetMetaData.getColumnName(i).toLowerCase();
+			columns.put(columnName, resultSet.getObject(i));
 		}
+		return new DataResponse(columns);
 	}
 
-	public static boolean diff3(String s1, String s2, String d) {
-		if (Strings.isNullOrEmpty(d)) {
-			return s1.equals(s2);
-		}
-		if (d.charAt(0) == '-') {
-			return diff3(s2, s1, d.substring(1));
-		}
-		if (s1.length() + d.length() != s2.length()) {
-			return false;
-		}
-		for (int i = 0; i < s1.length(); i++) {
-			String x = s1.substring(0, i);
-			String y = s1.substring(i);
-			if ((x + d + y).equals(s2)) {
-				return true;
-			}
-		}
-		return false;
-	}
 }

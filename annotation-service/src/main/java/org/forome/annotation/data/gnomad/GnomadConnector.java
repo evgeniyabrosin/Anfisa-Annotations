@@ -19,6 +19,7 @@
 package org.forome.annotation.data.gnomad;
 
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
 
@@ -27,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface GnomadConnector extends AutoCloseable {
 
-    CompletableFuture<GnomadResult> request(Chromosome chromosome, long position, String reference, String alternative);
+    CompletableFuture<GnomadResult> request(Assembly assembly, Chromosome chromosome, int position, String reference, String alternative);
 
     List<SourceMetadata> getSourceMetadata();
 

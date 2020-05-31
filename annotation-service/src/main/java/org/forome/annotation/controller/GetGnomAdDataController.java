@@ -25,10 +25,11 @@ import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.Service;
 import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.controller.utils.ResponseBuilder;
-import org.forome.annotation.data.gnomad.GnomadConnector;
+import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
@@ -56,11 +57,11 @@ public class GetGnomAdDataController {
 	public static class RequestItem {
 
 		public final Chromosome chromosome;
-		public final long position;
+		public final int position;
 		public final String reference;
 		public final String alternative;
 
-		public RequestItem(Chromosome chromosome, long position, String reference, String alternative) {
+		public RequestItem(Chromosome chromosome, int position, String reference, String alternative) {
 			this.chromosome = chromosome;
 			this.position = position;
 			this.reference = reference;
@@ -90,9 +91,10 @@ public class GetGnomAdDataController {
 				ArrayList<RequestItem> requestItems = parseRequestData(sRequestData);
 
 				List<CompletableFuture<GnomadResult>> futureGnomadResults = new ArrayList<>();
-				GnomadConnector gnomadConnector = service.getGnomadConnector();
+				GnomadConnectorImpl gnomadConnector = service.getGnomadConnector();
 				for (RequestItem requestItem : requestItems) {
 					futureGnomadResults.add(gnomadConnector.request(
+							Assembly.GRCh37,
 							requestItem.chromosome,
 							requestItem.position,
 							requestItem.reference,
@@ -165,7 +167,7 @@ public class GetGnomAdDataController {
 
 			Chromosome chromosome = Chromosome.of(oItem.getAsString("chromosome"));
 
-			long position = RequestParser.toLong("position", oItem.getAsString("position"));
+			int position = RequestParser.toInteger("position", oItem.getAsString("position"));
 
 			String reference = oItem.getAsString("reference");
 			if (Strings.isNullOrEmpty(reference)) {

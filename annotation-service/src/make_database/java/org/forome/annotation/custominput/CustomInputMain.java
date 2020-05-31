@@ -31,8 +31,8 @@ import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
-import org.forome.annotation.data.gnomad.GnomadConnector;
-import org.forome.annotation.data.gnomad.mysql.GnomadConnectorImpl;
+import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
@@ -89,7 +89,7 @@ public class CustomInputMain {
 	private static SSHConnectService sshTunnelService;
 	private static DatabaseConnectService databaseConnectService;
 
-	private static GnomadConnector gnomadConnector;
+	private static GnomadConnectorImpl gnomadConnector;
 	private static SpliceAIConnector spliceAIConnector;
 	private static ConservationData conservationConnector;
 	private static HgmdConnector hgmdConnector;
@@ -165,14 +165,18 @@ public class CustomInputMain {
 			sshTunnelService = new SSHConnectService();
 			databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 //            gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
-			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e));
+
+			liftoverConnector = new LiftoverConnector();
+
+			gnomadConnector = new GnomadConnectorImpl(new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+					(t, e) -> fail(e)
+			);
+//			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e));
 
 			spliceAIConnector = new SpliceAIConnectorHttp();
 //			spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
 			conservationConnector = new ConservationData(databaseConnectService);
-
-			liftoverConnector = new LiftoverConnector();
 
 //			hgmdConnector = new HgmdConnectorHttp();
 			hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);

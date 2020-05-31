@@ -26,7 +26,7 @@ import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.gnomad.GnomadConnector;
-import org.forome.annotation.data.gnomad.mysql.old.GnomadConnectorOld;
+import org.forome.annotation.data.gnomad.old.GnomadConnectorOld;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;

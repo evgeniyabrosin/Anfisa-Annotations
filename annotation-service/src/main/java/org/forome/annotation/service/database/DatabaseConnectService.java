@@ -20,6 +20,7 @@ package org.forome.annotation.service.database;
 
 import com.infomaximum.database.exception.DatabaseException;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import org.forome.annotation.config.connector.base.AStorageConfigConnector;
 import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
 import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
@@ -38,6 +39,17 @@ import java.util.Map;
 
 public class DatabaseConnectService implements AutoCloseable {
 
+	public class AStorage {
+
+		public final String host;
+		public final int port;
+
+		public AStorage(String host, int port) {
+			this.host = host;
+			this.port = port;
+		}
+	}
+
 	private final static Logger log = LoggerFactory.getLogger(DatabaseConnectService.class);
 
 	private final SourceDatabase sourceDatabase37;
@@ -48,9 +60,12 @@ public class DatabaseConnectService implements AutoCloseable {
 	private final SSHConnectService sshTunnelService;
 	private final Map<String, ComboPooledDataSource> dataSources;
 
+	private final Map<String, AStorage> aStorages;
+
 	public DatabaseConnectService(SSHConnectService sshTunnelService, DatabaseConfig databaseConfig) throws DatabaseException {
 		this.sshTunnelService = sshTunnelService;
 		this.dataSources = new HashMap<>();
+		this.aStorages = new HashMap<>();
 
 		if (databaseConfig.hg37 != null) {
 			sourceDatabase37 = new SourceDatabase(Assembly.GRCh37, databaseConfig.hg37);
@@ -163,5 +178,60 @@ public class DatabaseConnectService implements AutoCloseable {
 
 	public FavorDatabase getFavorDatabase() {
 		return favorDatabase;
+	}
+
+
+	public AStorage getAStorage(AStorageConfigConnector aStorageConfigConnector) {
+		String keyAStorage = getKeyAStorage(aStorageConfigConnector);
+		AStorage aStorage = aStorages.get(keyAStorage);
+		if (aStorage == null) {
+			synchronized (dataSources) {
+				aStorage = aStorages.get(keyAStorage);
+				if (aStorage == null) {
+					aStorage = buildAStorage(aStorageConfigConnector);
+					aStorages.put(keyAStorage, aStorage);
+				}
+			}
+		}
+		return aStorage;
+	}
+
+	private AStorage buildAStorage(AStorageConfigConnector aStorageConfigConnector) {
+		try {
+			int port;
+			SshTunnelConfig sshTunnelConfig = aStorageConfigConnector.sshTunnelConfig;
+			if (sshTunnelConfig != null) {
+				SSHConnect sshTunnel = sshTunnelService.getSSHConnect(
+						sshTunnelConfig.host,
+						sshTunnelConfig.port,
+						sshTunnelConfig.user,
+						sshTunnelConfig.key
+				);
+				port = sshTunnel.getTunnel(aStorageConfigConnector.astoragePort);
+			} else {
+				port = aStorageConfigConnector.astoragePort;
+			}
+
+			return new AStorage(
+					aStorageConfigConnector.astorageHost,
+					port
+			);
+		} catch (Throwable ex) {
+			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+		}
+	}
+
+	private static String getKeyAStorage(AStorageConfigConnector aStorageConfigConnector) {
+		StringBuilder builderKey = new StringBuilder();
+		if (aStorageConfigConnector.sshTunnelConfig != null) {
+			SshTunnelConfig sshTunnelConfig = aStorageConfigConnector.sshTunnelConfig;
+			String keySSHConnect = SSHConnectService.getKeySSHConnect(
+					sshTunnelConfig.host, sshTunnelConfig.port, sshTunnelConfig.user
+			);
+			builderKey.append(keySSHConnect);
+		}
+		return builderKey.append(aStorageConfigConnector.astorageHost)
+				.append(aStorageConfigConnector.astoragePort)
+				.toString();
 	}
 }

@@ -428,7 +428,7 @@ public class AnfisaConnector implements AutoCloseable {
 		Long hom = null;
 		Long hem = null;
 
-		GnomadResult gnomadResult = getGnomadResult(variant);
+		GnomadResult gnomadResult = getGnomadResult(context, variant);
 		if (gnomadResult == null) {
 			return;
 		}
@@ -479,9 +479,11 @@ public class AnfisaConnector implements AutoCloseable {
 		filters.gnomadHem = hem;
 	}
 
-	private GnomadResult getGnomadResult(Variant variant) {
+	private GnomadResult getGnomadResult(AnfisaExecuteContext context, Variant variant) {
+		Assembly assembly = context.anfisaInput.mCase.assembly;
 		try {
 			return gnomadConnector.request(
+					assembly,
 					variant.chromosome,
 					Math.min(variant.getStart(), variant.end),
 					variant.getRef(), variant.getStrAlt()
@@ -755,7 +757,7 @@ public class AnfisaConnector implements AutoCloseable {
 			gnomAD.pli = getPLIByAllele((VariantVep) variant);
 			gnomAD.proband = (isProbandHasAllele(variant, samples)) ? "Yes" : "No";
 
-			GnomadResult gnomadResult = getGnomadResult(variant);
+			GnomadResult gnomadResult = getGnomadResult(context, variant);
 			if (gnomadResult != null) {
 				if (gnomadResult.exomes != null) {
 					gnomAD.exomeAn = gnomadResult.exomes.an;

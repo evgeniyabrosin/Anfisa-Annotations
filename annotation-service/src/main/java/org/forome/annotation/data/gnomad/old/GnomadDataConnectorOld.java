@@ -16,7 +16,7 @@
  limitations under the License.
 */
 
-package org.forome.annotation.data.gnomad.mysql.old;
+package org.forome.annotation.data.gnomad.old;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;

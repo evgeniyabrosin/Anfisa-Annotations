@@ -26,6 +26,9 @@ import org.forome.annotation.struct.SourceMetadata;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * curl "http://localhost:8290/get?array=hg38&loc=chr14:18967988"
+ */
 public class SpliceAIConnectorHttp implements SpliceAIConnector {
 
 	@Override
