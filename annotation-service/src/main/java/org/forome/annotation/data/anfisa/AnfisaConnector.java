@@ -131,7 +131,7 @@ public class AnfisaConnector implements AutoCloseable {
 		callSpliceai(context, data, filters, variant);
 		callHgmd(record, context, filters, data);
 		callClinvar(context, record, variant.chromosome.getChar(), filters, data, view, vepJson);
-		GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant);
+		GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant, context);
 		callQuality(filters, variant);
 
 		Sample proband = anfisaInput.mCase.proband;

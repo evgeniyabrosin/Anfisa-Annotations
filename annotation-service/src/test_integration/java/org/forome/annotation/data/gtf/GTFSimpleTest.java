@@ -20,6 +20,9 @@ package org.forome.annotation.data.gtf;
 
 import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResultLookup;
+import org.forome.annotation.struct.Assembly;
+import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Position;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,11 +34,12 @@ public class GTFSimpleTest extends GTFBaseTest {
 	public void testByChromosomeAndPositions() throws Exception {
 		String chromosome = "5";
 		String transcript = "ENST00000282356";
-		long position = 110694251;
+		int position = 110694251;
 
 		GTFRegion expectedGtfRegion = gtfConnector.getRegion(
-				transcript,
-				position
+				Assembly.GRCh37,
+				new Position(Chromosome.of(chromosome), position),
+				transcript
 		).get();
 
 

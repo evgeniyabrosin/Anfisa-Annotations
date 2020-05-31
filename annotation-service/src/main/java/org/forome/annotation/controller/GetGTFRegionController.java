@@ -91,10 +91,11 @@ public class GetGTFRegionController {
 
 				List<CompletableFuture<GTFRegion>> futureGTFRegions = new ArrayList<>();
 				for (RequestItem requestItem : requestItems) {
-					futureGTFRegions.add(gtfConnector.getRegion(
-							requestItem.transcript,
-							requestItem.position
-					));
+					throw new RuntimeException("Not implemented");
+//					futureGTFRegions.add(gtfConnector.getRegion(
+//							requestItem.transcript,
+//							requestItem.position
+//					));
 				}
 
 				CompletableFuture.allOf(futureGTFRegions.toArray(new CompletableFuture[futureGTFRegions.size()]))

@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gnomad.datasource.http;
+package org.forome.annotation.data.gtf.datasource.http;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -34,31 +34,29 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
-import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
-import org.forome.annotation.data.gnomad.struct.DataResponse;
-import org.forome.annotation.data.gnomad.utils.GnomadUtils;
+import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
+import org.forome.annotation.data.gtf.datasource.GTFDataSource;
+import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
-import org.forome.annotation.struct.SourceMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-/**
- * curl "localhost:8290/get?array=hg19&loc=18:67760501"
- * {"chrom": "chr18", "array": "hg19", "pos": 67760501, "Gerp": {"GerpN": 2.45, "GerpRS": -1.87}, "gnomAD": [{"ALT": "C", "REF": "A", "SOURCE": "g", "AC": 2, "AN": 31248, "AF": 6.4e-05, "nhomalt": 0, "faf95": 1.06e-05, "faf99": 1.096e-05, "male": {"AC": 1, "AN": 17400, "AF": 5.747e-05}, "female": {"AC": 1, "AN": 13848, "AF": 7.221e-05}, "afr": {"AC": 2, "AN": 8692, "AF": 0.0002301}, "amr": {"AC": 0, "AN": 842, "AF": 0}, "asj": {"AC": 0, "AN": 290, "AF": 0}, "eas": {"AC": 0, "AN": 1560, "AF": 0}, "fin": {"AC": 0, "AN": 3408, "AF": 0}, "nfe": {"AC": 0, "AN": 15380, "AF": 0}, "oth": {"AC": 0, "AN": 1076, "AF": 0}, "raw": {"AC": 2, "AN": 31416, "AF": 6.366e-05}, "hem": null}]}
+/*
+curl "localhost:8290/get?array=gtf&loc=12:885081-985081&feature=exon"
+Координаты в hg38
  */
-public class GnomadDataSourceHttp implements GnomadDataSource {
+public class GTFDataSourceHttp implements GTFDataSource {
 
 	private final static Logger log = LoggerFactory.getLogger(GnomadDataSourceHttp.class);
 
@@ -70,7 +68,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	private final PoolingNHttpClientConnectionManager connectionManager;
 	private final HttpHost httpHost;
 
-	public GnomadDataSourceHttp(
+	public GTFDataSourceHttp(
 			DatabaseConnectService databaseConnectService,
 			LiftoverConnector liftoverConnector,
 			AStorageConfigConnector aStorageConfigConnector
@@ -92,86 +90,42 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		httpHost = new HttpHost(aStorage.host, aStorage.port, "http");
 	}
 
+
 	@Override
-	public List<DataResponse> getData(
-			Assembly assembly,
-			Chromosome chromosome,
-			int position,
-			String ref,
-			String alt,
-			String fromWhat
-	) {
-		boolean isSNV = (ref.length() == 1 && alt.length() == 1);
-
-		Position pos37 = liftoverConnector.toHG37(assembly, new Position(chromosome, position));
-
-		List<JSONObject> records = getRecord(
-				pos37,
-				ref, alt,
-				fromWhat, isSNV
-		);
-
-		if (records.isEmpty() && !isSNV) {
-			records = getRecord(
-					new Position(pos37.chromosome, pos37.value - 1),
-					ref, alt,
-					fromWhat, isSNV
-			);
-		}
-
-		List<DataResponse> dataResponses = new ArrayList<>();
-		for (JSONObject record : records) {
-			String diff_ref_alt = GnomadUtils.diff(ref, alt);
-			if (Objects.equals(diff_ref_alt, GnomadUtils.diff(record.getAsString("REF"), record.getAsString("ALT")))
-					||
-					GnomadUtils.diff3(record.getAsString("REF"), record.getAsString("ALT"), diff_ref_alt)
-			) {
-				dataResponses.add(build(pos37, record));
-			}
-		}
-		return dataResponses;
-	}
-
-	private List<JSONObject> getRecord(Position pos37,
-									   String ref,
-									   String alt,
-									   String fromWhat,
-									   boolean isSNV
-	) {
+	public List<GTFTranscriptRow> lookup(Assembly assembly, Position position, String transcript) {
+		Position pos38 = liftoverConnector.toHG38(assembly, position);
 
 		JSONObject response = request(
-				String.format("http://%s:%s/get?array=hg19&loc=%s:%s", aStorage.host, aStorage.port, pos37.chromosome.getChar(), pos37.value)
+				String.format("http://%s:%s/get?array=gtf&loc=%s:%s", aStorage.host, aStorage.port, pos38.chromosome.getChar(), pos38.value)
 		);
-		JSONArray jRecords = (JSONArray) response.get("gnomAD");
-		if (jRecords == null) {
-			return Collections.emptyList();
+		JSONArray jRecords = (JSONArray) response.get("gtf");
+		if (jRecords == null || jRecords.isEmpty()) {
+			return null;
 		}
 
-		List<JSONObject> records;
-		if (isSNV) {
-			records = jRecords.stream()
-					.map(o -> (JSONObject) o)
-					.filter(item ->
-							item.getAsString("REF").equals(ref) && item.getAsString("ALT").equals(alt)
-					).collect(Collectors.toList());
-		} else {
-			records = jRecords.stream()
-					.map(o -> (JSONObject) o)
-					.filter(item ->
-							item.getAsString("REF").contains(ref) && item.getAsString("ALT").contains(alt)
-					).collect(Collectors.toList());
+		List<JSONObject> records = jRecords.stream()
+				.map(o -> (JSONObject) o)
+				.filter(item -> transcript.equals(item.getAsString("transcript"))
+				).collect(Collectors.toList());
+		if (records.isEmpty()) {
+			return null;
 		}
 
-		if (fromWhat != null) {
-			if (!(fromWhat.equals("e") || fromWhat.equals("g"))) {
-				throw new RuntimeException("Not support many fromWhat");
-			}
-			records = records.stream()
-					.filter(item -> item.getAsString("SOURCE").equals(fromWhat))
-					.collect(Collectors.toList());
-		}
+		return records.stream().map(jsonObject -> build(jsonObject)).collect(Collectors.toList());
+	}
 
-		return records;
+	private GTFTranscriptRow build(JSONObject item) {
+		return new GTFTranscriptRow(
+				item.getAsString("gene"),
+				item.getAsNumber("start").intValue(),
+				item.getAsNumber("end").intValue(),
+				item.getAsString("feature")
+		);
+	}
+
+	@Override
+	public void close() {
+
 	}
 
 	private JSONObject request(String url) {
@@ -250,50 +204,4 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		}
 	}
 
-	@Override
-	public List<SourceMetadata> getSourceMetadata() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public void close() {
-
-	}
-
-	private static DataResponse build(Position pos37, JSONObject record) {
-		Map<String, Object> columns = new HashMap<>();
-
-		columns.put("CHROM", pos37.chromosome.getChar());
-		columns.put("POS", pos37.value);
-		columns.put("REF", record.get("REF"));
-		columns.put("ALT", record.get("ALT"));
-
-		columns.put("AC", record.get("AC"));
-		columns.put("AF", record.get("AF"));
-		columns.put("AN", record.get("AN"));
-
-		addGroup(columns, record, "oth");
-		addGroup(columns, record, "amr");
-		addGroup(columns, record, "raw");
-		addGroup(columns, record, "fin");
-		addGroup(columns, record, "afr");
-		addGroup(columns, record, "nfe");
-		addGroup(columns, record, "eas");
-		addGroup(columns, record, "asj");
-		addGroup(columns, record, "female");
-		addGroup(columns, record, "male");
-
-		columns.put("nhomalt", record.get("nhomalt"));
-		columns.put("hem", record.get("hem"));
-
-		return new DataResponse(columns);
-	}
-
-	private static void addGroup(Map<String, Object> columns, JSONObject record, String group) {
-		JSONObject jGroup = (JSONObject) record.get(group);
-		if (jGroup == null) return;
-		columns.put("AC_" + group, jGroup.get("AC"));
-		columns.put("AF_" + group, jGroup.get("AF"));
-		columns.put("AN_" + group, jGroup.get("AN"));
-	}
 }
