@@ -20,7 +20,10 @@ package org.forome.annotation.config;
 
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
-import org.forome.annotation.config.connector.*;
+import org.forome.annotation.config.connector.ForomeConfigConnector;
+import org.forome.annotation.config.connector.GnomadConfigConnector;
+import org.forome.annotation.config.connector.HgmdConfigConnector;
+import org.forome.annotation.config.connector.RefConfigConnector;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
 import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.ensemblvep.EnsemblVepConfig;
@@ -46,8 +49,6 @@ public class ServiceConfig {
 
 	public final GnomadConfigConnector gnomadConfigConnector;
 	public final HgmdConfigConnector hgmdConfigConnector;
-	public final GTFConfigConnector gtfConfigConnector;
-	public final SpliceAIConfigConnector spliceAIConfigConnector;
 	public final RefConfigConnector refConfigConnector;
 
 	public final NotificationSlackConfig notificationSlackConfig;
@@ -76,8 +77,6 @@ public class ServiceConfig {
 		aStorageConfigConnector = new AStorageConfigConnector((JSONObject) jConnectors.get("astorage"));
 		gnomadConfigConnector = new GnomadConfigConnector((JSONObject) jConnectors.get("gnomad"));
 		hgmdConfigConnector = new HgmdConfigConnector((JSONObject) jConnectors.get("hgmd"));
-		gtfConfigConnector = new GTFConfigConnector((JSONObject) jConnectors.get("gtf"));
-		spliceAIConfigConnector = new SpliceAIConfigConnector((JSONObject) jConnectors.get("spliceai"));
 		refConfigConnector = new RefConfigConnector((JSONObject) jConnectors.get("ref"));
 
 		JSONObject jNotifications = (JSONObject) configFileJson.get("notification");
