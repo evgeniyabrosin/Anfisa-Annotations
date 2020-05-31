@@ -16,7 +16,7 @@
  limitations under the License.
 */
 
-package org.forome.annotation.data.gnomad.mysql.old;
+package org.forome.annotation.data.gnomad.old;
 
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.config.connector.GnomadConfigConnector;
@@ -26,6 +26,7 @@ import org.forome.annotation.data.gnomad.struct.GnamadGroup;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
 import org.forome.annotation.matcher.SequenceMatcher;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
@@ -41,7 +42,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
+public class GnomadConnectorOld implements GnomadConnector {
 
     private final static Logger log = LoggerFactory.getLogger(GnomadConnectorOld.class);
 
@@ -71,16 +72,15 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         );
     }
 
-    @Override
     public List<SourceMetadata> getSourceMetadata(){
         return databaseConnector.getSourceMetadata();
     }
 
-    public CompletableFuture<GnomadResult> request(Chromosome chromosome, long position, String reference, String alternative) {
+    public CompletableFuture<GnomadResult> request(Assembly assembly, Chromosome chromosome, int position, String reference, String alternative) {
         CompletableFuture<GnomadResult> future = new CompletableFuture();
         threadPoolGnomadExecutor.submit(() -> {
             try {
-                GnomadResult result = syncRequest(chromosome, position, reference, alternative);
+                GnomadResult result = syncRequest(assembly, chromosome, position, reference, alternative);
                 future.complete(result);
             } catch (Throwable e) {
                 future.completeExceptionally(e);
@@ -89,7 +89,11 @@ public class GnomadConnectorOld implements AutoCloseable, GnomadConnector {
         return future;
     }
 
-    private GnomadResult syncRequest(Chromosome chromosome, long position, String reference, String alternative) throws Exception {
+    private GnomadResult syncRequest(Assembly assembly, Chromosome chromosome, long position, String reference, String alternative) throws Exception {
+        if (assembly != Assembly.GRCh37) {
+            throw new RuntimeException("Not implemented");
+        }
+
         List<GnomadDataConnectorOld.Result> exomes = gnomadDataConnector.getData(
                 chromosome, position, reference, alternative, "e", false
         );

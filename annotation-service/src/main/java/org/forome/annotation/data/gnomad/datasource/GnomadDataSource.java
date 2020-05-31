@@ -16,37 +16,28 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gnomad.http;
+package org.forome.annotation.data.gnomad.datasource;
 
-import org.forome.annotation.data.gnomad.GnomadConnector;
-import org.forome.annotation.data.gnomad.struct.GnomadResult;
+import org.forome.annotation.data.gnomad.struct.DataResponse;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
 
-import java.util.Collections;
+import java.net.URISyntaxException;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-public class GnomadConnectorHttp implements GnomadConnector {
+public interface GnomadDataSource {
 
-	@Override
-	public CompletableFuture<GnomadResult> request(Chromosome chromosome, long position, String reference, String alternative) {
-		return CompletableFuture.completedFuture(
-				new GnomadResult(
-						null, null, new GnomadResult.Sum(0,0,0, 0, null),
-						null, null,
-						Collections.emptySet()
-				)
-		);
-	}
+	List<DataResponse> getData(
+			Assembly assembly,
+			Chromosome chromosome,
+			int position,
+			String ref,
+			String alt,
+			String fromWhat
+	) throws URISyntaxException;
 
-	@Override
-	public List<SourceMetadata> getSourceMetadata() {
-		return Collections.emptyList();
-	}
+	List<SourceMetadata> getSourceMetadata();
 
-	@Override
-	public void close() {
-
-	}
+	void close();
 }

@@ -26,8 +26,8 @@ import org.forome.annotation.data.anfisa.struct.AnfisaInput;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
-import org.forome.annotation.data.gnomad.GnomadConnector;
-import org.forome.annotation.data.gnomad.mysql.GnomadConnectorImpl;
+import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
@@ -63,15 +63,17 @@ public class CNVMain {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		SSHConnectService sshTunnelService = new SSHConnectService();
 		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
+
+		LiftoverConnector liftoverConnector = new LiftoverConnector();
+
+		GnomadConnectorImpl gnomadConnector = new GnomadConnectorImpl(new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector), (t, e) -> crash(e));
+//		GnomadConnector gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 //        GnomadConnector gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
-		GnomadConnector gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 
 		SpliceAIConnector spliceAIConnector = new SpliceAIConnectorHttp();
 //		SpliceAIConnector spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
 		ConservationData conservationConnector = new ConservationData(databaseConnectService);
-
-		LiftoverConnector liftoverConnector = new LiftoverConnector();
 
 //		HgmdConnector hgmdConnector = new HgmdConnectorHttp();
 		HgmdConnector hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);

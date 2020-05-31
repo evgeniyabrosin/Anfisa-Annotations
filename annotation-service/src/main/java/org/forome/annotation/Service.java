@@ -25,8 +25,8 @@ import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
-import org.forome.annotation.data.gnomad.GnomadConnector;
-import org.forome.annotation.data.gnomad.http.GnomadConnectorHttp;
+import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
+import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
@@ -99,7 +99,7 @@ public class Service {
 	private final DatabaseService databaseService;
 	private final NetworkService networkService;
 
-	private final GnomadConnector gnomadConnector;
+	private final GnomadConnectorImpl gnomadConnector;
 	private final SpliceAIConnector spliceAIConnector;
 	private final ConservationData conservationConnector;
 	private final HgmdConnector hgmdConnector;
@@ -134,15 +134,18 @@ public class Service {
 
 //        this.gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
 
-		this.gnomadConnector = new GnomadConnectorHttp();
+		this.liftoverConnector = new LiftoverConnector();
+
+		this.gnomadConnector = new GnomadConnectorImpl(
+				new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				uncaughtExceptionHandler
+		);
 //		this.gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
 
 		this.spliceAIConnector = new SpliceAIConnectorHttp();
 //		this.spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
 		this.conservationConnector = new ConservationData(databaseConnectService);
-
-		this.liftoverConnector = new LiftoverConnector();
 
 //		this.hgmdConnector = new HgmdConnectorHttp();
 		this.hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);
@@ -227,7 +230,7 @@ public class Service {
 		return databaseConnectService;
 	}
 
-	public GnomadConnector getGnomadConnector() {
+	public GnomadConnectorImpl getGnomadConnector() {
 		return gnomadConnector;
 	}
 
