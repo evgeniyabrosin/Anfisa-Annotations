@@ -1,7 +1,7 @@
 import os, json
 from glob import glob
 from .deep_comp import DeepCompReader
-from ingest.a_util import TimeReport
+from ingest.in_util import TimeReport
 
 #========================================
 class DeepCompLoader:

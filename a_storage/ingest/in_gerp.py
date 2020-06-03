@@ -1,7 +1,29 @@
 import sys, csv, logging
 from fastnumbers import fast_real
 
-from .a_util import TimeReport, detectFileChrom, extendFileList, dumpReader
+from .in_util import TimeReport, detectFileChrom, extendFileList, dumpReader
+#========================================
+# Schema for AStorage
+#========================================
+SCHEMA_GERP = {
+    "name": "Gerp",
+    "key": "hg19",
+    "io": {
+        "block-type": "segment",
+        "pos-frame": 1000
+    },
+    "top": {
+        "tp": "dict",
+        "label": "gerp-rec",
+        "items": [
+            {"name": "GerpN",  "tp": "num"},
+            {"name": "GerpRS",  "tp": "num"}
+        ]
+    }
+}
+
+#========================================
+# Ingest logic
 #========================================
 DB_FIELDS = ["GerpN", "GerpRS"]
 def new_record(chrom, pos, lst):

@@ -7,7 +7,7 @@ from a_rocksdb.a_schema import ASchema
 from a_rocksdb.a_fasta_schema import AFastaSchema
 from a_rocksdb.deep_load import DeepCompLoader
 from ingest import getIngestModeSetup
-from ingest.a_fasta import getFastaSetup
+from ingest.in_fasta import getFastaSetup
 #=====================================
 try:
     sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())

@@ -1,6 +1,6 @@
 import gzip
 
-from .a_util import TimeReport
+from .in_util import TimeReport
 #========================================
 class FastaReader:
     @staticmethod
