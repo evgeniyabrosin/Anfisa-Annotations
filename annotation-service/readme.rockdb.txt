@@ -6,6 +6,12 @@ nohup java -cp annotation_v.0.6.1.3-full.jar \
     -assembly GRCh38 \
     -gerp19 /db/download/hg19.GERP_scores.tar.gz &
 
+nohup java -cp annotation_v.0.6.1.13-full.jar \
+    org.forome.annotation.makedatabase.main.MainMakeDatabase \
+    -database /projects/annotations/database/annotation-hg37 \
+    -assembly GRCh37 \
+    -gerp19 /db/download/hg19.GERP_scores.tar.gz &
+
 ==================================================================
 При упоковке по 100 вариантов:
 139 объектов, всего 8,3 ГБ

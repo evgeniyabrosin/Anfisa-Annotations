@@ -144,7 +144,8 @@ public class SpliceAIDataSourceHttp implements SpliceAIDataSource {
 							future.complete((JSONObject) rawResponse);
 						} else {
 							throw ExceptionBuilder.buildExternalServiceException(
-									new RuntimeException("Exception external service(AStorage), response: " + entityBody),
+									new RuntimeException("Exception external service(AStorage), request: " + url
+											+ ", response: " + entityBody),
 									"AStorage", "Response: " + entityBody
 							);
 						}
