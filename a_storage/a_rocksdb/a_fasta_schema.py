@@ -1,6 +1,6 @@
 import json, random, logging
 
-from utils.log_err import logException
+from forome_tools.log_err import logException
 from .a_io import AIOController
 from codec import getKeyCodec
 #========================================

@@ -1,7 +1,7 @@
 import json, random, logging
 from datetime import datetime, timedelta
 
-from utils.log_err import logException
+from forome_tools.log_err import logException
 from codec import createDataCodec
 from .a_io import AIOController
 #========================================

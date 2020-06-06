@@ -1,7 +1,7 @@
 import sys, codecs, logging
 from argparse import ArgumentParser
 
-from utils.json_conf import loadJSonConfig
+from forome_tools.json_conf import loadJSonConfig
 from a_rocksdb.a_storage import AStorage
 from a_rocksdb.a_schema import ASchema
 from a_rocksdb.a_fasta_schema import AFastaSchema
