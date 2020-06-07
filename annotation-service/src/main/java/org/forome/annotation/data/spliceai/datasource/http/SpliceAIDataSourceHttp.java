@@ -90,6 +90,9 @@ public class SpliceAIDataSourceHttp implements SpliceAIDataSource {
 	@Override
 	public List<Row> getAll(Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
 		Position pos38 = liftoverConnector.toHG38(assembly, new Position(Chromosome.of(chromosome), position));
+		if (pos38 == null) {
+			return Collections.emptyList();
+		}
 
 		JSONObject response = request(
 				String.format("http://%s:%s/get?array=hg38&loc=%s:%s", aStorage.host, aStorage.port, pos38.chromosome.getChromosome(), pos38.value)
