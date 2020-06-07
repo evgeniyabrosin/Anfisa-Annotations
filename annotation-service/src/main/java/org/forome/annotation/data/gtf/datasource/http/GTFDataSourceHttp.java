@@ -94,6 +94,9 @@ public class GTFDataSourceHttp implements GTFDataSource {
 	@Override
 	public List<GTFTranscriptRow> lookup(Assembly assembly, Position position, String transcript) {
 		Position pos38 = liftoverConnector.toHG38(assembly, position);
+		if (pos38 == null) {
+			return null;
+		}
 
 		JSONObject response = request(
 				String.format("http://%s:%s/get?array=gtf&loc=%s:%s", aStorage.host, aStorage.port, pos38.chromosome.getChar(), pos38.value)
