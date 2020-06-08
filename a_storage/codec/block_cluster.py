@@ -145,7 +145,7 @@ class _ReadClusterBlock:
         chrom, pos = key
         if chrom != self.mChrom or pos < self.mStartPos:
             return False
-        ret = self.mPosSeq is None or pos <= self.mPosSeq[-1]
+        ret = self.mPosSeq is not None and pos <= self.mPosSeq[-1]
         if ret and DEBUG_MODE:
             logging.info("For %s good read block: %s"
                 % (str(key), str((self.mChrom, self.mStartPos, self.mPosSeq[-1]))))
