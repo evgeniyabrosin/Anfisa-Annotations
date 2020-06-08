@@ -63,7 +63,7 @@ HG38_Tab = [
 ]
 
 #===============================================
-ALL_CHROM_SET = set(info[0] for info in HG38_Tab + HG19_Tab)
+ALL_CHROM_SET = {info[0] for info in HG38_Tab + HG19_Tab}
 
 #===============================================
 class IdConvertor:

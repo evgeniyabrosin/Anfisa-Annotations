@@ -1,4 +1,5 @@
 import logging, sys
+from os.path import abspath, dirname
 from argparse import ArgumentParser
 
 from forome_tools.json_conf import loadJSonConfig
@@ -37,8 +38,10 @@ def prepareIterator(db_conn, col_handler, args):
         x_iter.seek_to_first()
     return x_iter, key_start
 
+
 #=====================================
-config = loadJSonConfig(args.config)
+config = loadJSonConfig(args.config,
+    home_path = dirname(abspath(__file__)))
 storage = AStorage(config)
 schema_h = ASchema(storage, args.schema,
     args.dbname if args.dbname else args.schema)
@@ -67,10 +70,10 @@ if args.mode == "pos":
             continue
         blob = db_conn.mDB.get(db_conn.mRdOpts, col_handlers[col_idx], xkey)
         if not blob.status.ok():
-            print ("col=", col_h.getName(), "Blob None!")
+            print("col=", col_h.getName(), "Blob None!")
             continue
         if blob.data is None:
-            print ("col=", col_h.getName, "Data None!")
+            print("col=", col_h.getName, "Data None!")
             continue
         val_seq = col_h.decode(blob.data).split('\0')
 

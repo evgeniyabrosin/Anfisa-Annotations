@@ -29,7 +29,7 @@ class ASegmentedSchema:
         pass
 
     def keepSamples(self):
-       pass
+        pass
 
     def close(self):
         for schema_h in self.mSegSchemas:

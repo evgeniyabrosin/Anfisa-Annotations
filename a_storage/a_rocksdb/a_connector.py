@@ -56,7 +56,7 @@ class AConnector:
         col_options.set_compression("no_compression")
         for key, val in col_attrs.items():
             if key.startswith('-'):
-               continue
+                continue
             if key == "compression":
                 col_options.set_compression(val)
             else:

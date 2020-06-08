@@ -81,4 +81,3 @@ if __name__ == '__main__':
             deep_loader.finishUp()
         a_schema.close()
         a_storage.deactivate()
-

@@ -1,4 +1,8 @@
+import logging
 from ._block_agent import _BlockAgent
+#===============================================
+DEBUG_MODE = False
+
 #===============================================
 class BlockerCluster(_BlockAgent):
     MAX_POS_COUNT = 50
@@ -63,6 +67,11 @@ class BlockerCluster(_BlockAgent):
         if key_base is not None and key_base[0] == key[0]:
             pos_seq = bytes2pseq(key_base[1], data_base)
             data_seq = self.getIO()._getColumns(key_base)
+            if DEBUG_MODE:
+                logging.info("Read Block for %s : %s %d/%d (%s)"
+                    % (str(key), str(key_base), pos_seq[0], pos_seq[-1],
+                    ",".join(str(len(data)) if data is not None else "None"
+                        for data in data_seq)))
             return _ReadClusterBlock(self, key, pos_seq,
                 decode_env_class(data_seq))
         return _ReadClusterBlock(self, key)
@@ -136,7 +145,11 @@ class _ReadClusterBlock:
         chrom, pos = key
         if chrom != self.mChrom or pos < self.mStartPos:
             return False
-        return self.mPosSeq is None or pos <= self.mPosSeq[-1]
+        ret = self.mPosSeq is None or pos <= self.mPosSeq[-1]
+        if ret and DEBUG_MODE:
+            logging.info("For %s good read block: %s"
+                % (str(key), str((self.mChrom, self.mStartPos, self.mPosSeq[-1]))))
+        return ret
 
     def getRecord(self, key, codec, last_pos = None):
         assert last_pos is None
