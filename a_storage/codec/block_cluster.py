@@ -74,6 +74,9 @@ class BlockerCluster(_BlockAgent):
                         for data in data_seq)))
             return _ReadClusterBlock(self, key, pos_seq,
                 decode_env_class(data_seq))
+        if DEBUG_MODE:
+            logging.info("No read block for %s : (next = %s)"
+                % (str(key), str(key_base)))
         return _ReadClusterBlock(self, key)
 
 #===============================================
