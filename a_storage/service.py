@@ -20,6 +20,7 @@
 
 import sys, logging
 import logging.config
+from os.path import abspath, dirname
 
 from forome_tools.hserv import setupHServer, HServHandler
 from a_rocksdb.app import AStorageApp
@@ -27,6 +28,10 @@ from a_rocksdb.app import AStorageApp
 #========================================
 def application(environ, start_response):
     return HServHandler.request(environ, start_response)
+
+#========================================
+def _getHomePath():
+    return dirname(abspath(__file__))
 
 
 #========================================
@@ -47,11 +52,13 @@ if __name__ == '__main__':
                 format_str % args)).rstrip())
 
     #========================================
-    host, port = setupHServer(AStorageApp, config_file, False)
+    host, port = setupHServer(AStorageApp, config_file,
+        in_container = False, home_path = _getHomePath())
     httpd = make_server(host, port, application,
         handler_class = _LoggingWSGIRequestHandler)
     print("HServer listening %s:%d" % (host, port), file = sys.stderr)
     httpd.serve_forever()
 else:
     logging.basicConfig(level = 10)
-    setupHServer(AStorageApp, "./astorage.cfg", True)
+    setupHServer(AStorageApp, "./astorage.cfg",
+        in_container = True, home_path = _getHomePath())
