@@ -35,8 +35,9 @@ class AArray:
             logging.info("Start schema %s in %s"
                 % (schema_h.getName(), self.mName))
 
-    def request(self, rq_args):
+    def request(self, rq_args, rq_descr):
         chrom, str_pos = rq_args["loc"].split(':')
+        rq_descr.append("loc=" + rq_args["loc"])
         if not chrom.startswith("chr"):
             chrom = "chr" + chrom
         if '-' in str_pos:
@@ -60,7 +61,9 @@ class AArray:
                 filtering[flt_name] = flt_val
                 ret[flt_name] = flt_val
         for schema_h in self.mSchemaSeq:
+            rq_descr.append("schema=" + schema_h.getName())
             rec_data = schema_h.getRecord((chrom, pos), filtering, last_pos)
             if rec_data is not None:
                 ret[schema_h.getName()] = rec_data
+            rq_descr.pop()
         return ret

@@ -73,7 +73,7 @@ class AStorageApp:
             if array_h is None:
                 return serv_h.makeResponse("Array not found: "
                     + str(rq_args.get("array")), error = 404)
-            report = array_h.request(rq_args)
+            report = array_h.request(rq_args, rq_descr)
             return serv_h.makeResponse(mode = "json",
                 content = json.dumps(report))
         if rq_path == "/meta":
