@@ -167,7 +167,8 @@ class AConnector:
             return ret
         for column_h in col_seq:
             col_h = self._getColH(column_h.getName())
-            blob = self.mDB.get(self.mRdOpts, col_h, xkey)
+            with self.mStorage.getLock():
+                blob = self.mDB.get(self.mRdOpts, col_h, xkey)
             data = blob.data if blob.status.ok() else None
             ret.append(column_h.decode(data))
         return ret
@@ -220,6 +221,7 @@ class ASeekIterator:
                     self.mCondition.wait()
                 else:
                     self.mInUse = True
+                    self.mMaster.mStorage.getLock().acquire()
                     self.mIter.seek(xkey)
                     return self
 
@@ -228,6 +230,7 @@ class ASeekIterator:
             with self.mCondition:
                 self.mCondition.notify()
                 self.mInUse = False
+                self.mMaster.mStorage.getLock().release()
 
     def seekNext(self):
         if self.mIter is None or not self.mIter.valid():
