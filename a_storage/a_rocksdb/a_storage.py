@@ -1,5 +1,4 @@
 import os, shutil, gc, json, logging
-from threading import Lock
 
 from .a_connector import AConnector
 #========================================
@@ -23,7 +22,6 @@ class AStorage:
         self.mConfig = config
         self.mDummyMode = dummy_mode
         self.mDeepCompMode = deep_comp_mode
-        self.mLock = Lock()
         self.mConnectors = dict()
         self.mActivators = []
 
@@ -47,9 +45,6 @@ class AStorage:
 
     def getConnector(self, aspect_name):
         return self.mConnectors.get(aspect_name)
-
-    def getLock(self):
-        return self.mLock
 
     def isDummyMode(self):
         return self.mDummyMode

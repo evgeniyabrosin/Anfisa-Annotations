@@ -30,6 +30,8 @@ def terminateAll(sig, frame):
 #===============================================
 class AStorageApp:
     sConfig = None
+    sStorage = None
+    sArrays = None
 
     @classmethod
     def setup(cls, config, in_container):
