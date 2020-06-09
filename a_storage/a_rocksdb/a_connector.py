@@ -1,4 +1,5 @@
 import logging, json
+from threading import Condition
 import pyrocksdb as rocksdb
 
 from .deep_comp import DeepCompWriter
@@ -11,6 +12,8 @@ class AConnector:
         self.mFilePath = self.mStorage.getDBFilePath(name)
         self.mWriteMode = write_mode
         self.mColIndex = dict()
+        self.mSeekIterator = ASeekIterator(self)
+
         self.mColDescriptors = rocksdb.VectorColumnFamilyDescriptor()
         self.mColDescriptors.append(rocksdb.ColumnFamilyDescriptor
             (rocksdb.DefaultColumnFamilyName, rocksdb.ColumnFamilyOptions()))
@@ -38,11 +41,17 @@ class AConnector:
         self.mRefCount -= 1
         return self.mRefCount
 
+    def _getColH(self, col_name):
+        return self.mColHandlers[self.mColIndex[col_name]]
+
     def getName(self):
         return self.mName
 
     def properAccess(self):
         return self.mDB is not None
+
+    def getSeekColName(self):
+        return self.mSeekIterator.getColName()
 
     def _dbOptions(self):
         options = rocksdb.Options()
@@ -63,7 +72,7 @@ class AConnector:
                 setattr(col_options, key, val)
         return col_options
 
-    def _regColumn(self, c_name, col_attrs):
+    def _regColumn(self, c_name, col_attrs, seek_column = False):
         assert self.mColHandlers is None
         col_name = bytes(c_name, encoding = "utf-8")
         assert col_name not in self.mColIndex
@@ -74,7 +83,17 @@ class AConnector:
             s, cf = self.mDB.create_column_family(
                 self._colOptions(col_attrs), col_name)
             del cf
+        if seek_column:
+            self._regSeekColumn(col_name)
         return col_name
+
+    def _regSeekColumn(self, col_name):
+        assert self.mSeekIterator.getColName() is None, (
+            "Duplication of seek columns: %s/%s"
+            % (self.mSeekIterator.getColName(), col_name))
+        assert col_name in self.mColIndex, (
+            "Seek column %s is not registered" % col_name)
+        self.mSeekIterator.setColName(col_name)
 
     def activate(self):
         assert self.mColHandlers is None
@@ -87,6 +106,7 @@ class AConnector:
         else:
             _, self.mColHandlers = self.mDB.open_for_readonly(
                 self._dbOptions(), self.mFilePath, self.mColDescriptors)
+        self.mSeekIterator.activate()
         # self._reportKeys()
 
     def close(self):
@@ -95,6 +115,7 @@ class AConnector:
             self.mDeepWriter = None
         if self.mDB is None:
             return
+        self.mSeekIterator.close()
         # self._reportKeys()
         if self.mWriteMode:
             compact_opt = rocksdb.CompactRangeOptions()
@@ -137,7 +158,7 @@ class AConnector:
             if use_encode:
                 data = column_h.encode(data)
             if len(data) > 0:
-                col_h = self.mColHandlers[self.mColIndex[column_h.getName()]]
+                col_h = self._getColH(column_h.getName())
                 self.mDB.put(self.mWrOpts, col_h, xkey, data)
 
     def getData(self, xkey, col_seq):
@@ -145,36 +166,76 @@ class AConnector:
         if self.mDB is None:
             return ret
         for column_h in col_seq:
-            col_h = self.mColHandlers[self.mColIndex[column_h.getName()]]
+            col_h = self._getColH(column_h.getName())
             blob = self.mDB.get(self.mRdOpts, col_h, xkey)
             data = blob.data if blob.status.ok() else None
             ret.append(column_h.decode(data))
         return ret
 
-    def seekData(self, xkey, column_h):
-        if self.mDB is None:
-            return _AIterator(None)
-        col_h = self.mColHandlers[self.mColIndex[column_h.getName()]]
-        x_iter = self.mDB.iterator(self.mRdOpts, col_h)
-        x_iter.seek(xkey)
-        return _AIterator(x_iter, column_h)
+    def seekIt(self, xkey):
+        return self.mSeekIterator.attach(xkey)
 
 #========================================
-class _AIterator:
-    def __init__(self, x_iter, column_h = None):
-        self.mIter = x_iter
-        self.mColH = column_h
+class ASeekIterator:
+    def __init__(self, master):
+        self.mMaster = master
+        self.mIter = False
+        self.mColName = None
+        self.mColH = None
+        self.mCondition = None
+        self.mInUse = False
+
+    def getColName(self):
+        return self.mColName
+
+    def setColName(self, col_name):
+        self.mColName = col_name
+
+    def activate(self):
+        if self.mColName is None:
+            self.mIter = None
+        else:
+            self.mColH = self.mMaster._getColH(self.mColName)
+            self.mCondition = Condition()
 
     def getCurrent(self):
+        assert self.mIter is not False
         if self.mIter is not None and self.mIter.valid():
-            return self.mIter.key(), self.mColH.decode(self.mIter.value())
+            return self.mIter.key(), self.mIter.value()
         return None, None
 
+    def attach(self, xkey):
+        if self.mIter is None:
+            return self
+        while True:
+            with self.mCondition:
+                if self.mIter is False:
+                    assert self.mColName is not None
+                    if not self.mMaster.properAccess():
+                        self.mIter = None
+                        return self
+                    self.mIter = self.mMaster.mDB.iterator(
+                        self.mMaster.mRdOpts, self.mColH)
+                if self.mInUse:
+                    self.mCondition.wait()
+                else:
+                    self.mInUse = True
+                    self.mIter.seek(xkey)
+                    return self
+
+    def detach(self):
+        if self.mIter is not None:
+            with self.mCondition:
+                self.mCondition.notify()
+                self.mInUse = False
+
     def seekNext(self):
-        if not self.mIter.valid():
+        if self.mIter is None or not self.mIter.valid():
             return False
         self.mIter.next()
         return self.mIter.valid()
 
     def close(self):
-        del self.mIter
+        if self.mIter not in (None, False):
+            del self.mIter
+        self.mIter = None

@@ -4,7 +4,7 @@ from threading import Lock
 from codec import createBlockCodec, getKeyCodec
 #========================================
 class AIOController:
-    READ_BLOCK_CACHE_SIZE = 3
+    READ_BLOCK_CACHE_SIZE = 20
 
     def __init__(self, schema, dbname, properties):
         self.mSchema = schema
@@ -23,6 +23,7 @@ class AIOController:
         self.mWithStr = self.mSchema.isOptionRequired("str")
         if self.mWithStr:
             self.mMainColumnSeq.append(self._regColumn("str"))
+        self.mSeekColumnH = None
 
         if self.mSchema.isWriteMode():
             self.mWriteBlockH = None
@@ -55,7 +56,8 @@ class AIOController:
             self.mDescr[name] = default_value
         return self.mDescr[name]
 
-    def _regColumn(self, col_type, col_name = None, conv_bytes = True):
+    def _regColumn(self, col_type, col_name = None,
+            conv_bytes = True, seek_column = False):
         col_key = col_type + "-col-options"
         col_attrs = self._getProperty(col_key)
         if col_attrs is None:
@@ -67,8 +69,13 @@ class AIOController:
             self._updateProperty(col_key, col_attrs)
         if col_name is None:
             col_name = "%s_%s" % (self.mSchema.getName(), col_type)
-        return AIO_ColumnHandler(self.mDbConnector._regColumn(
-            col_name, col_attrs), conv_bytes, col_attrs.get("-compress"))
+        col_h = AIO_ColumnHandler(
+            self.mDbConnector._regColumn(
+                col_name, col_attrs, seek_column),
+            conv_bytes, col_attrs.get("-compress"))
+        if seek_column:
+            self.mSeekColumnH = col_h
+        return col_h
 
     def _updateProperty(self, key, val):
         self.mDescr[key] = val
@@ -79,6 +86,9 @@ class AIOController:
         assert not self.isWriteMode() or len(unused) == 0, (
             "Lost option(s) for %s blocker: %s"
             % (self.mSchema.getName(), ", ".join(sorted(unused))))
+        if self.mSeekColumnH is None and len(self.mMainColumnSeq) > 0:
+            self.mSeekColumnH = self.mMainColumnSeq[0]
+            self.mDbConnector._regSeekColumn(self.mSeekColumnH.getName())
         self.mOnDuty = True
 
     def _addWriteStat(self, base_len, str_len = None, str_count = None):
@@ -163,9 +173,9 @@ class AIOController:
             col_seq = self.mMainColumnSeq
         return self.mDbConnector.getData(xkey, col_seq)
 
-    def _seekColumn(self, key, column_h):
-        return AIO_Iterator(self.mDbConnector.seekData(
-            self.getXKey(key), column_h), self.mKeyCodec)
+    def seekIt(self, key):
+        return AIO_Iterator(self.mDbConnector.seekIt(
+            self.getXKey(key)), self.mKeyCodec, self.mSeekColumnH)
 
     def _putRecord(self, key, record, codec):
         encode_env = AEncodeEnv(self, self.mWithStr)
@@ -244,21 +254,23 @@ class AIO_ColumnHandler:
 
 #========================================
 class AIO_Iterator:
-    def __init__(self, db_iter, key_codec):
+    def __init__(self, db_iter, key_codec, col_h):
         self.mIter = db_iter
         self.mKeyCodec = key_codec
+        self.mColH = col_h
 
     def __enter__(self):
         return self
 
     def __exit__(self, tp, value, traceback):
-        self.mIter.close()
+        self.mIter.detach()
 
     def getCurrent(self):
         xkey, data = self.mIter.getCurrent()
         if xkey is None:
             return None, None
-        return self.mKeyCodec.decode(xkey), data
+        return (self.mKeyCodec.decode(xkey),
+            self.mColH.decode(data) if data is not None else None)
 
     def seekNext(self):
         return self.mIter.seekNext()

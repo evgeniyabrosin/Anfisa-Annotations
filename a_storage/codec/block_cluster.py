@@ -11,7 +11,8 @@ class BlockerCluster(_BlockAgent):
         _BlockAgent.__init__(self, master_io)
         self.mMaxVarCount = self._getProperty("max-var-count")
         self.mCurWriterKey = None
-        self.mIdxColH = self.getIO()._regColumn("sgidx", conv_bytes = False)
+        self.mIdxColH = self.getIO()._regColumn("sgidx",
+            conv_bytes = False, seek_column = True)
         self.mAllColSeq = [self.mIdxColH] + self.getIO().getMainColumnSeq()
         self.mMaxPosCount = self._getProperty(
             "max-loc-count", self.MAX_POS_COUNT)
@@ -61,7 +62,7 @@ class BlockerCluster(_BlockAgent):
 
     def createReadBlock(self, decode_env_class, key, codec, last_pos = None):
         assert last_pos is None
-        with self.getIO()._seekColumn(key, self.mIdxColH) as iter_h:
+        with self.getIO().seekIt(key) as iter_h:
             key_base, data_base = iter_h.getCurrent()
         pos_seq = None
         if key_base is not None and key_base[0] == key[0]:

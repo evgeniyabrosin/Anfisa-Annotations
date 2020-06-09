@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import sys, json, logging, signal
+import sys, json, logging, signal, contextlib
 
 from .a_storage import AStorage
 from .a_array import AArray
@@ -42,6 +42,8 @@ class AStorageApp:
         signal.signal(signal.SIGTERM, terminateAll)
         signal.signal(signal.SIGHUP, terminateAll)
         signal.signal(signal.SIGINT, terminateAll)
+        if in_container and cls.sConfig.get("stderr"):
+            contextlib.redirect_stderr(cls.sConfig.get("stderr"))
 
     @classmethod
     def terminate(cls, sig, frame):

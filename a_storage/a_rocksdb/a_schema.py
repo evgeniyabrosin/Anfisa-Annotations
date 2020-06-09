@@ -219,7 +219,6 @@ class ASchema:
                 % (self.mName, cnt_bad, cnt_bad + cnt_ok, cnt_fail))
 
     def locateChrom(self, chrom):
-        with self.getIO()._seekColumn((chrom, 1),
-                self.getIO().getMainColumnSeq()[0]) as iter_h:
+        with self.getIO().seekIt((chrom, 1)) as iter_h:
             it_key, _ = iter_h.getCurrent()
             return it_key and it_key[0] == chrom
