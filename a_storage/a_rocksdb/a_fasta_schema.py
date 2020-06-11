@@ -1,8 +1,7 @@
 import json, random, logging
 
 from forome_tools.log_err import logException
-from .a_io import AIOController
-from codec import getKeyCodec
+from .a_blocker import ABlockerPlain
 #========================================
 class AFastaSchema:
     def __init__(self, storage, name, dbname, schema_descr = None):
@@ -15,16 +14,19 @@ class AFastaSchema:
 
         self.mTotals = self.mSchemaDescr.get("total", [])
 
-        self.mIO = AIOController(self, dbname, self.mSchemaDescr["io"])
-        self.mSchemaDescr["io"] = self.mIO.getDescr()
+        self.mDbConnector = self.getStorage().openConnection(
+            dbname, self.isWriteMode())
 
         self.mTypes = dict()
         for idx, type_name in enumerate(self.mSchemaDescr["types"]):
-            tp_col_h = self.mIO._regColumn("fasta", type_name)
-            tp_conv = getKeyCodec(type_name)
+            blocker = ABlockerPlain(self, {
+                "block-type": "plain",
+                "fasta-col-options": {"-compress": "bz2"}},
+                key_codec_type = type_name, col_type = "fasta",
+                col_name = type_name, conv_bytes = True)
             if len(self.mTotals) <= idx:
                 self.mTotals.append(0)
-            tp_h = _FastaTypeHandler(type_name, tp_col_h, tp_conv, idx)
+            tp_h = _FastaTypeHandler(type_name, blocker, idx)
             self.mTypes[type_name] = tp_h
             if (self.mWriteMode and not self.mStorage.isDummyMode()):
                 tp_h.initSamples(self.mStorage.getSamplesCount())
@@ -36,20 +38,23 @@ class AFastaSchema:
             % ", ".join(sorted(self.mTypes.keys())))
 
     def flush(self):
-        self.mIO.flush()
+        for tp_h in self.mTypes.values():
+            tp_h.getBlockIO().flush()
         self.keepSchema()
+
+    def getDbConnector(self):
+        return self.mDbConnector
 
     def keepSchema(self):
         if not self.mWriteMode or self.mStorage.isDummyMode():
             return
         self.mSchemaDescr["total"] = self.mTotals
-        self.mIO.updateWStat()
         self.mStorage.saveSchemaData(self)
         logging.info("Schema %s kept, total = %s"
             % (self.mName, ",".join(map(str, self.mTotals))))
 
     def close(self):
-        self.mIO.flush()
+        self.flush()
         if self.mWriteMode:
             assert len(self.mTypesSet) == len(self.mTypes), (
                 "No data loaded for "
@@ -64,6 +69,9 @@ class AFastaSchema:
 
     def getName(self):
         return self.mName
+
+    def getDbName(self):
+        return self.mDbConnector.getName()
 
     def isWriteMode(self):
         return self.mWriteMode
@@ -84,10 +92,7 @@ class AFastaSchema:
         return True
 
     def getDBKeyType(self):
-        return self.mIO.getDBKeyType()
-
-    def getIO(self):
-        return self.mIO
+        return "fasta"
 
     def getSchemaDescr(self):
         return self.mSchemaDescr
@@ -105,8 +110,8 @@ class AFastaSchema:
             elif prev_diap is not None:
                 assert prev_diap[1] == diap[0]
             assert (diap[0] - 1) % self.mBlockSize == 0
-            self.mIO._putColumns(tp_h.encodeKey("chr" + chrom, diap[0] - 1),
-                [letters], col_seq = tp_h.getColSeq())
+            tp_h.getBlockIO().putRecord(
+                ("chr" + chrom, diap[0] - 1), letters)
             self.mTotals[tp_h.getIdx()] += 1
             tp_h.addSample(chrom, diap, letters)
             prev_diap = diap
@@ -122,12 +127,8 @@ class AFastaSchema:
         base_pos = (pos - 1) - ((pos - 1) % self.mBlockSize)
         if not chrom.startswith("chr"):
             chrom = "chr" + chrom
-
-        seq_l = self.mIO._getColumns(
-            tp_h.encodeKey(chrom, base_pos), col_seq = tp_h.getColSeq())
-
+        letters = tp_h.getBlockIO().getRecord((chrom, base_pos))
         loc_pos = pos - 1 - base_pos
-        letters = seq_l[0]
         if letters is None or len(letters) < loc_pos:
             return None
         if last_pos is None:
@@ -139,9 +140,7 @@ class AFastaSchema:
         while len(letters) == self.mBlockSize:
             base_pos += self.mBlockSize
             loc_last -= self.mBlockSize
-            seq_l = self.mIO._getColumns(tp_h.encodeKey(chrom, base_pos),
-                col_seq = tp_h.getColSeq())
-            letters = seq_l[0]
+            letters = tp_h.getBlockIO().getRecord((chrom, base_pos))
             if letters is None:
                 break
             if loc_last + 1 < len(letters):
@@ -209,10 +208,9 @@ class AFastaSchema:
 
 #========================================
 class _FastaTypeHandler:
-    def __init__(self, name, tp_col_h, tp_conv, idx):
+    def __init__(self, name, block_io, idx):
         self.mName = name
-        self.mColH = tp_col_h
-        self.mHgConv = tp_conv
+        self.mBlockIO = block_io
         self.mIdx = idx
         self.mSmpCount = None
         self.mTotal = None
@@ -226,11 +224,8 @@ class _FastaTypeHandler:
     def getIdx(self):
         return self.mIdx
 
-    def encodeKey(self, chrom, pos):
-        return self.mHgConv.encode(chrom, pos)
-
-    def getColSeq(self):
-        return [self.mColH]
+    def getBlockIO(self):
+        return self.mBlockIO
 
     def initSamples(self, smp_count):
         self.mRH = random.Random(179)

@@ -1,6 +1,7 @@
 import array, json
 #========================================
-DEEP_PREXIX = b"AStorage/DeepComp-0.1\n"
+DEEP_PREXIX = b"AStorage/DeepComp-0.2\n"
+DEEP_PREXIX_PRE = b"AStorage/DeepComp-0.1\n"
 
 class DeepCompWriter:
     def __init__(self, fname):
@@ -8,34 +9,27 @@ class DeepCompWriter:
         self.mFName = fname
         self.mOutput = open(fname, "wb")
         self.mOutput.write(DEEP_PREXIX)
-        self.mColumns = None
+        self.mColumn = None
 
-    def put(self, xkey, col_seq, data_seq):
-        c_names = [column_h.getName() for column_h in col_seq]
+    def put(self, xkey, column_h, xdata):
+        c_name = column_h.getName()
         if self.mColumns is None:
-            self.mColumns = c_names
-            rep_columns = json.dumps(
-                [nm.decode(encoding = "utf-8") for nm in self.mColumns],
+            self.mColumn = c_name
+            rep_columns = json.dumps([self.mColumn.decode(encoding = "utf-8")],
                 ensure_ascii = False)
             self.mOutput.write(bytes(rep_columns + '\n', encoding = "utf-8"))
         else:
-            assert self.mColumns == c_names, (
-                "Only one sequence of columns supported")
-        assert len(col_seq) == len(data_seq)
+            assert self.mColumn == c_name, (
+                "Only one column is supported: %s/%s" %(self.mColumn, c_name))
         header = array.array('L')
-        header.append(len(xkey))
-        seq_d = [xkey]
-        for data in data_seq:
-            header.append(len(data))
-            seq_d.append(data)
+        header = [len(xkey), len(xdata)]
+        seq_d = [xkey, xdata]
         header.tofile(self.mOutput)
         for data in seq_d:
             self.mOutput.write(data)
 
     def close(self):
-        header = array.array('L', [0])
-        for _ in self.mColumns:
-            header.append(0)
+        header = array.array('L', [0, 0])
         header.tofile(self.mOutput)
         self.mOutput.close()
         self.mOutput = None
@@ -43,14 +37,19 @@ class DeepCompWriter:
 #========================================
 class DeepCompReader:
     def __init__(self, fname):
-        global DEEP_PREXIX
+        global DEEP_PREXIX, DEEP_PREXIX_PRE
         self.mFName = fname
         self.mInput = open(fname, "rb")
         line = self.mInput.readline()
-        assert line == DEEP_PREXIX
+        self.mLegacy = (line == DEEP_PREXIX_PRE)
+        if not self.mLegacy:
+            assert line == DEEP_PREXIX
         line = self.mInput.readline()
         self.mColumns = [bytes(name, encoding = "utf-8")
             for name in json.loads(line.decode(encoding = "utf-8"))]
+
+    def isLegacyMode(self):
+        return self.mLegacy
 
     def getColumnNames(self):
         return self.mColumns

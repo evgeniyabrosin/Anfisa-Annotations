@@ -11,7 +11,7 @@ SCHEMA_GTF = {
     "name": "GTF",
     "key": "hg38",
     "io": {
-        "block-type": "frame-idx",
+        "block-type": "frame",
         "pos-keys": ["start", "end"]
     },
     "filter-list": {"feature": "feature"},

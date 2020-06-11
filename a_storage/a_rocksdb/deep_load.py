@@ -1,6 +1,7 @@
 import os, json
 from glob import glob
 from .deep_comp import DeepCompReader
+from codec.block_support import BytesFieldsSupport
 from ingest.in_util import TimeReport
 
 #========================================
@@ -15,20 +16,28 @@ class DeepCompLoader:
             for fname in glob(dir_data + "/*/data.bin"))
 
     def doLoad(self):
-        master_io = self.mSchemaH.getIO()
-        all_col_seq = master_io.getAllColumnSeq()
-        all_col_names = [column_h.getName() for column_h in all_col_seq]
+        block_io = self.mSchemaH.getBlockIO()
+        col_name = block_io.getColumnH().getName()
         for part_name in self.mParts:
             time_rep = TimeReport("Deep part " + part_name)
             reader = DeepCompReader(
                 self.mDirData + "/" + part_name + "/data.bin")
-            assert reader.getColumnNames() == all_col_names
+            if reader.isLegacyMode():
+                bytes_supp = BytesFieldsSupport(
+                    ["bin"] * len(reader.getColumnNames()))
+            else:
+                bytes_supp = None
+                assert reader.getColumnNames() == [col_name]
             cnt = 0
             while True:
                 xkey, data_seq = reader.readOne()
                 if xkey is None:
                     break
-                master_io._directPut(xkey, all_col_seq, data_seq)
+                if bytes_supp is not None:
+                    xdata = bytes_supp.pack(data_seq)
+                else:
+                    xdata = data_seq[0]
+                block_io._putData(block_io.decodeXKey(xkey), xdata, use_encode = False)
                 cnt += 1
                 if cnt % 10000 == 0:
                     time_rep.portion(cnt)

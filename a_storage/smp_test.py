@@ -38,9 +38,9 @@ class SchemaSmpH:
         self.mArrayName = array_name
         self.mSchemaName = schema_name
         self.mDbName = db_name
-        self.mSamples =[]
-        with open(config["schema-dir"] + "/" + self.mDbName +
-                "/" + self.mSchemaName + ".1.samples",
+        self.mSamples = []
+        with open(config["schema-dir"] + "/" + self.mDbName
+                + "/" + self.mSchemaName + ".1.samples",
                 "r", encoding = "utf-8") as inp:
             cur_key, cur_no = None, None
             for line in inp:
@@ -77,6 +77,7 @@ class SchemaSmpH:
         logging.error("At smp %s[%s]: Diff %s"
             % (self.mSchemaName, it_no, presentations[1]))
         return False
+
 
 #=====================================
 sSmpSeq = []
@@ -121,7 +122,8 @@ class TestRunner(Thread):
             smp_to = len(smp_h)
         is_ok = True
         for smp_idx in range(smp_from, smp_to):
-            test_rec = self.mRestAgent.call(None, "GET", smp_h.formRequest(smp_idx))
+            test_rec = self.mRestAgent.call(
+                None, "GET", smp_h.formRequest(smp_idx))
             is_ok &= smp_h.testIt(smp_idx, test_rec)
         return is_ok
 
@@ -137,6 +139,7 @@ class TestRunner(Thread):
         logging.info("Done Runner %d: %d bad: %d"
             % (self.mRunId, self.mCountAll, self.mCountBad))
 
+
 runners = [TestRunner(idx, sSmpSeq, rest_agent, args.portions, args.tasks)
     for idx in range(args.threads)]
 
@@ -145,8 +148,9 @@ while True:
     if not any(runner.is_alive() for runner in runners):
         break
 
+n_tasks = sum(runner.mCountAll for runner in runners)
 logging.info("Total tasks: %d in %d threads"
-    % (args.threads * args.tasks, args.threads))
+    % (n_tasks, args.threads))
 
 date_done = datetime.now()
 logging.info("Done at " + str(date_started)

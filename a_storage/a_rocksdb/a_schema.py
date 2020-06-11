@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from forome_tools.log_err import logException
 from codec import createDataCodec
-from .a_io import AIOController
+from a_rocksdb import createBlocker
 #========================================
 class ASchema:
     def __init__(self, storage, name, dbname,
@@ -17,10 +17,11 @@ class ASchema:
         self.mSchemaDescr = self.mStorage.preLoadSchemaData(
             dbname, self.mName, schema_descr, self.mUpdateMode)
 
-        self.mRequirements = {"base"}
+        self.mRequirements = set()
         self.mCodecDict = dict()
         self.mCodec = createDataCodec(self, None, self.mSchemaDescr["top"],
             self.mSchemaDescr["name"])
+        self.mWithStr = "str" in self.mRequirements
         self.mSchemaDescr["top"] = self.mCodec.getSchemaDescr()
         self.mFilters = self.mSchemaDescr.get("filter-list", dict())
         self.mTotal = self.mSchemaDescr.get("total", 0)
@@ -37,12 +38,15 @@ class ASchema:
         else:
             self.mSamples = None
 
-        self.mIO = AIOController(self, dbname, self.mSchemaDescr["io"])
-        self.mSchemaDescr["io"] = self.mIO.getDescr()
+        self.mDbConnector = self.getStorage().openConnection(
+            dbname, self.isWriteMode())
+
+        self.mBlockIO = createBlocker(self, self.mSchemaDescr["io"],
+            self.mSchemaDescr["key"])
+        self.mSchemaDescr["io"] = self.mBlockIO.getDescr()
 
     def flush(self):
-        self.mIO.flush()
-        self.keepSchema()
+        self.mBlockIO.flush()
 
     def keepSchema(self):
         if (not self.mWriteMode or self.mUpdateMode
@@ -50,17 +54,18 @@ class ASchema:
             return
         self.mSchemaDescr["total"] = self.mTotal
         self.mCodec.updateWStat()
-        self.mIO.updateWStat()
+        self.mBlockIO.updateWStat()
         self.mStorage.saveSchemaData(self)
         logging.info("Schema %s kept, total = %d" % (self.mName, self.mTotal))
 
     def close(self):
-        self.mIO.flush()
+        self.flush()
         self.keepSchema()
         self.keepSamples()
         if (self.mWriteMode
                 and not (self.mUpdateMode or self.mStorage.isDummyMode())):
             self.checkSamples()
+        self.mStorage.closeConnection(self.mDbConnector)
 
     def _addDirectSample(self, key, record):
         self.mSamples.append([key, record])
@@ -68,8 +73,14 @@ class ASchema:
     def getStorage(self):
         return self.mStorage
 
+    def getDbConnector(self):
+        return self.mDbConnector
+
     def getName(self):
         return self.mName
+
+    def getDbName(self):
+        return self.mDbConnector.getName()
 
     def isWriteMode(self):
         return self.mWriteMode
@@ -80,8 +91,14 @@ class ASchema:
     def getTotal(self):
         return self.mTotal
 
-    def getIO(self):
-        return self.mIO
+    def getBlockIO(self):
+        return self.mBlockIO
+
+    def _getCodec(self):
+        return self.mCodec
+
+    def _withStr(self):
+        return self.mWithStr
 
     def getSchemaDescr(self):
         return self.mSchemaDescr
@@ -103,13 +120,13 @@ class ASchema:
         return self.mSchemaDescr.get("use-last-pos", False)
 
     def getDBKeyType(self):
-        return self.mIO.getDBKeyType()
+        return self.mBlockIO.getDBKeyType()
 
     def isOptionRequired(self, opt):
         return opt in self.mRequirements
 
     def putRecord(self, key, record):
-        self.mIO.putRecord(key, record, self.mCodec)
+        self.mBlockIO.putRecord(key, record)
         self.mTotal += 1
         time_now = datetime.now()
         if (self.mNextKeepTime is not None
@@ -129,7 +146,7 @@ class ASchema:
                     self.mSamples[idx] = [key, record]
 
     def getRecord(self, key, filtering = None, last_pos = None):
-        ret = self.mIO.getRecord(key, self.mCodec, last_pos)
+        ret = self.mBlockIO.getRecord(key, last_pos)
         if ret is not None and filtering is not None:
             for key, value in filtering.items():
                 field = self.mFilters.get(key)
@@ -151,7 +168,7 @@ class ASchema:
                 "w", encoding = "utf-8") as output:
             for idx, smp_info in enumerate(self.mSamples):
                 key, full_record = smp_info
-                record = self.getIO().normalizeSample(key, full_record)
+                record = self.mBlockIO.normalizeSample(key, full_record)
                 ready_samples.append([key, record])
                 print(json.dumps({
                     "no": idx + 1,
@@ -161,7 +178,7 @@ class ASchema:
                 "w", encoding = "utf-8") as output:
             for idx, smp_info in enumerate(ready_samples):
                 key, record0 = smp_info
-                record1 = self.mIO.transformRecord(key, record0, self.mCodec)
+                record1 = self.transformRecord(key, record0)
                 presentations = [json.dumps(rec,
                     sort_keys = True, ensure_ascii = False)
                     for rec in (record0, record1)]
@@ -172,7 +189,7 @@ class ASchema:
                 print(presentations[1], file = output)
 
     def checkSamples(self, output_stream = None):
-        if not self.getIO().properAccess():
+        if not self.mDbConnector.properAccess():
             return
         smp_input = open(self.mStorage.getSchemaFilePath(self, "1.samples"),
             "r", encoding = "utf-8")
@@ -218,7 +235,79 @@ class ASchema:
             logging.error("BAD! Samples check for %s: %d of %d (+ %d failures)"
                 % (self.mName, cnt_bad, cnt_bad + cnt_ok, cnt_fail))
 
+    def makeDataEncoder(self):
+        return ADataEncodeEnv(self)
+
+    def decodeData(self, data_seq):
+        return ADataDecodeEnv(self, data_seq)
+
+    def transformRecord(self, key, record):
+        encode_env = ADataEncodeEnv(self)
+        encode_env.put(record)
+        decode_env = ADataDecodeEnv(self, encode_env.result())
+        ret = decode_env.get(0)
+        return self.mBlockIO.normalizeSample(key, ret)
+
     def locateChrom(self, chrom):
-        with self.getIO().seekIt((chrom, 1)) as iter_h:
+        with self.mBlockIO()._seekIt((chrom, 1)) as iter_h:
             it_key, _ = iter_h.getCurrent()
             return it_key and it_key[0] == chrom
+
+#========================================
+class ADataEncodeEnv:
+    def __init__(self, schema):
+        self.mObjSeq = []
+        self.mStrSeq = [] if schema._withStr() else None
+        self.mCodec = schema._getCodec()
+        self.mIntDict = None
+
+    def addStr(self, txt, repeatable = False):
+        if repeatable:
+            if self.mIntDict is None:
+                self.mIntDict = dict()
+            else:
+                if txt in self.mIntDict:
+                    return self.mIntDict[txt]
+        ret = len(self.mStrSeq)
+        self.mStrSeq.append(txt)
+        if repeatable:
+            self.mIntDict[txt] = ret
+        return ret
+
+    def put(self, record):
+        self.mObjSeq.append(self.mCodec.encode(record, self))
+
+    def putValueStr(self, value_str):
+        self.mObjSeq.append(value_str)
+
+    def result(self):
+        ret = ['\0'.join(self.mObjSeq)]
+        if self.mStrSeq is not None:
+            ret.append('\0'.join(self.mStrSeq))
+        return ret
+
+#========================================
+class ADataDecodeEnv:
+    def __init__(self, schema, data_seq):
+        self.mCodec = schema._getCodec()
+        self.mObjSeq = (data_seq[0].split('\0')
+            if data_seq is not None else [])
+        if len(data_seq) > 1 and data_seq[1] is not None:
+            self.mStrSeq = data_seq[1].split('\0')
+        else:
+            self.mStrSeq = None
+
+    def getStr(self, idx):
+        return self.mStrSeq[idx]
+
+    def __len__(self):
+        return len(self.mObjSeq)
+
+    def getValueStr(self, idx):
+        return self.mObjSeq[idx]
+
+    def get(self, idx):
+        xdata = self.mObjSeq[idx]
+        if not xdata:
+            return None
+        return self.mCodec.decode(json.loads(xdata), self)

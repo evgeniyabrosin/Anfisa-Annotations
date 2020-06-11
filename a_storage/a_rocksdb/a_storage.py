@@ -3,20 +3,6 @@ import os, shutil, gc, json, logging
 from .a_connector import AConnector
 #========================================
 class AStorage:
-    sDefaultColumnOptions = {
-        "base": {
-            "-compress": "bz2",
-        },
-        "str": {
-            "-compress": "bz2",
-        },
-        "sgidx": {
-        },
-        "fasta": {
-            "-compress": "bz2",
-        }
-    }
-
     def __init__(self, config,
             dummy_mode = False, deep_comp_mode = False):
         self.mConfig = config
@@ -27,9 +13,6 @@ class AStorage:
 
     def getDbOptions(self):
         return self.mConfig["db-options"].items()
-
-    def getDefaulColumnOptions(self, column_type):
-        return self.sDefaultColumnOptions[column_type]
 
     def getDBFilePath(self, name):
         return self.mConfig["db-dir"] + '/' + name
@@ -58,7 +41,7 @@ class AStorage:
                 AConnector(self, name, write_mode))
         ret = self.mConnectors[name]
         ret._incRefCount()
-        assert ret.getWriteMode() == write_mode
+        assert ret.isWriteMode() == write_mode
         return ret
 
     def closeConnection(self, connector_h):
@@ -126,7 +109,7 @@ class AStorage:
         return schema_descr
 
     def getSchemaFilePath(self, schema_h, file_ext):
-        return (self.getSupportFilePath(schema_h.getIO().getDbName())
+        return (self.getSupportFilePath(schema_h.getDbName())
             + ("/%s.%s" % (schema_h.getName(), file_ext)))
 
     def saveSchemaData(self, schema_h):

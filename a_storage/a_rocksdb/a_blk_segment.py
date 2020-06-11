@@ -1,20 +1,26 @@
-from ._block_agent import _BlockAgent
+from .a_blocker import ABlocker
+from codec.block_support import BytesFieldsSupport
 #===============================================
-class BlockerSegment(_BlockAgent):
-    def __init__(self, master_io):
-        _BlockAgent.__init__(self, master_io)
+class ABlockerSegment(ABlocker):
+    def __init__(self, schema, properties, key_codec_type):
+        ABlocker.__init__(self, schema, properties, key_codec_type,
+            use_cache = True, conv_bytes = False, seek_column = False)
         self.mPosFrame = self._getProperty("pos-frame")
-        self.mCurWriterKey = None
+        self.mLastWriteKey = None
         if self.isWriteMode():
-            stat_info = self._getProperty("stat")
+            stat_info = self._getProperty("stat", dict())
             self.mCountSegments = stat_info.get("segments", 0)
             self.mCountPosGaps = stat_info.get("seg-pos-gaps", 0)
+        self.mBytesSupp = BytesFieldsSupport(["bz2"])
+        if self.getSchema()._withStr():
+            self.mBytesSupp.addConv("bz2")
+        self._onDuty()
 
     def _addWriteStat(self, count_pos_gaps):
         self.mCountSegments += 1
         self.mCountPosGaps  += count_pos_gaps
 
-    def getType(self):
+    def getBlockType(self):
         return "segment"
 
     def updateWStat(self):
@@ -32,86 +38,78 @@ class BlockerSegment(_BlockAgent):
         return (base_chrom == chrom
             and base_pos <= pos < base_pos + self.mPosFrame)
 
-    def createWriteBlock(self, encode_env, key, codec):
-        if (self.mCurWriterKey is not None
-                and key[0] == self.mCurWriterKey[0]):
-            assert self.mCurWriterKey[1] < key[1]
-        self.mCurWriterKey = key
-        return _WriteSegmentBlock(self, encode_env, key, codec.isAtomic())
+    def putBlock(self, key, main_data_seq):
+        self._putData(key, self.mBytesSupp.pack(main_data_seq))
 
-    def createReadBlock(self, decode_env_class, key, codec, last_pos = None):
+    def getBlock(self, key):
+        xdata = self._getData(key)
+        if xdata is None:
+            return None
+        return self.mBytesSupp.unpack(xdata)
+
+    def openWriteBlock(self, key):
+        if (self.mLastWriteKey is not None
+                and key[0] == self.mLastWriteKey[0]):
+            assert self.mLastWriteKey[1] < key[1]
+        self.mLastWriteKey = key
+        return _WriteBlock_Segment(self, key)
+
+    def openReadBlock(self, key, last_pos = None):
         assert last_pos is None
-        return _ReadSegmentBlock(self, decode_env_class, key, codec.isAtomic())
+        return _ReadBlock_Segment(self, key)
 
 #===============================================
-class _WriteSegmentBlock:
-    def __init__(self, blocker, encode_env, key, no_gap):
+class _WriteBlock_Segment:
+    def __init__(self, blocker, key):
         self.mBlocker = blocker
-        self.mEncodeEnv = encode_env
         self.mChrom, pos = key
         self.mBasePos = self.mBlocker.basePos(pos)
-        self.mCheckStartGap = not no_gap
+        self.mEncodeEnv = self.mBlocker.getSchema().makeDataEncoder()
         self.mCurPos = self.mBasePos
         self.mCountPosGaps = 0
 
-    def goodToWrite(self, key):
+    def goodToAdd(self, key):
         return self.mBlocker.isGoodKey(self.mChrom, self.mBasePos, key)
 
-    def addRecord(self, key, record, codec):
+    def addRecord(self, key, record):
         chrom, pos = key
         assert self.mChrom == chrom and self.mCurPos <= pos
-        if self.mCheckStartGap:
-            if pos > self.mCurPos:
-                self.mEncodeEnv.putValueStr(str(pos - self.mCurPos))
-                self.mCurPos = pos
-            self.mCheckStartGap = False
         while self.mCurPos < pos:
-            self.mEncodeEnv.putValueStr('')
+            self.mEncodeEnv.put(None)
             self.mCurPos += 1
             self.mCountPosGaps += 1
-        self.mEncodeEnv.put(record, codec)
+        self.mEncodeEnv.put(record)
         self.mCurPos += 1
 
     def finishUp(self):
         if self.mCurPos != self.mBasePos:
-            self.mBlocker.getIO()._putColumns(
+            self.mBlocker.putBlock(
                 (self.mChrom, self.mBasePos), self.mEncodeEnv.result())
             self.mBlocker._addWriteStat(self.mCountPosGaps)
         del self.mEncodeEnv
 
 #===============================================
-class _ReadSegmentBlock:
-    def __init__(self, blocker, decode_env_class, key, no_gap):
+class _ReadBlock_Segment:
+    def __init__(self, blocker, key):
         self.mBlocker = blocker
         self.mChrom, pos = key
         self.mBasePos = self.mBlocker.basePos(pos)
-        data_seq = self.mBlocker.getIO()._getColumns(
-            (self.mChrom, self.mBasePos))
-        if data_seq[0] is None:
-            self.mDecodeEnv = None
-            return
-        self.mDecodeEnv = decode_env_class(data_seq)
-        self.mGapCount = 0
-        if not no_gap:
-            check_val = self.mDecodeEnv.getValueStr(0)
-            if check_val.isdigit():
-                self.mGapCount = int(check_val)
-                assert self.mGapCount > 0
+        data_seq = self.mBlocker.getBlock((self.mChrom, self.mBasePos))
+        self.mDataSeq = (self.mBlocker.getSchema().decodeData(data_seq)
+            if data_seq is not None else None)
 
     def goodToRead(self, key, last_pos = None):
         assert last_pos is None
         return self.mBlocker.isGoodKey(self.mChrom, self.mBasePos, key)
 
-    def getRecord(self, key, codec, last_pos = None):
+    def getRecord(self, key, last_pos = None):
         assert last_pos is None
         chrom, pos = key
         assert self.mChrom == chrom
-        if self.mDecodeEnv is None:
+        if self.mDataSeq is None:
             return None
         idx = key[1] - self.mBasePos
         assert 0 <= idx
-        if self.mGapCount > 0:
-            idx -= self.mGapCount - 1
-        if idx < 0 or idx >= len(self.mDecodeEnv):
+        if idx < 0 or idx >= len(self.mDataSeq):
             return None
-        return self.mDecodeEnv.get(idx, codec)
+        return self.mDataSeq.get(idx)

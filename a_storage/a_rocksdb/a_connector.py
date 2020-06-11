@@ -72,7 +72,7 @@ class AConnector:
                 setattr(col_options, key, val)
         return col_options
 
-    def _regColumn(self, c_name, col_attrs, seek_column = False):
+    def regColumn(self, c_name, col_attrs, seek_column = False):
         assert self.mColHandlers is None
         col_name = bytes(c_name, encoding = "utf-8")
         assert col_name not in self.mColIndex
@@ -84,10 +84,10 @@ class AConnector:
                 self._colOptions(col_attrs), col_name)
             del cf
         if seek_column:
-            self._regSeekColumn(col_name)
+            self.regSeekColumn(col_name)
         return col_name
 
-    def _regSeekColumn(self, col_name):
+    def regSeekColumn(self, col_name):
         assert self.mSeekIterator.getColName() is None, (
             "Duplication of seek columns: %s/%s"
             % (self.mSeekIterator.getColName(), col_name))
@@ -125,7 +125,7 @@ class AConnector:
             del col_h
         self.mDB.close()
 
-    def getWriteMode(self):
+    def isWriteMode(self):
         return self.mWriteMode
 
     def getColumnCount(self):
@@ -146,31 +146,27 @@ class AConnector:
             logging.info("Keys for %s/%s: %s"
                 % (self.mName, col_h.get_name(), json.dumps(seq)))
 
-    def putData(self, xkey, col_seq, data_seq, use_encode = True):
+    def putData(self, xkey, column_h, data, use_encode = True):
         assert self.mWriteMode
         if self.mDeepWriter is not None:
-            self.mDeepWriter.put(xkey, col_seq, [column_h.encode(data)
-                for column_h, data in zip(col_seq, data_seq)])
+            self.mDeepWriter.put(xkey, column_h, column_h.encode(data))
             return
         if self.mDB is None:
             return
-        for column_h, data in zip(col_seq, data_seq):
-            if use_encode:
-                data = column_h.encode(data)
-            if len(data) > 0:
-                col_h = self._getColH(column_h.getName())
-                self.mDB.put(self.mWrOpts, col_h, xkey, data)
-
-    def getData(self, xkey, col_seq):
-        ret = []
-        if self.mDB is None:
-            return ret
-        for column_h in col_seq:
+        if use_encode:
+            data = column_h.encode(data)
+        if len(data) > 0:
             col_h = self._getColH(column_h.getName())
-            blob = self.mDB.get(self.mRdOpts, col_h, xkey)
-            data = blob.data if blob.status.ok() else None
-            ret.append(column_h.decode(data))
-        return ret
+            self.mDB.put(self.mWrOpts, col_h, xkey, data)
+
+    def getData(self, xkey, column_h):
+        if self.mDB is None:
+            return None
+        col_h = self._getColH(column_h.getName())
+        blob = self.mDB.get(self.mRdOpts, col_h, xkey)
+        if not blob.status.ok():
+            return None
+        return column_h.decode(blob.data)
 
     def seekIt(self, xkey):
         return self.mSeekIterator.attach(xkey)

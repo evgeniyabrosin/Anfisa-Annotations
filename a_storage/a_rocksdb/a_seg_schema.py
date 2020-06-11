@@ -51,9 +51,6 @@ class ASegmentedSchema:
     def getTotal(self):
         return sum(schema_h.getTotal() for schema_h in self.mSegSchemas)
 
-    def getIO(self):
-        return None
-
     def getSchemaDescr(self):
         return None
 
@@ -74,7 +71,7 @@ class ASegmentedSchema:
         for schema_h in self.mSegSchemas:
             if output_stream is not None:
                 print("Check samples for sub-schema %s"
-                    % schema_h.getIO().getDbName(), file = output_stream)
+                    % schema_h.getDbName(), file = output_stream)
             schema_h.checkSamples(output_stream)
 
     def getRecord(self, key, filtering = None, last_pos = None):
