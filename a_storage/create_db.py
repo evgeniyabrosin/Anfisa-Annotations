@@ -81,3 +81,4 @@ if __name__ == '__main__':
             deep_loader.finishUp()
         a_schema.close()
         a_storage.deactivate()
+    logging.info("DB creation %s done" % args.mode)
