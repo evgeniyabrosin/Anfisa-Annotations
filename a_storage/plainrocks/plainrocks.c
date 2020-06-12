@@ -31,7 +31,6 @@ void PlainDbHandle::close() {
             mDB->DestroyColumnFamilyHandle(col_h);
         }
         CancelAllBackgroundWork(mDB);
-        mDB->Close();
         delete mDB;
     } else 
     {
