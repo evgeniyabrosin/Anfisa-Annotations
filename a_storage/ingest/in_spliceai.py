@@ -12,8 +12,8 @@ SCHEMA_SPLICE_AI = {
     "key": "hg38",
     "no-stat-details": True,
     "io": {
-        "block-type": "cluster",
-        "max-var-count": 2000
+        "block-type": "segment",
+        "pos-frame": 256
     },
     "filter-list": {"ref": "REF", "alt": "ALT"},
     "top": {

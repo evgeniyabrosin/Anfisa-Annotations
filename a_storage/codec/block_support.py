@@ -68,20 +68,40 @@ class BinSupport:
 sConvertors["bin"] = BinSupport
 #===============================================
 class BytesFieldsSupport:
-    def __init__(self, conv_code_seq):
+    def __init__(self, conv_code_seq,
+            stat_max_seq = None, stat_sum_seq = None):
         self.mConvSeq = []
+        self.mStatMaxSeq = stat_max_seq
+        self.mStatSumSeq = stat_sum_seq
         for conv_code in conv_code_seq:
             self.addConv(conv_code)
+
+    def getStatMaxSeq(self):
+        return self.mStatMaxSeq
+
+    def getStatSumSeq(self):
+        return self.mStatSumSeq
 
     def addConv(self, conv_code):
         global sConvertors
         self.mConvSeq.append(sConvertors[conv_code])
+        if self.mStatMaxSeq is not None:
+            if len(self.mStatMaxSeq) < len(self.mConvSeq):
+                self.mStatMaxSeq.append(0)
+                self.mStatSumSeq.append(0)
+            assert len(self.mStatMaxSeq) == len(self.mStatSumSeq)
 
     def pack(self, seq_data):
         xseq = [conv.toBytes(data)
                 for conv, data in zip(self.mConvSeq, seq_data)]
         assert len(xseq) == len(self.mConvSeq)
         len_header = [len(xdata) for xdata in xseq[:-1]]
+        if self.mStatMaxSeq is not None:
+            for idx, xdata in enumerate(xseq):
+                p_size = len(xdata)
+                self.mStatSumSeq[idx] += p_size
+                if p_size > self.mStatMaxSeq[idx]:
+                    self.mStatMaxSeq[idx] = p_size
         return b''.join([ll.to_bytes(4, 'big') for ll in len_header] + xseq)
 
     def unpack(self, xbytes):

@@ -13,16 +13,15 @@ class DeepCompWriter:
 
     def put(self, xkey, column_h, xdata):
         c_name = column_h.getName()
-        if self.mColumns is None:
+        if self.mColumn is None:
             self.mColumn = c_name
             rep_columns = json.dumps([self.mColumn.decode(encoding = "utf-8")],
                 ensure_ascii = False)
             self.mOutput.write(bytes(rep_columns + '\n', encoding = "utf-8"))
         else:
             assert self.mColumn == c_name, (
-                "Only one column is supported: %s/%s" %(self.mColumn, c_name))
-        header = array.array('L')
-        header = [len(xkey), len(xdata)]
+                "Only one column is supported: %s/%s" % (self.mColumn, c_name))
+        header = array.array('L', [len(xkey), len(xdata)])
         seq_d = [xkey, xdata]
         header.tofile(self.mOutput)
         for data in seq_d:

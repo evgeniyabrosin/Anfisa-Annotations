@@ -37,7 +37,8 @@ class DeepCompLoader:
                     xdata = bytes_supp.pack(data_seq)
                 else:
                     xdata = data_seq[0]
-                block_io._putData(block_io.decodeXKey(xkey), xdata, use_encode = False)
+                block_io._putData(
+                    block_io.decodeXKey(xkey), xdata, use_encode = False)
                 cnt += 1
                 if cnt % 10000 == 0:
                     time_rep.portion(cnt)
