@@ -88,9 +88,21 @@ public class SourceHttp38 {
 			return new JSONObject();
 		}
 
-		return request(
-				String.format("http://%s:%s/get?array=hg38&loc=%s:%s", aStorage.host, aStorage.port, pos38.chromosome.getChromosome(), pos38.value)
-		);
+		int attempts = 5;
+		while (true) {
+			try {
+				return request(
+						String.format("http://%s:%s/get?array=hg38&loc=%s:%s", aStorage.host, aStorage.port, pos38.chromosome.getChromosome(), pos38.value)
+				);
+			} catch (Throwable t) {
+				if (attempts-- > 0) {
+					log.error("Exception request, last attempts: {}", attempts, t);
+					continue;
+				} else {
+					throw t;
+				}
+			}
+		}
 	}
 
 	private JSONObject request(String url) {
