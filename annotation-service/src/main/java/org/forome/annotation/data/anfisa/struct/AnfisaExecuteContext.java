@@ -30,6 +30,8 @@ public class AnfisaExecuteContext {
 
 	public Double gnomadAfFam;
 
+	public JSONObject sourceSpliceAI_and_dbNSFP;
+
 	public AnfisaExecuteContext(
 			AnfisaInput anfisaInput,
 			Variant variant,

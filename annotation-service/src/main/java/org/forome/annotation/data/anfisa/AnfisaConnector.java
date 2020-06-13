@@ -39,6 +39,7 @@ import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
+import org.forome.annotation.data.sourceHttp38.SourceHttp38;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
@@ -87,6 +88,8 @@ public class AnfisaConnector implements AutoCloseable {
 	public final GTEXConnector gtexConnector;
 	public final PharmGKBConnector pharmGKBConnector;
 
+	private final SourceHttp38 sourceHttp38;
+
 	public AnfisaConnector(
 			GnomadConnector gnomadConnector,
 			SpliceAIConnector spliceAIConnector,
@@ -96,7 +99,8 @@ public class AnfisaConnector implements AutoCloseable {
 			LiftoverConnector liftoverConnector,
 			GTFConnector gtfConnector,
 			GTEXConnector gtexConnector,
-			PharmGKBConnector pharmGKBConnector
+			PharmGKBConnector pharmGKBConnector,
+			SourceHttp38 sourceHttp38
 	) {
 		this.gnomadConnector = gnomadConnector;
 		this.spliceAIConnector = spliceAIConnector;
@@ -108,6 +112,8 @@ public class AnfisaConnector implements AutoCloseable {
 		this.pharmGKBConnector = pharmGKBConnector;
 
 		this.gtfAnfisaBuilder = new GtfAnfisaBuilder(gtfConnector);
+
+		this.sourceHttp38 = sourceHttp38;
 	}
 
 	public AnfisaResult build(
@@ -126,6 +132,9 @@ public class AnfisaConnector implements AutoCloseable {
 		AnfisaResultView view = new AnfisaResultView();
 
 		data.version = AppVersion.getVersionFormat();
+		context.sourceSpliceAI_and_dbNSFP = sourceHttp38.get(
+				anfisaInput.mCase.assembly, variant.chromosome, variant.getStart()
+		);
 
 		callGnomAD(context, variant, anfisaInput.mCase, filters);
 		callSpliceai(context, data, filters, variant);
@@ -504,6 +513,7 @@ public class AnfisaConnector implements AutoCloseable {
 		Assembly assembly = context.anfisaInput.mCase.assembly;
 
 		SpliceAIResult spliceAIResult = spliceAIConnector.getAll(
+				context,
 				assembly,
 				variant.chromosome.getChar(),
 				lowest_coord(variant),

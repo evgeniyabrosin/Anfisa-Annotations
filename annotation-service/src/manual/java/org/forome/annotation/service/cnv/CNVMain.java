@@ -38,6 +38,7 @@ import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
+import org.forome.annotation.data.sourceHttp38.SourceHttp38;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
@@ -73,7 +74,7 @@ public class CNVMain {
 //        GnomadConnector gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 
 		SpliceAIConnector spliceAIConnector = new SpliceAIConnectorImpl(
-				new SpliceAIDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector)
+				new SpliceAIDataSourceHttp(liftoverConnector)
 		);
 //		SpliceAIConnector spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
@@ -98,6 +99,10 @@ public class CNVMain {
 //		PharmGKBConnector pharmGKBConnector = new PharmGKBConnectorHttp();
 		PharmGKBConnector pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
+		SourceHttp38 sourceHttp38 = new SourceHttp38(
+				databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
+		);
+
 		EnsemblVepService ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
 		AnfisaConnector anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
@@ -108,7 +113,8 @@ public class CNVMain {
 				liftoverConnector,
 				gtfConnector,
 				gtexConnector,
-				pharmGKBConnector
+				pharmGKBConnector,
+				sourceHttp38
 		);
 		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 

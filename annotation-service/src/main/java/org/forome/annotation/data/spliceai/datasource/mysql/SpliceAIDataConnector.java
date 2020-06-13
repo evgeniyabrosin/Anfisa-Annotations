@@ -20,6 +20,7 @@ package org.forome.annotation.data.spliceai.datasource.mysql;
 
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.data.DatabaseConnector;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.spliceai.datasource.SpliceAIDataSource;
 import org.forome.annotation.data.spliceai.struct.Row;
 import org.forome.annotation.exception.ExceptionBuilder;
@@ -80,7 +81,7 @@ public class SpliceAIDataConnector implements SpliceAIDataSource, Closeable {
 	}
 
 	@Override
-	public List<Row> getAll(Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
+	public List<Row> getAll(AnfisaExecuteContext context, Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
 		if (assembly != Assembly.GRCh37) {
 			throw new RuntimeException("Not implemented");
 		}

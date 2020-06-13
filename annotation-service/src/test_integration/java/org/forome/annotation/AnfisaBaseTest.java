@@ -35,6 +35,7 @@ import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.ref.RefConnector;
+import org.forome.annotation.data.sourceHttp38.SourceHttp38;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
@@ -65,6 +66,7 @@ public class AnfisaBaseTest {
 	protected static RefConnector refConnector;
 	protected static GTEXConnectorMysql gtexConnector;
 	protected static PharmGKBConnector pharmGKBConnector;
+	protected static SourceHttp38 sourceHttp38;
 	protected static EnsemblVepService ensemblVepService;
 	protected static AnfisaConnector anfisaConnector;
 
@@ -93,7 +95,7 @@ public class AnfisaBaseTest {
 //		});
 
 		spliceAIConnector = new SpliceAIConnectorImpl(
-				new SpliceAIDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector)
+				new SpliceAIDataSourceHttp(liftoverConnector)
 		);
 //		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
@@ -123,6 +125,10 @@ public class AnfisaBaseTest {
 //		pharmGKBConnector = new PharmGKBConnectorHttp();
 		pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
+		sourceHttp38 = new SourceHttp38(
+				databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
+		);
+
 		ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector, refConnector);
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
@@ -133,7 +139,8 @@ public class AnfisaBaseTest {
 				liftoverConnector,
 				gtfConnector,
 				gtexConnector,
-				pharmGKBConnector
+				pharmGKBConnector,
+				sourceHttp38
 		);
 	}
 

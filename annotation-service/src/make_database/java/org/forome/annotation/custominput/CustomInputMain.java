@@ -43,6 +43,7 @@ import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
+import org.forome.annotation.data.sourceHttp38.SourceHttp38;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
@@ -100,6 +101,7 @@ public class CustomInputMain {
 	private static GTFConnector gtfConnector;
 	private static GTEXConnector gtexConnector;
 	private static PharmGKBConnector pharmGKBConnector;
+	private static SourceHttp38 sourceHttp38;
 	private static EnsemblVepService ensemblVepService;
 	private static AnfisaConnector anfisaConnector;
 	private static Processing processing;
@@ -176,7 +178,7 @@ public class CustomInputMain {
 //			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e));
 
 			spliceAIConnector = new SpliceAIConnectorImpl(
-					new SpliceAIDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector)
+					new SpliceAIDataSourceHttp(liftoverConnector)
 			);
 //			spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
@@ -200,6 +202,10 @@ public class CustomInputMain {
 //			pharmGKBConnector = new PharmGKBConnectorHttp();
 			pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
+			sourceHttp38 = new SourceHttp38(
+					databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
+			);
+
 			ensemblVepService = new EnsemblVepExternalService((t, e) -> fail(e));
 			anfisaConnector = new AnfisaConnector(
 					gnomadConnector,
@@ -210,7 +216,8 @@ public class CustomInputMain {
 					liftoverConnector,
 					gtfConnector,
 					gtexConnector,
-					pharmGKBConnector
+					pharmGKBConnector,
+					sourceHttp38
 			);
 			processing = new Processing(anfisaConnector, TypeQuery.WIDE_HG19);
 

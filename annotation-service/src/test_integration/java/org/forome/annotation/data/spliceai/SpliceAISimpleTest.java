@@ -28,7 +28,7 @@ public class SpliceAISimpleTest extends SpliceAIBaseTest {
 
 	@Test
 	public void testGetAll() throws Exception {
-		SpliceAIResult spliceAIResult = spliceAIConnector.getAll(Assembly.GRCh37,"10", 92897, "A", new Allele("C"));
+		SpliceAIResult spliceAIResult = spliceAIConnector.getAll(null, Assembly.GRCh37,"10", 92897, "A", new Allele("C"));
 		Assert.assertEquals("unlikely", spliceAIResult.cases);
 		Assert.assertEquals(0.1391f, spliceAIResult.max_ds, 0.000001f);
 

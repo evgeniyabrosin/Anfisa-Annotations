@@ -18,6 +18,7 @@
 
 package org.forome.annotation.data.spliceai;
 
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.spliceai.datasource.SpliceAIDataSource;
 import org.forome.annotation.data.spliceai.struct.Row;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
@@ -60,8 +61,8 @@ public class SpliceAIConnectorImpl implements SpliceAIConnector, AutoCloseable {
 	}
 
 	@Override
-	public SpliceAIResult getAll(Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
-		List<Row> rows = spliceAIDataSource.getAll(assembly, chromosome, position, ref, altAllele);
+	public SpliceAIResult getAll(AnfisaExecuteContext context, Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
+		List<Row> rows = spliceAIDataSource.getAll(context, assembly, chromosome, position, ref, altAllele);
 
 		String cases;
 		Float max_ds;

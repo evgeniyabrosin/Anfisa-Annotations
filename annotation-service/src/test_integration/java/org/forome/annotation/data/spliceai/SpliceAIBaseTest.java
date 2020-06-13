@@ -45,7 +45,7 @@ public class SpliceAIBaseTest {
 		LiftoverConnector liftoverConnector = new LiftoverConnector();
 
 		spliceAIConnector = new SpliceAIConnectorImpl(
-				new SpliceAIDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector)
+				new SpliceAIDataSourceHttp(liftoverConnector)
 		);
 //		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 	}

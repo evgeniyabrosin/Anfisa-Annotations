@@ -37,6 +37,7 @@ import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
+import org.forome.annotation.data.sourceHttp38.SourceHttp38;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
@@ -110,8 +111,10 @@ public class Service {
 	private final GTFConnector gtfConnector;
 	private final GTEXConnector gtexConnector;
 	private final PharmGKBConnector pharmGKBConnector;
+	private final SourceHttp38 sourceHttp38;
 	private final EnsemblVepService ensemblVepService;
 	private final AnfisaConnector anfisaConnector;
+
 
 	private final NotificationService notificationService;
 
@@ -145,7 +148,7 @@ public class Service {
 //		this.gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
 
 		this.spliceAIConnector = new SpliceAIConnectorImpl(
-				new SpliceAIDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector)
+				new SpliceAIDataSourceHttp(liftoverConnector)
 		);
 //		this.spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
@@ -169,6 +172,10 @@ public class Service {
 //		this.pharmGKBConnector = new PharmGKBConnectorHttp();
 		this.pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
+		this.sourceHttp38 = new SourceHttp38(
+				databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
+		);
+
 		this.ensemblVepService = new EnsemblVepExternalService(uncaughtExceptionHandler);
 //        this.ensemblVepService = new EnsemblVepInlineService(
 //                sshTunnelService,
@@ -185,7 +192,8 @@ public class Service {
 				liftoverConnector,
 				gtfConnector,
 				gtexConnector,
-				pharmGKBConnector
+				pharmGKBConnector,
+				sourceHttp38
 		);
 
 		queryPool.execute(this.databaseService.getDomainObjectSource(), new Query<Void>() {

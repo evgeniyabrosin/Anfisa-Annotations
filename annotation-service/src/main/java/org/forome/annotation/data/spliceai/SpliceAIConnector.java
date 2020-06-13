@@ -18,6 +18,7 @@
 
 package org.forome.annotation.data.spliceai;
 
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Assembly;
@@ -29,7 +30,7 @@ public interface SpliceAIConnector extends AutoCloseable {
 
 	List<SourceMetadata> getSourceMetadata();
 
-	SpliceAIResult getAll(Assembly assembly, String chromosome, int position, String ref, Allele altAllele);
+	SpliceAIResult getAll(AnfisaExecuteContext context, Assembly assembly, String chromosome, int position, String ref, Allele altAllele);
 
 	void close();
 
