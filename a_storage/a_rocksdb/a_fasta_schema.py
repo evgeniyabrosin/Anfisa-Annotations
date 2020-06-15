@@ -1,7 +1,7 @@
 import json, random, logging
 
 from forome_tools.log_err import logException
-from .a_blocker import ABlockerPlain
+from .a_blocker import ABlockerIO_Single
 #========================================
 class AFastaSchema:
     def __init__(self, storage, name, dbname, schema_descr = None):
@@ -19,8 +19,8 @@ class AFastaSchema:
 
         self.mTypes = dict()
         for idx, type_name in enumerate(self.mSchemaDescr["types"]):
-            blocker = ABlockerPlain(self, {
-                "block-type": "plain",
+            blocker = ABlockerIO_Single(self, {
+                "block-type": "single",
                 "fasta-col-options": {"-compress": "bz2"}},
                 key_codec_type = type_name, col_type = "fasta",
                 col_name = type_name, conv_bytes = True)

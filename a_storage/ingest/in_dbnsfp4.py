@@ -90,7 +90,7 @@ SCHEMA_DBNSFP_4 = {
     "name": "DBNSFP",
     "key": "hg38",
     "io": {
-        "block-type": "cluster",
+        "block-type": "page-cluster",
         "max-var-count": 50
     },
     "filter-list": {"ref": "REF", "alt": "ALT"},

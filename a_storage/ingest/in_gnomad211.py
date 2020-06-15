@@ -35,7 +35,7 @@ SCHEMA_GNOMAD_2_1 = {
     "name": "GnomAD",
     "key": "hg19",
     "io": {
-        "block-type": "cluster",
+        "block-type": "page-cluster",
         "max-var-count": 500
     },
     "filter-list": {"ref": "REF", "alt": "ALT"},

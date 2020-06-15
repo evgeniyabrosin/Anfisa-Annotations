@@ -1,42 +1,34 @@
-from .a_blocker import ABlocker
-from codec.block_support import BytesFieldsSupport
+from .a_blocker import ABlockerIO_Complex
 #===============================================
-class ABlockerFrameIndex(ABlocker):
+class ABlockerIO_FrameIndex(ABlockerIO_Complex):
     def __init__(self, schema, properties, key_codec_type):
-        ABlocker.__init__(self, schema, properties, key_codec_type,
+        ABlockerIO_Complex.__init__(self, schema, properties, key_codec_type,
             use_cache = True, conv_bytes = False, seek_column = True)
         self.mPosKeys = self._getProperty("pos-keys")
         self.mCurWriterKey = None
-        stat_info = self._getProperty("stat", dict())
         if self.isWriteMode():
+            stat_info = self._getProperty("stat")
             self.mCountBlocks = stat_info.get("frames-blocks", 0)
             self.mMaxBlockLen = stat_info.get("frames-max-block-len", 0)
             self.mCountEmptyBlocks = stat_info.get("frames-blocks-empty", 0)
-        self.mBytesSupp = BytesFieldsSupport(["bz2"],
-            stat_info.get("frames-max-part-sizes", []),
-            stat_info.get("frames-sum-part-sizes", []))
-        if self.getSchema()._withStr():
-            self.mBytesSupp.addConv("bz2")
         self._onDuty()
 
     def getBlockType(self):
         return "frame"
 
     def updateWStat(self):
-        if not self.isWriteMode():
-            return
-        stat_info = self._getProperty("stat")
-        stat_info["frames-blocks"] = self.mCountBlocks
-        stat_info["frames-max-block-len"] = self.mMaxBlockLen
-        stat_info["frames-blocks-empty"] = self.mCountEmptyBlocks
-        stat_info["frames-max-part-sizes"] = self.mBytesSupp.getStatMaxSeq()
-        stat_info["frames-sum-part-sizes"] = self.mBytesSupp.getStatSumSeq()
+        ABlockerIO_Complex.updateWStat(self)
+        if self.isWriteMode():
+            stat_info = self._getProperty("stat")
+            stat_info["frames-blocks"] = self.mCountBlocks
+            stat_info["frames-max-block-len"] = self.mMaxBlockLen
+            stat_info["frames-blocks-empty"] = self.mCountEmptyBlocks
 
     def getPosKeys(self):
         return self.mPosKeys
 
     def putBlock(self, key, main_data_seq, block_len):
-        self._putData(key, self.mBytesSupp.pack(main_data_seq))
+        self._putBlock(key, main_data_seq)
         self.mCountBlocks += 1
         if block_len > 0:
             self.mMaxBlockLen = max(self.mMaxBlockLen, block_len)
@@ -70,7 +62,7 @@ class ABlockerFrameIndex(ABlocker):
         list_data = []
         for _, seek_data in portions:
             decoded = self.getSchema().decodeData(
-                self.mBytesSupp.unpack(seek_data))
+                self._unpack(seek_data))
             list_data += decoded.get(0)
 
         return _ReadBlock_Frame(self, chrom, init_pos,
@@ -132,7 +124,7 @@ class _ReadBlock_Frame:
                 return False
         return True
 
-    def getRecord(self, key, codec, last_pos = None):
+    def getRecord(self, key, last_pos = None):
         if not self.mListData:
             return []
         chrom, pos = key

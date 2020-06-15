@@ -65,17 +65,18 @@ class SchemaSmpH:
         return 'get?array=%s&loc=%s:%d' % (self.mArrayName, chrom, pos)
 
     def testIt(self, idx, test_rec):
-        it_no = self.mSamples[idx][2]
+        it_key, record, it_no = self.mSamples[idx]
         if test_rec.get(self.mSchemaName) is None:
-            logging.error("At smp %s[%s]: None" % (self.mSchemaName, it_no))
+            logging.error("At smp %s[no=%s] key=%s: None"
+                % (self.mSchemaName, it_no, it_key))
             return False
         presentations = [json.dumps(rec,
             sort_keys = True, ensure_ascii = False)
-            for rec in (self.mSamples[idx][1], test_rec[self.mSchemaName])]
+            for rec in (record, test_rec[self.mSchemaName])]
         if presentations[0] == presentations[1]:
             return True
-        logging.error("At smp %s[%s]: Diff %s"
-            % (self.mSchemaName, it_no, presentations[1]))
+        logging.error("At smp %s[no=%s] key=%s: Diff %s"
+            % (self.mSchemaName, it_no, it_key, presentations[1]))
         return False
 
 

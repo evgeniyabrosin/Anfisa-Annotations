@@ -1,34 +1,26 @@
-from .a_blocker import ABlocker
-from codec.block_support import BytesFieldsSupport
+from .a_blocker import ABlockerIO_Complex
 #===============================================
-class ABlockerSegment(ABlocker):
+class ABlockerIO_Segment(ABlockerIO_Complex):
     def __init__(self, schema, properties, key_codec_type):
-        ABlocker.__init__(self, schema, properties, key_codec_type,
+        ABlockerIO_Complex.__init__(self, schema, properties, key_codec_type,
             use_cache = True, conv_bytes = False, seek_column = False)
         self.mPosFrame = self._getProperty("pos-frame")
         self.mLastWriteKey = None
-        stat_info = self._getProperty("stat", dict())
         if self.isWriteMode():
+            stat_info = self._getProperty("stat", dict())
             self.mCountSegments = stat_info.get("segments", 0)
             self.mCountPosGaps = stat_info.get("seg-pos-gaps", 0)
-        self.mBytesSupp = BytesFieldsSupport(["bz2"],
-            stat_info.get("seg-max-part-sizes", []),
-            stat_info.get("seg-sum-part-sizes", []))
-        if self.getSchema()._withStr():
-            self.mBytesSupp.addConv("bz2")
         self._onDuty()
 
     def getBlockType(self):
         return "segment"
 
     def updateWStat(self):
-        if not self.isWriteMode():
-            return
-        stat_info = self._getProperty("stat", dict())
-        stat_info["segments"] = self.mCountSegments
-        stat_info["seg-pos-gaps"] = self.mCountPosGaps
-        stat_info["seg-max-part-sizes"] = self.mBytesSupp.getStatMaxSeq()
-        stat_info["seg-sum-part-sizes"] = self.mBytesSupp.getStatSumSeq()
+        ABlockerIO_Complex.updateWStat(self)
+        if self.isWriteMode():
+            stat_info = self._getProperty("stat", dict())
+            stat_info["segments"] = self.mCountSegments
+            stat_info["seg-pos-gaps"] = self.mCountPosGaps
 
     def basePos(self, pos):
         return pos - (pos % self.mPosFrame)
@@ -39,15 +31,9 @@ class ABlockerSegment(ABlocker):
             and base_pos <= pos < base_pos + self.mPosFrame)
 
     def putBlock(self, key, main_data_seq, count_pos_gaps):
-        self._putData(key, self.mBytesSupp.pack(main_data_seq))
+        self._putBlock(key, main_data_seq)
         self.mCountSegments += 1
         self.mCountPosGaps  += count_pos_gaps
-
-    def getBlock(self, key):
-        xdata = self._getData(key)
-        if xdata is None:
-            return None
-        return self.mBytesSupp.unpack(xdata)
 
     def openWriteBlock(self, key):
         if (self.mLastWriteKey is not None
@@ -95,7 +81,7 @@ class _ReadBlock_Segment:
         self.mBlocker = blocker
         self.mChrom, pos = key
         self.mBasePos = self.mBlocker.basePos(pos)
-        data_seq = self.mBlocker.getBlock((self.mChrom, self.mBasePos))
+        data_seq = self.mBlocker._getBlock((self.mChrom, self.mBasePos))
         self.mDataSeq = (self.mBlocker.getSchema().decodeData(data_seq)
             if data_seq is not None else None)
 

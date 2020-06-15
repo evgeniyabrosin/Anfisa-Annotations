@@ -1,8 +1,9 @@
 import abc
 from .a_io import AIO_ColumnHandler, ABlockCache, AIO_Iterator
 from codec import getKeyCodec
+from codec.block_support import BytesFieldsSupport
 #===============================================
-class ABlocker:
+class ABlockerIO:
     def __init__(self, schema, properties, key_codec_type,
             col_type = "base", col_name = None, conv_bytes = False,
             seek_column = False, use_cache = False):
@@ -86,6 +87,15 @@ class ABlocker:
         return AIO_Iterator(self.mSchema.getDbConnector().seekIt(
             self.getXKey(key)), self.mKeyCodec, self.mColumnH)
 
+    def _pickCache(self, key, last_pos = None):
+        if self.mReadCache:
+            return self.mReadCache.pick(key, last_pos)
+        return None
+
+    def _pushCache(self, read_block_h):
+        if self.mReadCache is not None:
+            self.mReadCache.push(read_block_h)
+
     def putRecord(self, key, record):
         if (self.mWriteBlockH is not None
                 and not self.mWriteBlockH.goodToAdd(key)):
@@ -96,13 +106,13 @@ class ABlocker:
         self.mWriteBlockH.addRecord(key, record)
 
     def getRecord(self, key, last_pos = None):
+        if key == ('chr20', 141054):
+            print("here")
         assert self.mSchema.getDbConnector().properAccess()
-        read_block_h = (self.mReadCache.pick(key, last_pos)
-            if self.mReadCache is not None else None)
+        read_block_h = self._pickCache(key, last_pos)
         if read_block_h is None:
             read_block_h = self.openReadBlock(key, last_pos)
-            if self.mReadCache is not None:
-                self.mReadCache.push(read_block_h)
+            self._pushCache(read_block_h)
         return read_block_h.getRecord(key, last_pos)
 
     @abc.abstractmethod
@@ -114,9 +124,7 @@ class ABlocker:
         return None
 
     def updateWStat(self):
-        if self.mSchema.isWriteMode():
-            stat_info = self._getProperty("stat")
-            stat_info["total"] = self.mSchema.getTotal()
+        pass
 
     def flush(self):
         if self.mSchema.isWriteMode() and self.mWriteBlockH is not None:
@@ -131,27 +139,67 @@ class ABlocker:
         return record
 
 #===============================================
+class ABlockerIO_Complex(ABlockerIO):
+    def __init__(self, schema, properties, key_codec_type,
+            col_type = "base", col_name = None, conv_bytes = False,
+            seek_column = False, use_cache = False, pre_part = None):
+        ABlockerIO.__init__(self, schema, properties, key_codec_type,
+            col_type, col_name, conv_bytes, seek_column, use_cache)
+        stat_info = self._getProperty("stat", dict())
+        parts_tp_seq = ["bz2"]
+        if pre_part:
+            parts_tp_seq.insert(0, pre_part)
+        self.mBytesSupp = BytesFieldsSupport(parts_tp_seq,
+            stat_info.get("complex-max-part-sizes", []),
+            stat_info.get("complex-sum-part-sizes", []))
+        if self.getSchema()._withStr():
+            self.mBytesSupp.addConv("bz2")
+
+    def updateWStat(self):
+        if self.isWriteMode():
+            stat_info = self._getProperty("stat")
+            stat_info["complex-part-sizes"] = self.mBytesSupp.getStatMaxSeq()
+            stat_info["complex-part-sizes"] = self.mBytesSupp.getStatSumSeq()
+
+    def _putBlock(self, key, all_data_seq):
+        self._putData(key, self.mBytesSupp.pack(all_data_seq))
+
+    def _unpack(self, xdata):
+        return self.mBytesSupp.unpack(xdata)
+
+    def _getBlock(self, key):
+        xdata = self._getData(key)
+        if xdata is None:
+            return None
+        return self._unpack(xdata)
+
 #===============================================
-class ABlockerPlain(ABlocker):
+#===============================================
+class ABlockerIO_Single(ABlockerIO):
     def __init__(self, schema, properties, key_codec_type,
             col_type = "base", col_name = None, conv_bytes = False,
             seek_column = False, use_cache = False):
-        ABlocker.__init__(self, schema, properties, key_codec_type,
+        ABlockerIO.__init__(self, schema, properties, key_codec_type,
             col_type, col_name, conv_bytes, seek_column, use_cache)
         self._onDuty()
 
     def getBlockType(self):
-        return "plain"
+        return "single"
+
+    def updateWStat(self):
+        if self.mSchema.isWriteMode():
+            stat_info = self._getProperty("stat")
+            stat_info["total"] = self.mSchema.getTotal()
 
     def openWriteBlock(self, key):
-        return _WriteBlock_Plain(self, key)
+        return _WriteBlock_Single(self, key)
 
     def openReadBlock(self, key, last_pos = None):
-        return _ReadBlock_Plain(self, key)
+        return _ReadBlock_Single(self, key)
 
 
 #===============================================
-class _WriteBlock_Plain:
+class _WriteBlock_Single:
     def __init__(self, blocker, key):
         self.mBlocker = blocker
         self.mKey = key
@@ -167,7 +215,7 @@ class _WriteBlock_Plain:
         pass
 
 #===============================================
-class _ReadBlock_Plain:
+class _ReadBlock_Single:
     def __init__(self, blocker, key):
         self.mKey = key
         self.mData = blocker._getData(key)
