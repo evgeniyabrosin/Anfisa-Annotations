@@ -103,5 +103,7 @@ class _ReadBlock_Segment:
         if self.mDataSeq is None:
             return None
         idx = pos - self.mBasePos
-        assert 0 <= idx < len(self.mDataSeq)
-        return self.mDataSeq.get(idx)
+        assert 0 <= idx
+        if idx < len(self.mDataSeq):
+            return self.mDataSeq.get(idx)
+        return None

@@ -22,7 +22,7 @@ class AStorage:
             resource.setrlimit(resource.RLIMIT_NOFILE,
                 (re_need_limit, cur_limits[1]))
             logging.info("Update limits: %s"
-                % resource.getrlimit(resource.RLIMIT_NOFILE))
+                % str(resource.getrlimit(resource.RLIMIT_NOFILE)))
 
     def getDbOptions(self):
         return self.mConfig["db-options"].items()
