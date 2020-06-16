@@ -1,6 +1,9 @@
 #ifndef PLAINROCKS_H
 #define PLAINROCKS_H
 
+#include <iostream>
+#include <fstream>
+
 #include "rocksdb/db.h"
 #include "rocksdb/slice.h"
 #include "rocksdb/options.h"
@@ -18,6 +21,7 @@ namespace plainrocks {
             rocksdb::Iterator* mIterator;
             bool mWriteMode;
             std::vector<rocksdb::ColumnFamilyHandle*> mColumnHandlers;
+            std::ofstream* mLog;
             
             rocksdb::ReadOptions mReadOptions;
             rocksdb::WriteOptions mWriteOptions;
@@ -28,6 +32,8 @@ namespace plainrocks {
             ~PlainDbHandle();
             
             void setDBOption(const std::string name, int value);
+            
+            void setLog(const std::string fpath);
             
             int regColumn(const std::string col_name, bool seek_support);
             

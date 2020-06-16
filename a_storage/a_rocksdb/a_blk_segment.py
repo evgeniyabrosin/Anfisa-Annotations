@@ -1,4 +1,7 @@
+import logging
 from .a_blocker import ABlockerIO_Complex
+
+DEBUG = False
 #===============================================
 class ABlockerIO_Segment(ABlockerIO_Complex):
     def __init__(self, schema, properties, key_codec_type):
@@ -93,10 +96,12 @@ class _ReadBlock_Segment:
         assert last_pos is None
         chrom, pos = key
         assert self.mChrom == chrom
+        if DEBUG:
+            logging.info("For key=%s block from %d size=%s"
+                % (str(key), self.mBasePos, str(len(self.mDataSeq))
+                    if self.mDataSeq is not None else "None"))
         if self.mDataSeq is None:
             return None
-        idx = key[1] - self.mBasePos
-        assert 0 <= idx
-        if idx < 0 or idx >= len(self.mDataSeq):
-            return None
+        idx = pos - self.mBasePos
+        assert 0 <= idx < len(self.mDataSeq)
         return self.mDataSeq.get(idx)

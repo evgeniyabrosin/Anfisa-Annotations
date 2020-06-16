@@ -1,11 +1,11 @@
-#include <iostream>
 
 #include "plainrocks.h"
 
 using namespace plainrocks;
 
 PlainDbHandle::PlainDbHandle(): 
-        mDB(NULL), mSeekColumnIdx(-1), mIterator(NULL), mWriteMode(false) {
+        mDB(NULL), mSeekColumnIdx(-1), mIterator(NULL), 
+        mWriteMode(false), mLog(NULL) {
     mReadOptions.fill_cache = false;
     mColumnDescriptors.push_back(rocksdb::ColumnFamilyDescriptor(
         rocksdb::kDefaultColumnFamilyName, rocksdb::ColumnFamilyOptions()));            
@@ -37,6 +37,10 @@ void PlainDbHandle::close() {
         for (auto col_h: mColumnHandlers) {
             delete col_h;
         }
+    }
+    if (mLog) {
+        mLog->close();
+        delete mLog;
     }
 }
 
@@ -83,6 +87,11 @@ void PlainDbHandle::setDBOption(const std::string name, int value) {
     }
     throw std::invalid_argument("unknown db option");
 }    
+
+void PlainDbHandle::setLog(const std::string fname) {
+    mLog = new std::ofstream();
+    mLog->open(fname);
+}
 
 int PlainDbHandle::regColumn(const std::string col_name, bool seek_support) {
     int ret_idx = mColumnDescriptors.size();
@@ -132,8 +141,14 @@ std::string PlainDbHandle::get(int col_idx, const std::string xkey){
     std::string xvalue;
     rocksdb::Status status = mDB->Get(
         mReadOptions, mColumnHandlers[col_idx], xkey, &xvalue);
-    if (!status.ok())
+    if (!status.ok()) {
+        if (mLog) {
+            (*mLog) << "Get problem for " << xkey << "/" << col_idx 
+                << ": " << status.ToString() << std::endl;
+            mLog->flush();
+        }
         xvalue = "";
+    }
     return xvalue;
 }
 

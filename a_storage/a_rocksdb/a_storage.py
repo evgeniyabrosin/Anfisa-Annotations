@@ -1,4 +1,4 @@
-import os, shutil, gc, json, logging
+import os, shutil, gc, json, logging, resource
 
 from .a_connector import AConnector
 #========================================
@@ -10,6 +10,18 @@ class AStorage:
         self.mDeepCompMode = deep_comp_mode
         self.mConnectors = dict()
         self.mActivators = []
+        self._checkNoFiles()
+
+    def _checkNoFiles(self):
+        cur_limits = resource.getrlimit(resource.RLIMIT_NOFILE)
+        need_limit = self.mConfig["db-options"]["max_open_files"]
+        logging.info("Limits: system = %s, need = %d"
+            % (cur_limits, need_limit))
+        if cur_limits[1] < need_limit:
+            resource.setrlimit(resource.RLIMIT_NOFILE,
+                (cur_limits[0], need_limit))
+            logging.info("Update limits: %s"
+                % resource.getrlimit(resource.RLIMIT_NOFILE))
 
     def getDbOptions(self):
         return self.mConfig["db-options"].items()

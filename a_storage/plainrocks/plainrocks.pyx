@@ -5,19 +5,25 @@ from libcpp.string cimport string
 from libcpp cimport bool
 from plainrocks cimport PlainDbHandle
 
+def toBytes(text):
+    return bytes(text, encoding = "utf-8")
+
 cdef class PyPlainRocks:
     cdef PlainDbHandle mH  # Hold a C++ instance which we're wrapping
 
     def __cinit__(self, options):
         self.mH = PlainDbHandle()
         for key, value in options:
-            self.mH.setDBOption(bytes(key, encoding = "utf-8"), int(value))
+            self.mH.setDBOption(toBytes(key), int(value))
+
+    def setLog(self, fname):
+        self.mH.setLog(toBytes(fname))
 
     def regColumn(self, col_name, seek_support):
         return self.mH.regColumn(col_name, seek_support)
     
     def open(self, dbpath, write_mode, update_mode = False):
-        self.mH.open(bytes(dbpath, encoding = "utf-8"), write_mode, update_mode)
+        self.mH.open(toBytes(dbpath), write_mode, update_mode)
         
     def close(self):
         self.mH.close()
