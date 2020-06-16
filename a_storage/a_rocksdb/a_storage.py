@@ -17,9 +17,10 @@ class AStorage:
         need_limit = self.mConfig["db-options"]["max_open_files"]
         logging.info("Limits: system = %s, need = %d"
             % (cur_limits, need_limit))
-        if cur_limits[1] < need_limit:
+        if cur_limits[0] < need_limit:
+            re_need_limit = min(need_limit, cur_limits[1])
             resource.setrlimit(resource.RLIMIT_NOFILE,
-                (cur_limits[0], need_limit))
+                (re_need_limit, cur_limits[1]))
             logging.info("Update limits: %s"
                 % resource.getrlimit(resource.RLIMIT_NOFILE))
 
