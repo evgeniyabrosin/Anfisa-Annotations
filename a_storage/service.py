@@ -20,18 +20,18 @@
 
 import sys, logging
 import logging.config
-from os.path import abspath, dirname
 
+from forome_tools.json_conf import loadJSonConfig
 from forome_tools.hserv import setupHServer, HServHandler
 from a_rocksdb.app import AStorageApp
 
 #========================================
-def application(environ, start_response):
-    return HServHandler.request(environ, start_response)
+import forome_tools
+forome_tools.compatible((0, 1, 1))
 
 #========================================
-def _getHomePath():
-    return dirname(abspath(__file__))
+def application(environ, start_response):
+    return HServHandler.request(environ, start_response)
 
 
 #========================================
@@ -52,13 +52,15 @@ if __name__ == '__main__':
                 format_str % args)).rstrip())
 
     #========================================
-    host, port = setupHServer(AStorageApp, config_file,
-        in_container = False, home_path = _getHomePath())
+    app_config = loadJSonConfig(config_file,
+        home_base_file = __file__, home_base_level = 1)
+    host, port = setupHServer(AStorageApp, app_config, in_container = False)
     httpd = make_server(host, port, application,
         handler_class = _LoggingWSGIRequestHandler)
     print("HServer listening %s:%d" % (host, port), file = sys.stderr)
     httpd.serve_forever()
 else:
     logging.basicConfig(level = 10)
-    setupHServer(AStorageApp, "./astorage.cfg",
-        in_container = True, home_path = _getHomePath())
+    app_config = loadJSonConfig("./astorage.cfg",
+        home_base_file = __file__, home_base_level = 1)
+    setupHServer(AStorageApp, app_config, in_container = True)

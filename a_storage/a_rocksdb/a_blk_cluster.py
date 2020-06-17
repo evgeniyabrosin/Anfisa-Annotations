@@ -62,7 +62,8 @@ class ABlockerIO_PageCluster(ABlockerIO_Complex):
                 and key[0] == self.mLastWriteKey[0]):
             assert self.mLastWriteKey[1] < key[1]
         self.mLastWriteKey = key
-        return _WriteBlock_PageCluster(self, key, self.mMaxVarCount is None)
+        return _WriteBlock_PageCluster(self, key, self.mMaxVarCount is None,
+            self.mPagerIO.getFinalPos(key))
 
     def openReadBlock(self, key, last_pos = None):
         assert last_pos is None
@@ -77,18 +78,20 @@ class ABlockerIO_PageCluster(ABlockerIO_Complex):
 
 #===============================================
 class _WriteBlock_PageCluster:
-    def __init__(self, blocker, key, no_variants):
+    def __init__(self, blocker, key, no_variants, final_pos):
         self.mBlocker = blocker
         self.mEncodeEnv = self.mBlocker.getSchema().makeDataEncoder()
         self.mChrom = key[0]
         self.mPosSeq = []
         self.mVarCount = 0
         self.mNoVariants = no_variants
+        self.mFinalPos = final_pos
 
     def goodToAdd(self, key):
         chrom, pos = key
-        if self.mChrom == chrom and self.mBlocker.writeCountsAreGood(
-                len(self.mPosSeq), self.mVarCount):
+        if self.mChrom != chrom or pos >= self.mFinalPos:
+            return False
+        if self.mBlocker.writeCountsAreGood(len(self.mPosSeq), self.mVarCount):
             return len(self.mPosSeq) == 0 or self.mPosSeq[-1] + 0x100 >= pos
         return False
 

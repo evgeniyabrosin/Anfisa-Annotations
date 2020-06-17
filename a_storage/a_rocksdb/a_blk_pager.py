@@ -36,6 +36,11 @@ class ABlockerIO_PosPager(ABlockerIO):
     def getStartKey(self, page_xkey):
         return self.mBaseKeyCodec.decode(page_xkey + b'\0\0')
 
+    def getFinalPos(self, key):
+        page_xkey = self.getPageXKey(key)
+        _, start_pos = self.getStartKey(page_xkey)
+        return start_pos + 0x10000
+
     def putPage(self, page_xkey, page_array):
         self._putData(page_xkey, page_array.tobytes())
         self.mCount += 1

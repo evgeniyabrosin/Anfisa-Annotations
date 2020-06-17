@@ -15,6 +15,10 @@ try:
 except Exception:
     pass
 
+#========================================
+import forome_tools
+forome_tools.compatible((0, 1, 1))
+
 #=====================================
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)

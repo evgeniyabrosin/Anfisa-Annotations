@@ -12,7 +12,7 @@ class AArray:
         self.mSchemaSeq = []
         self.mFilteringSet = set()
         self.mUseLastPos = False
-        db_key_type = None
+        self.mDBKeyType = None
         for schema_info in self.mDescr:
             schema_name = schema_info.get("schema")
             if schema_name == "fasta":
@@ -27,13 +27,20 @@ class AArray:
             self.mFilteringSet |= set(schema_h.getFilteringProperties())
             self.mUseLastPos |= schema_h.useLastPos()
             self.mSchemaSeq.append(schema_h)
-            if db_key_type is not None:
-                assert schema_h.getDBKeyType() == db_key_type, (
+            if self.mDBKeyType is not None:
+                assert schema_h.getDBKeyType() == self.mDBKeyType, (
                     "Conflict dbkeys in %s: %s/%s" % (self.mName,
-                    schema_h.getDBKeyType(), str(db_key_type)))
-            db_key_type = schema_h.getDBKeyType()
+                    schema_h.getDBKeyType(), str(self.mDBKeyType)))
+            else:
+                self.mDBKeyType = schema_h.getDBKeyType()
             logging.info("Start schema %s in %s"
                 % (schema_h.getName(), self.mName))
+
+    def getDBKeyType(self):
+        return self.mDBKeyType
+
+    def iterSchemaSeq(self):
+        return iter(self.mSchemaSeq)
 
     def request(self, rq_args, rq_descr):
         chrom, str_pos = rq_args["loc"].split(':')

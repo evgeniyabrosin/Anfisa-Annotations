@@ -1,7 +1,6 @@
 import logging, time, json
 from datetime import datetime
 from threading import Thread
-from os.path import abspath, dirname
 from argparse import ArgumentParser
 from random import Random
 
@@ -27,18 +26,22 @@ parser.add_argument("--portions", type = int, default = 10,
 parser.add_argument("--tasks", type = int, default = 1000,
     help = "Count of tasks per thread")
 args = parser.parse_args()
-config = loadJSonConfig(args.config,
-    home_path = dirname(abspath(__file__)))
+config = loadJSonConfig(args.config)
+
+assert args.mode in ("simple", "bulk"), (
+    "Improper mode %s, must be simple or bulk" % args.mode)
 
 date_started = datetime.now()
 logging.info("Started at " + str(date_started))
 #=====================================
 class SchemaSmpH:
-    def __init__(self, config, array_name, schema_name, db_name):
+    def __init__(self, config, array_name, schema_name, db_name, bulk_mode):
         self.mArrayName = array_name
         self.mSchemaName = schema_name
         self.mDbName = db_name
         self.mSamples = []
+        self.mBulkMode = bulk_mode
+        self.mFasta = "hg19" if "hg19" in array_name.lower() else "hg38"
         with open(config["schema-dir"] + "/" + self.mDbName
                 + "/" + self.mSchemaName + ".1.samples",
                 "r", encoding = "utf-8") as inp:
@@ -53,6 +56,11 @@ class SchemaSmpH:
             assert cur_key is None
         logging.info("Schema samples loaded for %s/%s: %d samples"
             % (self.mArrayName, self.mSchemaName, len(self.mSamples)))
+        if self.mBulkMode:
+            self.mSamples.sort()
+
+    def isBulkMode(self):
+        return self.mBulkMode
 
     def __len__(self):
         return len(self.mSamples)
@@ -60,11 +68,29 @@ class SchemaSmpH:
     def getKey(self, idx):
         return self.mSamples[idx][0]
 
-    def formRequest(self, idx):
+    def formSimpleRequest(self, idx):
         chrom, pos = self.mSamples[idx][0]
         return 'get?array=%s&loc=%s:%d' % (self.mArrayName, chrom, pos)
 
-    def testIt(self, idx, test_rec):
+    def testPortion(self, rest_agent, smp_from, smp_to):
+        is_ok = True
+        if self.mBulkMode:
+            request = {"fasta": self.mFasta, "variants": []}
+            for smp_idx in range(smp_from, smp_to):
+                chrom, pos = self.mSamples[smp_idx][0]
+                request["variants"].append({"chrom":chrom, "pos": pos})
+            response = rest_agent.call(request, "POST", "collect")
+            for test_rec, smp_idx in zip(response, range(smp_from, smp_to)):
+                is_ok &= self.testRec(smp_idx, test_rec)
+        else:
+            for smp_idx in range(smp_from, smp_to):
+                chrom, pos = self.mSamples[smp_idx][0]
+                test_rec = rest_agent.call(None, "GET",
+                    'get?array=%s&loc=%s:%d' % (self.mArrayName, chrom, pos))
+                is_ok &= self.testRec(smp_idx, test_rec)
+        return is_ok
+
+    def testRec(self, idx, test_rec):
         it_key, record, it_no = self.mSamples[idx]
         if test_rec.get(self.mSchemaName) is None:
             logging.error("At smp %s[no=%s] key=%s: None"
@@ -93,7 +119,7 @@ for array_name, array_info in config["service"]["arrays"].items():
         if args.schema and schema_name != args.schema:
             continue
         sSmpSeq.append(SchemaSmpH(config, array_name, schema_name,
-            s_info.get("dbname", schema_name)))
+            s_info.get("dbname", schema_name), args.mode == "bulk"))
 
 rest_agent = RestAgent(args.url, "AStorage")
 
@@ -121,12 +147,7 @@ class TestRunner(Thread):
                 min(smp_from + self.mMaxPortions, len(smp_h)))
         else:
             smp_to = len(smp_h)
-        is_ok = True
-        for smp_idx in range(smp_from, smp_to):
-            test_rec = self.mRestAgent.call(
-                None, "GET", smp_h.formRequest(smp_idx))
-            is_ok &= smp_h.testIt(smp_idx, test_rec)
-        return is_ok
+        return smp_h.testPortion(self.mRestAgent, smp_from, smp_to)
 
     def run(self):
         for _ in range(self.mTaskCount):

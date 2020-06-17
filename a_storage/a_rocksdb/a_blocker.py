@@ -106,8 +106,6 @@ class ABlockerIO:
         self.mWriteBlockH.addRecord(key, record)
 
     def getRecord(self, key, last_pos = None):
-        if key == ('chr20', 141054):
-            print("here")
         assert self.mSchema.getDbConnector().properAccess()
         read_block_h = self._pickCache(key, last_pos)
         if read_block_h is None:

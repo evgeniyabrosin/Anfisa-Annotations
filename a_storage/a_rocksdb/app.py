@@ -22,6 +22,7 @@ import sys, json, logging, signal, contextlib
 
 from .a_storage import AStorage
 from .a_array import AArray
+from .a_collect import ACollect
 
 #===============================================
 def terminateAll(sig, frame):
@@ -32,6 +33,7 @@ class AStorageApp:
     sConfig = None
     sStorage = None
     sArrays = None
+    sCollect = None
 
     @classmethod
     def setup(cls, config, in_container):
@@ -39,6 +41,7 @@ class AStorageApp:
         cls.sStorage = AStorage(config)
         cls.sArrays = {name: AArray(cls.sStorage, name, descr)
             for name, descr in config["service"]["arrays"].items()}
+        cls.sCollect = ACollect(cls.sArrays)
         cls.sStorage.activate()
 
         signal.signal(signal.SIGTERM, terminateAll)
@@ -78,6 +81,10 @@ class AStorageApp:
                 return serv_h.makeResponse("Array not found: "
                     + str(rq_args.get("array")), error = 404)
             report = array_h.request(rq_args, rq_descr)
+            return serv_h.makeResponse(mode = "json",
+                content = json.dumps(report))
+        if rq_path == "/collect":
+            report = cls.sCollect.request(rq_args, rq_descr)
             return serv_h.makeResponse(mode = "json",
                 content = json.dumps(report))
         if rq_path == "/meta":
