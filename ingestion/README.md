@@ -25,7 +25,15 @@ start it in in a safe way (immune to hangups):
 > nohup python3 ingest.py -m _mode_ config.js &> log.txt &
 
 ================================
-Modes currently available: hg19 hg38 gerp
+Modes currently available: 
+
+hg19 hg38 gerp gnomad pharmgkb gtex spliceai dbnsfp4 clinvar 
+
+**Note**: In newer version of projects Anfisa/Anfisa-Annotations 
+(v.0.6.x) the following modes are not in use. 
+Use a_storage/ingestion to ingest data into AStorage/RocksDB complex:
+
+hg19 hg38 gerp gnomad spliceai dbnsfp4
 
 =======
 Mode hg19:
