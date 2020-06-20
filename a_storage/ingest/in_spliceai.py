@@ -171,7 +171,7 @@ class ReaderSpliceAI:
             fname = self.mIndelFiles.get(chrom)
             if fname:
                 readers.append(InputDataReader(chrom, fname))
-            fname = self.mIndelFiles.get(chrom)
+            fname = self.mSnvFiles.get(chrom)
             if fname:
                 readers.append(InputDataReader(chrom, fname))
             logging.info(("Evaluation of %s chromosome:" % chrom)
