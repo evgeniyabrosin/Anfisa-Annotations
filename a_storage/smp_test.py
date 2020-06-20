@@ -78,7 +78,7 @@ class SchemaSmpH:
             request = {"fasta": self.mFasta, "variants": []}
             for smp_idx in range(smp_from, smp_to):
                 chrom, pos = self.mSamples[smp_idx][0]
-                request["variants"].append({"chrom":chrom, "pos": pos})
+                request["variants"].append({"chrom": chrom, "pos": pos})
             response = rest_agent.call(request, "POST", "collect")
             for test_rec, smp_idx in zip(response, range(smp_from, smp_to)):
                 is_ok &= self.testRec(smp_idx, test_rec)
