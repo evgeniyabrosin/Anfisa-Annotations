@@ -122,7 +122,7 @@ class InputDataReader:
 
     def getNext(self):
         if self.mCurRecord is None:
-            return None, None
+            return None
         if self.mCurRecord is False:
             key, seq = None, None
         else:
