@@ -65,13 +65,13 @@ public class SpliceAIConnectorImpl implements SpliceAIConnector, AutoCloseable {
 		List<Row> rows = spliceAIDataSource.getAll(context, assembly, chromosome, position, ref, altAllele);
 
 		String cases;
-		Float max_ds;
+		float max_ds;
 		Map<String, SpliceAIResult.DictSql> dict_sql = new HashMap<>();
 		if (rows.isEmpty()) {
 			cases = "None";
-			max_ds = null;
+			max_ds = 0;
 		} else {
-			max_ds = rows.stream().map(row -> row.max_ds).max(Float::compareTo).orElse(null);
+			max_ds = rows.stream().map(row -> row.max_ds).max(Float::compareTo).orElse(0.0f);
 			if (max_ds < SpliceAIConnectorImpl.MAX_DS_UNLIKELY) {
 				cases = "unlikely";
 			} else if (max_ds < 0.5f) {

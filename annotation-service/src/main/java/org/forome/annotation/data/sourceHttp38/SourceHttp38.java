@@ -97,6 +97,9 @@ public class SourceHttp38 {
 			} catch (Throwable t) {
 				if (attempts-- > 0) {
 					log.error("Exception request, last attempts: {}", attempts, t);
+					try {
+						Thread.sleep(1000L);
+					} catch (InterruptedException e) {}
 					continue;
 				} else {
 					throw t;
