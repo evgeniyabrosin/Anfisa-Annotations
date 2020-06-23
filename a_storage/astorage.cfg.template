@@ -1,0 +1,120 @@
+{
+    "file-path-def": {
+        "LOAD": "/db/download",
+        "WORK": "/projects/AStorage"
+    },
+
+    "db-dir": "${WORK}/rdbs",
+    "schema-dir": "${WORK}/schema",
+    
+    "db-options": {
+        "create_if_missing": true,
+        "error_if_exists": false,
+        "max_open_files": 20000,
+        "write_buffer_size": 67108864,
+        "max_write_buffer_number": 3,
+        "target_file_size_base": 67108864,
+        "max_total_wal_size": 104857600
+    },
+    "samples-count": 100,
+    "load-keep-schema-sec": 3600,
+    
+    "create": {
+        "Gerp": {
+            "file_list": "${LOAD}/Gerp/chr*.maf.rates"
+        },
+        "SpliceAI": {
+            "indel_file_list": "${LOAD}/spliceAI/indel.spliceai.chr*.vcf.gz",
+            "snv_file_list": "${LOAD}/spliceAI/snv.spliceai.chr*.vcf.gz"
+        },
+        "dbNSFP": {
+            "file_list": "${LOAD}/dbNSFP/dbNSFP4.0a_variant.chr*.gz"
+        },
+        "gnomAD": {
+            //"genome_file_list": "${LOAD}/gnomad.2.1/gnomad.genomes.r2.1.1.sites.*.vcf.bgz",
+            //"exome_file_list": "${LOAD}/gnomad.2.1/gnomad.exomes.r2.1.1.sites.*.vcf.bgz"
+            "direct_file_list": "${LOAD}/gnomad/direct/*.js.gz"
+        },
+        "gtf": {
+            //"direct_file_list": "${LOAD}/gtf/gtf_dir_*.js.gz"
+            "file_list": "${LOAD}/Homo_sapiens.GRCh38.99.chr.gtf"
+        },
+        "fasta": {
+            "fasta_hg19": "${LOAD}/fasta/hg19.fasta.gz",
+            "fasta_hg38": "${LOAD}/fasta/hg38.fasta.gz"
+        }
+    },
+    
+    "service": {
+        "arrays": {
+            "hg38": [
+                {"schema": "SpliceAI"},
+                {"schema": "dbNSFP"}
+            ],
+            "hg19": [
+                {"schema": "Gerp"},
+                {"schema": "gnomAD"}
+            ],
+            "gtf": [
+                {"schema": "gtf"}
+            ],
+            "fasta": [
+                {"schema": "fasta"}
+            ]
+        },
+        "meta": {
+            "dbNSFP": {
+                "version": "4.0a",
+                "date": "2019-12-05"
+            },
+            "gnomAD": {
+                "version": "2.1.1",
+                "date": "2019-03-06"
+            },
+            "GERP": {
+                "version": "hg19.GERP_scores"
+            },
+            "SpliceAI": {
+                "version": "GRCh38",
+                "date": ""
+            },
+            "GTF": {
+                "version": "GRCh38.99",
+                "date": "2019-11-22"
+            }, 
+            "SpliceAI": {
+                "version": "1.3",
+                "date": "2019-10-12"
+            }
+        }
+    }, 
+    
+    "host": "0.0.0.0",
+    "port": 8290,
+    "html-base": "/",
+    "dir-files": [],
+    "logging": { 
+        "version": 1,
+        "disable_existing_loggers": false,
+        "formatters": { 
+                "standard": { 
+                "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+            }
+        },
+        "handlers": { 
+            "default": { 
+                "level": "INFO",
+                "formatter": "standard",
+                "class": "logging.FileHandler",
+                "filename": "${WORK}/logs/astorage.log"
+            }
+        },
+        "loggers": { 
+            "": { 
+                "handlers": ["default"],
+                "level": "INFO",
+                "propagate": true
+            }
+        } 
+    }
+}
