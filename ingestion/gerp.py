@@ -27,7 +27,7 @@ INSTR_INSERT = "INSERT INTO GERP (%s) VALUES (%s)" % (
     ", ".join(['%s' for _ in COLUMNS]))
 
 #========================================
-def new_record (chrom, pos, lst):
+def new_record(chrom, pos, lst):
     rec = []
     rec.append(chrom)
     rec.append(pos)
@@ -53,17 +53,16 @@ def ingestGERP(db_host, db_port, user, password, database,
     print('Connected to %s...' % database)
 
     curs = conn.cursor()
-    print (INSTR_CREATE)
+    print(INSTR_CREATE)
     curs.execute(INSTR_CREATE)
-
     for chrom_file in extendFileList(file_list):
-        chrom = detectFileChrom(chrom_file)
+        chrom = detectFileChrom(chrom_file, "chr")
         print("Evaluation of", chrom, "in", chrom_file)
-        with open (chrom_file,'r') as header:
+        with open(chrom_file, 'r') as header:
             position = 0
             list_of_records = []
             total, cnt = 0, 0
-            reader = csv.reader (header, delimiter = '\t')
+            reader = csv.reader(header, delimiter = '\t')
             start_time = time.time()
             for record in reader:
                 position += 1
@@ -81,13 +80,14 @@ def ingestGERP(db_host, db_port, user, password, database,
                 total += execute_insert(conn, INSTR_INSERT, list_of_records)
             reportTime("Done:", total, start_time)
 
+
 #========================================
 if __name__ == '__main__':
     ingestGERP(
         db_host  = "localhost",
         db_port  = 3306,
-        user     = 'hgmd',
-        password = 'hgmd',
+        user     = 'test',
+        password = 'test',
         database = "conservation",
         batch_size = 1000,
-        file_list = ["/data/exp/vtrosman/chr*.maf.rates"])
+        file_list = ["/home/trosman/work/Conservations/chr1.maf.rates"])

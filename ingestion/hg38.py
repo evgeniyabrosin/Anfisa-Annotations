@@ -4,28 +4,28 @@ from pyliftover import LiftOver
 
 from util import execute_insert, reportTime
 #========================================
-#--- table hg19 ----------------
+#--- table hg38 ----------------
 
-INSTR_CREATE = """CREATE TABLE IF NOT EXISTS HG19(
+INSTR_CREATE = """CREATE TABLE IF NOT EXISTS HG38(
     Chrom VARCHAR(2),
     Pos INT(11),
     Ref CHAR(1),
-    hg38 INT(11),
+    hg19 INT(11),
     PRIMARY KEY (Pos, Chrom));"""
 
 COLUMNS = [
     "Chrom",
     "Pos",
     "Ref",
-    "hg38"]
+    "hg19"]
 
-INSTR_INSERT = "INSERT INTO HG19 (%s) VALUES (%s)" % (
+INSTR_INSERT = "INSERT INTO HG38 (%s) VALUES (%s)" % (
     ", ".join(COLUMNS),
     ", ".join(['%s' for _ in COLUMNS]))
 
 #========================================
 #---  fasta reader class ----------------
-class Hg19_Reader:
+class Hg38_Reader:
     def __init__(self, fname,
             block_size = 10000,
             chrom_is_int = False,
@@ -114,9 +114,9 @@ class Hg19_Reader:
 
 class Converter:
     def __init__(self):
-        self.lo = LiftOver('hg19', 'hg38')
+        self.lo = LiftOver('hg38', 'hg19')
 
-    def hg38(self, ch, pos):
+    def hg19(self, ch, pos):
         ch = str(ch).upper()
         if (ch.isdigit() or ch == 'X' or ch == 'Y'):
             ch = "chr%s" % str(ch)
@@ -138,7 +138,7 @@ class Converter:
         return
 
 #========================================
-def ingestHg19(db_host, db_port, user, password, database, fasta_file):
+def ingestHg38(db_host, db_port, user, password, database, fasta_file):
     conn = mysql.connector.connect(
         host = db_host,
         port = db_port,
@@ -150,7 +150,7 @@ def ingestHg19(db_host, db_port, user, password, database, fasta_file):
     print('Connected to %s...' % database)
 
     # reader instance
-    rd = Hg19_Reader(fasta_file)
+    rd = Hg38_Reader(fasta_file)
     # converter instance
     converter = Converter()
 
@@ -159,7 +159,7 @@ def ingestHg19(db_host, db_port, user, password, database, fasta_file):
     curs.execute(INSTR_CREATE)
 
     #========================================
-    #--- insert values into  hg19 -----------
+    #--- insert values into  hg38 -----------
 
     total = 0
     start_time = time.time()
@@ -168,7 +168,7 @@ def ingestHg19(db_host, db_port, user, password, database, fasta_file):
         list_of_values = []
         for position in range(rd.getCurDiap()[0], rd.getCurDiap()[1]):
             chrom = rd.getCurChrom()
-            r = converter.hg38(chrom, position)
+            r = converter.hg19(chrom, position)
 
             values = [chrom, position, rd.getLetter(position), r]
             list_of_values.append(values)
@@ -184,7 +184,7 @@ def ingestHg19(db_host, db_port, user, password, database, fasta_file):
 
 #========================================
 if __name__ == '__main__':
-    ingestHg19(
+    ingestHg38(
         db_host  = "localhost",
         db_port  = 3306,
         user     = 'test',
