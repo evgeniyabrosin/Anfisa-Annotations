@@ -72,11 +72,11 @@ public class SpliceAIResult {
 	}
 
 	public final String cases;
-	public final Float max_ds;
+	public final float max_ds;
 
 	public final Map<String, DictSql> dict_sql;
 
-	public SpliceAIResult(String cases, Float max_ds, Map<String, DictSql> dict_sql) {
+	public SpliceAIResult(String cases, float max_ds, Map<String, DictSql> dict_sql) {
 		this.cases = cases;
 		this.max_ds = max_ds;
 		this.dict_sql = dict_sql;
