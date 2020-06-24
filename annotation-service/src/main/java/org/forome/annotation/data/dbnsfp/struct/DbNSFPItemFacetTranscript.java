@@ -31,7 +31,7 @@ public class DbNSFPItemFacetTranscript {
 	public final String fATHMMPred;
 
 	public final String siftPrediction;
-	public final String siftScore;
+	public final Double siftScore;
 
 	public DbNSFPItemFacetTranscript(
 			String mutationAssessorPred,
@@ -45,7 +45,7 @@ public class DbNSFPItemFacetTranscript {
 			String fATHMMPred,
 
 			String siftPrediction,
-			String siftScore
+			Double siftScore
 
 	) {
 		this.mutationAssessorPred = mutationAssessorPred;
