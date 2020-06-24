@@ -82,7 +82,10 @@ public class DbNSFPConnector {
 				jsonObject.getAsString("Polyphen2_HDIV_pred"),
 				MathUtils.toDouble(jsonObject.getAsString("Polyphen2_HDIV_score")),
 
-				jsonObject.getAsString("FATHMM_pred")
+				jsonObject.getAsString("FATHMM_pred"),
+
+				jsonObject.getAsString("SIFT_pred"),
+				jsonObject.getAsString("SIFT_score")
 		);
 	}
 }
