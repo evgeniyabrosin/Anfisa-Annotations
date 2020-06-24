@@ -904,11 +904,7 @@ public class AnfisaConnector implements AutoCloseable {
 			view.predictions.sift = getFromTranscriptsList(variantVep, "sift_prediction").stream().toArray(String[]::new);
 			view.predictions.siftVEP = getFromTranscriptsList(variantVep, "sift_pred").stream().toArray(String[]::new);
 			view.predictions.siftScore = getFromTranscriptsList(variantVep, "sift_score").stream().toArray(String[]::new);
-			view.predictions.mutationTaster = getFromTranscriptsList(variantVep, "mutationtaster_pred").stream()
-					.flatMap(s -> Arrays.stream(s.split(",")))
-					.map(s -> s.trim())
-					.filter(s -> !s.isEmpty())
-					.distinct().toArray(String[]::new);
+
 			view.predictions.fathmm = getFromTranscriptsList(variantVep, "fathmm_pred").stream()
 					.flatMap(s -> Arrays.stream(s.split(",")))
 					.map(s -> s.trim())
@@ -921,6 +917,12 @@ public class AnfisaConnector implements AutoCloseable {
 
 		view.predictions.caddRaw = items.stream().map(item -> item.caddRaw).filter(Objects::nonNull).collect(Collectors.toList());
 		view.predictions.caddPhred = items.stream().map(item -> item.caddPhred).filter(Objects::nonNull).collect(Collectors.toList());
+
+
+		//TODO Ulitin V. Порой мы встречаем "P;P;P;P;P", неоходимо уточнение, надо ли схлопывать
+		view.predictions.mutationTaster = items.stream().map(item -> item.mutationTasterPred)
+				.filter(Objects::nonNull).distinct().toArray(String[]::new);
+
 
 		view.predictions.mutationAssessor = items.stream()
 				.flatMap(item -> item.facets.stream())

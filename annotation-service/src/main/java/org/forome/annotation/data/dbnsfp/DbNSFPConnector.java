@@ -56,6 +56,7 @@ public class DbNSFPConnector {
 		return new DbNSFPItem(
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_raw")),
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_phred")),
+				jsonObject.getAsString("MutationTaster_pred"),
 				facets
 		);
 	}
