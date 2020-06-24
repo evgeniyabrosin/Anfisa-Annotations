@@ -94,7 +94,7 @@ public class AnfisaResultView {
 		public String[] siftVEP;
 		public String[] polyphen;
 		public List<Double> revel;
-		public String[] siftScore;
+		public Double[] siftScore;
 		public String[] mutationTaster;
 		public String[] fathmm;
 		public List<Double> lofScore = new ArrayList<>();

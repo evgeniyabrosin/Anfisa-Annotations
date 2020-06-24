@@ -989,7 +989,7 @@ public class AnfisaConnector implements AutoCloseable {
 				.map(itemFacetTranscript -> itemFacetTranscript.siftScore)
 				.filter(Objects::nonNull)
 				.distinct()
-				.toArray(String[]::new);
+				.toArray(Double[]::new);
 
 	}
 
