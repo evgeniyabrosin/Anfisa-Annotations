@@ -901,7 +901,6 @@ public class AnfisaConnector implements AutoCloseable {
 			view.predictions.maxEntScan = getMaxEnt(variantVep);
 
 			view.predictions.polyphen = getFromTranscriptsList(variantVep, "polyphen_prediction").stream().toArray(String[]::new);
-			view.predictions.polyphen2Hdiv = getFromTranscriptsList(variantVep, "Polyphen2_HDIV_pred".toLowerCase()).stream().collect(Collectors.toList());
 			view.predictions.polyphen2HvarScore = getFromTranscriptsList(variantVep, "Polyphen2_HVAR_score".toLowerCase()).stream()
 					.collect(Collectors.toList());
 			view.predictions.polyphen2HdivScore = getFromTranscriptsList(variantVep, "Polyphen2_HDIV_score".toLowerCase()).stream()
@@ -941,6 +940,13 @@ public class AnfisaConnector implements AutoCloseable {
 				.flatMap(item -> item.facets.stream())
 				.flatMap(itemFacet -> itemFacet.transcripts.stream())
 				.map(itemFacetTranscript -> itemFacetTranscript.polyphen2HVARPred)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toList());
+		view.predictions.polyphen2Hdiv = items.stream()
+				.flatMap(item -> item.facets.stream())
+				.flatMap(itemFacet -> itemFacet.transcripts.stream())
+				.map(itemFacetTranscript -> itemFacetTranscript.polyphen2HDIVPred)
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(Collectors.toList());
