@@ -23,13 +23,18 @@ public class DbNSFPItemFacetTranscript {
 	public final String mutationAssessorPred;
 
 	public final String polyphen2HVARPred;
+	public final String polyphen2HDIVPred;
 
 	public DbNSFPItemFacetTranscript(
 			String mutationAssessorPred,
-			String polyphen2HVARPred
+
+			String polyphen2HVARPred,
+			String polyphen2HDIVPred
+
 	) {
 		this.mutationAssessorPred = mutationAssessorPred;
 
 		this.polyphen2HVARPred = polyphen2HVARPred;
+		this.polyphen2HDIVPred = polyphen2HDIVPred;
 	}
 }

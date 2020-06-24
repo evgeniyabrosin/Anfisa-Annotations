@@ -69,7 +69,9 @@ public class DbNSFPConnector {
 	private static DbNSFPItemFacetTranscript _buildFacetTranscript(JSONObject jsonObject) {
 		return new DbNSFPItemFacetTranscript(
 				jsonObject.getAsString("MutationAssessor_pred"),
-				jsonObject.getAsString("Polyphen2_HVAR_pred")
+
+				jsonObject.getAsString("Polyphen2_HVAR_pred"),
+				jsonObject.getAsString("Polyphen2_HDIV_pred")
 		);
 	}
 }
