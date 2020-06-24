@@ -887,47 +887,56 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private void createPredictionsTab(AnfisaExecuteContext context, VariantVep variantVep, AnfisaResultView view) {
+	private void createPredictionsTab(AnfisaExecuteContext context, Variant variant, AnfisaResultView view) {
+		if (variant instanceof VariantVep) {
+			VariantVep variantVep = (VariantVep) variant;
 
-		List<DbNSFPItem> items = dbNSFPConnector.getAll(context, variantVep);
+			view.predictions.lofScore = getFromTranscripts(variantVep, "loftool", "all")
+					.stream().map(s -> Double.parseDouble(s)).sorted(Comparator.reverseOrder())
+					.collect(Collectors.toList());
+			view.predictions.lofScoreCanonical = getFromCanonicalTranscript(variantVep, "loftool")
+					.stream().map(s -> Double.parseDouble(s)).sorted(Comparator.reverseOrder())
+					.collect(Collectors.toList());
 
-		view.predictions.lofScore = getFromTranscripts(variantVep, "loftool", "all")
-						.stream().map(s -> Double.parseDouble(s)).sorted(Comparator.reverseOrder())
-						.collect(Collectors.toList());
-		view.predictions.lofScoreCanonical = getFromCanonicalTranscript(variantVep, "loftool")
-				.stream().map(s -> Double.parseDouble(s)).sorted(Comparator.reverseOrder())
-				.collect(Collectors.toList());
+			view.predictions.maxEntScan = getMaxEnt(variantVep);
 
-		view.predictions.maxEntScan = getMaxEnt(variantVep);
+			view.predictions.polyphen = getFromTranscriptsList(variantVep, "polyphen_prediction").stream().toArray(String[]::new);
+			view.predictions.polyphen2Hvar = getFromTranscriptsList(variantVep, "Polyphen2_HVAR_pred".toLowerCase()).stream().collect(Collectors.toList());
+			view.predictions.polyphen2Hdiv = getFromTranscriptsList(variantVep, "Polyphen2_HDIV_pred".toLowerCase()).stream().collect(Collectors.toList());
+			view.predictions.polyphen2HvarScore = getFromTranscriptsList(variantVep, "Polyphen2_HVAR_score".toLowerCase()).stream()
+					.collect(Collectors.toList());
+			view.predictions.polyphen2HdivScore = getFromTranscriptsList(variantVep, "Polyphen2_HDIV_score".toLowerCase()).stream()
+					.collect(Collectors.toList());
+			view.predictions.sift = getFromTranscriptsList(variantVep, "sift_prediction").stream().toArray(String[]::new);
+			view.predictions.siftVEP = getFromTranscriptsList(variantVep, "sift_pred").stream().toArray(String[]::new);
+			view.predictions.siftScore = getFromTranscriptsList(variantVep, "sift_score").stream().toArray(String[]::new);
+			view.predictions.revel = getFromTranscriptsList(variantVep, "revel_score").stream().map(s -> Double.parseDouble(s))
+					.collect(Collectors.toList());
+			view.predictions.mutationTaster = getFromTranscriptsList(variantVep, "mutationtaster_pred").stream()
+					.flatMap(s -> Arrays.stream(s.split(",")))
+					.map(s -> s.trim())
+					.filter(s -> !s.isEmpty())
+					.distinct().toArray(String[]::new);
+			view.predictions.fathmm = getFromTranscriptsList(variantVep, "fathmm_pred").stream()
+					.flatMap(s -> Arrays.stream(s.split(",")))
+					.map(s -> s.trim())
+					.filter(s -> !s.isEmpty())
+					.distinct().toArray(String[]::new);
+		}
 
-		view.predictions.polyphen = getFromTranscriptsList(variantVep, "polyphen_prediction").stream().toArray(String[]::new);
-		view.predictions.polyphen2Hvar = getFromTranscriptsList(variantVep, "Polyphen2_HVAR_pred".toLowerCase()).stream().collect(Collectors.toList());
-		view.predictions.polyphen2Hdiv = getFromTranscriptsList(variantVep, "Polyphen2_HDIV_pred".toLowerCase()).stream().collect(Collectors.toList());
-		view.predictions.polyphen2HvarScore = getFromTranscriptsList(variantVep, "Polyphen2_HVAR_score".toLowerCase()).stream()
-				.collect(Collectors.toList());
-		view.predictions.polyphen2HdivScore = getFromTranscriptsList(variantVep, "Polyphen2_HDIV_score".toLowerCase()).stream()
-				.collect(Collectors.toList());
-		view.predictions.sift = getFromTranscriptsList(variantVep, "sift_prediction").stream().toArray(String[]::new);
-		view.predictions.siftVEP = getFromTranscriptsList(variantVep, "sift_pred").stream().toArray(String[]::new);
-		view.predictions.siftScore = getFromTranscriptsList(variantVep, "sift_score").stream().toArray(String[]::new);
-		view.predictions.revel = getFromTranscriptsList(variantVep, "revel_score").stream().map(s -> Double.parseDouble(s))
-				.collect(Collectors.toList());
-		view.predictions.mutationTaster = getFromTranscriptsList(variantVep, "mutationtaster_pred").stream()
-				.flatMap(s -> Arrays.stream(s.split(",")))
-				.map(s -> s.trim())
-				.filter(s -> !s.isEmpty())
-				.distinct().toArray(String[]::new);
-		view.predictions.fathmm = getFromTranscriptsList(variantVep, "fathmm_pred").stream()
-				.flatMap(s -> Arrays.stream(s.split(",")))
-				.map(s -> s.trim())
-				.filter(s -> !s.isEmpty())
-				.distinct().toArray(String[]::new);
+
+		List<DbNSFPItem> items = dbNSFPConnector.getAll(context, variant);
 
 		view.predictions.caddRaw = items.stream().map(item -> item.caddRaw).filter(Objects::nonNull).collect(Collectors.toList());
-
 		view.predictions.caddPhred = items.stream().map(item -> item.caddPhred).filter(Objects::nonNull).collect(Collectors.toList());
 
-		view.predictions.mutationAssessor = getFromTranscriptsList(variantVep, "mutationassessor_pred").stream().toArray(String[]::new);
+		view.predictions.mutationAssessor = items.stream()
+				.flatMap(item -> item.facets.stream())
+				.flatMap(itemFacet -> itemFacet.transcripts.stream())
+				.map(itemFacetTranscript -> itemFacetTranscript.mutationAssessorPred)
+				.filter(Objects::nonNull)
+				.distinct()
+				.toArray(String[]::new);
 	}
 
 	private static List<String> getMaxEnt(VariantVep variantVep) {

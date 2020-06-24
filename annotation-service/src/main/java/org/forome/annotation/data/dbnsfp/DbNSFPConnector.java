@@ -22,6 +22,8 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
+import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacet;
+import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacetTranscript;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.MathUtils;
 
@@ -46,9 +48,27 @@ public class DbNSFPConnector {
 	}
 
 	private static DbNSFPItem _build(JSONObject jsonObject) {
+
+		List<DbNSFPItemFacet> facets = ((JSONArray)jsonObject.get("facets")).stream()
+				.map(o -> _buildFacet((JSONObject)o)).collect(Collectors.toList());
+
 		return new DbNSFPItem(
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_raw")),
-				MathUtils.toDouble(jsonObject.getAsNumber("CADD_phred"))
+				MathUtils.toDouble(jsonObject.getAsNumber("CADD_phred")),
+				facets
+		);
+	}
+
+	private static DbNSFPItemFacet _buildFacet(JSONObject jsonObject) {
+		List<DbNSFPItemFacetTranscript> transcripts = ((JSONArray)jsonObject.get("transcripts")).stream()
+				.map(o -> _buildFacetTranscript((JSONObject)o)).collect(Collectors.toList());
+
+		return new DbNSFPItemFacet(transcripts);
+	}
+
+	private static DbNSFPItemFacetTranscript _buildFacetTranscript(JSONObject jsonObject) {
+		return new DbNSFPItemFacetTranscript(
+				jsonObject.getAsString("MutationAssessor_pred")
 		);
 	}
 }
