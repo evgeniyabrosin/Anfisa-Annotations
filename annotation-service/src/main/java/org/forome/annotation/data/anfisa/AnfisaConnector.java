@@ -232,7 +232,7 @@ public class AnfisaConnector implements AutoCloseable {
 		createQualityTab(view, variant, anfisaInput.mCase);
 		createGnomadTab(context, variant.chromosome.getChar(), variant, anfisaInput.mCase, view);
 		createDatabasesTab((VariantVep) variant, record, data, view);
-		createPredictionsTab(context, (VariantVep) variant, view);
+		createPredictionsTab(context, variant, view);
 		createBioinformaticsTab(gtfAnfisaResult, context, data, view);
 		createPharmacogenomicsTab(view, filters, variant);
 		countCohorts(view, filters, anfisaInput.mCase, variant);
@@ -901,7 +901,6 @@ public class AnfisaConnector implements AutoCloseable {
 			view.predictions.maxEntScan = getMaxEnt(variantVep);
 
 			view.predictions.polyphen = getFromTranscriptsList(variantVep, "polyphen_prediction").stream().toArray(String[]::new);
-			view.predictions.polyphen2Hvar = getFromTranscriptsList(variantVep, "Polyphen2_HVAR_pred".toLowerCase()).stream().collect(Collectors.toList());
 			view.predictions.polyphen2Hdiv = getFromTranscriptsList(variantVep, "Polyphen2_HDIV_pred".toLowerCase()).stream().collect(Collectors.toList());
 			view.predictions.polyphen2HvarScore = getFromTranscriptsList(variantVep, "Polyphen2_HVAR_score".toLowerCase()).stream()
 					.collect(Collectors.toList());
@@ -937,6 +936,15 @@ public class AnfisaConnector implements AutoCloseable {
 				.filter(Objects::nonNull)
 				.distinct()
 				.toArray(String[]::new);
+
+		view.predictions.polyphen2Hvar = items.stream()
+				.flatMap(item -> item.facets.stream())
+				.flatMap(itemFacet -> itemFacet.transcripts.stream())
+				.map(itemFacetTranscript -> itemFacetTranscript.polyphen2HVARPred)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toList());
+
 	}
 
 	private static List<String> getMaxEnt(VariantVep variantVep) {
