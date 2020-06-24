@@ -50,7 +50,8 @@ public class DbNSFPConnector {
 	private static DbNSFPItem _build(JSONObject jsonObject) {
 
 		List<DbNSFPItemFacet> facets = ((JSONArray)jsonObject.get("facets")).stream()
-				.map(o -> _buildFacet((JSONObject)o)).collect(Collectors.toList());
+				.map(o -> _buildFacet((JSONObject)o))
+				.collect(Collectors.toList());
 
 		return new DbNSFPItem(
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_raw")),
@@ -61,9 +62,13 @@ public class DbNSFPConnector {
 
 	private static DbNSFPItemFacet _buildFacet(JSONObject jsonObject) {
 		List<DbNSFPItemFacetTranscript> transcripts = ((JSONArray)jsonObject.get("transcripts")).stream()
-				.map(o -> _buildFacetTranscript((JSONObject)o)).collect(Collectors.toList());
+				.map(o -> _buildFacetTranscript((JSONObject)o))
+				.collect(Collectors.toList());
 
-		return new DbNSFPItemFacet(transcripts);
+		return new DbNSFPItemFacet(
+				MathUtils.toDouble(jsonObject.getAsNumber("REVEL_score")),
+				transcripts
+		);
 	}
 
 	private static DbNSFPItemFacetTranscript _buildFacetTranscript(JSONObject jsonObject) {

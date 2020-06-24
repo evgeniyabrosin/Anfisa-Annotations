@@ -23,9 +23,16 @@ import java.util.List;
 
 public class DbNSFPItemFacet {
 
+	public final Double revelScore;
+
 	public final List<DbNSFPItemFacetTranscript> transcripts;
 
-	public DbNSFPItemFacet(List<DbNSFPItemFacetTranscript> transcripts) {
+	public DbNSFPItemFacet(
+			Double revelScore,
+			List<DbNSFPItemFacetTranscript> transcripts
+	) {
+		this.revelScore = revelScore;
+
 		this.transcripts = Collections.unmodifiableList(transcripts);
 	}
 }

@@ -904,8 +904,6 @@ public class AnfisaConnector implements AutoCloseable {
 			view.predictions.sift = getFromTranscriptsList(variantVep, "sift_prediction").stream().toArray(String[]::new);
 			view.predictions.siftVEP = getFromTranscriptsList(variantVep, "sift_pred").stream().toArray(String[]::new);
 			view.predictions.siftScore = getFromTranscriptsList(variantVep, "sift_score").stream().toArray(String[]::new);
-			view.predictions.revel = getFromTranscriptsList(variantVep, "revel_score").stream().map(s -> Double.parseDouble(s))
-					.collect(Collectors.toList());
 			view.predictions.mutationTaster = getFromTranscriptsList(variantVep, "mutationtaster_pred").stream()
 					.flatMap(s -> Arrays.stream(s.split(",")))
 					.map(s -> s.trim())
@@ -959,6 +957,14 @@ public class AnfisaConnector implements AutoCloseable {
 				.flatMap(item -> item.facets.stream())
 				.flatMap(itemFacet -> itemFacet.transcripts.stream())
 				.map(itemFacetTranscript -> itemFacetTranscript.polyphen2HDIVScore)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toList());
+
+
+		view.predictions.revel = items.stream()
+				.flatMap(item -> item.facets.stream())
+				.map(itemFacet -> itemFacet.revelScore)
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(Collectors.toList());
