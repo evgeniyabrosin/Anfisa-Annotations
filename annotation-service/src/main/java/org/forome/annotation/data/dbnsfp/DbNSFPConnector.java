@@ -71,7 +71,10 @@ public class DbNSFPConnector {
 				jsonObject.getAsString("MutationAssessor_pred"),
 
 				jsonObject.getAsString("Polyphen2_HVAR_pred"),
-				jsonObject.getAsString("Polyphen2_HDIV_pred")
+				MathUtils.toDouble(jsonObject.getAsString("Polyphen2_HVAR_score")),
+
+				jsonObject.getAsString("Polyphen2_HDIV_pred"),
+				MathUtils.toDouble(jsonObject.getAsString("Polyphen2_HDIV_score"))
 		);
 	}
 }

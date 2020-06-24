@@ -901,10 +901,6 @@ public class AnfisaConnector implements AutoCloseable {
 			view.predictions.maxEntScan = getMaxEnt(variantVep);
 
 			view.predictions.polyphen = getFromTranscriptsList(variantVep, "polyphen_prediction").stream().toArray(String[]::new);
-			view.predictions.polyphen2HvarScore = getFromTranscriptsList(variantVep, "Polyphen2_HVAR_score".toLowerCase()).stream()
-					.collect(Collectors.toList());
-			view.predictions.polyphen2HdivScore = getFromTranscriptsList(variantVep, "Polyphen2_HDIV_score".toLowerCase()).stream()
-					.collect(Collectors.toList());
 			view.predictions.sift = getFromTranscriptsList(variantVep, "sift_prediction").stream().toArray(String[]::new);
 			view.predictions.siftVEP = getFromTranscriptsList(variantVep, "sift_pred").stream().toArray(String[]::new);
 			view.predictions.siftScore = getFromTranscriptsList(variantVep, "sift_score").stream().toArray(String[]::new);
@@ -943,10 +939,26 @@ public class AnfisaConnector implements AutoCloseable {
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(Collectors.toList());
+		view.predictions.polyphen2HvarScore = items.stream()
+				.flatMap(item -> item.facets.stream())
+				.flatMap(itemFacet -> itemFacet.transcripts.stream())
+				.map(itemFacetTranscript -> itemFacetTranscript.polyphen2HVARScore)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toList());
+
+
 		view.predictions.polyphen2Hdiv = items.stream()
 				.flatMap(item -> item.facets.stream())
 				.flatMap(itemFacet -> itemFacet.transcripts.stream())
 				.map(itemFacetTranscript -> itemFacetTranscript.polyphen2HDIVPred)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.toList());
+		view.predictions.polyphen2HdivScore = items.stream()
+				.flatMap(item -> item.facets.stream())
+				.flatMap(itemFacet -> itemFacet.transcripts.stream())
+				.map(itemFacetTranscript -> itemFacetTranscript.polyphen2HDIVScore)
 				.filter(Objects::nonNull)
 				.distinct()
 				.collect(Collectors.toList());

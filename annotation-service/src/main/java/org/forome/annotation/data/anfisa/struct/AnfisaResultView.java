@@ -87,8 +87,8 @@ public class AnfisaResultView {
 	public class Predictions {
 		public List<String> polyphen2Hvar;
 		public List<String> polyphen2Hdiv;
-		public List<String> polyphen2HvarScore;
-		public List<String> polyphen2HdivScore;
+		public List<Double> polyphen2HvarScore;
+		public List<Double> polyphen2HdivScore;
 		public List<String> maxEntScan;
 		public String[] sift;
 		public String[] siftVEP;
