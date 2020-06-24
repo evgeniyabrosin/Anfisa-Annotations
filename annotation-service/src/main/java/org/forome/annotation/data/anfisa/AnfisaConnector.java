@@ -912,9 +912,12 @@ public class AnfisaConnector implements AutoCloseable {
 		view.predictions.caddPhred = items.stream().map(item -> item.caddPhred).filter(Objects::nonNull).collect(Collectors.toList());
 
 
-		//TODO Ulitin V. Порой мы встречаем "P;P;P;P;P", неоходимо уточнение, надо ли схлопывать
 		view.predictions.mutationTaster = items.stream().map(item -> item.mutationTasterPred)
-				.filter(Objects::nonNull).distinct().toArray(String[]::new);
+				.filter(Objects::nonNull)
+				.flatMap(s -> Arrays.stream(s.split(";")))
+				.map(s -> s.trim())
+				.filter(s -> !s.isEmpty())
+				.distinct().toArray(String[]::new);
 
 
 		view.predictions.mutationAssessor = items.stream()
