@@ -923,10 +923,10 @@ public class AnfisaConnector implements AutoCloseable {
 				.filter(s -> !s.isEmpty())
 				.distinct().toArray(String[]::new);
 
+		view.predictions.caddRaw = items.stream().map(item -> item.caddRaw).filter(Objects::nonNull).collect(Collectors.toList());
+
 		view.predictions.caddPhred = items.stream().map(item -> item.caddPhred).filter(Objects::nonNull).collect(Collectors.toList());
 
-		view.predictions.caddRaw = getFromTranscriptsList(variantVep, "cadd_raw").stream().map(s -> Double.parseDouble(s))
-				.collect(Collectors.toList());
 		view.predictions.mutationAssessor = getFromTranscriptsList(variantVep, "mutationassessor_pred").stream().toArray(String[]::new);
 	}
 

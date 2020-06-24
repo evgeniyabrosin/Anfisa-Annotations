@@ -47,6 +47,7 @@ public class DbNSFPConnector {
 
 	private static DbNSFPItem _build(JSONObject jsonObject) {
 		return new DbNSFPItem(
+				MathUtils.toDouble(jsonObject.getAsNumber("CADD_raw")),
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_phred"))
 		);
 	}
