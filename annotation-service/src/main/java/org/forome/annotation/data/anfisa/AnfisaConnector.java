@@ -903,7 +903,6 @@ public class AnfisaConnector implements AutoCloseable {
 			view.predictions.polyphen = getFromTranscriptsList(variantVep, "polyphen_prediction").stream().toArray(String[]::new);
 			view.predictions.sift = getFromTranscriptsList(variantVep, "sift_prediction").stream().toArray(String[]::new);
 			view.predictions.siftVEP = getFromTranscriptsList(variantVep, "sift_pred").stream().toArray(String[]::new);
-			view.predictions.siftScore = getFromTranscriptsList(variantVep, "sift_score").stream().toArray(String[]::new);
 		}
 
 
@@ -970,6 +969,24 @@ public class AnfisaConnector implements AutoCloseable {
 				.flatMap(item -> item.facets.stream())
 				.flatMap(itemFacet -> itemFacet.transcripts.stream())
 				.map(itemFacetTranscript -> itemFacetTranscript.fATHMMPred)
+				.filter(Objects::nonNull)
+				.distinct()
+				.toArray(String[]::new);
+
+
+//		view.predictions.sift = items.stream()
+//				.flatMap(item -> item.facets.stream())
+//				.flatMap(itemFacet -> itemFacet.transcripts.stream())
+//				.map(itemFacetTranscript -> itemFacetTranscript.siftPrediction)
+//				.filter(Objects::nonNull)
+//				.distinct()
+//				.toArray(String[]::new);
+
+
+		view.predictions.siftScore = items.stream()
+				.flatMap(item -> item.facets.stream())
+				.flatMap(itemFacet -> itemFacet.transcripts.stream())
+				.map(itemFacetTranscript -> itemFacetTranscript.siftScore)
 				.filter(Objects::nonNull)
 				.distinct()
 				.toArray(String[]::new);
