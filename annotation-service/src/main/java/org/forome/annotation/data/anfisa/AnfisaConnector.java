@@ -31,6 +31,8 @@ import org.forome.annotation.data.clinvar.struct.ClinvarResult;
 import org.forome.annotation.data.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.conservation.struct.Conservation;
+import org.forome.annotation.data.dbnsfp.DbNSFPConnector;
+import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -90,6 +92,8 @@ public class AnfisaConnector implements AutoCloseable {
 
 	private final SourceHttp38 sourceHttp38;
 
+	private final DbNSFPConnector dbNSFPConnector;
+
 	public AnfisaConnector(
 			GnomadConnector gnomadConnector,
 			SpliceAIConnector spliceAIConnector,
@@ -114,6 +118,8 @@ public class AnfisaConnector implements AutoCloseable {
 		this.gtfAnfisaBuilder = new GtfAnfisaBuilder(gtfConnector);
 
 		this.sourceHttp38 = sourceHttp38;
+
+		this.dbNSFPConnector = new DbNSFPConnector();
 	}
 
 	public AnfisaResult build(
@@ -226,7 +232,7 @@ public class AnfisaConnector implements AutoCloseable {
 		createQualityTab(view, variant, anfisaInput.mCase);
 		createGnomadTab(context, variant.chromosome.getChar(), variant, anfisaInput.mCase, view);
 		createDatabasesTab((VariantVep) variant, record, data, view);
-		createPredictionsTab((VariantVep) variant, vepJson, view);
+		createPredictionsTab(context, (VariantVep) variant, view);
 		createBioinformaticsTab(gtfAnfisaResult, context, data, view);
 		createPharmacogenomicsTab(view, filters, variant);
 		countCohorts(view, filters, anfisaInput.mCase, variant);
@@ -881,10 +887,13 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private void createPredictionsTab(VariantVep variantVep, JSONObject vepJson, AnfisaResultView view) {
+	private void createPredictionsTab(AnfisaExecuteContext context, VariantVep variantVep, AnfisaResultView view) {
+
+		List<DbNSFPItem> items = dbNSFPConnector.getAll(context, variantVep);
+
 		view.predictions.lofScore = getFromTranscripts(variantVep, "loftool", "all")
-				.stream().map(s -> Double.parseDouble(s)).sorted(Comparator.reverseOrder())
-				.collect(Collectors.toList());
+						.stream().map(s -> Double.parseDouble(s)).sorted(Comparator.reverseOrder())
+						.collect(Collectors.toList());
 		view.predictions.lofScoreCanonical = getFromCanonicalTranscript(variantVep, "loftool")
 				.stream().map(s -> Double.parseDouble(s)).sorted(Comparator.reverseOrder())
 				.collect(Collectors.toList());
@@ -913,8 +922,9 @@ public class AnfisaConnector implements AutoCloseable {
 				.map(s -> s.trim())
 				.filter(s -> !s.isEmpty())
 				.distinct().toArray(String[]::new);
-		view.predictions.caddPhred = getFromTranscriptsList(variantVep, "cadd_phred").stream().map(s -> Double.parseDouble(s))
-				.collect(Collectors.toList());
+
+		view.predictions.caddPhred = items.stream().map(item -> item.caddPhred).filter(Objects::nonNull).collect(Collectors.toList());
+
 		view.predictions.caddRaw = getFromTranscriptsList(variantVep, "cadd_raw").stream().map(s -> Double.parseDouble(s))
 				.collect(Collectors.toList());
 		view.predictions.mutationAssessor = getFromTranscriptsList(variantVep, "mutationassessor_pred").stream().toArray(String[]::new);
