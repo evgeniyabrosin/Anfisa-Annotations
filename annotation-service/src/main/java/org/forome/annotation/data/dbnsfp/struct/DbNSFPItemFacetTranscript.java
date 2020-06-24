@@ -28,6 +28,8 @@ public class DbNSFPItemFacetTranscript {
 	public final String polyphen2HDIVPred;
 	public final Double polyphen2HDIVScore;
 
+	public final String fATHMMPred;
+
 	public DbNSFPItemFacetTranscript(
 			String mutationAssessorPred,
 
@@ -35,7 +37,9 @@ public class DbNSFPItemFacetTranscript {
 			Double polyphen2HVARScore,
 
 			String polyphen2HDIVPred,
-			Double polyphen2HDIVScore
+			Double polyphen2HDIVScore,
+
+			String fATHMMPred
 
 	) {
 		this.mutationAssessorPred = mutationAssessorPred;
@@ -45,5 +49,7 @@ public class DbNSFPItemFacetTranscript {
 
 		this.polyphen2HDIVPred = polyphen2HDIVPred;
 		this.polyphen2HDIVScore = polyphen2HDIVScore;
+
+		this.fATHMMPred = fATHMMPred;
 	}
 }
