@@ -20,14 +20,13 @@ package org.forome.annotation.data.dbnsfp.struct;
 
 public class DbNSFPItem {
 
-//	public final Double caddRaw;
+	public final Double caddRaw;
 	public final Double caddPhred;
 
 	public DbNSFPItem(
-//			Double caddRaw,
-			Double caddPhred
+			Double caddRaw, Double caddPhred
 	) {
-//		this.caddRaw = caddRaw;
+		this.caddRaw = caddRaw;
 		this.caddPhred = caddPhred;
 	}
 }
