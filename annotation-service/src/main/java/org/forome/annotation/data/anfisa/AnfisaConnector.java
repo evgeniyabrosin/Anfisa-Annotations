@@ -901,8 +901,8 @@ public class AnfisaConnector implements AutoCloseable {
 			view.predictions.maxEntScan = getMaxEnt(variantVep);
 
 			view.predictions.polyphen = getFromTranscriptsList(variantVep, "polyphen_prediction").stream().toArray(String[]::new);
+
 			view.predictions.sift = getFromTranscriptsList(variantVep, "sift_prediction").stream().toArray(String[]::new);
-			view.predictions.siftVEP = getFromTranscriptsList(variantVep, "sift_pred").stream().toArray(String[]::new);
 		}
 
 
@@ -974,13 +974,13 @@ public class AnfisaConnector implements AutoCloseable {
 				.toArray(String[]::new);
 
 
-//		view.predictions.sift = items.stream()
-//				.flatMap(item -> item.facets.stream())
-//				.flatMap(itemFacet -> itemFacet.transcripts.stream())
-//				.map(itemFacetTranscript -> itemFacetTranscript.siftPrediction)
-//				.filter(Objects::nonNull)
-//				.distinct()
-//				.toArray(String[]::new);
+		view.predictions.siftVEP = items.stream()
+				.flatMap(item -> item.facets.stream())
+				.flatMap(itemFacet -> itemFacet.transcripts.stream())
+				.map(itemFacetTranscript -> itemFacetTranscript.siftPrediction)
+				.filter(Objects::nonNull)
+				.distinct()
+				.toArray(String[]::new);
 
 
 		view.predictions.siftScore = items.stream()
