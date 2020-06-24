@@ -18,22 +18,11 @@
 
 package org.forome.annotation.data.dbnsfp.struct;
 
-import java.util.Collections;
-import java.util.List;
+public class DbNSFPItemFacetTranscript {
 
-public class DbNSFPItem {
+	public final String mutationAssessorPred;
 
-	public final Double caddRaw;
-	public final Double caddPhred;
-
-	public final List<DbNSFPItemFacet> facets;
-
-	public DbNSFPItem(
-			Double caddRaw, Double caddPhred,
-			List<DbNSFPItemFacet> facets
-	) {
-		this.caddRaw = caddRaw;
-		this.caddPhred = caddPhred;
-		this.facets = Collections.unmodifiableList(facets);
+	public DbNSFPItemFacetTranscript(String mutationAssessorPred) {
+		this.mutationAssessorPred = mutationAssessorPred;
 	}
 }
