@@ -53,6 +53,11 @@
                 sift_prediction
                 sift_4g_score
                 sift_4g_prediction
+                polyphen2_hdiv_score
+                polyphen2_hdiv_prediction
+                polyphen2_hvar_score
+                polyphen2_hvar_prediction
+                mutation_assessor_prediction
             }
         }
     }

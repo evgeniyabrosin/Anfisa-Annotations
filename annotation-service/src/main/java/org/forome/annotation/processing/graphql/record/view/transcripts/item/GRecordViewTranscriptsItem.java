@@ -191,6 +191,36 @@ public class GRecordViewTranscriptsItem extends GRecordViewGeneralTranscript {
 		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.sift4GPrediction;
 	}
 
+	@GraphQLField
+	@GraphQLName("polyphen2_hdiv_score")
+	public Double getPolyphen2HdivScore() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.polyphen2HDIVScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("polyphen2_hdiv_prediction")
+	public String getPolyphen2HdivPrediction() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.polyphen2HDIVPred;
+	}
+
+	@GraphQLField
+	@GraphQLName("polyphen2_hvar_score")
+	public Double getPolyphen2HvarScore() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.polyphen2HVARScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("polyphen2_hvar_prediction")
+	public String getPolyphen2HvarPrediction() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.polyphen2HVARPred;
+	}
+
+	@GraphQLField
+	@GraphQLName("mutation_assessor_prediction")
+	public String getmutationAssessorPrediction() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.mutationAssessorPred;
+	}
+
 	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
 		put("Ala", "A");
 		put("Arg", "R");
