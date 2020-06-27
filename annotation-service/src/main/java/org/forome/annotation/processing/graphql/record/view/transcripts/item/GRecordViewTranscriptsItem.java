@@ -161,6 +161,36 @@ public class GRecordViewTranscriptsItem extends GRecordViewGeneralTranscript {
 		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.hgvsPSnpEff;
 	}
 
+	@GraphQLField
+	@GraphQLName("gencode_basic")
+	public Boolean getGencodeBasic() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.gencodeBasic;
+	}
+
+	@GraphQLField
+	@GraphQLName("sift_score")
+	public Double getSiftScore() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.siftScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("sift_prediction")
+	public String getSiftPrediction() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.siftPrediction;
+	}
+
+	@GraphQLField
+	@GraphQLName("sift_4g_score")
+	public Double getSift4GScore() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.sift4GScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("sift_4g_prediction")
+	public String getSift4GPrediction() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.sift4GPrediction;
+	}
+
 	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
 		put("Ala", "A");
 		put("Arg", "R");
