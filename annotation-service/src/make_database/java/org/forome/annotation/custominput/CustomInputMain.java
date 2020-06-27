@@ -28,6 +28,7 @@ import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
+import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
@@ -43,7 +44,6 @@ import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
-import org.forome.annotation.data.sourceHttp38.SourceHttp38;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
@@ -101,7 +101,7 @@ public class CustomInputMain {
 	private static GTFConnector gtfConnector;
 	private static GTEXConnector gtexConnector;
 	private static PharmGKBConnector pharmGKBConnector;
-	private static SourceHttp38 sourceHttp38;
+	private static AStorageHttp sourceHttp38;
 	private static EnsemblVepService ensemblVepService;
 	private static AnfisaConnector anfisaConnector;
 	private static Processing processing;
@@ -202,7 +202,7 @@ public class CustomInputMain {
 //			pharmGKBConnector = new PharmGKBConnectorHttp();
 			pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-			sourceHttp38 = new SourceHttp38(
+			sourceHttp38 = new AStorageHttp(
 					databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
 			);
 

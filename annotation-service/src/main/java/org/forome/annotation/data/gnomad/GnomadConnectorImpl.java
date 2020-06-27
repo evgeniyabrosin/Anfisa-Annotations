@@ -19,6 +19,7 @@
 package org.forome.annotation.data.gnomad;
 
 import com.google.common.collect.ImmutableList;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
 import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.struct.GnamadGroup;
@@ -68,11 +69,11 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		);
 	}
 
-	public CompletableFuture<GnomadResult> request(Assembly assembly, Chromosome chromosome, int position, String reference, String alternative) {
+	public CompletableFuture<GnomadResult> request(AnfisaExecuteContext context, Assembly assembly, Chromosome chromosome, int position, String reference, String alternative) {
 		CompletableFuture<GnomadResult> future = new CompletableFuture();
 		threadPoolGnomadExecutor.submit(() -> {
 			try {
-				GnomadResult result = syncRequest(assembly, chromosome, position, reference, alternative);
+				GnomadResult result = syncRequest(context, assembly, chromosome, position, reference, alternative);
 				future.complete(result);
 			} catch (Throwable e) {
 				future.completeExceptionally(e);
@@ -85,12 +86,12 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		return gnomadDataSource.getSourceMetadata();
 	}
 
-	private GnomadResult syncRequest(Assembly assembly, Chromosome chromosome, int position, String reference, String alternative) throws Exception {
+	private GnomadResult syncRequest(AnfisaExecuteContext context, Assembly assembly, Chromosome chromosome, int position, String reference, String alternative) throws Exception {
 		List<DataResponse> exomes = gnomadDataSource.getData(
-				assembly, chromosome, position, reference, alternative, "e"
+				context, assembly, chromosome, position, reference, alternative, "e"
 		);
 		List<DataResponse> genomes = gnomadDataSource.getData(
-				assembly, chromosome, position, reference, alternative, "g"
+				context, assembly, chromosome, position, reference, alternative, "g"
 		);
 
 		List<DataResponse> overall = new ImmutableList.Builder().addAll(exomes).addAll(genomes).build();

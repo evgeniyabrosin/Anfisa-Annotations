@@ -26,6 +26,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.struct.*;
+import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.struct.ClinvarResult;
 import org.forome.annotation.data.clinvar.struct.ClinvarVariantSummary;
@@ -41,7 +42,6 @@ import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
-import org.forome.annotation.data.sourceHttp38.SourceHttp38;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
@@ -90,7 +90,7 @@ public class AnfisaConnector implements AutoCloseable {
 	public final GTEXConnector gtexConnector;
 	public final PharmGKBConnector pharmGKBConnector;
 
-	private final SourceHttp38 sourceHttp38;
+	private final AStorageHttp aStorageHttp;
 
 	public final DbNSFPConnector dbNSFPConnector;
 
@@ -104,7 +104,7 @@ public class AnfisaConnector implements AutoCloseable {
 			GTFConnector gtfConnector,
 			GTEXConnector gtexConnector,
 			PharmGKBConnector pharmGKBConnector,
-			SourceHttp38 sourceHttp38
+			AStorageHttp aStorageHttp
 	) {
 		this.gnomadConnector = gnomadConnector;
 		this.spliceAIConnector = spliceAIConnector;
@@ -117,7 +117,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 		this.gtfAnfisaBuilder = new GtfAnfisaBuilder(gtfConnector);
 
-		this.sourceHttp38 = sourceHttp38;
+		this.aStorageHttp = aStorageHttp;
 
 		this.dbNSFPConnector = new DbNSFPConnector();
 	}
@@ -138,7 +138,7 @@ public class AnfisaConnector implements AutoCloseable {
 		AnfisaResultView view = new AnfisaResultView();
 
 		data.version = AppVersion.getVersionFormat();
-		context.sourceSpliceAI_and_dbNSFP = sourceHttp38.get(
+		context.sourceAStorageHttp = aStorageHttp.get(
 				anfisaInput.mCase.assembly, variant.chromosome, variant.getStart()
 		);
 
@@ -498,6 +498,7 @@ public class AnfisaConnector implements AutoCloseable {
 		Assembly assembly = context.anfisaInput.mCase.assembly;
 		try {
 			return gnomadConnector.request(
+					context,
 					assembly,
 					variant.chromosome,
 					Math.min(variant.getStart(), variant.end),

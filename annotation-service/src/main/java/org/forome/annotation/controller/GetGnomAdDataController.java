@@ -94,6 +94,7 @@ public class GetGnomAdDataController {
 				GnomadConnectorImpl gnomadConnector = service.getGnomadConnector();
 				for (RequestItem requestItem : requestItems) {
 					futureGnomadResults.add(gnomadConnector.request(
+							null,
 							Assembly.GRCh37,
 							requestItem.chromosome,
 							requestItem.position,
