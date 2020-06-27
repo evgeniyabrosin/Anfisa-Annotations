@@ -20,6 +20,7 @@ package org.forome.annotation;
 
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
+import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
@@ -35,7 +36,6 @@ import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.ref.RefConnector;
-import org.forome.annotation.data.sourceHttp38.SourceHttp38;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
@@ -66,7 +66,7 @@ public class AnfisaBaseTest {
 	protected static RefConnector refConnector;
 	protected static GTEXConnectorMysql gtexConnector;
 	protected static PharmGKBConnector pharmGKBConnector;
-	protected static SourceHttp38 sourceHttp38;
+	protected static AStorageHttp sourceHttp38;
 	protected static EnsemblVepService ensemblVepService;
 	protected static AnfisaConnector anfisaConnector;
 
@@ -125,7 +125,7 @@ public class AnfisaBaseTest {
 //		pharmGKBConnector = new PharmGKBConnectorHttp();
 		pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-		sourceHttp38 = new SourceHttp38(
+		sourceHttp38 = new AStorageHttp(
 				databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
 		);
 

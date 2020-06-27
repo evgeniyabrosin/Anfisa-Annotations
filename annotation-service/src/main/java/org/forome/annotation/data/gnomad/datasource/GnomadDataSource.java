@@ -18,6 +18,7 @@
 
 package org.forome.annotation.data.gnomad.datasource;
 
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
@@ -29,6 +30,7 @@ import java.util.List;
 public interface GnomadDataSource {
 
 	List<DataResponse> getData(
+			AnfisaExecuteContext context,
 			Assembly assembly,
 			Chromosome chromosome,
 			int position,

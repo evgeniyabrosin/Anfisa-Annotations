@@ -23,6 +23,7 @@ import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.anfisa.struct.AnfisaInput;
+import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
@@ -38,7 +39,6 @@ import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
-import org.forome.annotation.data.sourceHttp38.SourceHttp38;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
@@ -99,7 +99,7 @@ public class CNVMain {
 //		PharmGKBConnector pharmGKBConnector = new PharmGKBConnectorHttp();
 		PharmGKBConnector pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-		SourceHttp38 sourceHttp38 = new SourceHttp38(
+		AStorageHttp sourceHttp38 = new AStorageHttp(
 				databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
 		);
 

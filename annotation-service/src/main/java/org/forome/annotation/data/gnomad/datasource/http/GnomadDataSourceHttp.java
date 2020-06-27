@@ -34,6 +34,7 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
 import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.utils.GnomadUtils;
@@ -94,6 +95,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 
 	@Override
 	public List<DataResponse> getData(
+			AnfisaExecuteContext context,
 			Assembly assembly,
 			Chromosome chromosome,
 			int position,

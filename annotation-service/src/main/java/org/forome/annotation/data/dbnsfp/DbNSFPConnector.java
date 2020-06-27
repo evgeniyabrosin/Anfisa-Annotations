@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public class DbNSFPConnector {
 
 	public List<DbNSFPItem> getAll(AnfisaExecuteContext context, Variant variant) {
-		JSONArray jRecords = (JSONArray) context.sourceSpliceAI_and_dbNSFP.get("dbNSFP");
+		JSONArray jRecords = (JSONArray) context.sourceAStorageHttp.get("dbNSFP");
 		if (jRecords == null) {
 			return Collections.emptyList();
 		}

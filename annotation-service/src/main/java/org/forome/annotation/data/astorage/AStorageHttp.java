@@ -16,8 +16,9 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.sourceHttp38;
+package org.forome.annotation.data.astorage;
 
+import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.apache.http.HttpEntity;
@@ -26,6 +27,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
@@ -38,7 +41,6 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,9 +49,14 @@ import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class SourceHttp38 {
+/**
+ * curl -d '{"variants":[{"chrom":"chr3","pos":38603929}], "fasta":"hg38"}' -H "Content-Type: application/json" -X POST "localhost:8290/collect"
+ *
+ * curl "localhost:8290/get?array=hg38&loc=3:38603929&alt=C"
+ */
+public class AStorageHttp {
 
-	private final static Logger log = LoggerFactory.getLogger(SourceHttp38.class);
+	private final static Logger log = LoggerFactory.getLogger(AStorageHttp.class);
 
 	private final LiftoverConnector liftoverConnector;
 
@@ -59,7 +66,7 @@ public class SourceHttp38 {
 	private final PoolingNHttpClientConnectionManager connectionManager;
 	private final HttpHost httpHost;
 
-	public SourceHttp38(
+	public AStorageHttp(
 			DatabaseConnectService databaseConnectService,
 			LiftoverConnector liftoverConnector,
 			AStorageConfigConnector aStorageConfigConnector
@@ -83,17 +90,25 @@ public class SourceHttp38 {
 	}
 
 	public JSONObject get(Assembly assembly, Chromosome chromosome, int position) {
-		Position pos38 = liftoverConnector.toHG38(assembly, new Position(chromosome, position));
-		if (pos38 == null) {
-			return new JSONObject();
+		JSONObject params = new JSONObject();
+		params.put("variants", new JSONArray(){{
+			add(new JSONObject(){{
+				put("chrom", chromosome.getChromosome());
+				put("pos", position);
+			}});
+		}});
+		if (assembly == Assembly.GRCh37) {
+			params.put("fasta", "hg19");
+		} else if (assembly == Assembly.GRCh38){
+			params.put("fasta", "hg38");
+		} else {
+			throw new RuntimeException("Unknown assembly: " + assembly);
 		}
 
 		int attempts = 5;
 		while (true) {
 			try {
-				return request(
-						String.format("http://%s:%s/get?array=hg38&loc=%s:%s", aStorage.host, aStorage.port, pos38.chromosome.getChromosome(), pos38.value)
-				);
+				return request(params);
 			} catch (Throwable t) {
 				if (attempts-- > 0) {
 					log.error("Exception request, last attempts: {}", attempts, t);
@@ -108,7 +123,7 @@ public class SourceHttp38 {
 		}
 	}
 
-	private JSONObject request(String url) {
+	private JSONObject request(JSONObject params) {
 		CompletableFuture<JSONObject> future = new CompletableFuture<>();
 		try {
 			CloseableHttpAsyncClient httpclient = HttpAsyncClients.custom()
@@ -116,7 +131,9 @@ public class SourceHttp38 {
 					.build();
 			httpclient.start();
 
-			HttpPost httpPostRequest = new HttpPost(new URI(url));
+			URI uri = new URI(String.format("http://%s:%s/collect", aStorage.host, aStorage.port));
+			HttpPost httpPostRequest = new HttpPost(uri);
+			httpPostRequest.setEntity( new StringEntity(params.toJSONString(), ContentType.APPLICATION_JSON) );
 
 			httpclient.execute(httpHost, httpPostRequest, new FutureCallback<HttpResponse>() {
 				@Override
@@ -131,11 +148,12 @@ public class SourceHttp38 {
 						} catch (Exception e) {
 							throw ExceptionBuilder.buildExternalServiceException(new RuntimeException("Exception parse response external service, response: " + entityBody));
 						}
-						if (rawResponse instanceof JSONObject) {
-							future.complete((JSONObject) rawResponse);
+						if (rawResponse instanceof JSONArray) {
+							JSONObject jResponse = (JSONObject)((JSONArray) rawResponse).get(0);
+							future.complete(jResponse);
 						} else {
 							throw ExceptionBuilder.buildExternalServiceException(
-									new RuntimeException("Exception external service(AStorage), request: " + url
+									new RuntimeException("Exception external service(AStorage), request: " + uri
 											+ ", response: " + entityBody),
 									"AStorage", "Response: " + entityBody
 							);

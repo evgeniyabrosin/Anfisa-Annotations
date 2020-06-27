@@ -54,7 +54,7 @@ public class SpliceAIDataSourceHttp implements SpliceAIDataSource {
 			return Collections.emptyList();
 		}
 
-		JSONObject response = context.sourceSpliceAI_and_dbNSFP;
+		JSONObject response = context.sourceAStorageHttp;
 		JSONArray jRecords = (JSONArray) response.get("SpliceAI");
 		if (jRecords == null) {
 			return Collections.emptyList();

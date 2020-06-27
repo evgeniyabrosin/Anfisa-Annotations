@@ -22,6 +22,7 @@ import com.infomaximum.querypool.*;
 import org.forome.annotation.config.Config;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
+import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
@@ -37,7 +38,6 @@ import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
-import org.forome.annotation.data.sourceHttp38.SourceHttp38;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
@@ -111,7 +111,7 @@ public class Service {
 	private final GTFConnector gtfConnector;
 	private final GTEXConnector gtexConnector;
 	private final PharmGKBConnector pharmGKBConnector;
-	private final SourceHttp38 sourceHttp38;
+	private final AStorageHttp sourceHttp38;
 	private final EnsemblVepService ensemblVepService;
 	private final AnfisaConnector anfisaConnector;
 
@@ -172,7 +172,7 @@ public class Service {
 //		this.pharmGKBConnector = new PharmGKBConnectorHttp();
 		this.pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-		this.sourceHttp38 = new SourceHttp38(
+		this.sourceHttp38 = new AStorageHttp(
 				databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
 		);
 

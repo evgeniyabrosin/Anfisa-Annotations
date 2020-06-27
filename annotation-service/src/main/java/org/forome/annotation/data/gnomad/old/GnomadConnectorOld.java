@@ -20,6 +20,7 @@ package org.forome.annotation.data.gnomad.old;
 
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.data.DatabaseConnector;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.struct.GnamadGroup;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
@@ -74,7 +75,8 @@ public class GnomadConnectorOld implements GnomadConnector {
         return databaseConnector.getSourceMetadata();
     }
 
-    public CompletableFuture<GnomadResult> request(Assembly assembly, Chromosome chromosome, int position, String reference, String alternative) {
+    @Override
+    public CompletableFuture<GnomadResult> request(AnfisaExecuteContext context, Assembly assembly, Chromosome chromosome, int position, String reference, String alternative) {
         CompletableFuture<GnomadResult> future = new CompletableFuture();
         threadPoolGnomadExecutor.submit(() -> {
             try {

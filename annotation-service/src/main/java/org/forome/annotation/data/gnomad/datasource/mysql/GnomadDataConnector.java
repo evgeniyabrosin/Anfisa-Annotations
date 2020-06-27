@@ -19,6 +19,7 @@
 package org.forome.annotation.data.gnomad.datasource.mysql;
 
 import org.forome.annotation.data.DatabaseConnector;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
 import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.utils.GnomadUtils;
@@ -51,6 +52,7 @@ public class GnomadDataConnector implements GnomadDataSource, Closeable {
 
 	@Override
 	public List<DataResponse> getData(
+			AnfisaExecuteContext context,
 			Assembly assembly,
 			Chromosome chromosome,
 			int position,
