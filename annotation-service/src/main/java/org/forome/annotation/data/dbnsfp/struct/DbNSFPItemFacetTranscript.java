@@ -45,6 +45,10 @@ public class DbNSFPItemFacetTranscript {
 	public final String hgvsCSnpEff;
 	public final String hgvsPSnpEff;
 
+	public final Boolean gencodeBasic;
+
+	public final String sift4GPrediction;
+	public final Double sift4GScore;
 
 	public DbNSFPItemFacetTranscript(
 			String ensemblTranscriptId,
@@ -70,7 +74,12 @@ public class DbNSFPItemFacetTranscript {
 			String hgvsCAnnovar,
 			String hgvsPAnnovar,
 			String hgvsCSnpEff,
-			String hgvsPSnpEff
+			String hgvsPSnpEff,
+
+			Boolean gencodeBasic,
+
+			String sift4GPrediction,
+			Double sift4GScore
 	) {
 		this.ensemblTranscriptId = ensemblTranscriptId;
 
@@ -96,5 +105,10 @@ public class DbNSFPItemFacetTranscript {
 		this.hgvsPAnnovar = hgvsPAnnovar;
 		this.hgvsCSnpEff = hgvsCSnpEff;
 		this.hgvsPSnpEff = hgvsPSnpEff;
+
+		this.gencodeBasic = gencodeBasic;
+
+		this.sift4GPrediction = sift4GPrediction;
+		this.sift4GScore = sift4GScore;
 	}
 }

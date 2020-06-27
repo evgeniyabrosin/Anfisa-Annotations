@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 public class DbNSFPConnector {
 
-	public List<DbNSFPItem> getAll(AnfisaExecuteContext context, Variant variant){
+	public List<DbNSFPItem> getAll(AnfisaExecuteContext context, Variant variant) {
 		JSONArray jRecords = (JSONArray) context.sourceSpliceAI_and_dbNSFP.get("dbNSFP");
 		if (jRecords == null) {
 			return Collections.emptyList();
@@ -49,8 +49,8 @@ public class DbNSFPConnector {
 
 	private static DbNSFPItem _build(JSONObject jsonObject) {
 
-		List<DbNSFPItemFacet> facets = ((JSONArray)jsonObject.get("facets")).stream()
-				.map(o -> _buildFacet((JSONObject)o))
+		List<DbNSFPItemFacet> facets = ((JSONArray) jsonObject.get("facets")).stream()
+				.map(o -> _buildFacet((JSONObject) o))
 				.collect(Collectors.toList());
 
 		return new DbNSFPItem(
@@ -62,8 +62,8 @@ public class DbNSFPConnector {
 	}
 
 	private static DbNSFPItemFacet _buildFacet(JSONObject jsonObject) {
-		List<DbNSFPItemFacetTranscript> transcripts = ((JSONArray)jsonObject.get("transcripts")).stream()
-				.map(o -> _buildFacetTranscript((JSONObject)o))
+		List<DbNSFPItemFacetTranscript> transcripts = ((JSONArray) jsonObject.get("transcripts")).stream()
+				.map(o -> _buildFacetTranscript((JSONObject) o))
 				.collect(Collectors.toList());
 
 		return new DbNSFPItemFacet(
@@ -97,7 +97,23 @@ public class DbNSFPConnector {
 				jsonObject.getAsString("HGVSc_ANNOVAR"),
 				jsonObject.getAsString("HGVSp_ANNOVAR"),
 				jsonObject.getAsString("HGVSc_snpEff"),
-				jsonObject.getAsString("HGVSp_snpEff")
+				jsonObject.getAsString("HGVSp_snpEff"),
+
+				convertToGencodeBasic(jsonObject.getAsString("GENCODE_basic")),
+
+				jsonObject.getAsString("SIFT4G_pred"),
+				MathUtils.toDouble(jsonObject.getAsNumber("SIFT4G_score"))
 		);
+	}
+
+	private static Boolean convertToGencodeBasic(String value) {
+		if (value == null) return null;
+		if ("Y".equals(value)) {
+			return true;
+		} else if ("N".equals(value)) {
+			return false;
+		} else {
+			throw new RuntimeException("Unsupport value: " + value);
+		}
 	}
 }

@@ -48,6 +48,11 @@
                 hgvs_p_annovar
                 hgvs_c_snp_eff
                 hgvs_p_snp_eff
+                gencode_basic
+                sift_score
+                sift_prediction
+                sift_4g_score
+                sift_4g_prediction
             }
         }
     }
