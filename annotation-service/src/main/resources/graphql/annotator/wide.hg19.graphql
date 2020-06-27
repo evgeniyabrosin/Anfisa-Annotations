@@ -37,6 +37,8 @@
                 ppos
                 variant_exon
                 variant_intron
+                ensembl_gene_id
+                ensembl_protein_id
             }
         }
     }

@@ -74,6 +74,8 @@ public class DbNSFPConnector {
 
 	private static DbNSFPItemFacetTranscript _buildFacetTranscript(JSONObject jsonObject) {
 		return new DbNSFPItemFacetTranscript(
+				jsonObject.getAsString("Ensembl_transcriptid"),
+
 				jsonObject.getAsString("MutationAssessor_pred"),
 
 				jsonObject.getAsString("Polyphen2_HVAR_pred"),
@@ -85,7 +87,10 @@ public class DbNSFPConnector {
 				jsonObject.getAsString("FATHMM_pred"),
 
 				jsonObject.getAsString("SIFT_pred"),
-				MathUtils.toDouble(jsonObject.getAsNumber("SIFT_score"))
+				MathUtils.toDouble(jsonObject.getAsNumber("SIFT_score")),
+
+				jsonObject.getAsString("Ensembl_geneid"),
+				jsonObject.getAsString("Ensembl_proteinid")
 		);
 	}
 }

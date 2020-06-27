@@ -51,8 +51,11 @@ public class GRecordViewGeneral {
 			List<GRecordViewGeneralTranscript> transcripts = new ArrayList<>();
 			for (Object ojTranscript : jTranscripts) {
 				JSONObject jTranscript = (JSONObject) ojTranscript;
+
+				String transcriptId = jTranscript.getAsString("transcript_id");
+
 				transcripts.add(new GRecordViewGeneralTranscript(
-						variantVep, jTranscript
+						transcriptId, variantVep, jTranscript
 				));
 			}
 			return transcripts;

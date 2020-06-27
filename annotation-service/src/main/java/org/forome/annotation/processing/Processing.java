@@ -109,7 +109,10 @@ public class Processing {
 						.query(graphQLQuery)
 						.variables(Collections.emptyMap())
 						.context(
-								new GContext(mCase, variant)
+								new GContext(
+										mCase, variant,
+										anfisaConnector, anfisaResult.context
+								)
 						)
 						.build()
 		);
