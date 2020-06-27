@@ -18,8 +18,6 @@
 
 package org.forome.annotation.processing.graphql.record.view.transcripts;
 
-import graphql.annotations.annotationTypes.GraphQLField;
-import graphql.annotations.annotationTypes.GraphQLName;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
@@ -33,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@GraphQLName("record_view_transcripts")
+//@GraphQLName("record_view_transcripts")
 public class GRecordViewTranscripts {
 
 	public final Variant variant;
@@ -44,8 +42,8 @@ public class GRecordViewTranscripts {
 		this.gContext = gContext;
 	}
 
-	@GraphQLField
-	@GraphQLName("items")
+//	@GraphQLField
+//	@GraphQLName("items")
 	public List<GRecordViewTranscriptsItem> getItems() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
 				gContext.context, variant

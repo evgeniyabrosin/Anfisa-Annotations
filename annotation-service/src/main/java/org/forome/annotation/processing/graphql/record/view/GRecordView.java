@@ -23,9 +23,12 @@ import graphql.annotations.annotationTypes.GraphQLName;
 import org.forome.annotation.processing.graphql.record.view.bioinformatics.GRecordViewBioinformatics;
 import org.forome.annotation.processing.graphql.record.view.general.GRecordViewGeneral;
 import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscripts;
+import org.forome.annotation.processing.graphql.record.view.transcripts.item.GRecordViewTranscriptsItem;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
+
+import java.util.List;
 
 @GraphQLName("record_view")
 public class GRecordView {
@@ -52,9 +55,17 @@ public class GRecordView {
 		return new GRecordViewBioinformatics(mCase, variant);
 	}
 
+//	@GraphQLField
+//	@GraphQLName("transcripts")
+//	public GRecordViewTranscripts getTranscripts() {
+//		return new GRecordViewTranscripts(variant, gContext);
+//	}
+
+
 	@GraphQLField
 	@GraphQLName("transcripts")
-	public GRecordViewTranscripts getTranscripts() {
-		return new GRecordViewTranscripts(variant, gContext);
+	public List<GRecordViewTranscriptsItem> getTranscripts() {
+		GRecordViewTranscripts gRecordViewTranscripts = new GRecordViewTranscripts(variant, gContext);
+		return gRecordViewTranscripts.getItems();
 	}
 }
