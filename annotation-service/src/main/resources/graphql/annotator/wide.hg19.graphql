@@ -39,6 +39,11 @@
                 variant_intron
                 ensembl_gene_id
                 ensembl_protein_id
+                uniprot_acc
+                hgvs_c_annovar
+                hgvs_p_annovar
+                hgvs_c_snp_eff
+                hgvs_p_snp_eff
             }
         }
     }

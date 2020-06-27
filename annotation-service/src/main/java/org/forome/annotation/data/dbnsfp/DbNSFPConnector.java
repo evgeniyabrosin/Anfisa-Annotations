@@ -90,7 +90,14 @@ public class DbNSFPConnector {
 				MathUtils.toDouble(jsonObject.getAsNumber("SIFT_score")),
 
 				jsonObject.getAsString("Ensembl_geneid"),
-				jsonObject.getAsString("Ensembl_proteinid")
+				jsonObject.getAsString("Ensembl_proteinid"),
+
+				jsonObject.getAsString("Uniprot_acc"),
+
+				jsonObject.getAsString("HGVSc_ANNOVAR"),
+				jsonObject.getAsString("HGVSp_ANNOVAR"),
+				jsonObject.getAsString("HGVSc_snpEff"),
+				jsonObject.getAsString("HGVSp_snpEff")
 		);
 	}
 }

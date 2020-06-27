@@ -131,6 +131,36 @@ public class GRecordViewTranscriptsItem extends GRecordViewGeneralTranscript {
 		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.ensemblProteinId;
 	}
 
+	@GraphQLField
+	@GraphQLName("uniprot_acc")
+	public String getUniprotAcc() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.uniprotAcc;
+	}
+
+	@GraphQLField
+	@GraphQLName("hgvs_c_annovar")
+	public String getHgvsCAnnovar() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.hgvsCAnnovar;
+	}
+
+	@GraphQLField
+	@GraphQLName("hgvs_p_annovar")
+	public String getHgvsPAnnovar() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.hgvsPAnnovar;
+	}
+
+	@GraphQLField
+	@GraphQLName("hgvs_c_snp_eff")
+	public String getHgvsCSnpEff() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.hgvsCSnpEff;
+	}
+
+	@GraphQLField
+	@GraphQLName("hgvs_p_snp_eff")
+	public String getHgvsPSnpEff() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.hgvsPSnpEff;
+	}
+
 	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
 		put("Ala", "A");
 		put("Arg", "R");

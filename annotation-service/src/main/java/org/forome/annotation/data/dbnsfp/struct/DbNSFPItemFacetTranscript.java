@@ -38,6 +38,14 @@ public class DbNSFPItemFacetTranscript {
 	public final String ensemblGeneId;
 	public final String ensemblProteinId;
 
+	public final String uniprotAcc;
+
+	public final String hgvsCAnnovar;
+	public final String hgvsPAnnovar;
+	public final String hgvsCSnpEff;
+	public final String hgvsPSnpEff;
+
+
 	public DbNSFPItemFacetTranscript(
 			String ensemblTranscriptId,
 
@@ -55,7 +63,14 @@ public class DbNSFPItemFacetTranscript {
 			Double siftScore,
 
 			String ensemblGeneId,
-			String ensemblProteinId
+			String ensemblProteinId,
+
+			String uniprotAcc,
+
+			String hgvsCAnnovar,
+			String hgvsPAnnovar,
+			String hgvsCSnpEff,
+			String hgvsPSnpEff
 	) {
 		this.ensemblTranscriptId = ensemblTranscriptId;
 
@@ -74,5 +89,12 @@ public class DbNSFPItemFacetTranscript {
 
 		this.ensemblGeneId = ensemblGeneId;
 		this.ensemblProteinId = ensemblProteinId;
+
+		this.uniprotAcc = uniprotAcc;
+
+		this.hgvsCAnnovar = hgvsCAnnovar;
+		this.hgvsPAnnovar = hgvsPAnnovar;
+		this.hgvsCSnpEff = hgvsCSnpEff;
+		this.hgvsPSnpEff = hgvsPSnpEff;
 	}
 }
