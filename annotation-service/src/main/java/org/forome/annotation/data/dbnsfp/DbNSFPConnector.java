@@ -85,6 +85,7 @@ public class DbNSFPConnector {
 				MathUtils.toDouble(jsonObject.getAsNumber("Polyphen2_HDIV_score")),
 
 				jsonObject.getAsString("FATHMM_pred"),
+				MathUtils.toDouble(jsonObject.getAsNumber("FATHMM_score")),
 
 				jsonObject.getAsString("SIFT_pred"),
 				MathUtils.toDouble(jsonObject.getAsNumber("SIFT_score")),
@@ -102,7 +103,9 @@ public class DbNSFPConnector {
 				convertToGencodeBasic(jsonObject.getAsString("GENCODE_basic")),
 
 				jsonObject.getAsString("SIFT4G_pred"),
-				MathUtils.toDouble(jsonObject.getAsNumber("SIFT4G_score"))
+				MathUtils.toDouble(jsonObject.getAsNumber("SIFT4G_score")),
+
+				MathUtils.toDouble(jsonObject.getAsNumber("MPC_score"))
 		);
 	}
 

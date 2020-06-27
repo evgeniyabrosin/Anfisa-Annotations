@@ -221,6 +221,24 @@ public class GRecordViewTranscriptsItem extends GRecordViewGeneralTranscript {
 		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.mutationAssessorPred;
 	}
 
+	@GraphQLField
+	@GraphQLName("fathmm_prediction")
+	public String getFathmmPrediction() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.fathmmPrediction;
+	}
+
+	@GraphQLField
+	@GraphQLName("fathmm_score")
+	public Double getFathmmScore() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.fathmmScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("mpc_score")
+	public Double getMpcScore() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.mpcScore;
+	}
+
 	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
 		put("Ala", "A");
 		put("Arg", "R");

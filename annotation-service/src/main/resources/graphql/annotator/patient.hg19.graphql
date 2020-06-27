@@ -58,6 +58,9 @@
                 polyphen2_hvar_score
                 polyphen2_hvar_prediction
                 mutation_assessor_prediction
+                fathmm_prediction
+                fathmm_score
+                mpc_score
             }
         }
     }

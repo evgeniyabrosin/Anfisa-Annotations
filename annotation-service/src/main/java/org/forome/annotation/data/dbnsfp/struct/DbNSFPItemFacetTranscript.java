@@ -30,7 +30,8 @@ public class DbNSFPItemFacetTranscript {
 	public final String polyphen2HDIVPred;
 	public final Double polyphen2HDIVScore;
 
-	public final String fATHMMPred;
+	public final String fathmmPrediction;
+	public final Double fathmmScore;
 
 	public final String siftPrediction;
 	public final Double siftScore;
@@ -50,6 +51,8 @@ public class DbNSFPItemFacetTranscript {
 	public final String sift4GPrediction;
 	public final Double sift4GScore;
 
+	public final Double mpcScore;
+
 	public DbNSFPItemFacetTranscript(
 			String ensemblTranscriptId,
 
@@ -61,7 +64,8 @@ public class DbNSFPItemFacetTranscript {
 			String polyphen2HDIVPred,
 			Double polyphen2HDIVScore,
 
-			String fATHMMPred,
+			String fathmmPrediction,
+			Double fathmmScore,
 
 			String siftPrediction,
 			Double siftScore,
@@ -79,7 +83,9 @@ public class DbNSFPItemFacetTranscript {
 			Boolean gencodeBasic,
 
 			String sift4GPrediction,
-			Double sift4GScore
+			Double sift4GScore,
+
+			Double mpcScore
 	) {
 		this.ensemblTranscriptId = ensemblTranscriptId;
 
@@ -91,7 +97,8 @@ public class DbNSFPItemFacetTranscript {
 		this.polyphen2HDIVPred = polyphen2HDIVPred;
 		this.polyphen2HDIVScore = polyphen2HDIVScore;
 
-		this.fATHMMPred = fATHMMPred;
+		this.fathmmPrediction = fathmmPrediction;
+		this.fathmmScore = fathmmScore;
 
 		this.siftPrediction = siftPrediction;
 		this.siftScore = siftScore;
@@ -110,5 +117,7 @@ public class DbNSFPItemFacetTranscript {
 
 		this.sift4GPrediction = sift4GPrediction;
 		this.sift4GScore = sift4GScore;
+
+		this.mpcScore = mpcScore;
 	}
 }

@@ -971,7 +971,7 @@ public class AnfisaConnector implements AutoCloseable {
 		view.predictions.fathmm = items.stream()
 				.flatMap(item -> item.facets.stream())
 				.flatMap(itemFacet -> itemFacet.transcripts.stream())
-				.map(itemFacetTranscript -> itemFacetTranscript.fATHMMPred)
+				.map(itemFacetTranscript -> itemFacetTranscript.fathmmPrediction)
 				.filter(Objects::nonNull)
 				.distinct()
 				.toArray(String[]::new);
