@@ -61,6 +61,8 @@
                 fathmm_prediction
                 fathmm_score
                 mpc_score
+                refcodon
+                codonpos
             }
         }
     }

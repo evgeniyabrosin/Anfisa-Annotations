@@ -53,6 +53,9 @@ public class DbNSFPItemFacetTranscript {
 
 	public final Double mpcScore;
 
+	public final String refcodon;
+	public final String codonpos;
+
 	public DbNSFPItemFacetTranscript(
 			String ensemblTranscriptId,
 
@@ -85,7 +88,10 @@ public class DbNSFPItemFacetTranscript {
 			String sift4GPrediction,
 			Double sift4GScore,
 
-			Double mpcScore
+			Double mpcScore,
+
+			String refcodon,
+			String codonpos
 	) {
 		this.ensemblTranscriptId = ensemblTranscriptId;
 
@@ -119,5 +125,8 @@ public class DbNSFPItemFacetTranscript {
 		this.sift4GScore = sift4GScore;
 
 		this.mpcScore = mpcScore;
+
+		this.refcodon = refcodon;
+		this.codonpos = codonpos;
 	}
 }
