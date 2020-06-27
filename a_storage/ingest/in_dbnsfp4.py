@@ -9,8 +9,6 @@ _TRASCRIPT_PROPERTIES = [
     {"name": "Ensembl_geneid",          "tp": "str", "opt": "repeat"},
     {"name": "Ensembl_transcriptid",    "tp": "str", "opt": "repeat"},
     {"name": "Ensembl_proteinid",       "tp": "str", "opt": "repeat"},
-    {"name": "refcodon",                "tp": "str", "opt": "repeat"},
-    {"name": "codonpos",                "tp": "str", "opt": "repeat"},
     {"name": "FATHMM_score",            "tp": "num"},
     {"name": "FATHMM_pred",             "tp": "str", "opt": "dict"},
     {"name": "GENCODE_basic",           "tp": "str"},
@@ -19,7 +17,7 @@ _TRASCRIPT_PROPERTIES = [
     {"name": "HGVSc_snpEff",            "tp": "str"},
     {"name": "HGVSp_snpEff",            "tp": "str"},
     {"name": "MPC_score",               "tp": "num"},
-    {"name": "MutationTaster_score",    "tp": "num"},
+    {"name": "MutationAssessor_score",  "tp": "num"},
     {"name": "MutationAssessor_pred",   "tp": "str", "opt": "dict"},
     {"name": "Polyphen2_HDIV_score",    "tp": "num"},
     {"name": "Polyphen2_HDIV_pred",     "tp": "str", "opt": "dict"},
@@ -34,6 +32,8 @@ _TRASCRIPT_PROPERTIES = [
 
 #===============================================
 _FACETS_PROPERTIES = [
+    {"name": "refcodon",                "tp": "str", "opt": "repeat"},
+    {"name": "codonpos",                "tp": "str", "opt": "repeat"},
     {"name": "MetaLR_score",                "tp": "num"},
     {"name": "MetaLR_rankscore",            "tp": "num"},
     {"name": "MetaLR_pred", "opt": "dict",  "tp": "str"},
@@ -46,6 +46,7 @@ _FACETS_PROPERTIES = [
     {"name": "PrimateAI_score",             "tp": "num"},
     {"name": "PrimateAI_rankscore",         "tp": "num"},
     {"name": "REVEL_score",                 "tp": "num"},
+    {"name": "SIFT_converted_rankscore",    "tp": "num"},
     {"name": "SIFT4G_converted_rankscore",  "tp": "num"},
     {
         "name": "transcripts", "tp": "list",
@@ -131,6 +132,7 @@ VARIANT_TAB = [
 FACET_TAB = [
     ["refcodon",                    str],
     ["codonpos",                    str],
+    ["SIFT_converted_rankscore",    float],
     ["SIFT4G_converted_rankscore",  float],
     ["MetaLR_score",                float],
     ["MetaLR_rankscore",            float],
@@ -173,6 +175,24 @@ TRANSCRIPT_TAB = [
 ]
 
 ALL_TABS = [VARIANT_TAB, FACET_TAB, TRANSCRIPT_TAB]
+
+#========================================
+def _checkFields(case, properties, tab_seq, extra_prop = None):
+    prop_names = {info["name"] for info in properties}
+    tab_names = {info[0] for info in tab_seq}
+    if extra_prop is not None:
+        prop_names.remove(extra_prop)
+    diff1 = prop_names - tab_names
+    assert len(diff1) == 0, ("In case %s: diff1: %s"
+        % (case, " ".join(sorted(diff1))))
+    diff2 = tab_names - prop_names
+    assert len(diff2) == 0, ("In case %s: diff2: %s"
+        % (case, " ".join(sorted(diff2))))
+
+
+_checkFields("variant", _VARIANT_PROPERTIES, VARIANT_TAB, "facets")
+_checkFields("facet", _FACETS_PROPERTIES, FACET_TAB, "transcripts")
+_checkFields("variant", _TRASCRIPT_PROPERTIES, TRANSCRIPT_TAB)
 
 #========================================
 FLD_NAME_MAP = {
