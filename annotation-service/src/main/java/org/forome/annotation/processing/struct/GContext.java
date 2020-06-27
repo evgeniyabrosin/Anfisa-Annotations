@@ -18,6 +18,8 @@
 
 package org.forome.annotation.processing.struct;
 
+import org.forome.annotation.data.anfisa.AnfisaConnector;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
 
@@ -26,8 +28,19 @@ public class GContext {
 	public final MCase mCase;
 	public final Variant variant;
 
-	public GContext(MCase mCase, Variant variant) {
+	//TODO Ulitin V. Удалить
+	public final AnfisaConnector anfisaConnector;
+	//TODO Ulitin V. Удалить
+	public final AnfisaExecuteContext context;
+
+	public GContext(
+			MCase mCase, Variant variant,
+			AnfisaConnector anfisaConnector, AnfisaExecuteContext context
+	) {
 		this.mCase = mCase;
 		this.variant = variant;
+
+		this.anfisaConnector = anfisaConnector;
+		this.context = context;
 	}
 }

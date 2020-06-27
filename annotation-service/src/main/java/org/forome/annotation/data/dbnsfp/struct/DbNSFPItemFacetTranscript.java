@@ -20,6 +20,8 @@ package org.forome.annotation.data.dbnsfp.struct;
 
 public class DbNSFPItemFacetTranscript {
 
+	public final String ensemblTranscriptId;
+
 	public final String mutationAssessorPred;
 
 	public final String polyphen2HVARPred;
@@ -33,7 +35,12 @@ public class DbNSFPItemFacetTranscript {
 	public final String siftPrediction;
 	public final Double siftScore;
 
+	public final String ensemblGeneId;
+	public final String ensemblProteinId;
+
 	public DbNSFPItemFacetTranscript(
+			String ensemblTranscriptId,
+
 			String mutationAssessorPred,
 
 			String polyphen2HVARPred,
@@ -45,9 +52,13 @@ public class DbNSFPItemFacetTranscript {
 			String fATHMMPred,
 
 			String siftPrediction,
-			Double siftScore
+			Double siftScore,
 
+			String ensemblGeneId,
+			String ensemblProteinId
 	) {
+		this.ensemblTranscriptId = ensemblTranscriptId;
+
 		this.mutationAssessorPred = mutationAssessorPred;
 
 		this.polyphen2HVARPred = polyphen2HVARPred;
@@ -60,5 +71,8 @@ public class DbNSFPItemFacetTranscript {
 
 		this.siftPrediction = siftPrediction;
 		this.siftScore = siftScore;
+
+		this.ensemblGeneId = ensemblGeneId;
+		this.ensemblProteinId = ensemblProteinId;
 	}
 }

@@ -30,13 +30,17 @@ import java.util.stream.Collectors;
 @GraphQLName("record_view_general_transcript")
 public class GRecordViewGeneralTranscript {
 
+	public final String transcriptId;
+
 	protected final VariantVep variantVep;
 	protected final JSONObject jTranscript;
 
 	protected final String biotype;
 	protected final String source;
 
-	public GRecordViewGeneralTranscript(VariantVep variantVep, JSONObject jTranscript) {
+	public GRecordViewGeneralTranscript(String transcriptId, VariantVep variantVep, JSONObject jTranscript) {
+		this.transcriptId = transcriptId;
+
 		this.variantVep = variantVep;
 		this.jTranscript = jTranscript;
 
@@ -47,7 +51,7 @@ public class GRecordViewGeneralTranscript {
 	@GraphQLField
 	@GraphQLName("id")
 	public String getId() {
-		return jTranscript.getAsString("transcript_id");
+		return transcriptId;
 	}
 
 	@GraphQLField

@@ -92,7 +92,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 	private final SourceHttp38 sourceHttp38;
 
-	private final DbNSFPConnector dbNSFPConnector;
+	public final DbNSFPConnector dbNSFPConnector;
 
 	public AnfisaConnector(
 			GnomadConnector gnomadConnector,
@@ -237,7 +237,7 @@ public class AnfisaConnector implements AutoCloseable {
 		createPharmacogenomicsTab(view, filters, variant);
 		countCohorts(view, filters, anfisaInput.mCase, variant);
 
-		return new AnfisaResult(filters, data, view);
+		return new AnfisaResult(filters, data, view, context);
 	}
 
 	private void countCohorts(AnfisaResultView view, AnfisaResultFilters filters, MCase mCase, Variant variant) {

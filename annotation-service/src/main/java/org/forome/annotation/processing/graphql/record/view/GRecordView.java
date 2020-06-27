@@ -23,16 +23,19 @@ import graphql.annotations.annotationTypes.GraphQLName;
 import org.forome.annotation.processing.graphql.record.view.bioinformatics.GRecordViewBioinformatics;
 import org.forome.annotation.processing.graphql.record.view.general.GRecordViewGeneral;
 import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscripts;
+import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
 
 @GraphQLName("record_view")
 public class GRecordView {
 
+	private final GContext gContext;
 	public final MCase mCase;
 	public final Variant variant;
 
-	public GRecordView(MCase mCase, Variant variant) {
+	public GRecordView(GContext gContext, MCase mCase, Variant variant) {
+		this.gContext=gContext;
 		this.mCase = mCase;
 		this.variant = variant;
 	}
@@ -52,6 +55,6 @@ public class GRecordView {
 	@GraphQLField
 	@GraphQLName("transcripts")
 	public GRecordViewTranscripts getTranscripts() {
-		return new GRecordViewTranscripts(variant);
+		return new GRecordViewTranscripts(variant, gContext);
 	}
 }

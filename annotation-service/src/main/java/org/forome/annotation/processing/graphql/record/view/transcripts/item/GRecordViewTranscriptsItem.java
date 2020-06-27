@@ -21,6 +21,7 @@ package org.forome.annotation.processing.graphql.record.view.transcripts.item;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import net.minidev.json.JSONObject;
+import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacetTranscript;
 import org.forome.annotation.processing.graphql.record.view.general.transcript.GRecordViewGeneralTranscript;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
@@ -33,8 +34,12 @@ import java.util.stream.Collectors;
 @GraphQLName("record_view_transcripts_item")
 public class GRecordViewTranscriptsItem extends GRecordViewGeneralTranscript {
 
-	public GRecordViewTranscriptsItem(VariantVep variantVep, JSONObject jTranscript) {
-		super(variantVep, jTranscript);
+	private final DbNSFPItemFacetTranscript dbNSFPTranscript;
+
+	public GRecordViewTranscriptsItem(String transcriptId, VariantVep variantVep, JSONObject jTranscript, DbNSFPItemFacetTranscript dbNSFPTranscript) {
+		super(transcriptId, variantVep, jTranscript);
+
+		this.dbNSFPTranscript = dbNSFPTranscript;
 	}
 
 	@GraphQLField
@@ -114,6 +119,17 @@ public class GRecordViewTranscriptsItem extends GRecordViewGeneralTranscript {
 		return jTranscript.getAsString("intron");
 	}
 
+	@GraphQLField
+	@GraphQLName("ensembl_gene_id")
+	public String getEnsemblGeneId() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.ensemblGeneId;
+	}
+
+	@GraphQLField
+	@GraphQLName("ensembl_protein_id")
+	public String getEnsemblProteinId() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.ensemblProteinId;
+	}
 
 	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
 		put("Ala", "A");

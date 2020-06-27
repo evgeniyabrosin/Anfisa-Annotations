@@ -26,14 +26,20 @@ public class AnfisaResult {
 	public final AnfisaResultData data;
 	public final AnfisaResultView view;
 
+	public final AnfisaExecuteContext context;
+
 	public AnfisaResult(
 			AnfisaResultFilters filters,
 			AnfisaResultData data,
-			AnfisaResultView view
+			AnfisaResultView view,
+
+			AnfisaExecuteContext context
 	) {
 		this.filters = filters;
 		this.data = data;
 		this.view = view;
+
+		this.context = context;
 	}
 
 	public JSONObject toJSON() {
