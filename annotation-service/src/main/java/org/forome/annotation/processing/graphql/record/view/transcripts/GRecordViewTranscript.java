@@ -222,6 +222,12 @@ public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 	}
 
 	@GraphQLField
+	@GraphQLName("mutation_assessor_score")
+	public Double getMutationAssessorScore() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.mutationAssessorScore;
+	}
+
+	@GraphQLField
 	@GraphQLName("fathmm_prediction")
 	public String getFathmmPrediction() {
 		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.fathmmPrediction;
