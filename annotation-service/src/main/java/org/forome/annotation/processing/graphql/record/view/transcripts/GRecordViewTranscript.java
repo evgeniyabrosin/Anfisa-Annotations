@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.graphql.record.view.transcripts.item;
+package org.forome.annotation.processing.graphql.record.view.transcripts;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
@@ -31,12 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@GraphQLName("record_view_transcripts_item")
-public class GRecordViewTranscriptsItem extends GRecordViewGeneralTranscript {
+@GraphQLName("record_view_transcript")
+public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 
 	private final DbNSFPItemFacetTranscript dbNSFPTranscript;
 
-	public GRecordViewTranscriptsItem(String transcriptId, VariantVep variantVep, JSONObject jTranscript, DbNSFPItemFacetTranscript dbNSFPTranscript) {
+	public GRecordViewTranscript(String transcriptId, VariantVep variantVep, JSONObject jTranscript, DbNSFPItemFacetTranscript dbNSFPTranscript) {
 		super(transcriptId, variantVep, jTranscript);
 
 		this.dbNSFPTranscript = dbNSFPTranscript;

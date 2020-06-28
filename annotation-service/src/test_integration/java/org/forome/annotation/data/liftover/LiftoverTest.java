@@ -18,16 +18,20 @@
 
 package org.forome.annotation.data.liftover;
 
-import org.forome.annotation.AnfisaBaseTest;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Interval;
+import org.forome.annotation.struct.Position;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class LiftoverTest extends AnfisaBaseTest {
+import java.io.IOException;
+
+public class LiftoverTest {
 
 	@Test
-	public void testFail() {
+	public void testFail() throws IOException {
+		LiftoverConnector liftoverConnector = new LiftoverConnector();
+
 		//chr1:120681278 A>AT  rs201956187
 		/**
 		 * Это случай, когда программа liftOver работает не правильно. Причем ее веб версия дает ошибку
@@ -45,5 +49,11 @@ public class LiftoverTest extends AnfisaBaseTest {
 				Interval.of(Chromosome.of("1"), 120681279, 120681278)
 		));
 
+
+		Position position37 = new Position(Chromosome.of("3"), 71005905);
+		Position position38 = liftoverConnector.toHG38(position37);
+		Position position37_1 = liftoverConnector.toHG37(position38);
+
+		System.out.println("OK");
 	}
 }

@@ -37,6 +37,7 @@ public class GTFSimpleTest extends GTFBaseTest {
 		int position = 110694251;
 
 		GTFRegion expectedGtfRegion = gtfConnector.getRegion(
+				null,
 				Assembly.GRCh37,
 				new Position(Chromosome.of(chromosome), position),
 				transcript
@@ -44,7 +45,7 @@ public class GTFSimpleTest extends GTFBaseTest {
 
 
 		List<GTFResultLookup> lookups = gtfConnector
-				.getRegionByChromosomeAndPositions(chromosome, new long[] {position}).get();
+				.getRegionByChromosomeAndPositions(null, chromosome, new long[] {position}).get();
 		GTFResultLookup actualGTFResultLookup = lookups.stream()
 				.filter(gtfResultLookup -> transcript.equals(gtfResultLookup.transcript)).findFirst().get();
 

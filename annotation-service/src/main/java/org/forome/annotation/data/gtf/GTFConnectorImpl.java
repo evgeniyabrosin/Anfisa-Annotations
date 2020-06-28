@@ -19,6 +19,7 @@
 package org.forome.annotation.data.gtf;
 
 import org.forome.annotation.data.DatabaseConnector;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gtf.datasource.GTFDataSource;
 import org.forome.annotation.data.gtf.datasource.mysql.GTFDataConnector;
 import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
@@ -85,11 +86,11 @@ public class GTFConnectorImpl implements GTFConnector {
 	}
 
 	@Override
-	public CompletableFuture<GTFRegion> getRegion(Assembly assembly, Position position, String transcript) {
+	public CompletableFuture<GTFRegion> getRegion(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript) {
 		CompletableFuture<GTFRegion> future = new CompletableFuture();
 		threadPoolGTFExecutor.submit(() -> {
 			try {
-				Object[] result = lookup(assembly, position, transcript);
+				Object[] result = lookup(context, assembly, position, transcript);
 				future.complete((GTFRegion) result[1]);
 			} catch (Throwable e) {
 				future.completeExceptionally(e);
@@ -99,11 +100,11 @@ public class GTFConnectorImpl implements GTFConnector {
 	}
 
 	@Override
-	public CompletableFuture<List<GTFResultLookup>> getRegionByChromosomeAndPositions(String chromosome, long[] positions) {
+	public CompletableFuture<List<GTFResultLookup>> getRegionByChromosomeAndPositions(AnfisaExecuteContext context, String chromosome, long[] positions) {
 		CompletableFuture<List<GTFResultLookup>> future = new CompletableFuture();
 		threadPoolGTFExecutor.submit(() -> {
 			try {
-				List<GTFResultLookup> result = lookupByChromosomeAndPositions(chromosome, positions);
+				List<GTFResultLookup> result = lookupByChromosomeAndPositions(context, chromosome, positions);
 				future.complete(result);
 			} catch (Throwable e) {
 				future.completeExceptionally(e);
@@ -118,8 +119,8 @@ public class GTFConnectorImpl implements GTFConnector {
 	}
 
     @Override
-    public Object[] lookup(Assembly assembly, Position position, String transcript) {
-		List<GTFTranscriptRow> rows = gtfDataSource.lookup(assembly, position, transcript);
+    public Object[] lookup(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript) {
+		List<GTFTranscriptRow> rows = gtfDataSource.lookup(context, assembly, position, transcript);
 		if (rows == null) return null;
 		return lookup(position.value, rows);
 
@@ -129,7 +130,7 @@ public class GTFConnectorImpl implements GTFConnector {
 //		return lookup(pos, rows);
 	}
 
-	public List<GTFResultLookup> lookupByChromosomeAndPositions(String chromosome, long[] positions) {
+	public List<GTFResultLookup> lookupByChromosomeAndPositions(AnfisaExecuteContext context, String chromosome, long[] positions) {
 		List<GTFResultLookup> result = new ArrayList<>();
 
 		List<String> transcripts = gtfDataConnector.getTranscriptsByChromosomeAndPositions(chromosome, positions);
@@ -138,7 +139,7 @@ public class GTFConnectorImpl implements GTFConnector {
 				List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
 				if (rows.isEmpty()) continue;
 
-				Object[] iResult = lookup(Assembly.GRCh37, new Position(Chromosome.of(chromosome), (int)position), transcript);
+				Object[] iResult = lookup(context, Assembly.GRCh37, new Position(Chromosome.of(chromosome), (int)position), transcript);
 				GTFRegion region = (GTFRegion) iResult[1];
 				result.add(new GTFResultLookup(transcript, rows.get(0).gene, position, region.region, region.indexRegion));
 			}

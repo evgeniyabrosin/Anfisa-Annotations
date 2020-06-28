@@ -46,7 +46,7 @@ import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
-import org.forome.annotation.processing.graphql.record.view.transcripts.item.GRecordViewTranscriptsItem;
+import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscript;
 import org.forome.annotation.struct.*;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
@@ -1481,7 +1481,7 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 		String x = str.split(pattern)[1];
 		if ("p".equals(type)) {
-			x = GRecordViewTranscriptsItem.convertPPos(x);
+			x = GRecordViewTranscript.convertPPos(x);
 		}
 
 		if (withPattern) {

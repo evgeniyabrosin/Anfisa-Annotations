@@ -20,15 +20,21 @@ package org.forome.annotation.processing.graphql.record.view;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
+import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacetTranscript;
 import org.forome.annotation.processing.graphql.record.view.bioinformatics.GRecordViewBioinformatics;
 import org.forome.annotation.processing.graphql.record.view.general.GRecordViewGeneral;
-import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscripts;
-import org.forome.annotation.processing.graphql.record.view.transcripts.item.GRecordViewTranscriptsItem;
+import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscript;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.vep.VariantVep;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @GraphQLName("record_view")
 public class GRecordView {
@@ -55,17 +61,44 @@ public class GRecordView {
 		return new GRecordViewBioinformatics(mCase, variant);
 	}
 
-//	@GraphQLField
-//	@GraphQLName("transcripts")
-//	public GRecordViewTranscripts getTranscripts() {
-//		return new GRecordViewTranscripts(variant, gContext);
-//	}
-
 
 	@GraphQLField
 	@GraphQLName("transcripts")
-	public List<GRecordViewTranscriptsItem> getTranscripts() {
-		GRecordViewTranscripts gRecordViewTranscripts = new GRecordViewTranscripts(variant, gContext);
-		return gRecordViewTranscripts.getItems();
+	public List<GRecordViewTranscript> getTranscripts() {
+		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
+				gContext.context, variant
+		);
+
+		if (variant instanceof VariantVep) {
+			VariantVep variantVep = (VariantVep) variant;
+			JSONArray jTranscripts = (JSONArray) variantVep.getVepJson().get("transcript_consequences");
+			if (jTranscripts == null) {
+				return null;
+			}
+
+			List<GRecordViewTranscript> transcripts = new ArrayList<>();
+			for (Object ojTranscript : jTranscripts) {
+				JSONObject jTranscript = (JSONObject) ojTranscript;
+
+				String transcriptId = jTranscript.getAsString("transcript_id");
+
+				List<DbNSFPItemFacetTranscript> findTranscripts = items.stream()
+						.flatMap(dbNSFPItem -> dbNSFPItem.facets.stream())
+						.flatMap(dbNSFPItemFacet -> dbNSFPItemFacet.transcripts.stream())
+						.filter(dbNSFPItemFacetTranscript -> transcriptId.equals(dbNSFPItemFacetTranscript.ensemblTranscriptId))
+						.collect(Collectors.toList());
+				if (findTranscripts.size() > 1) {
+					throw new RuntimeException("Not unique transcriptId:" + transcriptId + ", values: " + gContext.context.sourceAStorageHttp.toJSONString());
+				}
+				DbNSFPItemFacetTranscript dbNSFPTranscript = (findTranscripts.isEmpty()) ? null : findTranscripts.get(0);
+
+				transcripts.add(new GRecordViewTranscript(
+						transcriptId, variantVep, jTranscript, dbNSFPTranscript
+				));
+			}
+			return transcripts;
+		} else {
+			return null;
+		}
 	}
 }

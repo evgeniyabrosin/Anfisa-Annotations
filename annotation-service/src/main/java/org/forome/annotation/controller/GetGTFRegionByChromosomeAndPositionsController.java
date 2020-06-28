@@ -92,6 +92,7 @@ public class GetGTFRegionByChromosomeAndPositionsController {
 				List<CompletableFuture<List<GTFResultLookup>>> futureGTFRegions = new ArrayList<>();
 				for (RequestItem requestItem : requestItems) {
 					futureGTFRegions.add(gtfConnector.getRegionByChromosomeAndPositions(
+							null,
 							requestItem.chromosome,
 							requestItem.positions
 					));

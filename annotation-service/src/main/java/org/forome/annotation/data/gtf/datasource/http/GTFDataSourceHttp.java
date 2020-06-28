@@ -34,6 +34,7 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtf.datasource.GTFDataSource;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
@@ -92,7 +93,7 @@ public class GTFDataSourceHttp implements GTFDataSource {
 
 
 	@Override
-	public List<GTFTranscriptRow> lookup(Assembly assembly, Position position, String transcript) {
+	public List<GTFTranscriptRow> lookup(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript) {
 		Position pos38 = liftoverConnector.toHG38(assembly, position);
 		if (pos38 == null) {
 			return null;
@@ -102,6 +103,18 @@ public class GTFDataSourceHttp implements GTFDataSource {
 				String.format("http://%s:%s/get?array=gtf&loc=%s:%s", aStorage.host, aStorage.port, pos38.chromosome.getChar(), pos38.value)
 		);
 		JSONArray jRecords = (JSONArray) response.get("gtf");
+
+//		JSONArray jRecords2 = (JSONArray) context.sourceAStorageHttp.get("gtf");
+//
+//		if (!jRecords.toJSONString().equals(jRecords2.toJSONString())) {
+//			log.error("pos37: {}, pos38: {}", position, pos38);
+//			log.error("response1: {}", response.toJSONString());
+//			log.error("response2: {}", context.sourceAStorageHttp.toJSONString());
+//
+//			throw new RuntimeException("not equals");
+//		}
+
+
 		if (jRecords == null || jRecords.isEmpty()) {
 			return null;
 		}

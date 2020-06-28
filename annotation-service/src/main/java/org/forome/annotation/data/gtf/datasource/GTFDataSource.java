@@ -18,6 +18,7 @@
 
 package org.forome.annotation.data.gtf.datasource;
 
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Position;
@@ -27,7 +28,7 @@ import java.util.List;
 
 public interface GTFDataSource extends Closeable {
 
-	List<GTFTranscriptRow> lookup(Assembly assembly, Position position, String transcript);
+	List<GTFTranscriptRow> lookup(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript);
 
 	void close();
 }

@@ -51,7 +51,7 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * curl -d '{"variants":[{"chrom":"chr3","pos":38603929}], "fasta":"hg38"}' -H "Content-Type: application/json" -X POST "localhost:8290/collect"
- *
+ * <p>
  * curl "localhost:8290/get?array=hg38&loc=3:38603929&alt=C"
  */
 public class AStorageHttp {
@@ -91,15 +91,15 @@ public class AStorageHttp {
 
 	public JSONObject get(Assembly assembly, Chromosome chromosome, int position) {
 		JSONObject params = new JSONObject();
-		params.put("variants", new JSONArray(){{
-			add(new JSONObject(){{
+		params.put("variants", new JSONArray() {{
+			add(new JSONObject() {{
 				put("chrom", chromosome.getChromosome());
 				put("pos", position);
 			}});
 		}});
 		if (assembly == Assembly.GRCh37) {
 			params.put("fasta", "hg19");
-		} else if (assembly == Assembly.GRCh38){
+		} else if (assembly == Assembly.GRCh38) {
 			params.put("fasta", "hg38");
 		} else {
 			throw new RuntimeException("Unknown assembly: " + assembly);
@@ -107,17 +107,27 @@ public class AStorageHttp {
 
 		int attempts = 5;
 		while (true) {
+			JSONObject response = null;
 			try {
-				return request(params);
+				response = request(params);
+				return response;
 			} catch (Throwable t) {
 				if (attempts-- > 0) {
 					log.error("Exception request, last attempts: {}", attempts, t);
 					try {
 						Thread.sleep(1000L);
-					} catch (InterruptedException e) {}
+					} catch (InterruptedException e) {
+					}
 					continue;
 				} else {
 					throw t;
+				}
+			} finally {
+				if (assembly == Assembly.GRCh37) {
+					int resultPos = response.getAsNumber("pos").intValue();
+					if (position != resultPos) {
+						throw new RuntimeException("request: " + params.toJSONString() + "response: " + response);
+					}
 				}
 			}
 		}
@@ -133,7 +143,7 @@ public class AStorageHttp {
 
 			URI uri = new URI(String.format("http://%s:%s/collect", aStorage.host, aStorage.port));
 			HttpPost httpPostRequest = new HttpPost(uri);
-			httpPostRequest.setEntity( new StringEntity(params.toJSONString(), ContentType.APPLICATION_JSON) );
+			httpPostRequest.setEntity(new StringEntity(params.toJSONString(), ContentType.APPLICATION_JSON));
 
 			httpclient.execute(httpHost, httpPostRequest, new FutureCallback<HttpResponse>() {
 				@Override
@@ -149,7 +159,7 @@ public class AStorageHttp {
 							throw ExceptionBuilder.buildExternalServiceException(new RuntimeException("Exception parse response external service, response: " + entityBody));
 						}
 						if (rawResponse instanceof JSONArray) {
-							JSONObject jResponse = (JSONObject)((JSONArray) rawResponse).get(0);
+							JSONObject jResponse = (JSONObject) ((JSONArray) rawResponse).get(0);
 							future.complete(jResponse);
 						} else {
 							throw ExceptionBuilder.buildExternalServiceException(
