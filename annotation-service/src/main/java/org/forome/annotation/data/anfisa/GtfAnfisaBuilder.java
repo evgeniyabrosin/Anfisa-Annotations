@@ -139,7 +139,7 @@ public class GtfAnfisaBuilder {
 		for (String t : transcripts) {
 			Long dist = null;
 			for (Position position : positions) {
-				Object[] result = gtfConnector.lookup(assembly, position, t);
+				Object[] result = gtfConnector.lookup(context, assembly, position, t);
 				if (result == null) {
 					continue;
 				}

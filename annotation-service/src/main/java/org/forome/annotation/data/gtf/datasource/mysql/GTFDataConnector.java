@@ -19,6 +19,7 @@
 package org.forome.annotation.data.gtf.datasource.mysql;
 
 import org.forome.annotation.data.DatabaseConnector;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gtf.datasource.GTFDataSource;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResult;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
@@ -167,7 +168,7 @@ public class GTFDataConnector implements GTFDataSource {
     }
 
 	@Override
-	public List<GTFTranscriptRow> lookup(Assembly assembly, Position position, String transcript) {
+	public List<GTFTranscriptRow> lookup(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript) {
 		throw new RuntimeException("Not implemented");
 	}
 
