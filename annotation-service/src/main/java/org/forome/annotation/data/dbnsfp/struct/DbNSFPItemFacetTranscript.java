@@ -23,6 +23,7 @@ public class DbNSFPItemFacetTranscript {
 	public final String ensemblTranscriptId;
 
 	public final String mutationAssessorPred;
+	public final Double mutationAssessorScore;
 
 	public final String polyphen2HVARPred;
 	public final Double polyphen2HVARScore;
@@ -60,6 +61,7 @@ public class DbNSFPItemFacetTranscript {
 			String ensemblTranscriptId,
 
 			String mutationAssessorPred,
+			Double mutationAssessorScore,
 
 			String polyphen2HVARPred,
 			Double polyphen2HVARScore,
@@ -96,6 +98,7 @@ public class DbNSFPItemFacetTranscript {
 		this.ensemblTranscriptId = ensemblTranscriptId;
 
 		this.mutationAssessorPred = mutationAssessorPred;
+		this.mutationAssessorScore = mutationAssessorScore;
 
 		this.polyphen2HVARPred = polyphen2HVARPred;
 		this.polyphen2HVARScore = polyphen2HVARScore;
