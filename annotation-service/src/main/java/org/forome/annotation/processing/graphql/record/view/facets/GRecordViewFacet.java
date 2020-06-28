@@ -16,33 +16,33 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.dbnsfp.struct;
+package org.forome.annotation.processing.graphql.record.view.facets;
 
-import java.util.Collections;
-import java.util.List;
+import graphql.annotations.annotationTypes.GraphQLField;
+import graphql.annotations.annotationTypes.GraphQLName;
+import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacet;
 
-public class DbNSFPItemFacet {
 
-	public final Double revelScore;
+@GraphQLName("record_view_facet")
+public class GRecordViewFacet {
 
-	public final String refcodon;
-	public final String codonpos;
+	private final DbNSFPItemFacet facet;
 
-	public final List<DbNSFPItemFacetTranscript> transcripts;
-
-	public DbNSFPItemFacet(
-			Double revelScore,
-
-			String refcodon,
-			String codonpos,
-
-			List<DbNSFPItemFacetTranscript> transcripts
-	) {
-		this.revelScore = revelScore;
-
-		this.refcodon = refcodon;
-		this.codonpos = codonpos;
-
-		this.transcripts = Collections.unmodifiableList(transcripts);
+	public GRecordViewFacet(DbNSFPItemFacet facet) {
+		this.facet = facet;
 	}
+
+	@GraphQLField
+	@GraphQLName("refcodon")
+	public String getRefcodon() {
+		return facet.refcodon;
+	}
+
+	@GraphQLField
+	@GraphQLName("codonpos")
+	public String getCodonpos() {
+		return facet.codonpos;
+	}
+
+
 }

@@ -25,6 +25,11 @@
         }
         bioinformatics {
             zygosity
+            refcodons
+        }
+        facets {
+            refcodon
+            codonpos
         }
         transcripts {
             id

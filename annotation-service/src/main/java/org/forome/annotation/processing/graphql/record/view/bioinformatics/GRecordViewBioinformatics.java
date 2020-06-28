@@ -20,6 +20,8 @@ package org.forome.annotation.processing.graphql.record.view.bioinformatics;
 
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
+import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
+import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.HasVariant;
@@ -28,17 +30,19 @@ import org.forome.annotation.struct.mcase.Sex;
 import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.Variant;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @GraphQLName("record_view_bioinformatics")
 public class GRecordViewBioinformatics {
 
+	public final GContext gContext;
 	public final MCase mCase;
 	public final Variant variant;
 
-	public GRecordViewBioinformatics(MCase mCase, Variant variant) {
+	public GRecordViewBioinformatics(GContext gContext, MCase mCase, Variant variant) {
+		this.gContext = gContext;
+
 		this.variant = variant;
 		this.mCase = mCase;
 	}
@@ -80,4 +84,20 @@ public class GRecordViewBioinformatics {
 		}
 		return "Unknown";
 	}
+
+	@GraphQLField
+	@GraphQLName("refcodons")
+	public List<String> getRefcodons() {
+		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
+				gContext.context, variant
+		);
+
+		return items.stream()
+				.flatMap(item -> item.facets.stream())
+				.map(facet -> facet.refcodon)
+				.filter(Objects::nonNull)
+				.flatMap(s -> Arrays.stream(s.split(";")))
+				.distinct().collect(Collectors.toList());
+	}
+
 }
