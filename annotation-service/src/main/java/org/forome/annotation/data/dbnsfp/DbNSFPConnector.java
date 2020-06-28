@@ -68,6 +68,11 @@ public class DbNSFPConnector {
 
 		return new DbNSFPItemFacet(
 				MathUtils.toDouble(jsonObject.getAsNumber("REVEL_score")),
+				MathUtils.toDouble(jsonObject.getAsNumber("SIFT_converted_rankscore")),
+
+				MathUtils.toDouble(jsonObject.getAsNumber("MetaLR_score")),
+				MathUtils.toDouble(jsonObject.getAsNumber("MetaLR_rankscore")),
+				jsonObject.getAsString("MetaLR_pred"),
 
 				jsonObject.getAsString("refcodon"),
 				jsonObject.getAsString("codonpos"),

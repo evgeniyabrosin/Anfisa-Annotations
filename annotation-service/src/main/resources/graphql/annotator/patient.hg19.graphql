@@ -28,6 +28,11 @@
             refcodons
         }
         facets {
+            revel_score
+            sift_converted_rank_score
+            meta_lr_score
+            meta_lr_rank_score
+            meta_lr_prediction
             refcodon
             codonpos
         }
