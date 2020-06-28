@@ -68,6 +68,10 @@ public class DbNSFPConnector {
 
 		return new DbNSFPItemFacet(
 				MathUtils.toDouble(jsonObject.getAsNumber("REVEL_score")),
+
+				jsonObject.getAsString("refcodon"),
+				jsonObject.getAsString("codonpos"),
+
 				transcripts
 		);
 	}
@@ -106,10 +110,7 @@ public class DbNSFPConnector {
 				jsonObject.getAsString("SIFT4G_pred"),
 				MathUtils.toDouble(jsonObject.getAsNumber("SIFT4G_score")),
 
-				MathUtils.toDouble(jsonObject.getAsNumber("MPC_score")),
-
-				jsonObject.getAsString("refcodon"),
-				jsonObject.getAsString("codonpos")
+				MathUtils.toDouble(jsonObject.getAsNumber("MPC_score"))
 		);
 	}
 

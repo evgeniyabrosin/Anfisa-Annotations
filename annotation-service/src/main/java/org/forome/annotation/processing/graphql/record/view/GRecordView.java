@@ -25,6 +25,7 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacetTranscript;
 import org.forome.annotation.processing.graphql.record.view.bioinformatics.GRecordViewBioinformatics;
+import org.forome.annotation.processing.graphql.record.view.facets.GRecordViewFacet;
 import org.forome.annotation.processing.graphql.record.view.general.GRecordViewGeneral;
 import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscript;
 import org.forome.annotation.processing.struct.GContext;
@@ -60,7 +61,23 @@ public class GRecordView {
 	@GraphQLField
 	@GraphQLName("bioinformatics")
 	public GRecordViewBioinformatics getBioinformatics() {
-		return new GRecordViewBioinformatics(mCase, variant);
+		return new GRecordViewBioinformatics(gContext, mCase, variant);
+	}
+
+
+	@GraphQLField
+	@GraphQLName("facets")
+	public List<GRecordViewFacet> getFacets() {
+		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
+				gContext.context, variant
+		);
+
+		List<GRecordViewFacet> facets = items.stream()
+				.flatMap(item -> item.facets.stream())
+				.map(dbNSFPItemFacet -> new GRecordViewFacet(dbNSFPItemFacet))
+				.collect(Collectors.toList());
+
+		return facets;
 	}
 
 
