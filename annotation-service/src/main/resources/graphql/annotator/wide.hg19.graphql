@@ -31,6 +31,11 @@
             meta_lr_score
             meta_lr_rank_score
             meta_lr_prediction
+            mut_pred_score
+            mut_pred_rank_score
+            mut_pred_prot_id
+            mut_pred_aa_change
+            mut_pred_top5_features
             refcodon
             codonpos
         }
