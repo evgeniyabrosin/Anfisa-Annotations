@@ -24,6 +24,11 @@ import java.util.List;
 public class DbNSFPItemFacet {
 
 	public final Double revelScore;
+	public final Double siftConvertedRankScore;
+
+	public final Double metaLRScore;
+	public final Double metaLRRankScore;
+	public final String metaLRPrediction;
 
 	public final String refcodon;
 	public final String codonpos;
@@ -32,6 +37,11 @@ public class DbNSFPItemFacet {
 
 	public DbNSFPItemFacet(
 			Double revelScore,
+			Double siftConvertedRankScore,
+
+			Double metaLRScore,
+			Double metaLRRankScore,
+			String metaLRPrediction,
 
 			String refcodon,
 			String codonpos,
@@ -39,6 +49,11 @@ public class DbNSFPItemFacet {
 			List<DbNSFPItemFacetTranscript> transcripts
 	) {
 		this.revelScore = revelScore;
+		this.siftConvertedRankScore = siftConvertedRankScore;
+
+		this.metaLRScore = metaLRScore;
+		this.metaLRRankScore = metaLRRankScore;
+		this.metaLRPrediction = metaLRPrediction;
 
 		this.refcodon = refcodon;
 		this.codonpos = codonpos;

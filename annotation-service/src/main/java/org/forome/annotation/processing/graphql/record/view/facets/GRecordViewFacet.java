@@ -33,6 +33,36 @@ public class GRecordViewFacet {
 	}
 
 	@GraphQLField
+	@GraphQLName("revel_score")
+	public Double getRevelScore() {
+		return facet.revelScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("sift_converted_rank_score")
+	public Double getSiftConvertedRankScore() {
+		return facet.siftConvertedRankScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("meta_lr_score")
+	public Double getMetaLRScore() {
+		return facet.metaLRScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("meta_lr_rank_score")
+	public Double getMetaLRRankScore() {
+		return facet.metaLRRankScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("meta_lr_prediction")
+	public String getMetaLRPrediction() {
+		return facet.metaLRPrediction;
+	}
+
+	@GraphQLField
 	@GraphQLName("refcodon")
 	public String getRefcodon() {
 		return facet.refcodon;
