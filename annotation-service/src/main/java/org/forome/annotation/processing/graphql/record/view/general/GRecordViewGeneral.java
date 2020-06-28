@@ -27,7 +27,10 @@ import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @GraphQLName("record_view_general")
 public class GRecordViewGeneral {
@@ -43,15 +46,19 @@ public class GRecordViewGeneral {
 	public List<GRecordViewGeneralTranscript> getTranscripts() {
 		if (variant instanceof VariantVep) {
 			VariantVep variantVep = (VariantVep) variant;
-			JSONArray jTranscripts = (JSONArray) variantVep.getVepJson().get("transcript_consequences");
-			if (jTranscripts == null) {
+			JSONArray joTranscripts = (JSONArray) variantVep.getVepJson().get("transcript_consequences");
+			if (joTranscripts == null) {
 				return null;
 			}
 
-			List<GRecordViewGeneralTranscript> transcripts = new ArrayList<>();
-			for (Object ojTranscript : jTranscripts) {
-				JSONObject jTranscript = (JSONObject) ojTranscript;
+			Set<String> uniqueTranscriptIds = new HashSet<>();
+			List<JSONObject> jTranscripts = joTranscripts.stream()
+					.map(o -> (JSONObject) o)
+					.filter(item -> uniqueTranscriptIds.add(item.getAsString("transcript_id")))
+					.collect(Collectors.toList());
 
+			List<GRecordViewGeneralTranscript> transcripts = new ArrayList<>();
+			for (JSONObject jTranscript : jTranscripts) {
 				String transcriptId = jTranscript.getAsString("transcript_id");
 
 				transcripts.add(new GRecordViewGeneralTranscript(
