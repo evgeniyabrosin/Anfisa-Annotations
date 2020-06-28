@@ -27,6 +27,7 @@ import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacetTranscript;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.MathUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,6 +67,11 @@ public class DbNSFPConnector {
 				.map(o -> _buildFacetTranscript((JSONObject) o))
 				.collect(Collectors.toList());
 
+		String sMutPredTop5Features = jsonObject.getAsString("MutPred_Top5features");
+		String[] mutPredTop5Features = (sMutPredTop5Features == null) ? null :
+				Arrays.stream(sMutPredTop5Features.split(";")).map(s -> s.trim())
+						.toArray(String[]::new);
+
 		return new DbNSFPItemFacet(
 				MathUtils.toDouble(jsonObject.getAsNumber("REVEL_score")),
 				MathUtils.toDouble(jsonObject.getAsNumber("SIFT_converted_rankscore")),
@@ -73,6 +79,12 @@ public class DbNSFPConnector {
 				MathUtils.toDouble(jsonObject.getAsNumber("MetaLR_score")),
 				MathUtils.toDouble(jsonObject.getAsNumber("MetaLR_rankscore")),
 				jsonObject.getAsString("MetaLR_pred"),
+
+				MathUtils.toDouble(jsonObject.getAsString("MutPred_score")),
+				MathUtils.toDouble(jsonObject.getAsNumber("MetaLR_rankscore")),
+				jsonObject.getAsString("MutPred_protID"),
+				jsonObject.getAsString("MutPred_AAchange"),
+				mutPredTop5Features,
 
 				jsonObject.getAsString("refcodon"),
 				jsonObject.getAsString("codonpos"),

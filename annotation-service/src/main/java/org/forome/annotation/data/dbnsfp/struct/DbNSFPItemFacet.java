@@ -30,6 +30,12 @@ public class DbNSFPItemFacet {
 	public final Double metaLRRankScore;
 	public final String metaLRPrediction;
 
+	public final Double mutPredScore;
+	public final Double mutPredRankScore;
+	public final String mutPredProtID;
+	public final String mutPredAAChange;
+	public final String[] mutPredTop5Features;
+
 	public final String refcodon;
 	public final String codonpos;
 
@@ -43,6 +49,12 @@ public class DbNSFPItemFacet {
 			Double metaLRRankScore,
 			String metaLRPrediction,
 
+			Double mutPredScore,
+			Double mutPredRankScore,
+			String mutPredProtID,
+			String mutPredAAChange,
+			String mutPredTop5Features[],
+
 			String refcodon,
 			String codonpos,
 
@@ -54,6 +66,12 @@ public class DbNSFPItemFacet {
 		this.metaLRScore = metaLRScore;
 		this.metaLRRankScore = metaLRRankScore;
 		this.metaLRPrediction = metaLRPrediction;
+
+		this.mutPredScore = mutPredScore;
+		this.mutPredRankScore = mutPredRankScore;
+		this.mutPredProtID = mutPredProtID;
+		this.mutPredAAChange = mutPredAAChange;
+		this.mutPredTop5Features = mutPredTop5Features;
 
 		this.refcodon = refcodon;
 		this.codonpos = codonpos;

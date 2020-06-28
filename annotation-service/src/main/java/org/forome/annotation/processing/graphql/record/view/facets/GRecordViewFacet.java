@@ -63,6 +63,36 @@ public class GRecordViewFacet {
 	}
 
 	@GraphQLField
+	@GraphQLName("mut_pred_score")
+	public Double getMutPredScore() {
+		return facet.mutPredScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("mut_pred_rank_score")
+	public Double getMutPredRankScore() {
+		return facet.mutPredRankScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("mut_pred_prot_id")
+	public String getMutPredProtID() {
+		return facet.mutPredProtID;
+	}
+
+	@GraphQLField
+	@GraphQLName("mut_pred_aa_change")
+	public String getMutPredAAChange() {
+		return facet.mutPredAAChange;
+	}
+
+	@GraphQLField
+	@GraphQLName("mut_pred_top5_features")
+	public String[] getMutPredTop5Features() {
+		return facet.mutPredTop5Features;
+	}
+
+	@GraphQLField
 	@GraphQLName("refcodon")
 	public String getRefcodon() {
 		return facet.refcodon;
