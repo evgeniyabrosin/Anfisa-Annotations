@@ -25,6 +25,7 @@ public class DbNSFPItemFacet {
 
 	public final Double revelScore;
 	public final Double siftConvertedRankScore;
+	public final Double sift4gConvertedRankScore;
 
 	public final Double metaLRScore;
 	public final Double metaLRRankScore;
@@ -36,6 +37,10 @@ public class DbNSFPItemFacet {
 	public final String mutPredAAChange;
 	public final String[] mutPredTop5Features;
 
+	public final Double mpcRankScore;
+	public final Double primateAiScore;
+	public final Double primateAiRankScore;
+
 	public final String refcodon;
 	public final String codonpos;
 
@@ -44,6 +49,7 @@ public class DbNSFPItemFacet {
 	public DbNSFPItemFacet(
 			Double revelScore,
 			Double siftConvertedRankScore,
+			Double sift4gConvertedRankScore,
 
 			Double metaLRScore,
 			Double metaLRRankScore,
@@ -55,6 +61,10 @@ public class DbNSFPItemFacet {
 			String mutPredAAChange,
 			String mutPredTop5Features[],
 
+			Double mpcRankScore,
+			Double primateAiScore,
+			Double primateAiRankScore,
+
 			String refcodon,
 			String codonpos,
 
@@ -62,6 +72,7 @@ public class DbNSFPItemFacet {
 	) {
 		this.revelScore = revelScore;
 		this.siftConvertedRankScore = siftConvertedRankScore;
+		this.sift4gConvertedRankScore = sift4gConvertedRankScore;
 
 		this.metaLRScore = metaLRScore;
 		this.metaLRRankScore = metaLRRankScore;
@@ -72,6 +83,10 @@ public class DbNSFPItemFacet {
 		this.mutPredProtID = mutPredProtID;
 		this.mutPredAAChange = mutPredAAChange;
 		this.mutPredTop5Features = mutPredTop5Features;
+
+		this.mpcRankScore = mpcRankScore;
+		this.primateAiScore = primateAiScore;
+		this.primateAiRankScore = primateAiRankScore;
 
 		this.refcodon = refcodon;
 		this.codonpos = codonpos;

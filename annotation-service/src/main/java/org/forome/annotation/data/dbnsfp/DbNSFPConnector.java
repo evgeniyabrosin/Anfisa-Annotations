@@ -75,6 +75,7 @@ public class DbNSFPConnector {
 		return new DbNSFPItemFacet(
 				MathUtils.toDouble(jsonObject.getAsNumber("REVEL_score")),
 				MathUtils.toDouble(jsonObject.getAsNumber("SIFT_converted_rankscore")),
+				MathUtils.toDouble(jsonObject.getAsNumber("SIFT4G_converted_rankscore")),
 
 				MathUtils.toDouble(jsonObject.getAsNumber("MetaLR_score")),
 				MathUtils.toDouble(jsonObject.getAsNumber("MetaLR_rankscore")),
@@ -85,6 +86,10 @@ public class DbNSFPConnector {
 				jsonObject.getAsString("MutPred_protID"),
 				jsonObject.getAsString("MutPred_AAchange"),
 				mutPredTop5Features,
+
+				MathUtils.toDouble(jsonObject.getAsString("MPC_rankscore")),
+				MathUtils.toDouble(jsonObject.getAsString("PrimateAI_score")),
+				MathUtils.toDouble(jsonObject.getAsString("PrimateAI_rankscore")),
 
 				jsonObject.getAsString("refcodon"),
 				jsonObject.getAsString("codonpos"),

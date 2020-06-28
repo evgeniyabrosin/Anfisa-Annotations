@@ -45,6 +45,12 @@ public class GRecordViewFacet {
 	}
 
 	@GraphQLField
+	@GraphQLName("sift4g_converted_rank_score")
+	public Double getSift4gConvertedRankScore() {
+		return facet.sift4gConvertedRankScore;
+	}
+
+	@GraphQLField
 	@GraphQLName("meta_lr_score")
 	public Double getMetaLRScore() {
 		return facet.metaLRScore;
@@ -90,6 +96,24 @@ public class GRecordViewFacet {
 	@GraphQLName("mut_pred_top5_features")
 	public String[] getMutPredTop5Features() {
 		return facet.mutPredTop5Features;
+	}
+
+	@GraphQLField
+	@GraphQLName("mpc_rank_score")
+	public Double getMpcRankScore() {
+		return facet.mpcRankScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("primate_ai_score")
+	public Double getPrimateAiScore() {
+		return facet.primateAiScore;
+	}
+
+	@GraphQLField
+	@GraphQLName("primate_ai_rank_score")
+	public Double getPrimateAiRankScore() {
+		return facet.primateAiRankScore;
 	}
 
 	@GraphQLField

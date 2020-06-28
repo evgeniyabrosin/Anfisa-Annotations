@@ -28,6 +28,7 @@
         facets {
             revel_score
             sift_converted_rank_score
+            sift4g_converted_rank_score
             meta_lr_score
             meta_lr_rank_score
             meta_lr_prediction
@@ -36,6 +37,9 @@
             mut_pred_prot_id
             mut_pred_aa_change
             mut_pred_top5_features
+            mpc_rank_score
+            primate_ai_score
+            primate_ai_rank_score
             refcodon
             codonpos
         }
