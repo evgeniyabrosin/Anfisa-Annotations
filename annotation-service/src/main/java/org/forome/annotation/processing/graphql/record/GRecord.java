@@ -36,7 +36,7 @@ public class GRecord {
 		GContext gContext = env.getContext();
 		Variant variant = gContext.variant;
 		MCase mCase = gContext.mCase;
-		return new GRecordFilters(mCase, variant);
+		return new GRecordFilters(gContext, mCase, variant);
 	}
 
 	@GraphQLField
