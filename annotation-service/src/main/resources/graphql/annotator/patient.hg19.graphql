@@ -27,6 +27,12 @@
             zygosity
             refcodons
         }
+        predictions {
+            refcodon
+            codonpos
+            mutation_assessor_predictions
+            mutation_assessor_scores
+        }
         facets {
             revel_score
             sift_converted_rank_score
