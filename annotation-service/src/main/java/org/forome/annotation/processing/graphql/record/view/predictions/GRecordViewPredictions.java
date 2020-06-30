@@ -102,4 +102,30 @@ public class GRecordViewPredictions {
 				.filter(Objects::nonNull)
 				.distinct().collect(Collectors.toList());
 	}
+
+	@GraphQLField
+	@GraphQLName("primate_ai_pred")
+	public List<String> getPrimateAiPred() {
+		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
+				gContext.context, variant
+		);
+
+		return items.stream()
+				.map(item -> item.primateAiPred)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+
+	@GraphQLField
+	@GraphQLName("dann_score")
+	public List<Double> getDannScore() {
+		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
+				gContext.context, variant
+		);
+
+		return items.stream()
+				.map(item -> item.dannScore)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
 }

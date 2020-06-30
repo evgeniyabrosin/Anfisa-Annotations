@@ -57,7 +57,9 @@ public class DbNSFPConnector {
 		return new DbNSFPItem(
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_raw")),
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_phred")),
+				MathUtils.toDouble(jsonObject.getAsNumber("DANN_score")),
 				jsonObject.getAsString("MutationTaster_pred"),
+				jsonObject.getAsString("PrimateAI_pred"),
 				facets
 		);
 	}

@@ -23,6 +23,8 @@ import graphql.annotations.annotationTypes.GraphQLName;
 import htsjdk.variant.variantcontext.CommonInfo;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.forome.annotation.data.anfisa.struct.AnfisaVariant;
+import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
+import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
 import org.forome.annotation.struct.variant.Genotype;
@@ -30,13 +32,19 @@ import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.utils.MathUtils;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 @GraphQLName("record_filters")
 public class GRecordFilters {
 
+	private final GContext gContext;
 	public final MCase mCase;
 	public final Variant variant;
 
-	public GRecordFilters(MCase mCase, Variant variant) {
+	public GRecordFilters(GContext gContext, MCase mCase, Variant variant) {
+		this.gContext = gContext;
 		this.mCase = mCase;
 		this.variant = variant;
 	}
@@ -154,5 +162,19 @@ public class GRecordFilters {
 		}
 		return genotype.getGQ();
 	}
+
+	@GraphQLField
+	@GraphQLName("primate_ai_pred")
+	public List<String> getPrimateAiPred() {
+		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
+				gContext.context, variant
+		);
+
+		return items.stream()
+				.map(item -> item.primateAiPred)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+
 
 }

@@ -26,18 +26,26 @@ public class DbNSFPItem {
 	public final Double caddRaw;
 	public final Double caddPhred;
 
+	public final Double dannScore;
+
 	public final String mutationTasterPred;
+
+	public final String primateAiPred;
 
 	public final List<DbNSFPItemFacet> facets;
 
 	public DbNSFPItem(
 			Double caddRaw, Double caddPhred,
+			Double dannScore,
 			String mutationTasterPred,
+			String primateAiPred,
 			List<DbNSFPItemFacet> facets
 	) {
 		this.caddRaw = caddRaw;
 		this.caddPhred = caddPhred;
+		this.dannScore = dannScore;
 		this.mutationTasterPred = mutationTasterPred;
+		this.primateAiPred = primateAiPred;
 		this.facets = Collections.unmodifiableList(facets);
 	}
 }
