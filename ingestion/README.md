@@ -118,6 +118,7 @@ SpliceAI
 * Files:
 
     spliceai_scores.masked.snv.hg38.vcf.gz
+    
     spliceai_scores.masked.indel.hg38.vcf.gz
 
 Mode dbnsfp4
