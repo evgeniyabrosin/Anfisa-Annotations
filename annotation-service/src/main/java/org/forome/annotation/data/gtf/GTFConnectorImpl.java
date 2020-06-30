@@ -18,7 +18,6 @@
 
 package org.forome.annotation.data.gtf;
 
-import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gtf.datasource.GTFDataSource;
 import org.forome.annotation.data.gtf.datasource.mysql.GTFDataConnector;
@@ -44,7 +43,7 @@ public class GTFConnectorImpl implements GTFConnector {
 
 	private final GTFDataSource gtfDataSource;
 
-	private final DatabaseConnector databaseConnector;
+//	private final DatabaseConnector databaseConnector;
 	private final GTFDataConnector gtfDataConnector;
 
 	private final ExecutorService threadPoolGTFExecutor;
@@ -57,9 +56,9 @@ public class GTFConnectorImpl implements GTFConnector {
 	) throws Exception {
 		this.gtfDataSource = gtfDataSource;
 
-		this.databaseConnector = null;
 //        this.databaseConnector = new DatabaseConnector(databaseConnectService, gtfConfigConnector);
-		this.gtfDataConnector = new GTFDataConnector(databaseConnector);
+//		this.gtfDataConnector = new GTFDataConnector(databaseConnector);
+		gtfDataConnector = (GTFDataConnector) gtfDataSource;
 		threadPoolGTFExecutor = new DefaultThreadPoolExecutor(
 				MAX_THREAD_COUNT,
 				MAX_THREAD_COUNT,
@@ -120,14 +119,14 @@ public class GTFConnectorImpl implements GTFConnector {
 
     @Override
     public Object[] lookup(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript) {
-		List<GTFTranscriptRow> rows = gtfDataSource.lookup(context, assembly, position, transcript);
-		if (rows == null) return null;
-		return lookup(position.value, rows);
+//		List<GTFTranscriptRow> rows = gtfDataSource.lookup(context, assembly, position, transcript);
+//		if (rows == null) return null;
+//		return lookup(position.value, rows);
 
-//		List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
-//        if (rows.isEmpty()) return null;
-//
-//		return lookup(pos, rows);
+		List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
+		if (rows.isEmpty()) return null;
+
+		return lookup(position.value, rows);
 	}
 
 	public List<GTFResultLookup> lookupByChromosomeAndPositions(AnfisaExecuteContext context, String chromosome, long[] positions) {
@@ -139,7 +138,7 @@ public class GTFConnectorImpl implements GTFConnector {
 				List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
 				if (rows.isEmpty()) continue;
 
-				Object[] iResult = lookup(context, Assembly.GRCh37, new Position(Chromosome.of(chromosome), (int)position), transcript);
+				Object[] iResult = lookup(context, context.anfisaInput.mCase.assembly, new Position(Chromosome.of(chromosome), (int)position), transcript);
 				GTFRegion region = (GTFRegion) iResult[1];
 				result.add(new GTFResultLookup(transcript, rows.get(0).gene, position, region.region, region.indexRegion));
 			}
@@ -200,6 +199,6 @@ public class GTFConnectorImpl implements GTFConnector {
 
 	@Override
 	public void close() {
-		databaseConnector.close();
+		gtfDataSource.close();
 	}
 }

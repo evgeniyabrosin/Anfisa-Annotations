@@ -22,6 +22,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.forome.annotation.Main;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
@@ -33,7 +34,7 @@ import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.GTFConnectorImpl;
-import org.forome.annotation.data.gtf.datasource.http.GTFDataSourceHttp;
+import org.forome.annotation.data.gtf.datasource.mysql.GTFDataConnector;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
@@ -181,11 +182,16 @@ public class AnnotationConsole {
 //			clinvarConnector = new ClinvarConnectorHttp();
 			clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
+//			this.gtfConnector = new GTFConnectorImpl(
+//					new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+//					(t, e) -> fail(e, null, arguments)
+//			);
 			this.gtfConnector = new GTFConnectorImpl(
-					new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+					new GTFDataConnector(
+							new DatabaseConnector(databaseConnectService, serviceConfig.gtfConfigConnector)
+					),
 					(t, e) -> fail(e, null, arguments)
 			);
-//			gtfConnector = new GTFConnectorMysql(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e, null, arguments));
 
 //			gtexConnector = new GTEXConnectorHttp();
 			gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);

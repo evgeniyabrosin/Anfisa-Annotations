@@ -21,6 +21,7 @@ package org.forome.annotation;
 import com.infomaximum.querypool.*;
 import org.forome.annotation.config.Config;
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
@@ -32,7 +33,7 @@ import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.GTFConnectorImpl;
-import org.forome.annotation.data.gtf.datasource.http.GTFDataSourceHttp;
+import org.forome.annotation.data.gtf.datasource.mysql.GTFDataConnector;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.liftover.LiftoverConnector;
@@ -160,11 +161,16 @@ public class Service {
 //		this.clinvarConnector = new ClinvarConnectorHttp();
 		this.clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
+//		this.gtfConnector = new GTFConnectorImpl(
+//				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+//				uncaughtExceptionHandler
+//		);
 		this.gtfConnector = new GTFConnectorImpl(
-				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				new GTFDataConnector(
+						new DatabaseConnector(databaseConnectService, serviceConfig.gtfConfigConnector)
+				),
 				uncaughtExceptionHandler
 		);
-//		this.gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, uncaughtExceptionHandler);
 
 //		this.gtexConnector = new GTEXConnectorHttp();
 		this.gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
