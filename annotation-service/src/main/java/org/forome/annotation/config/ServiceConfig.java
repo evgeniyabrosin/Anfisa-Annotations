@@ -21,6 +21,7 @@ package org.forome.annotation.config;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.config.connector.ForomeConfigConnector;
+import org.forome.annotation.config.connector.GTFConfigConnector;
 import org.forome.annotation.config.connector.HgmdConfigConnector;
 import org.forome.annotation.config.connector.RefConfigConnector;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
@@ -47,6 +48,7 @@ public class ServiceConfig {
 	public final AStorageConfigConnector aStorageConfigConnector;
 
 	public final HgmdConfigConnector hgmdConfigConnector;
+	public final GTFConfigConnector gtfConfigConnector;
 	public final RefConfigConnector refConfigConnector;
 
 	public final NotificationSlackConfig notificationSlackConfig;
@@ -74,6 +76,7 @@ public class ServiceConfig {
 		foromeConfigConnector = new ForomeConfigConnector((JSONObject) jConnectors.get("forome"));
 		aStorageConfigConnector = new AStorageConfigConnector((JSONObject) jConnectors.get("astorage"));
 		hgmdConfigConnector = new HgmdConfigConnector((JSONObject) jConnectors.get("hgmd"));
+		gtfConfigConnector = new GTFConfigConnector((JSONObject) jConnectors.get("gtf"));
 		refConfigConnector = new RefConfigConnector((JSONObject) jConnectors.get("ref"));
 
 		JSONObject jNotifications = (JSONObject) configFileJson.get("notification");
