@@ -27,6 +27,7 @@ import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacetTranscript;
 import org.forome.annotation.processing.graphql.record.view.bioinformatics.GRecordViewBioinformatics;
 import org.forome.annotation.processing.graphql.record.view.facets.GRecordViewFacet;
 import org.forome.annotation.processing.graphql.record.view.general.GRecordViewGeneral;
+import org.forome.annotation.processing.graphql.record.view.predictions.GRecordViewPredictions;
 import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscript;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.struct.mcase.MCase;
@@ -64,6 +65,11 @@ public class GRecordView {
 		return new GRecordViewBioinformatics(gContext, mCase, variant);
 	}
 
+	@GraphQLField
+	@GraphQLName("predictions")
+	public GRecordViewPredictions getPredictions() {
+		return new GRecordViewPredictions(gContext, variant);
+	}
 
 	@GraphQLField
 	@GraphQLName("facets")
