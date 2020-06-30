@@ -54,12 +54,19 @@ public class DbNSFPConnector {
 				.map(o -> _buildFacet((JSONObject) o))
 				.collect(Collectors.toList());
 
+		String sGeuvadisEQtlTargetGene = jsonObject.getAsString("Geuvadis_eQTL_target_gene");
+		List<String> geuvadisEQtlTargetGene = (sGeuvadisEQtlTargetGene == null) ? null :
+				Arrays.stream(sGeuvadisEQtlTargetGene.split(";"))
+						.filter(s -> !s.isEmpty())
+						.collect(Collectors.toList());
+
 		return new DbNSFPItem(
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_raw")),
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_phred")),
 				MathUtils.toDouble(jsonObject.getAsNumber("DANN_score")),
 				jsonObject.getAsString("MutationTaster_pred"),
 				jsonObject.getAsString("PrimateAI_pred"),
+				geuvadisEQtlTargetGene,
 				facets
 		);
 	}

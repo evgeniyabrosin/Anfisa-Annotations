@@ -13,6 +13,7 @@
         severity
         proband_gq
         primate_ai_pred
+        eqtl_gene
     }
     _view {
         general {
@@ -27,6 +28,7 @@
         bioinformatics {
             zygosity
             refcodons
+            eqtl_gene
         }
         predictions {
             refcodon

@@ -32,6 +32,8 @@ public class DbNSFPItem {
 
 	public final String primateAiPred;
 
+	public final List<String> geuvadisEQtlTargetGene;
+
 	public final List<DbNSFPItemFacet> facets;
 
 	public DbNSFPItem(
@@ -39,6 +41,7 @@ public class DbNSFPItem {
 			Double dannScore,
 			String mutationTasterPred,
 			String primateAiPred,
+			List<String> geuvadisEQtlTargetGene,
 			List<DbNSFPItemFacet> facets
 	) {
 		this.caddRaw = caddRaw;
@@ -46,6 +49,7 @@ public class DbNSFPItem {
 		this.dannScore = dannScore;
 		this.mutationTasterPred = mutationTasterPred;
 		this.primateAiPred = primateAiPred;
+		this.geuvadisEQtlTargetGene = geuvadisEQtlTargetGene;
 		this.facets = Collections.unmodifiableList(facets);
 	}
 }

@@ -176,5 +176,18 @@ public class GRecordFilters {
 				.collect(Collectors.toList());
 	}
 
+	@GraphQLField
+	@GraphQLName("eqtl_gene")
+	public List<String> getEqtlGene() {
+		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
+				gContext.context, variant
+		);
+
+		return items.stream()
+				.map(item -> item.geuvadisEQtlTargetGene)
+				.filter(Objects::nonNull)
+				.flatMap(item -> item.stream())
+				.collect(Collectors.toList());
+	}
 
 }
