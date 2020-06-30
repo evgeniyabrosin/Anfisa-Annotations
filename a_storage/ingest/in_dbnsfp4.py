@@ -291,12 +291,20 @@ class DataCollector:
             key = "|".join([v_data["REF"], v_data["ALT"]])
             assert key not in v_keys, ("Dup key: %s" % key)
             v_keys.add(key)
+            marks = set()
+            if len(v_data["facets"]) > 1:
+                marks.add("multi-facet")
             tr_ids = set()
             for f_data in v_data["facets"]:
                 for t_data in f_data["transcripts"]:
                     tr_id = t_data[TRANSCRIPT_KEY]
-                    assert tr_id not in tr_ids, ("Dup transcript %s" % tr_id)
+                    if tr_id in tr_ids:
+                        marks.add ("multi-transcript")
+                        break
                     tr_ids.add(tr_id)
+            if len(marks) > 0:
+                logging.info("Complications at %s|%s: %s"
+                    % (str(self.mCurRecord[0]), key, " ".join(sorted(marks))))
 
 #========================================
 #========================================
