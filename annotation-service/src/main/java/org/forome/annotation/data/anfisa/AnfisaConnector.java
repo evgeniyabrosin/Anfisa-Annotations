@@ -913,7 +913,9 @@ public class AnfisaConnector implements AutoCloseable {
 		view.predictions.caddPhred = items.stream().map(item -> item.caddPhred).filter(Objects::nonNull).collect(Collectors.toList());
 
 
-		view.predictions.mutationTaster = items.stream().map(item -> item.mutationTasterPred)
+		view.predictions.mutationTaster = items.stream()
+				.flatMap(item -> item.facets.stream())
+				.map(facet -> facet.mutationTasterPred)
 				.filter(Objects::nonNull)
 				.flatMap(s -> Arrays.stream(s.split(";")))
 				.map(s -> s.trim())

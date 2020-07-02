@@ -245,6 +245,18 @@ public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.mpcScore;
 	}
 
+	@GraphQLField
+	@GraphQLName("refcodon")
+	public String getRefcodon() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.refcodon;
+	}
+
+	@GraphQLField
+	@GraphQLName("codonpos")
+	public String getCodonpos() {
+		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.codonpos;
+	}
+
 	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
 		put("Ala", "A");
 		put("Arg", "R");

@@ -171,8 +171,10 @@ public class GRecordFilters {
 		);
 
 		return items.stream()
-				.map(item -> item.primateAiPred)
+				.flatMap(item -> item.facets.stream())
+				.map(facet -> facet.primateAiPred)
 				.filter(Objects::nonNull)
+				.distinct()
 				.collect(Collectors.toList());
 	}
 

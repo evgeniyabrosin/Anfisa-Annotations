@@ -41,8 +41,11 @@ public class DbNSFPItemFacet {
 	public final Double primateAiScore;
 	public final Double primateAiRankScore;
 
-	public final String refcodon;
-	public final String codonpos;
+	public final Double caddRawRankScore;
+
+	public final String mutationTasterPred;
+
+	public final String primateAiPred;
 
 	public final List<DbNSFPItemFacetTranscript> transcripts;
 
@@ -65,8 +68,10 @@ public class DbNSFPItemFacet {
 			Double primateAiScore,
 			Double primateAiRankScore,
 
-			String refcodon,
-			String codonpos,
+			Double caddRawRankScore,
+
+			String mutationTasterPred,
+			String primateAiPred,
 
 			List<DbNSFPItemFacetTranscript> transcripts
 	) {
@@ -88,8 +93,10 @@ public class DbNSFPItemFacet {
 		this.primateAiScore = primateAiScore;
 		this.primateAiRankScore = primateAiRankScore;
 
-		this.refcodon = refcodon;
-		this.codonpos = codonpos;
+		this.caddRawRankScore = caddRawRankScore;
+
+		this.mutationTasterPred = mutationTasterPred;
+		this.primateAiPred = primateAiPred;
 
 		this.transcripts = Collections.unmodifiableList(transcripts);
 	}

@@ -86,7 +86,7 @@ public class GRecordViewBioinformatics {
 	}
 
 	@GraphQLField
-	@GraphQLName("refcodons")
+	@GraphQLName("refcodon")
 	public List<String> getRefcodons() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
 				gContext.context, variant
@@ -94,7 +94,8 @@ public class GRecordViewBioinformatics {
 
 		return items.stream()
 				.flatMap(item -> item.facets.stream())
-				.map(facet -> facet.refcodon)
+				.flatMap(facet -> facet.transcripts.stream())
+				.map(transcript -> transcript.refcodon)
 				.filter(Objects::nonNull)
 				.flatMap(s -> Arrays.stream(s.split(";")))
 				.distinct().collect(Collectors.toList());
