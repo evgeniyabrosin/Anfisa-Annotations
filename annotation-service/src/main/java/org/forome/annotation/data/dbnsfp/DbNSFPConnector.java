@@ -64,8 +64,6 @@ public class DbNSFPConnector {
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_raw")),
 				MathUtils.toDouble(jsonObject.getAsNumber("CADD_phred")),
 				MathUtils.toDouble(jsonObject.getAsNumber("DANN_score")),
-				jsonObject.getAsString("MutationTaster_pred"),
-				jsonObject.getAsString("PrimateAI_pred"),
 				geuvadisEQtlTargetGene,
 				facets
 		);
@@ -100,8 +98,10 @@ public class DbNSFPConnector {
 				MathUtils.toDouble(jsonObject.getAsString("PrimateAI_score")),
 				MathUtils.toDouble(jsonObject.getAsString("PrimateAI_rankscore")),
 
-				jsonObject.getAsString("refcodon"),
-				jsonObject.getAsString("codonpos"),
+				MathUtils.toDouble(jsonObject.getAsString("CADD_raw_rankscore")),
+
+				jsonObject.getAsString("MutationTaster_pred"),
+				jsonObject.getAsString("PrimateAI_pred"),
 
 				transcripts
 		);
@@ -141,7 +141,10 @@ public class DbNSFPConnector {
 				jsonObject.getAsString("SIFT4G_pred"),
 				MathUtils.toDouble(jsonObject.getAsNumber("SIFT4G_score")),
 
-				MathUtils.toDouble(jsonObject.getAsNumber("MPC_score"))
+				MathUtils.toDouble(jsonObject.getAsNumber("MPC_score")),
+
+				jsonObject.getAsString("refcodon"),
+				jsonObject.getAsString("codonpos")
 		);
 	}
 

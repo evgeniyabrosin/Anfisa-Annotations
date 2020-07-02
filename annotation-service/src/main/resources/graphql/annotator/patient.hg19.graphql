@@ -27,7 +27,7 @@
         }
         bioinformatics {
             zygosity
-            refcodons
+            refcodon
             eqtl_gene
         }
         predictions {
@@ -53,8 +53,7 @@
             mpc_rank_score
             primate_ai_score
             primate_ai_rank_score
-            refcodon
-            codonpos
+            cadd_raw_rank_score
         }
         transcripts {
             id
@@ -91,6 +90,8 @@
             fathmm_prediction
             fathmm_score
             mpc_score
+            refcodon
+            codonpos
         }
     }
 }

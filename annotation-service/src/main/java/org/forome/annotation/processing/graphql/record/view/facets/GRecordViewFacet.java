@@ -117,16 +117,9 @@ public class GRecordViewFacet {
 	}
 
 	@GraphQLField
-	@GraphQLName("refcodon")
-	public String getRefcodon() {
-		return facet.refcodon;
+	@GraphQLName("cadd_raw_rank_score")
+	public Double getCaddRawRankScore() {
+		return facet.caddRawRankScore;
 	}
-
-	@GraphQLField
-	@GraphQLName("codonpos")
-	public String getCodonpos() {
-		return facet.codonpos;
-	}
-
 
 }

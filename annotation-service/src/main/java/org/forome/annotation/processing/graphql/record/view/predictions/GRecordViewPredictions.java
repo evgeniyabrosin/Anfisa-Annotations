@@ -49,7 +49,8 @@ public class GRecordViewPredictions {
 
 		return items.stream()
 				.flatMap(item -> item.facets.stream())
-				.map(facet -> facet.refcodon)
+				.flatMap(facet -> facet.transcripts.stream())
+				.map(transcript -> transcript.refcodon)
 				.filter(Objects::nonNull)
 				.flatMap(s -> Arrays.stream(s.split(";")))
 				.distinct().collect(Collectors.toList());
@@ -64,7 +65,8 @@ public class GRecordViewPredictions {
 
 		return items.stream()
 				.flatMap(item -> item.facets.stream())
-				.map(facet -> facet.codonpos)
+				.flatMap(facet -> facet.transcripts.stream())
+				.map(transcript -> transcript.codonpos)
 				.filter(Objects::nonNull)
 				.flatMap(s -> Arrays.stream(s.split(";")))
 				.filter(s -> !".".equals(s))
@@ -111,8 +113,10 @@ public class GRecordViewPredictions {
 		);
 
 		return items.stream()
-				.map(item -> item.primateAiPred)
+				.flatMap(item -> item.facets.stream())
+				.map(facet -> facet.primateAiPred)
 				.filter(Objects::nonNull)
+				.distinct()
 				.collect(Collectors.toList());
 	}
 
