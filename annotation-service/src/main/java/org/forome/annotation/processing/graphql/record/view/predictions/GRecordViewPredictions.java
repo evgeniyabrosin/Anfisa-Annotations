@@ -24,7 +24,6 @@ import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.struct.variant.Variant;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -39,41 +38,6 @@ public class GRecordViewPredictions {
 		this.gContext = gContext;
 		this.variant = variant;
 	}
-
-	@GraphQLField
-	@GraphQLName("refcodon")
-	public List<String> getRefcodon() {
-		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
-		);
-
-		return items.stream()
-				.flatMap(item -> item.facets.stream())
-				.flatMap(facet -> facet.transcripts.stream())
-				.map(transcript -> transcript.refcodon)
-				.filter(Objects::nonNull)
-				.flatMap(s -> Arrays.stream(s.split(";")))
-				.distinct().collect(Collectors.toList());
-	}
-
-	@GraphQLField
-	@GraphQLName("codonpos")
-	public List<Integer> getCodonpos() {
-		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
-		);
-
-		return items.stream()
-				.flatMap(item -> item.facets.stream())
-				.flatMap(facet -> facet.transcripts.stream())
-				.map(transcript -> transcript.codonpos)
-				.filter(Objects::nonNull)
-				.flatMap(s -> Arrays.stream(s.split(";")))
-				.filter(s -> !".".equals(s))
-				.map(s -> Integer.parseInt(s))
-				.distinct().collect(Collectors.toList());
-	}
-
 
 	@GraphQLField
 	@GraphQLName("mutation_assessor_predictions")

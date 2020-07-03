@@ -29,8 +29,6 @@
             eqtl_gene
         }
         predictions {
-            refcodon
-            codonpos
             mutation_assessor_predictions
             mutation_assessor_scores
             primate_ai_pred
