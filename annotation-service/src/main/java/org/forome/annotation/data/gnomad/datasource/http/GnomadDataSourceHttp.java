@@ -119,8 +119,9 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		);
 
 		if (records.isEmpty() && !isSNV) {
+			pos37 = new Position(pos37.chromosome, pos37.value - 1);
 			records = getRecord(
-					new Position(pos37.chromosome, pos37.value - 1),
+					pos37,
 					sequence.ref, sequence.alt,
 					fromWhat, isSNV
 			);
