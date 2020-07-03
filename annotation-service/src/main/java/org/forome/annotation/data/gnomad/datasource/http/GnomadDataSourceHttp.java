@@ -38,6 +38,7 @@ import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
 import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.utils.GnomadUtils;
+import org.forome.annotation.data.gnomad.utils.СollapseNucleotideSequence;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
@@ -98,32 +99,36 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 			AnfisaExecuteContext context,
 			Assembly assembly,
 			Chromosome chromosome,
-			int position,
-			String ref,
-			String alt,
+			int sPosition,
+			String sRef,
+			String sAlt,
 			String fromWhat
 	) {
-		boolean isSNV = (ref.length() == 1 && alt.length() == 1);
+		СollapseNucleotideSequence.Sequence sequence = СollapseNucleotideSequence.collapseRight(
+				new Position(chromosome, sPosition), sRef, sAlt
+		);
 
-		Position pos37 = liftoverConnector.toHG37(assembly, new Position(chromosome, position));
+		boolean isSNV = (sequence.ref.length() == 1 && sequence.alt.length() == 1);
+
+		Position pos37 = liftoverConnector.toHG37(assembly, sequence.position);
 
 		List<JSONObject> records = getRecord(
 				pos37,
-				ref, alt,
+				sequence.ref, sequence.alt,
 				fromWhat, isSNV
 		);
 
 		if (records.isEmpty() && !isSNV) {
 			records = getRecord(
 					new Position(pos37.chromosome, pos37.value - 1),
-					ref, alt,
+					sequence.ref, sequence.alt,
 					fromWhat, isSNV
 			);
 		}
 
 		List<DataResponse> dataResponses = new ArrayList<>();
 		for (JSONObject record : records) {
-			String diff_ref_alt = GnomadUtils.diff(ref, alt);
+			String diff_ref_alt = GnomadUtils.diff(sequence.ref, sequence.alt);
 			if (Objects.equals(diff_ref_alt, GnomadUtils.diff(record.getAsString("REF"), record.getAsString("ALT")))
 					||
 					GnomadUtils.diff3(record.getAsString("REF"), record.getAsString("ALT"), diff_ref_alt)
