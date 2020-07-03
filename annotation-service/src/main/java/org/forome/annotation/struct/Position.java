@@ -18,6 +18,8 @@
 
 package org.forome.annotation.struct;
 
+import java.util.Objects;
+
 public class Position {
 
 	public final Chromosome chromosome;
@@ -27,6 +29,20 @@ public class Position {
 	public Position(Chromosome chromosome, int value) {
 		this.chromosome = chromosome;
 		this.value = value;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Position position = (Position) o;
+		return value == position.value &&
+				Objects.equals(chromosome, position.chromosome);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(chromosome, value);
 	}
 
 	@Override
