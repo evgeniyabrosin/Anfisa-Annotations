@@ -111,6 +111,9 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		boolean isSNV = (sequence.ref.length() == 1 && sequence.alt.length() == 1);
 
 		Position pos37 = liftoverConnector.toHG37(assembly, sequence.position);
+		if (pos37 == null) {
+			return Collections.emptyList();
+		}
 
 		List<JSONObject> records = getRecord(
 				pos37,
