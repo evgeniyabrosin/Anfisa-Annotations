@@ -99,7 +99,7 @@ public class GTEXConnectorMysql implements GTEXConnector, AutoCloseable {
 				}
 			}
 		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+			throw ExceptionBuilder.buildExternalDatabaseException(ex, "sql: " + sql);
 		}
 		return tissues;
 	}
