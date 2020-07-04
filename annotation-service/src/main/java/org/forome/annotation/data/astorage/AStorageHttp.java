@@ -104,6 +104,11 @@ public class AStorageHttp {
 		} else {
 			throw new RuntimeException("Unknown assembly: " + assembly);
 		}
+		params.put("arrays", new JSONArray(){{
+			add("SpliceAI");
+			add("dbNSFP");
+			add("gnomAD");
+		}});
 
 		int attempts = 5;
 		while (true) {
