@@ -116,6 +116,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		}
 
 		List<JSONObject> records = getRecord(
+				context,
 				pos37,
 				sequence.ref, sequence.alt,
 				fromWhat, isSNV
@@ -124,6 +125,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		if (records.isEmpty() && !isSNV) {
 			pos37 = new Position(pos37.chromosome, pos37.value - 1);
 			records = getRecord(
+					context,
 					pos37,
 					sequence.ref, sequence.alt,
 					fromWhat, isSNV
@@ -143,17 +145,15 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		return dataResponses;
 	}
 
-	private List<JSONObject> getRecord(Position pos37,
-									   String ref,
-									   String alt,
-									   String fromWhat,
-									   boolean isSNV
+	private List<JSONObject> getRecord(
+			AnfisaExecuteContext context,
+			Position pos37,
+			String ref,
+			String alt,
+			String fromWhat,
+			boolean isSNV
 	) {
-
-		JSONObject response = request(
-				String.format("http://%s:%s/get?array=hg19&loc=%s:%s", aStorage.host, aStorage.port, pos37.chromosome.getChar(), pos37.value)
-		);
-		JSONArray jRecords = (JSONArray) response.get("gnomAD");
+		List<JSONObject> jRecords = getData(context, pos37);
 		if (jRecords == null) {
 			return Collections.emptyList();
 		}
@@ -161,13 +161,11 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		List<JSONObject> records;
 		if (isSNV) {
 			records = jRecords.stream()
-					.map(o -> (JSONObject) o)
 					.filter(item ->
 							item.getAsString("REF").equals(ref) && item.getAsString("ALT").equals(alt)
 					).collect(Collectors.toList());
 		} else {
 			records = jRecords.stream()
-					.map(o -> (JSONObject) o)
 					.filter(item ->
 							item.getAsString("REF").contains(ref) && item.getAsString("ALT").contains(alt)
 					).collect(Collectors.toList());
@@ -183,6 +181,39 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		}
 
 		return records;
+	}
+
+	private List<JSONObject> getData(AnfisaExecuteContext context, Position pos37) {
+		JSONObject sourceAStorageHttp = context.sourceAStorageHttp;
+		Assembly assembly = context.anfisaInput.mCase.assembly;
+		int sourcePos37;
+		switch (assembly) {
+			case GRCh37:
+				sourcePos37 = sourceAStorageHttp.getAsNumber("pos").intValue();
+				break;
+			case GRCh38:
+				sourcePos37 = sourceAStorageHttp.getAsNumber("hg19").intValue();
+				break;
+			default:
+				throw new RuntimeException("Unknown assembly: " + assembly);
+		}
+
+		JSONArray jRecords;
+		if (sourcePos37 == pos37.value) {
+			jRecords = (JSONArray) sourceAStorageHttp.get("gnomAD");
+		} else {
+			JSONObject response = request(
+					String.format("http://%s:%s/get?array=hg19&loc=%s:%s", aStorage.host, aStorage.port, pos37.chromosome.getChar(), pos37.value)
+			);
+			jRecords = (JSONArray) response.get("gnomAD");
+		}
+		if (jRecords == null) {
+			return null;
+		}
+		return jRecords.stream()
+				.map(o -> (JSONObject) o)
+				.collect(Collectors.toList());
+
 	}
 
 	private JSONObject request(String url) {
