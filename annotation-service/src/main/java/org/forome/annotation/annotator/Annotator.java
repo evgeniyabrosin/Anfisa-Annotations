@@ -207,10 +207,10 @@ public class Annotator {
 	 * для этого мы усеньшаем кол-во поток и соответсвенно кол-во экземпляторов чтения vcf-файлов
 	 */
 	private static int getThreads(MCase mCase) {
-		int maxThread = Runtime.getRuntime().availableProcessors() * 4;
+		int maxThread = Runtime.getRuntime().availableProcessors();
 
-		int k = mCase.samples.size() / 100;
-		int thread = maxThread / (k + 1);
+		int ks = mCase.samples.size() / 100;
+		int thread = maxThread / (ks + 1);
 		if (thread == 0) thread = 1;
 
 		return thread;
