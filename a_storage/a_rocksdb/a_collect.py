@@ -64,6 +64,8 @@ class ACollect:
                 arrays = json.loads(rq_args["arrays"])
             else:
                 arrays = self.mAllSchemaNames
+        if not isinstance(arrays, set):
+            arrays = set(arrays)
         result = []
         for var_info in variants:
             chrom, pos = var_info["chrom"], var_info["pos"]
