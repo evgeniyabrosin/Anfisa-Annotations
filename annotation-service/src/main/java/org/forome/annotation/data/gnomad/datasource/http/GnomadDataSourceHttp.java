@@ -186,20 +186,20 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	private List<JSONObject> getData(AnfisaExecuteContext context, Position pos37) {
 		JSONObject sourceAStorageHttp = context.sourceAStorageHttp;
 		Assembly assembly = context.anfisaInput.mCase.assembly;
-		int sourcePos37;
+		Number sourcePos37;
 		switch (assembly) {
 			case GRCh37:
-				sourcePos37 = sourceAStorageHttp.getAsNumber("pos").intValue();
+				sourcePos37 = sourceAStorageHttp.getAsNumber("pos");
 				break;
 			case GRCh38:
-				sourcePos37 = sourceAStorageHttp.getAsNumber("hg19").intValue();
+				sourcePos37 = sourceAStorageHttp.getAsNumber("hg19");
 				break;
 			default:
 				throw new RuntimeException("Unknown assembly: " + assembly);
 		}
 
 		JSONArray jRecords;
-		if (sourcePos37 == pos37.value) {
+		if (sourcePos37 != null && sourcePos37.intValue() == pos37.value) {
 			jRecords = (JSONArray) sourceAStorageHttp.get("gnomAD");
 		} else {
 			JSONObject response = request(
