@@ -27,6 +27,8 @@ import org.forome.annotation.data.gtex.struct.Tissue;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.SourceMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -36,6 +38,8 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class GTEXConnectorMysql implements GTEXConnector, AutoCloseable {
+
+	private final static Logger log = LoggerFactory.getLogger(GTEXConnectorMysql.class);
 
 	private final DatabaseConnector databaseConnector;
 
@@ -57,7 +61,7 @@ public class GTEXConnectorMysql implements GTEXConnector, AutoCloseable {
 	}
 
 	@Override
-	public List<SourceMetadata> getSourceMetadata(){
+	public List<SourceMetadata> getSourceMetadata() {
 		return Collections.emptyList();
 //		return databaseConnector.getSourceMetadata();
 	}
@@ -99,7 +103,12 @@ public class GTEXConnectorMysql implements GTEXConnector, AutoCloseable {
 				}
 			}
 		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex, "sql: " + sql);
+			log.debug("Ошибка в логике. необходимо врочно исправить", ex);
+			//TODO Ulitin V. временное решение. после исправление базы gtex - вернуть кидание ошибки
+			return Collections.singletonList(
+					new Tissue("ERROR", 0, 0)
+			);
+			//throw ExceptionBuilder.buildExternalDatabaseException(ex, "sql: " + sql);
 		}
 		return tissues;
 	}
