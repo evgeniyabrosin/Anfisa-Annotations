@@ -93,50 +93,55 @@ public class Processing {
 			MCase mCase,
 			Variant variant
 	) {
-		if (mCase == null) throw new IllegalArgumentException();
-		if (variant == null) throw new IllegalArgumentException();
-
-		JSONObject result = new JSONObject();
-
-		AnfisaResult anfisaResult = anfisaConnector.build(
-				new AnfisaInput.Builder(mCase.assembly).withSamples(mCase).build(),
-				variant
-		);
-		result.merge(anfisaResult.toJSON());
-
-		ExecutionResult graphQLExecutionResult = graphQL.execute(
-				ExecutionInput.newExecutionInput()
-						.query(graphQLQuery)
-						.variables(Collections.emptyMap())
-						.context(
-								new GContext(
-										mCase, variant,
-										anfisaConnector, anfisaResult.context
-								)
-						)
-						.build()
-		);
-		if (!graphQLExecutionResult.getErrors().isEmpty()) {
-			log.error("exception: " + graphQLExecutionResult.getErrors());
-			throw new RuntimeException();
-		}
-
-		//TODO Ulitin V. удалить временный костыль, введен из-за проблем мержинга данных
-		JSONObject graphQLResult;
 		try {
-			graphQLResult = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(
-					new JSONObject(graphQLExecutionResult.getData()).toJSONString(JSONStyle.NO_COMPRESS)
+
+			if (mCase == null) throw new IllegalArgumentException();
+			if (variant == null) throw new IllegalArgumentException();
+
+			JSONObject result = new JSONObject();
+
+			AnfisaResult anfisaResult = anfisaConnector.build(
+					new AnfisaInput.Builder(mCase.assembly).withSamples(mCase).build(),
+					variant
 			);
-		} catch (ParseException e) {
-			throw new RuntimeException(e);
+			result.merge(anfisaResult.toJSON());
+
+			ExecutionResult graphQLExecutionResult = graphQL.execute(
+					ExecutionInput.newExecutionInput()
+							.query(graphQLQuery)
+							.variables(Collections.emptyMap())
+							.context(
+									new GContext(
+											mCase, variant,
+											anfisaConnector, anfisaResult.context
+									)
+							)
+							.build()
+			);
+			if (!graphQLExecutionResult.getErrors().isEmpty()) {
+				log.error("exception: " + graphQLExecutionResult.getErrors());
+				throw new RuntimeException();
+			}
+
+			//TODO Ulitin V. удалить временный костыль, введен из-за проблем мержинга данных
+			JSONObject graphQLResult;
+			try {
+				graphQLResult = (JSONObject) new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(
+						new JSONObject(graphQLExecutionResult.getData()).toJSONString(JSONStyle.NO_COMPRESS)
+				);
+			} catch (ParseException e) {
+				throw new RuntimeException(e);
+			}
+
+			result.merge(graphQLResult);
+
+			return new ProcessingResult(
+					variant,
+					result
+			);
+		} catch (Throwable e) {
+			throw new RuntimeException("Exception build variant: " + variant.toString(), e);
 		}
-
-		result.merge(graphQLResult);
-
-		return new ProcessingResult(
-				variant,
-				result
-		);
 	}
 
 }
