@@ -27,6 +27,7 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.processing.struct.ProcessingResult;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
@@ -281,7 +282,13 @@ public class AnnotatorResult {
 			out.put("case", caseSequence);
 			out.put("record_type", recordType);
 			out.put("modes", new JSONArray() {{
-				add(Mode.HG19.value);
+				if (mCase.assembly== Assembly.GRCh37) {
+					add(Mode.HG19.value);
+				} else if (mCase.assembly == Assembly.GRCh38) {
+					add(Mode.HG38.value);
+				} else {
+					throw new RuntimeException("Unknown assembly: " + mCase.assembly);
+				}
 			}});
 			out.put("versions", versions.toJSON());
 			if (mCase.proband != null) {
