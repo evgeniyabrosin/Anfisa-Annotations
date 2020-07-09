@@ -1088,8 +1088,7 @@ public class AnfisaConnector implements AutoCloseable {
 		Variant variant = context.variant;
 		String ref = variant.getRef();
 		String alt = variant.getStrAlt();
-		Interval hgmdHG19 = getHg19Coordinates(context);
-		return conservationData.getConservation(assembly, hgmdHG19, ref, alt);
+		return conservationData.getConservation(assembly, variant.getInterval(), ref, alt);
 	}
 
 	private static Map<String, Float> list_dsmax(AnfisaResultData data) {
@@ -1124,17 +1123,6 @@ public class AnfisaConnector implements AutoCloseable {
 		result.addAll(allGenes);
 		result.removeAll(genes);
 		return result.toArray(new String[result.size()]);
-	}
-
-	private Interval getHg38Coordinates(AnfisaExecuteContext context) {
-		Chromosome chromosome = context.variant.chromosome;
-		return liftoverConnector.toHG38(
-				Interval.of(
-						chromosome,
-						context.variant.getStart(),
-						context.variant.end
-				)
-		);
 	}
 
 	public ColorCode.Code getColorCode(VariantVep variantVep, AnfisaResultData data, Record record, AnfisaResultFilters filters) {
@@ -1494,14 +1482,6 @@ public class AnfisaConnector implements AutoCloseable {
 		return new List[]{
 				c_worst, c_canonical, c_other
 		};
-	}
-
-	public Interval getHg19Coordinates(AnfisaExecuteContext context) {
-		return Interval.of(
-				context.variant.chromosome,
-				context.variant.getStart(),
-				context.variant.end
-		);
 	}
 
 	public boolean isSnv(Variant variant) {

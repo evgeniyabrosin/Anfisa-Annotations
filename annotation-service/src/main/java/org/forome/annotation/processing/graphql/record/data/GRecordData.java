@@ -56,7 +56,4 @@ public class GRecordData {
 		return String.format("[%s] %s", gene, OutUtils.toOut(variant));
 	}
 
-
-
-
 }
