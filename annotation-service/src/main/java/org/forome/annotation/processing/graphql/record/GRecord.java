@@ -21,6 +21,7 @@ package org.forome.annotation.processing.graphql.record;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import graphql.schema.DataFetchingEnvironment;
+import org.forome.annotation.processing.graphql.record.data.GRecordData;
 import org.forome.annotation.processing.graphql.record.filters.GRecordFilters;
 import org.forome.annotation.processing.graphql.record.view.GRecordView;
 import org.forome.annotation.processing.struct.GContext;
@@ -46,6 +47,14 @@ public class GRecord {
 		Variant variant = gContext.variant;
 		MCase mCase = gContext.mCase;
 		return new GRecordView(gContext, mCase, variant);
+	}
+
+	@GraphQLField
+	@GraphQLName("__data")
+	public static GRecordData getGRecordData(DataFetchingEnvironment env) {
+		GContext gContext = env.getContext();
+		Variant variant = gContext.variant;
+		return new GRecordData(gContext, variant);
 	}
 
 	@GraphQLField

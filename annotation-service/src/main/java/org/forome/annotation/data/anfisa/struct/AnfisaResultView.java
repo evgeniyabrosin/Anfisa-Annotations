@@ -181,8 +181,6 @@ public class AnfisaResultView {
         public List<String> pposWorst = new ArrayList<>();
         public List<String> pposCanonical = new ArrayList<>();
         public List<String> pposOther = new ArrayList<>();
-        public String hg38;
-        public String hg19;
         public List<String> variantExonWorst = new ArrayList<>();
         public List<String> variantIntronWorst = new ArrayList<>();
         public List<String> variantExonCanonical = new ArrayList<>();
@@ -220,8 +218,6 @@ public class AnfisaResultView {
 			out.put("gene_splicer", geneSplicer);
 			out.put("ppos_worst", pposWorst);
 			out.put("ppos_other", pposOther);
-			out.put("hg38", hg38);
-			out.put("hg19", hg19);
 			if (spliceAltering != null) {
 				out.put("splice_altering", spliceAltering.orElse(null));
 			}

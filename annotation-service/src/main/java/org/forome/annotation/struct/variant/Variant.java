@@ -20,6 +20,7 @@ package org.forome.annotation.struct.variant;
 
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.mcase.Sample;
 
 public abstract class Variant {
@@ -55,6 +56,10 @@ public abstract class Variant {
 	}
 
 	public abstract String getMostSevereConsequence();
+
+	public Interval getInterval() {
+		return Interval.of(chromosome, getStart(), end);
+	}
 
 	@Override
 	public String toString() {
