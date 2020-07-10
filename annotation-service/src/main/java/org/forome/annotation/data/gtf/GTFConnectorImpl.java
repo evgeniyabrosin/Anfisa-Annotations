@@ -25,6 +25,7 @@ import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResult;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResultLookup;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
+import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
@@ -43,8 +44,10 @@ public class GTFConnectorImpl implements GTFConnector {
 
 	private final GTFDataSource gtfDataSource;
 
-//	private final DatabaseConnector databaseConnector;
+	//	private final DatabaseConnector databaseConnector;
 	private final GTFDataConnector gtfDataConnector;
+
+	private final LiftoverConnector liftoverConnector;
 
 	private final ExecutorService threadPoolGTFExecutor;
 
@@ -52,6 +55,7 @@ public class GTFConnectorImpl implements GTFConnector {
 			GTFDataSource gtfDataSource,
 //            DatabaseConnectService databaseConnectService,
 //            GTFConfigConnector gtfConfigConnector,
+			LiftoverConnector liftoverConnector,
 			Thread.UncaughtExceptionHandler uncaughtExceptionHandler
 	) throws Exception {
 		this.gtfDataSource = gtfDataSource;
@@ -59,6 +63,9 @@ public class GTFConnectorImpl implements GTFConnector {
 //        this.databaseConnector = new DatabaseConnector(databaseConnectService, gtfConfigConnector);
 //		this.gtfDataConnector = new GTFDataConnector(databaseConnector);
 		gtfDataConnector = (GTFDataConnector) gtfDataSource;
+
+		this.liftoverConnector = liftoverConnector;
+
 		threadPoolGTFExecutor = new DefaultThreadPoolExecutor(
 				MAX_THREAD_COUNT,
 				MAX_THREAD_COUNT,
@@ -117,8 +124,8 @@ public class GTFConnectorImpl implements GTFConnector {
 		return gtfDataConnector.getTranscriptRows(transcript);
 	}
 
-    @Override
-    public Object[] lookup(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript) {
+	@Override
+	public Object[] lookup(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript) {
 //		List<GTFTranscriptRow> rows = gtfDataSource.lookup(context, assembly, position, transcript);
 //		if (rows == null) return null;
 //		return lookup(position.value, rows);
@@ -126,7 +133,10 @@ public class GTFConnectorImpl implements GTFConnector {
 		List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
 		if (rows.isEmpty()) return null;
 
-		return lookup(position.value, rows);
+		Position positionHg19 = liftoverConnector.toHG37(assembly, position);
+		if (positionHg19 == null) return null;
+
+		return lookup(positionHg19, rows);
 	}
 
 	public List<GTFResultLookup> lookupByChromosomeAndPositions(AnfisaExecuteContext context, String chromosome, long[] positions) {
@@ -138,7 +148,7 @@ public class GTFConnectorImpl implements GTFConnector {
 				List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
 				if (rows.isEmpty()) continue;
 
-				Object[] iResult = lookup(context, context.anfisaInput.mCase.assembly, new Position(Chromosome.of(chromosome), (int)position), transcript);
+				Object[] iResult = lookup(context, context.anfisaInput.mCase.assembly, new Position(Chromosome.of(chromosome), (int) position), transcript);
 				GTFRegion region = (GTFRegion) iResult[1];
 				result.add(new GTFResultLookup(transcript, rows.get(0).gene, position, region.region, region.indexRegion));
 			}
@@ -147,7 +157,9 @@ public class GTFConnectorImpl implements GTFConnector {
 		return result;
 	}
 
-	public Object[] lookup(int pos, List<GTFTranscriptRow> rows) {
+	public Object[] lookup(Position positionHg19, List<GTFTranscriptRow> rows) {
+		int pos = positionHg19.value;
+
 		long inf = rows.get(0).start;
 		if (pos < inf) {
 			return new Object[]{ (inf - pos), GTFRegion.UPSTREAM };

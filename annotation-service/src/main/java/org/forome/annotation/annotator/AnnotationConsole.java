@@ -190,6 +190,7 @@ public class AnnotationConsole {
 					new GTFDataConnector(
 							new DatabaseConnector(databaseConnectService, serviceConfig.gtfConfigConnector)
 					),
+					liftoverConnector,
 					(t, e) -> fail(e, null, arguments)
 			);
 
