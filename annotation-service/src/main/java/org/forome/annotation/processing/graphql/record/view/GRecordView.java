@@ -56,7 +56,7 @@ public class GRecordView {
 	@GraphQLField
 	@GraphQLName("general")
 	public GRecordViewGeneral getGeneral() {
-		return new GRecordViewGeneral(variant);
+		return new GRecordViewGeneral(gContext, variant);
 	}
 
 	@GraphQLField

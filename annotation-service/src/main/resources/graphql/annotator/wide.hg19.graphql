@@ -16,6 +16,8 @@
     }
     _view {
         general {
+            hg19
+            hg38
             transcripts {
                 id
                 gene
@@ -89,5 +91,8 @@
             refcodon
             codonpos
         }
+    },
+    __data {
+        label
     }
 }

@@ -43,7 +43,6 @@ public class AnfisaResultData {
 	public String seqRegionName;
 	public String totalExonIntronWorst;
 	public String input;
-	public String label;
 	public JSONArray transcriptConsequences;
 	public String id;
 	public Long strand;
@@ -128,7 +127,6 @@ public class AnfisaResultData {
 			out.put("colocated_variants", colocatedVariants);
 		}
 		out.put("input", input);
-		out.put("label", label);
 		if (transcriptConsequences != null) {
 			out.put("transcript_consequences", transcriptConsequences);
 		}

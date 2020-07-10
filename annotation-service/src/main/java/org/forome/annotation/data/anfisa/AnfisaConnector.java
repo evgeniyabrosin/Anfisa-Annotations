@@ -47,6 +47,7 @@ import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscript;
+import org.forome.annotation.processing.utils.OutUtils;
 import org.forome.annotation.struct.*;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
@@ -84,7 +85,7 @@ public class AnfisaConnector implements AutoCloseable {
 	public final ConservationData conservationData;
 	public final HgmdConnector hgmdConnector;
 	public final ClinvarConnector clinvarConnector;
-	private final LiftoverConnector liftoverConnector;
+	public final LiftoverConnector liftoverConnector;
 
 	private final GtfAnfisaBuilder gtfAnfisaBuilder;
 	public final GTEXConnector gtexConnector;
@@ -203,7 +204,6 @@ public class AnfisaConnector implements AutoCloseable {
 		if (!(variant instanceof VariantCNV)) {
 			data.input = vepJson.getAsString("input");
 		}
-		data.label = getLabel(context);
 		data.transcriptConsequences = ((VariantVep) variant).getTranscriptConsequences();
 		data.id = ((VariantVep) variant).getId();
 		data.strand = (vepJson.containsKey("strand")) ? vepJson.getAsNumber("strand").longValue() : null;
@@ -337,12 +337,12 @@ public class AnfisaConnector implements AutoCloseable {
 		record.clinvarResults = clinvarResults;
 		if (!clinvarResults.isEmpty()) {
 
-			String[] variants = clinvarResults.stream().map(clinvarResult -> {
-				return String.format("%s %s>%s",
-						vstr(Interval.of(chromosome, clinvarResult.start, clinvarResult.end)),
-						clinvarResult.referenceAllele, clinvarResult.alternateAllele
-				);
-			}).toArray(String[]::new);
+			String[] variants = clinvarResults.stream().map(clinvarResult ->
+					OutUtils.toOut(
+							Interval.of(chromosome, clinvarResult.start, clinvarResult.end),
+							clinvarResult.referenceAllele, clinvarResult.alternateAllele
+					)
+			).toArray(String[]::new);
 
 			List<String> significance = new ArrayList<>();
 			Map<String, String> submissions = new HashMap<>();
@@ -534,8 +534,6 @@ public class AnfisaConnector implements AutoCloseable {
 
 	private void createGeneralTab(AnfisaExecuteContext context, AnfisaResultData data, AnfisaResultFilters filters, AnfisaResultView view, Variant variant, MCase samples) {
 		view.general.genes = getGenes((VariantVep) variant).stream().toArray(String[]::new);
-		view.general.hg19 = str(context);
-		view.general.hg38 = getStrHg38Coordinates(context);
 
 		//Особенность связанна с удобством визуального отображением
 		if (!isSnv(variant)) {
@@ -1090,8 +1088,7 @@ public class AnfisaConnector implements AutoCloseable {
 		Variant variant = context.variant;
 		String ref = variant.getRef();
 		String alt = variant.getStrAlt();
-		Interval hgmdHG19 = getHg19Coordinates(context);
-		return conservationData.getConservation(assembly, hgmdHG19, ref, alt);
+		return conservationData.getConservation(assembly, variant.getInterval(), ref, alt);
 	}
 
 	private static Map<String, Float> list_dsmax(AnfisaResultData data) {
@@ -1126,32 +1123,6 @@ public class AnfisaConnector implements AutoCloseable {
 		result.addAll(allGenes);
 		result.removeAll(genes);
 		return result.toArray(new String[result.size()]);
-	}
-
-	private String getStrHg38Coordinates(AnfisaExecuteContext context) {
-		Chromosome chromosome = context.variant.chromosome;
-		Interval positionHg38 = getHg38Coordinates(context);
-
-		if (positionHg38 == null) {
-			return String.format("%s:None", chromosome.toString());
-		} else if (positionHg38.isSingle()) {
-			return String.format("%s:%s", chromosome.toString(), positionHg38.start);
-		} else {
-			return String.format("%s:%s-%s",
-					chromosome.toString(), positionHg38.start, positionHg38.end
-			);
-		}
-	}
-
-	private Interval getHg38Coordinates(AnfisaExecuteContext context) {
-		Chromosome chromosome = context.variant.chromosome;
-		return liftoverConnector.toHG38(
-				Interval.of(
-						chromosome,
-						context.variant.getStart(),
-						context.variant.end
-				)
-		);
 	}
 
 	public ColorCode.Code getColorCode(VariantVep variantVep, AnfisaResultData data, Record record, AnfisaResultFilters filters) {
@@ -1322,23 +1293,7 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	public String getLabel(AnfisaExecuteContext context) {
-		List<String> genes = getGenes((VariantVep) context.variant);
-		String gene;
-		if (genes.size() == 0) {
-			gene = "None";
-		} else if (genes.size() < 3) {
-			gene = String.join(",", genes);
-		} else {
-			gene = "...";
-		}
-
-		String vstr = str(context);
-
-		return String.format("[%s] %s", gene, vstr);
-	}
-
-	private static List<String> getGenes(VariantVep variantVep) {
+	public static List<String> getGenes(VariantVep variantVep) {
 		return getFromTranscriptsList(variantVep, "gene_symbol");
 	}
 
@@ -1527,44 +1482,6 @@ public class AnfisaConnector implements AutoCloseable {
 		return new List[]{
 				c_worst, c_canonical, c_other
 		};
-	}
-
-	public String str(AnfisaExecuteContext context) {
-		Variant variant = context.variant;
-		String str = getStrHg19Coordinates(context);
-		if (isSnv(variant)) {
-			return String.format("%s %s>%s",
-					str,
-					variant.getRef(),
-					variant.getStrAlt()
-			);
-		} else {
-			VariantType typeVariable = variant.getVariantType();
-			return String.format("%s %s", str, (typeVariable != null) ? typeVariable.toJSON() : "None");
-		}
-	}
-
-	public Interval getHg19Coordinates(AnfisaExecuteContext context) {
-		return Interval.of(
-				context.variant.chromosome,
-				context.variant.getStart(),
-				context.variant.end
-		);
-	}
-
-	public String getStrHg19Coordinates(AnfisaExecuteContext context) {
-		Interval hg19Coordinates = getHg19Coordinates(context);
-		return vstr(
-				hg19Coordinates
-		);
-	}
-
-	public String vstr(Interval hg19Coordinates) {
-		if (hg19Coordinates.isSingle()) {
-			return String.format("%s:%s", hg19Coordinates.chromosome.getChromosome(), hg19Coordinates.start);
-		} else {
-			return String.format("%s:%s-%s", hg19Coordinates.chromosome.getChromosome(), hg19Coordinates.start, hg19Coordinates.end);
-		}
 	}
 
 	public boolean isSnv(Variant variant) {
