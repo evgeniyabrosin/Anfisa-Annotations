@@ -67,23 +67,40 @@ public class GenotypeVCF extends Genotype {
 			case HET:
 			case HOM_VAR:
 				//Звездочка означает мусор. Считаем, что звездочка – это референс
+
 				String ref = variantContext.getReference().getBaseString();
+
 				String allele1 = vcfGenotype.getAlleles().get(0).getBaseString();
-				String allele2 = vcfGenotype.getAlleles().get(1).getBaseString();
 				boolean isRef1 = "*".equals(allele1) || ref.equals(allele1);
-				boolean isRef2 = "*".equals(allele2) || ref.equals(allele2);
-				if (isRef1 && isRef2) {
-					// REF/REF
-					return HasVariant.REF_REF;
-				} else if (!allele1.equals(variantVCF.getStrAlt()) && !allele2.equals(variantVCF.getStrAlt())) {
-					// ALTk/ALTk: 0
-					return HasVariant.ALTki_ALTkj;
-				} else if (!isRef1 && !isRef2) {
-					// ALT/ALTk, ALTk/ALT
-					return HasVariant.ALT_ALTki;
+
+				if (vcfGenotype.getAlleles().size()==1) {
+					//У haploid'ых хромосом только одна алеля, например у хромосомы X
+					if (isRef1) {
+						// REF/REF
+						return HasVariant.REF_REF;
+					} else if (!allele1.equals(variantVCF.getStrAlt())) {
+						// ALTk/ALTk: 0
+						return HasVariant.ALTki_ALTkj;
+					} else {
+						// REF/ALT, ALT/REF
+						return HasVariant.REF_ALT;
+					}
 				} else {
-					// REF/ALT, ALT/REF
-					return HasVariant.REF_ALT;
+					String allele2 = vcfGenotype.getAlleles().get(1).getBaseString();
+					boolean isRef2 = "*".equals(allele2) || ref.equals(allele2);
+					if (isRef1 && isRef2) {
+						// REF/REF
+						return HasVariant.REF_REF;
+					} else if (!allele1.equals(variantVCF.getStrAlt()) && !allele2.equals(variantVCF.getStrAlt())) {
+						// ALTk/ALTk: 0
+						return HasVariant.ALTki_ALTkj;
+					} else if (!isRef1 && !isRef2) {
+						// ALT/ALTk, ALTk/ALT
+						return HasVariant.ALT_ALTki;
+					} else {
+						// REF/ALT, ALT/REF
+						return HasVariant.REF_ALT;
+					}
 				}
 			default:
 				throw new RuntimeException("Unknown state: " + vcfGenotype.getType());
@@ -94,7 +111,7 @@ public class GenotypeVCF extends Genotype {
 	public List<Allele> getAllele() {
 		if (vcfGenotype.isCalled()) {
 			final List<Allele> al = new ArrayList<Allele>();
-			for ( htsjdk.variant.variantcontext.Allele a : vcfGenotype.getAlleles() ) {
+			for (htsjdk.variant.variantcontext.Allele a : vcfGenotype.getAlleles()) {
 				al.add(new Allele(a.getBaseString()));
 			}
 			return al;
