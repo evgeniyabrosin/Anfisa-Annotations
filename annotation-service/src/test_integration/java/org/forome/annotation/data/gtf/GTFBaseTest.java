@@ -43,6 +43,7 @@ public class GTFBaseTest {
 
 		gtfConnector = new GTFConnectorImpl(
 				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				liftoverConnector,
 				(t, e) -> {
 					log.error("Fail", e);
 					Assert.fail();

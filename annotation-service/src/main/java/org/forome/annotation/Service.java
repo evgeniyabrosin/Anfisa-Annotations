@@ -169,6 +169,7 @@ public class Service {
 				new GTFDataConnector(
 						new DatabaseConnector(databaseConnectService, serviceConfig.gtfConfigConnector)
 				),
+				liftoverConnector,
 				uncaughtExceptionHandler
 		);
 

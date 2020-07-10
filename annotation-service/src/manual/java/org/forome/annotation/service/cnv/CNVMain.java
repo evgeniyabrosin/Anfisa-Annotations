@@ -89,6 +89,7 @@ public class CNVMain {
 
 		GTFConnector gtfConnector = new GTFConnectorImpl(
 				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				liftoverConnector,
 				(t, e) -> crash(e)
 		);
 //		GTFConnector gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));

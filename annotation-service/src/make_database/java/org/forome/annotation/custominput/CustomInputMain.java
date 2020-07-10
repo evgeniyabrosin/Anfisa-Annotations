@@ -192,6 +192,7 @@ public class CustomInputMain {
 
 			gtfConnector = new GTFConnectorImpl(
 					new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+					liftoverConnector,
 					(t, e) -> fail(e)
 			);
 			//gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> fail(e));

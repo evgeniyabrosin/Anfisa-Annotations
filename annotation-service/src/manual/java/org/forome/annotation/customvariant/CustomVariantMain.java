@@ -106,6 +106,7 @@ public class CustomVariantMain {
 
 		gtfConnector = new GTFConnectorImpl(
 				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				liftoverConnector,
 				(t, e) -> crash(e)
 		);
 //		gtfConnector = new GTFConnector(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> crash(e));
