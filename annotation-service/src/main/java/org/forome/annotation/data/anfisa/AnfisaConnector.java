@@ -230,7 +230,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 		createGeneralTab(context, data, filters, view, variant, anfisaInput.mCase);
 		createQualityTab(view, variant, anfisaInput.mCase);
-		createGnomadTab(context, variant.chromosome.getChar(), variant, anfisaInput.mCase, view);
+		createGnomadTab(context, variant, anfisaInput.mCase, view);
 		createDatabasesTab((VariantVep) variant, record, data, view);
 		createPredictionsTab(context, variant, view);
 		createBioinformaticsTab(gtfAnfisaResult, context, data, view);
@@ -765,7 +765,7 @@ public class AnfisaConnector implements AutoCloseable {
 		return result;
 	}
 
-	private void createGnomadTab(AnfisaExecuteContext context, String chromosome, Variant variant, MCase samples, AnfisaResultView view) {
+	private void createGnomadTab(AnfisaExecuteContext context, Variant variant, MCase samples, AnfisaResultView view) {
 		Double gnomadAf = context.gnomadAfFam;
 		if (gnomadAf != null && Math.abs(gnomadAf) > 0.000001D) {
 			AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
@@ -807,12 +807,14 @@ public class AnfisaConnector implements AutoCloseable {
 
 			view.gnomAD = gnomAD;
 		} else {
-			int p1 = lowest_coord(variant) - 2;
-			int p2 = highest_coord(variant) + 1;
+			Assembly assembly = context.anfisaInput.mCase.assembly;
+			Chromosome chromosome = variant.chromosome;
+			Position pos37_1 = liftoverConnector.toHG37(assembly, new Position(chromosome, lowest_coord(variant) - 2));
+			Position pos37_2 = liftoverConnector.toHG37(assembly, new Position(chromosome, highest_coord(variant) + 1));
 
 			AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
 			gnomAD.url = new String[]{
-					String.format("https://gnomad.broadinstitute.org/region/%s-%s-%s", chromosome, p1, p2)
+					String.format("https://gnomad.broadinstitute.org/region/%s-%s-%s", chromosome.getChar(), pos37_1.value, pos37_2.value)
 			};
 			view.gnomAD = gnomAD;
 		}
