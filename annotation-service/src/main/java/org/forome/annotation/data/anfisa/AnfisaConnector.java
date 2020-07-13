@@ -813,9 +813,11 @@ public class AnfisaConnector implements AutoCloseable {
 			Position pos37_2 = liftoverConnector.toHG37(assembly, new Position(chromosome, highest_coord(variant) + 1));
 
 			AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
-			gnomAD.url = new String[]{
-					String.format("https://gnomad.broadinstitute.org/region/%s-%s-%s", chromosome.getChar(), pos37_1.value, pos37_2.value)
-			};
+			if (pos37_1 != null && pos37_2 != null) {
+				gnomAD.url = new String[]{
+						String.format("https://gnomad.broadinstitute.org/region/%s-%s-%s", chromosome.getChar(), pos37_1.value, pos37_2.value)
+				};
+			}
 			view.gnomAD = gnomAD;
 		}
 	}
