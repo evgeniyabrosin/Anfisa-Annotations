@@ -19,12 +19,16 @@
 package org.forome.annotation.data.dbsnp;
 
 import htsjdk.variant.variantcontext.VariantContext;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 public class DbSNPConnector {
@@ -34,26 +38,23 @@ public class DbSNPConnector {
 			VariantVCF variantVCF = (VariantVCF) variant;
 			VariantContext variantContext = variantVCF.maVariantVCF.variantContext;
 			String id = variantContext.getID();
-			if (id != null) {
-				return Collections.singletonList(id) ;
-			} else {
-				return Collections.emptyList();
+			if (id != null && !".".equals(id.trim())) {
+				return Collections.singletonList(id);
 			}
 		}
-		return Collections.emptyList();
 
-//		JSONArray jRecords = (JSONArray) context.sourceAStorageHttp.get("dbSNP");
-//		if (jRecords == null) {
-//			return Collections.emptyList();
-//		}
-//
-//		List<String> ids = jRecords.stream()
-//				.map(o -> (JSONObject) o)
-//				.filter(item -> item.getAsString("REF").equals(variant.getRef()) && item.getAsString("ALT").equals(variant.getStrAlt()))
-//				.map(item -> item.getAsString("rs_id"))
-//				.filter(Objects::nonNull)
-//				.collect(Collectors.toList());
-//
-//		return ids;
+		JSONArray jRecords = (JSONArray) context.sourceAStorageHttp.get("dbSNP");
+		if (jRecords == null) {
+			return Collections.emptyList();
+		}
+
+		List<String> ids = jRecords.stream()
+				.map(o -> (JSONObject) o)
+				.filter(item -> item.getAsString("REF").equals(variant.getRef()) && item.getAsString("ALT").equals(variant.getStrAlt()))
+				.map(item -> item.getAsString("rs_id"))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+
+		return ids;
 	}
 }
