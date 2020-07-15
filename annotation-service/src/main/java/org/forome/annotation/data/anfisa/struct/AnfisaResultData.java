@@ -44,7 +44,7 @@ public class AnfisaResultData {
 	public String totalExonIntronWorst;
 	public String input;
 	public JSONArray transcriptConsequences;
-	public String id;
+	public List<String> id;
 	public Long strand;
 	public ColorCode.Code colorCode;
 

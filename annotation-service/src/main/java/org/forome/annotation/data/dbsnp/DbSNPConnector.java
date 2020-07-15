@@ -23,21 +23,24 @@ import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 
+import java.util.Collections;
+import java.util.List;
+
 
 public class DbSNPConnector {
 
-	public String getId(AnfisaExecuteContext context, Variant variant) {
+	public List<String> getIds(AnfisaExecuteContext context, Variant variant) {
 		if (variant instanceof VariantVCF) {
 			VariantVCF variantVCF = (VariantVCF) variant;
 			VariantContext variantContext = variantVCF.maVariantVCF.variantContext;
 			String id = variantContext.getID();
 			if (id != null) {
-				return id;
+				return Collections.singletonList(id) ;
 			} else {
-				return null;
+				return Collections.emptyList();
 			}
 		}
-		return null;
+		return Collections.emptyList();
 
 //		JSONArray jRecords = (JSONArray) context.sourceAStorageHttp.get("dbSNP");
 //		if (jRecords == null) {
