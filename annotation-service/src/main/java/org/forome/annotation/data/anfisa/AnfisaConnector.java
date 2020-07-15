@@ -34,6 +34,7 @@ import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.data.dbnsfp.DbNSFPConnector;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
+import org.forome.annotation.data.dbsnp.DbSNPConnector;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -205,7 +206,7 @@ public class AnfisaConnector implements AutoCloseable {
 			data.input = vepJson.getAsString("input");
 		}
 		data.transcriptConsequences = ((VariantVep) variant).getTranscriptConsequences();
-		data.id = ((VariantVep) variant).getId();
+		data.id = new DbSNPConnector().getId(context, variant);
 		data.strand = (vepJson.containsKey("strand")) ? vepJson.getAsNumber("strand").longValue() : null;
 		data.variantClass = variant.getVariantType();
 

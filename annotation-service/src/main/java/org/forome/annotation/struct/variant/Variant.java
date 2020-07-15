@@ -43,8 +43,6 @@ public abstract class Variant {
 
 	public abstract Genotype getGenotype(String sample);
 
-	public abstract String getId();
-
 	public abstract Allele getRefAllele();
 
 	public abstract String getRef();
@@ -69,9 +67,6 @@ public abstract class Variant {
 				.append(getStart()).append(' ')
 				.append(getRef()).append('>')
 				.append(getStrAlt());
-		if (getId() != null) {
-			sBuilder.append(" (").append(getId()).append(')');
-		}
 		sBuilder.append('}');
 		return sBuilder.toString();
 	}

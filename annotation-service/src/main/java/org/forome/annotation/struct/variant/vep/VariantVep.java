@@ -75,11 +75,6 @@ public abstract class VariantVep extends Variant {
 		return vepJson.getAsString("most_severe_consequence");
 	}
 
-	@Override
-	public String getId() {
-		return vepJson.getAsString("id");
-	}
-
 	public JSONArray getTranscriptConsequences() {
 		return (JSONArray) vepJson.get("transcript_consequences");
 	}
