@@ -206,7 +206,7 @@ public class AnfisaConnector implements AutoCloseable {
 			data.input = vepJson.getAsString("input");
 		}
 		data.transcriptConsequences = ((VariantVep) variant).getTranscriptConsequences();
-		data.id = new DbSNPConnector().getId(context, variant);
+		data.id = new DbSNPConnector().getIds(context, variant);
 		data.strand = (vepJson.containsKey("strand")) ? vepJson.getAsNumber("strand").longValue() : null;
 		data.variantClass = variant.getVariantType();
 
