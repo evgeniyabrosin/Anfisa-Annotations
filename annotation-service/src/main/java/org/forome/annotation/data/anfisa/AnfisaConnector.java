@@ -34,6 +34,7 @@ import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.data.dbnsfp.DbNSFPConnector;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
+import org.forome.annotation.data.dbsnp.DbSNPConnector;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -205,7 +206,7 @@ public class AnfisaConnector implements AutoCloseable {
 			data.input = vepJson.getAsString("input");
 		}
 		data.transcriptConsequences = ((VariantVep) variant).getTranscriptConsequences();
-		data.id = ((VariantVep) variant).getId();
+		data.id = new DbSNPConnector().getId(context, variant);
 		data.strand = (vepJson.containsKey("strand")) ? vepJson.getAsNumber("strand").longValue() : null;
 		data.variantClass = variant.getVariantType();
 
@@ -813,9 +814,11 @@ public class AnfisaConnector implements AutoCloseable {
 			Position pos37_2 = liftoverConnector.toHG37(assembly, new Position(chromosome, highest_coord(variant) + 1));
 
 			AnfisaResultView.GnomAD gnomAD = new AnfisaResultView.GnomAD();
-			gnomAD.url = new String[]{
-					String.format("https://gnomad.broadinstitute.org/region/%s-%s-%s", chromosome.getChar(), pos37_1.value, pos37_2.value)
-			};
+			if (pos37_1 != null && pos37_2 != null) {
+				gnomAD.url = new String[]{
+						String.format("https://gnomad.broadinstitute.org/region/%s-%s-%s", chromosome.getChar(), pos37_1.value, pos37_2.value)
+				};
+			}
 			view.gnomAD = gnomAD;
 		}
 	}

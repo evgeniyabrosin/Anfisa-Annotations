@@ -95,14 +95,14 @@ public class VariantCNV extends VariantVep {
 		return COPY_NUMBER_VARIATION;
 	}
 
-	@Override
-	public String getId() {
-		return new StringBuilder()
-				.append(chromosome.getChar()).append('_')
-				.append(getStart()).append('_')
-				.append(getRef()).append("/-")
-				.toString();
-	}
+//	@Override
+//	public String getId() {
+//		return new StringBuilder()
+//				.append(chromosome.getChar()).append('_')
+//				.append(getStart()).append('_')
+//				.append(getRef()).append("/-")
+//				.toString();
+//	}
 
 	@Override
 	public Allele getRefAllele() {

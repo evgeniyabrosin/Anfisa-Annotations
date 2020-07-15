@@ -108,6 +108,7 @@ public class AStorageHttp {
 			add("SpliceAI");
 			add("dbNSFP");
 			add("gnomAD");
+			add("dbSNP");
 		}});
 
 		int attempts = 5;
