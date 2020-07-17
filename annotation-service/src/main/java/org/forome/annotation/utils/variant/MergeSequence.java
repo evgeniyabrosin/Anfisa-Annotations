@@ -18,6 +18,7 @@
 
 package org.forome.annotation.utils.variant;
 
+import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.struct.Sequence;
 import org.forome.annotation.struct.variant.Variant;
 
@@ -51,7 +52,7 @@ public class MergeSequence {
 		String s2 = sequence.value.substring(i2);
 
 		if (!change.equalsIgnoreCase(variant.getRef())) {
-			throw new RuntimeException("Not equals ref, change: " + change + ", ref: " + variant.getRef());
+			throw ExceptionBuilder.buildInvalidSequenceReference(variant, change);
 		}
 
 		return s1 + variant.getAlt().getBaseString() + s2;

@@ -41,6 +41,7 @@ import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.utils.GnomadUtils;
 import org.forome.annotation.data.gnomad.utils.СollapseNucleotideSequence;
 import org.forome.annotation.data.liftover.LiftoverConnector;
+import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.*;
@@ -226,7 +227,13 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 				)
 		);
 
-		String mergeSequence = new MergeSequence(sequence38).merge(variant);
+		String mergeSequence;
+		try {
+			mergeSequence = new MergeSequence(sequence38).merge(variant);
+		} catch (AnnotatorException ex) {
+			log.error("Exception build mergeSequence: {}", ex.toString());
+			return Collections.emptyList();
+		}
 
 		Position sequence19Start = liftoverConnector.toHG19(new Position(chromosome, sequence38.interval.start));
 		Position sequence19End = liftoverConnector.toHG19(new Position(chromosome, sequence38.interval.end));
