@@ -20,6 +20,7 @@ package org.forome.annotation.exception;
 
 import com.infomaximum.database.exception.DatabaseException;
 import net.minidev.json.parser.ParseException;
+import org.forome.annotation.struct.variant.Variant;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -111,6 +112,13 @@ public class ExceptionBuilder {
 	public static AnnotatorException buildInvalidChromosome(String value) {
 		return EXCEPTION_FACTORY.build(CODE_INVALID_CHROMOSOME, new HashMap<String, Object>() {{
 			put("value", value);
+		}});
+	}
+
+	public static AnnotatorException buildInvalidSequenceReference(Variant variant, String expected) {
+		return EXCEPTION_FACTORY.build("invalid_sequence_reference", new HashMap<String, Object>() {{
+			put("variant", variant.toString());
+			put("expected", expected);
 		}});
 	}
 
