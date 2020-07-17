@@ -96,6 +96,7 @@ public class GetGnomAdDataController {
 					futureGnomadResults.add(gnomadConnector.request(
 							null,
 							Assembly.GRCh37,
+							null,
 							requestItem.chromosome,
 							requestItem.position,
 							requestItem.reference,

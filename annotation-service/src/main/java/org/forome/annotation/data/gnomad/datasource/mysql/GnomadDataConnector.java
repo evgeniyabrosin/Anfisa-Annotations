@@ -27,6 +27,7 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.struct.variant.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,7 @@ public class GnomadDataConnector implements GnomadDataSource, Closeable {
 	public List<DataResponse> getData(
 			AnfisaExecuteContext context,
 			Assembly assembly,
+			Variant variant,
 			Chromosome chromosome,
 			int position,
 			String ref,

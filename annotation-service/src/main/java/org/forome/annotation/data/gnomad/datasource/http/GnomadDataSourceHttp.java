@@ -35,6 +35,7 @@ import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
+import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
 import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.utils.GnomadUtils;
@@ -42,10 +43,9 @@ import org.forome.annotation.data.gnomad.utils.СollapseNucleotideSequence;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
-import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.struct.*;
+import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.utils.variant.MergeSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +65,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	private final static Logger log = LoggerFactory.getLogger(GnomadDataSourceHttp.class);
 
 	private final LiftoverConnector liftoverConnector;
+	private final FastaSource fastaSource;
 
 	private final DatabaseConnectService.AStorage aStorage;
 
@@ -75,9 +76,11 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	public GnomadDataSourceHttp(
 			DatabaseConnectService databaseConnectService,
 			LiftoverConnector liftoverConnector,
+			FastaSource fastaSource,
 			AStorageConfigConnector aStorageConfigConnector
 	) throws IOReactorException {
 		this.liftoverConnector = liftoverConnector;
+		this.fastaSource = fastaSource;
 
 		aStorage = databaseConnectService.getAStorage(aStorageConfigConnector);
 
@@ -98,6 +101,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	public List<DataResponse> getData(
 			AnfisaExecuteContext context,
 			Assembly assembly,
+			Variant variant,
 			Chromosome chromosome,
 			int sPosition,
 			String sRef,
@@ -107,12 +111,16 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		СollapseNucleotideSequence.Sequence sequence = СollapseNucleotideSequence.collapseRight(
 				new Position(chromosome, sPosition), sRef, sAlt
 		);
+		Position pos37 = liftoverConnector.toHG37(assembly, sequence.position);
 
 		boolean isSNV = (sequence.ref.length() == 1 && sequence.alt.length() == 1);
 
-		Position pos37 = liftoverConnector.toHG37(assembly, sequence.position);
 		if (pos37 == null) {
-			return Collections.emptyList();
+			if (assembly == Assembly.GRCh38) {
+				return tryFindRefertData(context, variant, fromWhat);
+			} else {
+				return Collections.emptyList();
+			}
 		}
 
 		List<JSONObject> records = getRecord(
@@ -182,6 +190,80 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 
 		return records;
 	}
+
+
+	/**
+	 * Эта особенность ищется только в том с лучае, если мы обрабатываем hg38 вариант
+	 * <p>
+	 * Пытаемся обработать следующую ситеацию (на примере chr2:73448098-73448100 TCTC>T (hg38))
+	 * Есть варианты, который различаются у половины людей:
+	 * GGCTGTAAGTTCTC___TAGAAACTACTACTGGTC    (А)
+	 * GGCTGTAAGTTCTCCTCTAGAAACTACTACTGGTC    (Б)
+	 * <p>
+	 * Всемье, у мамы (А), а у папы (Б). Когда мы обрабатываем по 19-й сборке, то находится вариант у папы (у мамы референс).
+	 * Этот, папин, вариант находится в gnomAD, где написано, что он встречается у половины людей, и, соответственно,
+	 * мы исключаем его из рассморения(понимаем, что он не вреден).
+	 * <p>
+	 * Когда мы обрабатываем в 38-й сборке, то определяется мамин вариант, потому что, то что у папы стало стандартом (референсом).
+	 * Беда в том, что, поскольку gnomAD построен на 19-й сборке, маминого варианта мы не находим, поскольку он совпадал с 19-м стандартом.
+	 * Поэтому, мы не знаем, что мамин вариант не редкий, а есть у половины людей.
+	 * Соответственно можем подумать, что мамин вариант возможно опасен
+	 *
+	 * @return
+	 */
+	private List<DataResponse> tryFindRefertData(
+			AnfisaExecuteContext context, Variant variant, String fromWhat
+	) {
+		Assembly assembly = context.anfisaInput.mCase.assembly;
+		if (assembly != Assembly.GRCh38) throw new IllegalArgumentException();
+		Chromosome chromosome = variant.chromosome;
+
+		Sequence sequence38 = fastaSource.getSequence(
+				Assembly.GRCh38,
+				Interval.of(variant.chromosome,
+						variant.getStart() - 1,
+						variant.getStart() + Math.max(variant.getRef().length(), variant.getStrAlt().length()) + 2
+				)
+		);
+
+		String mergeSequence = new MergeSequence(sequence38).merge(variant);
+
+		Position sequence19Start = liftoverConnector.toHG19(new Position(chromosome, sequence38.interval.start));
+		Position sequence19End = liftoverConnector.toHG19(new Position(chromosome, sequence38.interval.end));
+		if (sequence19Start == null || sequence19End == null || sequence19Start.value > sequence19End.value ) {
+			return Collections.emptyList();
+		}
+
+		Sequence sequence19 = fastaSource.getSequence(
+				Assembly.GRCh37,
+				Interval.of(chromosome, sequence19Start.value, sequence19End.value)
+		);
+
+		//Проверяем, что при наложеная мутация на ref (hg38) мы получим ref (hg19) - обязательное услови
+		if (!sequence19.value.equals(mergeSequence)) {
+			return Collections.emptyList();
+		}
+
+		for (int pos = sequence19Start.value; pos <= sequence19End.value; pos++) {
+			Position iPosition = new Position(chromosome, pos);
+			List<JSONObject> jRecords = getRecord(
+					context,
+					iPosition,
+					variant.getStrAlt(),
+					variant.getRef(),
+					fromWhat,
+					false
+			);
+			if (!jRecords.isEmpty()) {
+				return jRecords.stream()
+						.map(jsonObject -> buildRevert(iPosition, jsonObject))
+						.collect(Collectors.toList());
+			}
+		}
+
+		return Collections.emptyList();
+	}
+
 
 	private List<JSONObject> getData(AnfisaExecuteContext context, Position pos37) {
 		JSONObject sourceAStorageHttp = context.sourceAStorageHttp;
@@ -338,4 +420,42 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		columns.put("AF_" + group, jGroup.get("AF"));
 		columns.put("AN_" + group, jGroup.get("AN"));
 	}
+
+	private static DataResponse buildRevert(Position pos37, JSONObject record) {
+		Map<String, Object> columns = new HashMap<>();
+
+		columns.put("CHROM", pos37.chromosome.getChar());
+		columns.put("POS", pos37.value);
+		columns.put("REF", record.get("REF"));
+		columns.put("ALT", record.get("ALT"));
+
+		columns.put("AN", record.get("AN"));
+		columns.put("AC", record.getAsNumber("AN").longValue() - record.getAsNumber("AC").longValue());
+		columns.put("AF", 1 - record.getAsNumber("AF").doubleValue());
+
+		addGroupRevert(columns, record, "oth");
+		addGroupRevert(columns, record, "amr");
+		addGroupRevert(columns, record, "raw");
+		addGroupRevert(columns, record, "fin");
+		addGroupRevert(columns, record, "afr");
+		addGroupRevert(columns, record, "nfe");
+		addGroupRevert(columns, record, "eas");
+		addGroupRevert(columns, record, "asj");
+		addGroupRevert(columns, record, "female");
+		addGroupRevert(columns, record, "male");
+
+		columns.put("nhomalt", null);
+		columns.put("hem", null);
+
+		return new DataResponse(columns);
+	}
+
+	private static void addGroupRevert(Map<String, Object> columns, JSONObject record, String group) {
+		JSONObject jGroup = (JSONObject) record.get(group);
+		if (jGroup == null) return;
+		columns.put("AN_" + group, jGroup.get("AN"));
+		columns.put("AC_" + group, jGroup.getAsNumber("AN").longValue() - jGroup.getAsNumber("AC").longValue());
+		columns.put("AF_" + group, 1 - record.getAsNumber("AF").doubleValue());
+	}
+
 }
