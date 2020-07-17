@@ -40,6 +40,14 @@ public class Allele {
 		}
 	}
 
+	public int length() {
+		if (EMPTY_BASE.equals(bases)) {
+			return 0;
+		} else {
+			return bases.length();
+		}
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;

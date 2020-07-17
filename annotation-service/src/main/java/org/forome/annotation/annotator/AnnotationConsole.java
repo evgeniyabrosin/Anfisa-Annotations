@@ -28,6 +28,7 @@ import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
+import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -107,6 +108,7 @@ public class AnnotationConsole {
 	private HgmdConnector hgmdConnector;
 	private ClinvarConnector clinvarConnector;
 	private LiftoverConnector liftoverConnector;
+	private FastaSource fastaSource;
 	private GTFConnector gtfConnector;
 	private GTEXConnector gtexConnector;
 	private PharmGKBConnector pharmGKBConnector;
@@ -162,9 +164,10 @@ public class AnnotationConsole {
 //            gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
 
 			liftoverConnector = new LiftoverConnector();
+			this.fastaSource = new FastaSource(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
 			gnomadConnector = new GnomadConnectorImpl(
-					new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+					new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, fastaSource, serviceConfig.aStorageConfigConnector),
 					(t, e) -> fail(e, null, arguments)
 			);
 //			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, null, arguments));

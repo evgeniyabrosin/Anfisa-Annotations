@@ -24,6 +24,7 @@ import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
+import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
@@ -62,6 +63,7 @@ public class AnfisaBaseTest {
 	protected static HgmdConnector hgmdConnector;
 	protected static ClinvarConnector clinvarConnector;
 	protected static LiftoverConnector liftoverConnector;
+	protected static FastaSource fastaSource;
 	protected static GTFConnector gtfConnector;
 	protected static RefConnector refConnector;
 	protected static GTEXConnectorMysql gtexConnector;
@@ -81,9 +83,10 @@ public class AnfisaBaseTest {
 //		});
 
 		liftoverConnector = new LiftoverConnector();
+		fastaSource = new FastaSource(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
 		gnomadConnector = new GnomadConnectorImpl(
-				new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, fastaSource, serviceConfig.aStorageConfigConnector),
 				(t, e) -> {
 					log.error("Fail", e);
 					Assert.fail();

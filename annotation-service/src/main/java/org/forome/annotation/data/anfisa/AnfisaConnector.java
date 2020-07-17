@@ -501,6 +501,7 @@ public class AnfisaConnector implements AutoCloseable {
 			return gnomadConnector.request(
 					context,
 					assembly,
+					variant,
 					variant.chromosome,
 					Math.min(variant.getStart(), variant.end),
 					variant.getRef(), variant.getStrAlt()

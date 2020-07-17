@@ -29,6 +29,7 @@ import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,7 @@ public class GnomadConnectorOld implements GnomadConnector {
     }
 
     @Override
-    public CompletableFuture<GnomadResult> request(AnfisaExecuteContext context, Assembly assembly, Chromosome chromosome, int position, String reference, String alternative) {
+    public CompletableFuture<GnomadResult> request(AnfisaExecuteContext context, Assembly assembly, Variant variant, Chromosome chromosome, int position, String reference, String alternative) {
         CompletableFuture<GnomadResult> future = new CompletableFuture();
         threadPoolGnomadExecutor.submit(() -> {
             try {

@@ -28,6 +28,7 @@ import org.forome.annotation.matcher.SequenceMatcher;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,11 +70,11 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		);
 	}
 
-	public CompletableFuture<GnomadResult> request(AnfisaExecuteContext context, Assembly assembly, Chromosome chromosome, int position, String reference, String alternative) {
+	public CompletableFuture<GnomadResult> request(AnfisaExecuteContext context, Assembly assembly, Variant variant, Chromosome chromosome, int position, String reference, String alternative) {
 		CompletableFuture<GnomadResult> future = new CompletableFuture();
 		threadPoolGnomadExecutor.submit(() -> {
 			try {
-				GnomadResult result = syncRequest(context, assembly, chromosome, position, reference, alternative);
+				GnomadResult result = syncRequest(context, assembly, variant, chromosome, position, reference, alternative);
 				future.complete(result);
 			} catch (Throwable e) {
 				future.completeExceptionally(e);
@@ -86,12 +87,12 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		return gnomadDataSource.getSourceMetadata();
 	}
 
-	private GnomadResult syncRequest(AnfisaExecuteContext context, Assembly assembly, Chromosome chromosome, int position, String reference, String alternative) throws Exception {
+	private GnomadResult syncRequest(AnfisaExecuteContext context, Assembly assembly, Variant variant, Chromosome chromosome, int position, String reference, String alternative) throws Exception {
 		List<DataResponse> exomes = gnomadDataSource.getData(
-				context, assembly, chromosome, position, reference, alternative, "e"
+				context, assembly, variant, chromosome, position, reference, alternative, "e"
 		);
 		List<DataResponse> genomes = gnomadDataSource.getData(
-				context, assembly, chromosome, position, reference, alternative, "g"
+				context, assembly, variant, chromosome, position, reference, alternative, "g"
 		);
 
 		List<DataResponse> overall = new ImmutableList.Builder().addAll(exomes).addAll(genomes).build();

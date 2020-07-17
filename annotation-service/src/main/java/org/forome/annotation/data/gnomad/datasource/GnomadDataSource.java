@@ -23,6 +23,7 @@ import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.struct.variant.Variant;
 
 import java.net.URISyntaxException;
 import java.util.List;
@@ -32,6 +33,7 @@ public interface GnomadDataSource {
 	List<DataResponse> getData(
 			AnfisaExecuteContext context,
 			Assembly assembly,
+			Variant variant,
 			Chromosome chromosome,
 			int position,
 			String ref,

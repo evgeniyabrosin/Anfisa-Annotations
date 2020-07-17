@@ -51,7 +51,7 @@ public class ArgumentsInventory extends Arguments {
 		}
 		pathInventory = Paths.get(strInventoryFile).toAbsolutePath();
 		if (!Files.exists(pathInventory)) {
-			throw new IllegalArgumentException("Inventory file is not exists: " + config);
+			throw new IllegalArgumentException("Inventory file is not exists: " + pathInventory);
 		}
 
 		this.start = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_START_POSITION, "0"));
