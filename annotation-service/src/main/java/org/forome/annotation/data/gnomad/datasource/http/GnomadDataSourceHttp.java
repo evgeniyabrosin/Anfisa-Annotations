@@ -437,8 +437,16 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		columns.put("ALT", record.get("ALT"));
 
 		columns.put("AN", record.get("AN"));
-		columns.put("AC", record.getAsNumber("AN").longValue() - record.getAsNumber("AC").longValue());
-		columns.put("AF", 1 - record.getAsNumber("AF").doubleValue());
+		if (record.containsKey("AN") && record.containsKey("AC")) {
+			columns.put("AC", record.getAsNumber("AN").longValue() - record.getAsNumber("AC").longValue());
+		} else {
+			columns.put("AC", null);
+		}
+		if (record.containsKey("AF")) {
+			columns.put("AF", 1 - record.getAsNumber("AF").doubleValue());
+		} else {
+			columns.put("AF", null);
+		}
 
 		addGroupRevert(columns, record, "oth");
 		addGroupRevert(columns, record, "amr");
@@ -461,8 +469,18 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		JSONObject jGroup = (JSONObject) record.get(group);
 		if (jGroup == null) return;
 		columns.put("AN_" + group, jGroup.get("AN"));
-		columns.put("AC_" + group, jGroup.getAsNumber("AN").longValue() - jGroup.getAsNumber("AC").longValue());
-		columns.put("AF_" + group, 1 - record.getAsNumber("AF").doubleValue());
+
+		if (jGroup.containsKey("AN") && jGroup.containsKey("AC")) {
+			columns.put("AC_" + group, jGroup.getAsNumber("AN").longValue() - jGroup.getAsNumber("AC").longValue());
+		} else {
+			columns.put("AC_" + group, null);
+		}
+
+		if (jGroup.containsKey("AF")) {
+			columns.put("AF_" + group, 1 - jGroup.getAsNumber("AF").doubleValue());
+		} else {
+			columns.put("AF_" + group, null);
+		}
 	}
 
 }

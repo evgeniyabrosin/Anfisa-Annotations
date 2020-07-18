@@ -51,6 +51,12 @@ public class MergeSequence {
 		String change = sequence.value.substring(i1, i2);
 		String s2 = sequence.value.substring(i2);
 
+		//TODO Ulitin V. Нашлась интересная ситуация, кейс: pgp3140_wgs_nist-v4.2
+		//Варинант chr1    147380845       .       T       G,TG
+		//Из за того, что логика вычисления страрт отличается в snv и в инсерции, а позиция у нас одна, то нельзя
+		//Вычислять start по отдельности, иначе у нас произойдет ошибка как в настоящий момент
+		//валидацию первый варианта(snv) прошел успешо и референс был правильный, но следующая инсерция свалилась
+		// по валидации референса, т.к. мы сделали смещение, но как оказывается в этой ситуации этого было делать нельзя
 		if (!change.equalsIgnoreCase(variant.getRef())) {
 			throw ExceptionBuilder.buildInvalidSequenceReference(variant, change);
 		}
