@@ -94,7 +94,7 @@ public class Recovery {
 				offset++;
 				countRecords +=jRecoveryRecords.size();
 
-				if (offset % 1000 == 0) {
+				if (offset % 10000 == 0) {
 					log.debug("Recovery progress (variants): {}", offset);
 				}
 			}
