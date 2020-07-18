@@ -79,6 +79,7 @@ public class AnnotatorScanInventory {
 				inventory.cnvFile,
 				0,
 				inventory.outFile,
+				null,
 				() -> arguments.getArguments()
 		);
 		annotationConsole.execute();

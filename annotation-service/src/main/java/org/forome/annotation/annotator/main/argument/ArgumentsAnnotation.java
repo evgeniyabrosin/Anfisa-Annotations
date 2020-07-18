@@ -24,6 +24,7 @@ import org.forome.annotation.struct.CasePlatform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -50,6 +51,7 @@ public class ArgumentsAnnotation extends Arguments {
 	public final Path pathOutput;
 
 	public final int start;
+	public final Path pathRecoveryAnfisaJson;
 
 	public ArgumentsAnnotation(CommandLine cmd) {
 		super(cmd);
@@ -126,6 +128,20 @@ public class ArgumentsAnnotation extends Arguments {
 		} else {
 			casePlatform = CasePlatform.WGS;
 			log.warn("Could not determine platform (WES or WGS), assuming: " + casePlatform);
+		}
+
+		String strRecoveryAnfisaJsonFile = cmd.getOptionValue(ParserArgument.OPTION_FILE_RECOVERY);
+		if (strRecoveryAnfisaJsonFile != null) {
+			pathRecoveryAnfisaJson = Paths.get(strRecoveryAnfisaJsonFile).toAbsolutePath();
+			if (!Files.exists(pathRecoveryAnfisaJson)) {
+				throw new IllegalArgumentException("Recovery file is not exists: " + pathRecoveryAnfisaJson);
+			}
+		} else {
+			pathRecoveryAnfisaJson = null;
+		}
+
+		if (start != 0 && pathRecoveryAnfisaJson != null) {
+			throw new IllegalArgumentException("Conflict argument recovery file and start position");
 		}
 	}
 

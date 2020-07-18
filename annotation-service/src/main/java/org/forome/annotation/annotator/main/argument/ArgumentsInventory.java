@@ -32,6 +32,7 @@ public class ArgumentsInventory extends Arguments {
 	public final Path pathInventory;
 
 	public final int start;
+	public final Path pathRecoveryAnfisaJson;
 
 	public ArgumentsInventory(CommandLine cmd) {
 		super(cmd);
@@ -55,6 +56,20 @@ public class ArgumentsInventory extends Arguments {
 		}
 
 		this.start = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_START_POSITION, "0"));
+
+		String strRecoveryAnfisaJsonFile = cmd.getOptionValue(ParserArgument.OPTION_FILE_RECOVERY);
+		if (strRecoveryAnfisaJsonFile != null) {
+			pathRecoveryAnfisaJson = Paths.get(strRecoveryAnfisaJsonFile).toAbsolutePath();
+			if (!Files.exists(pathRecoveryAnfisaJson)) {
+				throw new IllegalArgumentException("Recovery file is not exists: " + pathRecoveryAnfisaJson);
+			}
+		} else {
+			pathRecoveryAnfisaJson = null;
+		}
+
+		if (start != 0 && pathRecoveryAnfisaJson != null) {
+			throw new IllegalArgumentException("Conflict argument recovery file and start position");
+		}
 	}
 
 }
