@@ -20,6 +20,8 @@ package org.forome.annotation.annotator;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.forome.annotation.Main;
+import org.forome.annotation.annotator.recovery.Recovery;
+import org.forome.annotation.annotator.recovery.RecoveryResult;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.DatabaseConnector;
@@ -92,6 +94,7 @@ public class AnnotationConsole {
 	private final int startPosition;
 
 	private final Path outFile;
+	private final Path recoveryAnfisaJson;
 
 	private final Supplier<String> arguments;
 
@@ -127,6 +130,7 @@ public class AnnotationConsole {
 			Path cnvFile,
 			int startPosition,
 			Path outFile,
+			Path recoveryAnfisaJson,
 			Supplier<String> arguments
 	) {
 		this.caseName = caseName;
@@ -147,6 +151,7 @@ public class AnnotationConsole {
 		this.startPosition = startPosition;
 
 		this.outFile = outFile;
+		this.recoveryAnfisaJson = recoveryAnfisaJson;
 
 		this.arguments = arguments;
 
@@ -259,7 +264,6 @@ public class AnnotationConsole {
 
 			Files.deleteIfExists(outFile);
 			Files.createFile(outFile);
-			AtomicInteger count = new AtomicInteger();
 
 			OutputStream os = buildOutputStream(outFile);
 			BufferedOutputStream bos = new BufferedOutputStream(os);
@@ -278,9 +282,22 @@ public class AnnotationConsole {
 			bos.write(outMetadata.getBytes(StandardCharsets.UTF_8));
 			bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
+			int offset;
+			AtomicInteger countRecords;
+			if (recoveryAnfisaJson != null) {
+				Recovery recovery = new Recovery(vcfFile, recoveryAnfisaJson);
+				RecoveryResult recoveryResult = recovery.execute(bos);
+				offset = recoveryResult.offset;
+				countRecords = new AtomicInteger(recoveryResult.countRecords);
+				log.info("Set offset position: {}", offset);
+			} else {
+				offset = startPosition;
+				countRecords = new AtomicInteger();
+			}
+
 			AnnotatorResult annotatorResult = annotator.exec(
 					cnvFile,
-					startPosition
+					offset
 			);
 			annotatorResult.observableAnfisaResult.blockingSubscribe(
 					processingResult -> {
@@ -288,8 +305,8 @@ public class AnnotationConsole {
 						bos.write(out.getBytes(StandardCharsets.UTF_8));
 						bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
-						if (count.getAndIncrement() % 100 == 0) {
-							log.debug("progress (count): {}", count.get());
+						if (countRecords.getAndIncrement() % 100 == 0) {
+							log.debug("progress (records): {}", countRecords.get());
 						}
 					},
 					e -> fail(e, finalVcfFile, arguments),
@@ -309,7 +326,7 @@ public class AnnotationConsole {
 		}
 	}
 
-	private void fail(Throwable e,  Path vcfFile, Supplier<String> arguments) {
+	private void fail(Throwable e, Path vcfFile, Supplier<String> arguments) {
 		if (Files.exists(outFile)) {
 			String newFileName = new StringBuilder()
 					.append(outFile.getFileName().toString())
@@ -394,11 +411,11 @@ public class AnnotationConsole {
 		Path pathVcfFile = pathDir.resolve(fileNameVcfFile).toAbsolutePath();
 
 		try (FileInputStream fis = new FileInputStream(vcfFile.toFile())) {
-			try(GZIPInputStream gis = new GZIPInputStream(fis)) {
-				try(FileOutputStream fos = new FileOutputStream(pathVcfFile.toFile())) {
+			try (GZIPInputStream gis = new GZIPInputStream(fis)) {
+				try (FileOutputStream fos = new FileOutputStream(pathVcfFile.toFile())) {
 					byte[] buffer = new byte[1024];
 					int len;
-					while((len = gis.read(buffer)) != -1){
+					while ((len = gis.read(buffer)) != -1) {
 						fos.write(buffer, 0, len);
 					}
 				} catch (Throwable e) {

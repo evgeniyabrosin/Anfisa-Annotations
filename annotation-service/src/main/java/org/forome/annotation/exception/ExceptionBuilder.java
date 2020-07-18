@@ -32,6 +32,7 @@ public class ExceptionBuilder {
 	private static final ExceptionFactory EXCEPTION_FACTORY = new ExceptionFactory();
 
 	public static final String CODE_INVALID_CHROMOSOME = "invalid_chromosome";
+	public static final String CODE_IO_ERROR = "io_error";
 
 	public static AnnotatorException buildDatabaseException(DatabaseException cause) {
 		return EXCEPTION_FACTORY.build("database_error", cause);
@@ -72,7 +73,7 @@ public class ExceptionBuilder {
 	}
 
 	public static AnnotatorException buildIOErrorException(IOException e) {
-		return EXCEPTION_FACTORY.build("io_error", e);
+		return EXCEPTION_FACTORY.build(CODE_IO_ERROR, e);
 	}
 
 	public static AnnotatorException buildOperationException(Throwable cause) {

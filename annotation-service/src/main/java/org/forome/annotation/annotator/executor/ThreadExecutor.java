@@ -19,8 +19,8 @@
 package org.forome.annotation.annotator.executor;
 
 import net.minidev.json.JSONObject;
-import org.forome.annotation.iterator.json.JsonFileIterator;
 import org.forome.annotation.iterator.vcf.VCFFileIterator;
+import org.forome.annotation.iterator.vepjson.VepJsonFileIterator;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
@@ -58,7 +58,7 @@ public class ThreadExecutor implements AutoCloseable {
 	private final int step;
 
 	private final VCFFileIterator vcfFileIterator;
-	private final JsonFileIterator vepJsonIterator;
+	private final VepJsonFileIterator vepJsonIterator;
 
 	private Result nextResult;
 	private final Deque<Result> waitExecuteVariants;//Варианты ожидающие выполнения
@@ -89,7 +89,7 @@ public class ThreadExecutor implements AutoCloseable {
 		this.vcfFileIterator = new VCFFileIterator(pathVcf, cnvFile);
 
 		if (pathVepJson != null) {
-			vepJsonIterator = new JsonFileIterator(pathVepJson);
+			vepJsonIterator = new VepJsonFileIterator(pathVepJson);
 		} else {
 			vepJsonIterator = null;
 		}

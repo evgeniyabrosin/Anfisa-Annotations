@@ -1,20 +1,20 @@
 /*
- Copyright (c) 2019. Vladimir Ulitin, Partners Healthcare and members of Forome Association
-
- Developed by Vladimir Ulitin and Michael Bouzinier
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
-	 http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-*/
+ *  Copyright (c) 2020. Vladimir Ulitin, Partners Healthcare and members of Forome Association
+ *
+ *  Developed by Vladimir Ulitin and Michael Bouzinier
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ * 	 http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
 package org.forome.annotation.iterator.json;
 
@@ -22,7 +22,6 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.struct.Chromosome;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -72,15 +71,7 @@ public class JsonFileIterator implements Iterator<JSONObject>, AutoCloseable {
 		}
 
 		JSONObject value = nextValue;
-		while (true) {
-			nextValue = readNextValue();
-			if (nextValue != null
-					&& !Chromosome.isSupportChromosome(nextValue.getAsString("seq_region_name"))
-			) {
-				continue;//Игнорируем неподдерживаемые хромосомы
-			}
-			break;
-		}
+		nextValue = readNextValue();
 
 		return value;
 	}

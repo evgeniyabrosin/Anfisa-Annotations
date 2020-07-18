@@ -41,6 +41,8 @@ public class ParserArgument {
 	public static final String OPTION_START_POSITION = "start";
 	public static final String OPTION_FILE_OUTPUT = "output";
 
+	public static final String OPTION_FILE_RECOVERY = "recovery";
+
 	public static final String OPTION_FILE_INVENTORY = "inventory";
 
 	public static final String OPTION_SCAN_FILE_INVENTORY = "scan-inventory";
@@ -125,6 +127,13 @@ public class ParserArgument {
 						.hasArg(true)
 						.optionalArg(false)
 						.desc("Absolute path to output file")
+						.build())
+
+				.addOption(Option.builder()
+						.longOpt(OPTION_FILE_RECOVERY)
+						.hasArg(true)
+						.optionalArg(false)
+						.desc("Absolute path to recovery file")
 						.build());
 
 		try {

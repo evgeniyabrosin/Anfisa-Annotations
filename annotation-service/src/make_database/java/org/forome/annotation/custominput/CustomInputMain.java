@@ -48,7 +48,7 @@ import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
 import org.forome.annotation.data.spliceai.SpliceAIConnectorImpl;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
-import org.forome.annotation.iterator.json.JsonFileIterator;
+import org.forome.annotation.iterator.vepjson.VepJsonFileIterator;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
@@ -322,7 +322,7 @@ public class CustomInputMain {
 					bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
 					int index = 0;
-					try (JsonFileIterator jsonFileIterator = new JsonFileIterator(pathFileVepJson)) {
+					try (VepJsonFileIterator jsonFileIterator = new VepJsonFileIterator(pathFileVepJson)) {
 						while (jsonFileIterator.hasNext()) {
 							JSONObject vepJson = jsonFileIterator.next();
 

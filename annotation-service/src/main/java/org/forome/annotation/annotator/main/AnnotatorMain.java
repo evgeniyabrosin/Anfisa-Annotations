@@ -63,6 +63,7 @@ public class AnnotatorMain {
 					inventory.cnvFile,
 					argumentsInventory.start,
 					inventory.outFile,
+					argumentsInventory.pathRecoveryAnfisaJson,
 					() -> arguments.getArguments()
 			);
 			annotationConsole.execute();
@@ -78,6 +79,7 @@ public class AnnotatorMain {
 					argumentsAnnotation.pathCnv,
 					argumentsAnnotation.start,
 					argumentsAnnotation.pathOutput,
+					argumentsAnnotation.pathRecoveryAnfisaJson,
 					() -> arguments.getArguments()
 			);
 			annotationConsole.execute();
