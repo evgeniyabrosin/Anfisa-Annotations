@@ -257,19 +257,6 @@ public class AnnotationConsole {
 				vepJson = buildVepJson(vcfFile, pathDirVepJson);
 			}
 
-			Annotator annotator = new Annotator(ensemblVepService, processing);
-			AnnotatorResult annotatorResult = annotator.exec(
-					caseName,
-					assembly,
-					casePlatform,
-					famFile,
-					patientIdsFile,
-					pathCohorts,
-					vcfFile,
-					vepJson,
-					cnvFile,
-					startPosition
-			);
 			Files.deleteIfExists(outFile);
 			Files.createFile(outFile);
 			AtomicInteger count = new AtomicInteger();
@@ -277,10 +264,24 @@ public class AnnotationConsole {
 			OutputStream os = buildOutputStream(outFile);
 			BufferedOutputStream bos = new BufferedOutputStream(os);
 
-			String outMetadata = annotatorResult.metadata.toJSON().toJSONString();
+			Annotator annotator = new Annotator(
+					ensemblVepService, processing,
+					caseName, casePlatform,
+					assembly,
+					famFile,
+					patientIdsFile,
+					pathCohorts,
+					vcfFile, vepJson
+			);
+
+			String outMetadata = annotator.buildMetadata().toJSON().toJSONString();
 			bos.write(outMetadata.getBytes(StandardCharsets.UTF_8));
 			bos.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
 
+			AnnotatorResult annotatorResult = annotator.exec(
+					cnvFile,
+					startPosition
+			);
 			annotatorResult.observableAnfisaResult.blockingSubscribe(
 					processingResult -> {
 						String out = processingResult.toJSON().toJSONString();

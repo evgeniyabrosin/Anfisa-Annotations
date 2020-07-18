@@ -52,7 +52,6 @@ public class ThreadExecutor implements AutoCloseable {
 	private final EnsemblVepService ensemblVepService;
 	private final Processing processing;
 
-	private final String caseSequence;
 	private final MCase samples;
 
 	private final int start;
@@ -71,7 +70,7 @@ public class ThreadExecutor implements AutoCloseable {
 			int index,
 			EnsemblVepService ensemblVepService,
 			Processing processing,
-			String caseSequence, MCase samples,
+			MCase samples,
 			Path pathVcf, Path pathVepJson,
 			Path cnvFile,
 			int start, int step,
@@ -82,7 +81,6 @@ public class ThreadExecutor implements AutoCloseable {
 		this.ensemblVepService = ensemblVepService;
 		this.processing = processing;
 
-		this.caseSequence = caseSequence;
 		this.samples = samples;
 
 		this.start = start;

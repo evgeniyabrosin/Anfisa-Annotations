@@ -24,7 +24,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.forome.annotation.annotator.struct.AnnotatorResult;
+import org.forome.annotation.annotator.struct.AnnotatorResultMetadata;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
@@ -315,7 +315,7 @@ public class CustomInputMain {
 
 			try (OutputStream os = new GZIPOutputStream(Files.newOutputStream(Paths.get("KCNJ2_anfisa.json.gz")))) {
 				try (BufferedOutputStream bos = new BufferedOutputStream(os)) {
-					AnnotatorResult.Metadata metadata = AnnotatorResult.Metadata.build(
+					AnnotatorResultMetadata metadata = new AnnotatorResultMetadata(
 							"KCNJ2", null, mCase, processing.getAnfisaConnector()
 					);
 					bos.write(metadata.toJSON().toJSONString().getBytes(StandardCharsets.UTF_8));

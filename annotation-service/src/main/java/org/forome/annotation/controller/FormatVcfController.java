@@ -24,6 +24,7 @@ import htsjdk.variant.vcf.VCFFileReader;
 import io.reactivex.Observable;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import net.minidev.json.parser.ParseException;
 import org.forome.annotation.Main;
 import org.forome.annotation.Service;
 import org.forome.annotation.annotator.Annotator;
@@ -37,6 +38,8 @@ import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.struct.Assembly;
+import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.struct.variant.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +85,22 @@ public class FormatVcfController {
 
 		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 
-		Annotator annotator = new Annotator(ensemblVepService, processing);
+		TempVCFFile tempVCFFile = buildTempVCFFile(request);
+
+		Annotator annotator;
+		try {
+			annotator = new Annotator(
+					ensemblVepService, processing,
+					String.format("%s_wgs", "noname"), CasePlatform.WGS,
+					Assembly.GRCh37,
+					null,null,null,
+					tempVCFFile.path, null
+			);
+		} catch (IOException e) {
+			throw ExceptionBuilder.buildIOErrorException(e);
+		} catch (ParseException e) {
+			throw ExceptionBuilder.buildInvalidJsonException(e);
+		}
 
 		FormatAnfisaHttpClient formatAnfisaHttpClient;
 		try {
@@ -91,14 +109,8 @@ public class FormatVcfController {
 			throw ExceptionBuilder.buildIOErrorException(e);
 		}
 
-		TempVCFFile tempVCFFile = buildTempVCFFile(request);
-
-		AnnotatorResult annotatorResult = annotator.annotateJson(
-				String.format("%s_wgs", "noname"),
-				null,
-				tempVCFFile.path, null,
-				null,
-				0
+		AnnotatorResult annotatorResult = annotator.exec(
+				null,0
 		);
 
 		CompletableFuture<ResponseEntity> completableFuture = new CompletableFuture<>();

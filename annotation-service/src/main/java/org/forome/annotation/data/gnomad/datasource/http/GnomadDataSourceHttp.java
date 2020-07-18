@@ -237,7 +237,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 
 		Position sequence19Start = liftoverConnector.toHG19(new Position(chromosome, sequence38.interval.start));
 		Position sequence19End = liftoverConnector.toHG19(new Position(chromosome, sequence38.interval.end));
-		if (sequence19Start == null || sequence19End == null || sequence19Start.value > sequence19End.value ) {
+		if (sequence19Start == null || sequence19End == null || sequence19Start.value > sequence19End.value) {
 			return Collections.emptyList();
 		}
 
@@ -436,14 +436,19 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		columns.put("REF", record.get("REF"));
 		columns.put("ALT", record.get("ALT"));
 
-		columns.put("AN", record.get("AN"));
-		if (record.containsKey("AN") && record.containsKey("AC")) {
-			columns.put("AC", record.getAsNumber("AN").longValue() - record.getAsNumber("AC").longValue());
+		Number nAN = record.getAsNumber("AN");
+		columns.put("AN", nAN);
+
+		Number nAC = record.getAsNumber("AC");
+		if (nAN != null && nAC != null) {
+			columns.put("AC", nAN.longValue() - nAC.longValue());
 		} else {
 			columns.put("AC", null);
 		}
-		if (record.containsKey("AF")) {
-			columns.put("AF", 1 - record.getAsNumber("AF").doubleValue());
+
+		Number nAF = record.getAsNumber("AF");
+		if (nAF != null) {
+			columns.put("AF", 1 - nAF.doubleValue());
 		} else {
 			columns.put("AF", null);
 		}
@@ -468,16 +473,20 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	private static void addGroupRevert(Map<String, Object> columns, JSONObject record, String group) {
 		JSONObject jGroup = (JSONObject) record.get(group);
 		if (jGroup == null) return;
-		columns.put("AN_" + group, jGroup.get("AN"));
 
-		if (jGroup.containsKey("AN") && jGroup.containsKey("AC")) {
-			columns.put("AC_" + group, jGroup.getAsNumber("AN").longValue() - jGroup.getAsNumber("AC").longValue());
+		Number nAN = jGroup.getAsNumber("AN");
+		columns.put("AN_" + group, nAN);
+
+		Number nAC = jGroup.getAsNumber("AC");
+		if (nAN != null && nAC != null) {
+			columns.put("AC_" + group, nAN.longValue() - nAC.longValue());
 		} else {
 			columns.put("AC_" + group, null);
 		}
 
-		if (jGroup.containsKey("AF")) {
-			columns.put("AF_" + group, 1 - jGroup.getAsNumber("AF").doubleValue());
+		Number nAF = jGroup.getAsNumber("AF");
+		if (nAF != null) {
+			columns.put("AF_" + group, 1 - nAF.doubleValue());
 		} else {
 			columns.put("AF_" + group, null);
 		}
