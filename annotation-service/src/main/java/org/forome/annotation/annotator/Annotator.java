@@ -41,6 +41,7 @@ import net.minidev.json.parser.ParseException;
 import org.forome.annotation.annotator.executor.AnnotatorExecutor;
 import org.forome.annotation.annotator.executor.Result;
 import org.forome.annotation.annotator.struct.AnnotatorResult;
+import org.forome.annotation.annotator.struct.AnnotatorResultMetadata;
 import org.forome.annotation.annotator.utils.CaseUtils;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.struct.ProcessingResult;
@@ -67,32 +68,36 @@ public class Annotator {
 	private final EnsemblVepService ensemblVepService;
 	private final Processing processing;
 
+	private final String caseName;
+	private final CasePlatform casePlatform;
+
+	private final MCase mCase;
+
+	private final Path pathVcf;
+	private final Path pathVepJson;
+
 	public Annotator(
 			EnsemblVepService ensemblVepService,
-			Processing processing) {
-		this.ensemblVepService = ensemblVepService;
-		this.processing = processing;
-	}
+			Processing processing,
 
-	public AnnotatorResult exec(
 			String caseName,
-			Assembly assembly,
 			CasePlatform casePlatform,
+			Assembly assembly,
+
 			Path pathFam,
 			Path pathFamSampleName,
 			Path pathCohorts,
 			Path pathVcf,
-			Path pathVepJson,
-			Path cnvFile,
-			int startPosition
-	) throws IOException, ParseException {
-		if (!Files.exists(pathFam)) {
-			throw new RuntimeException("Fam file is not exists: " + pathFam.toAbsolutePath());
-		}
-		if (!pathFam.getFileName().toString().endsWith(".fam")) {
-			throw new IllegalArgumentException("Bad name fam file: " + pathFam.toAbsolutePath());
-		}
+			Path pathVepJson
 
+	) throws IOException, ParseException {
+		this.ensemblVepService = ensemblVepService;
+		this.processing = processing;
+
+		this.caseName = caseName;
+		this.casePlatform = casePlatform;
+
+		this.pathVcf = pathVcf;
 		if (!Files.exists(pathVcf)) {
 			throw new RuntimeException("Vcf file is not exists: " + pathVcf.toAbsolutePath());
 		}
@@ -100,76 +105,42 @@ public class Annotator {
 			throw new IllegalArgumentException("Bad name vcf file (Need *.vcf): " + pathVcf.toAbsolutePath());
 		}
 
-		if (pathVepJson != null) {
-			if (!Files.exists(pathVepJson)) {
-				throw new RuntimeException("VepJson file is not exists: " + pathVepJson.toAbsolutePath());
-			}
-			String vepJsonFileName = pathVepJson.getFileName().toString();
-			if (!(vepJsonFileName.endsWith(".json") || vepJsonFileName.endsWith(".json.gz"))) {
-				throw new IllegalArgumentException("Bad name pathVepJson file (Need *.json vs *.json.gz): " + pathVepJson.toAbsolutePath());
-			}
+		if (!Files.exists(pathFam)) {
+			throw new RuntimeException("Fam file is not exists: " + pathFam.toAbsolutePath());
 		}
+		if (!pathFam.getFileName().toString().endsWith(".fam")) {
+			throw new IllegalArgumentException("Bad name fam file: " + pathFam.toAbsolutePath());
+		}
+
+		this.pathVepJson=pathVepJson;
 
 		try (InputStream isFam = Files.newInputStream(pathFam);
 			 InputStream isFamSampleName = (pathFamSampleName != null) ? Files.newInputStream(pathFamSampleName) : null;
 			 InputStream isCohorts = (pathCohorts != null) ? Files.newInputStream(pathCohorts) : null
 		) {
-			return exec(
-					caseName,
-					assembly,
-					casePlatform,
-					isFam,
-					isFamSampleName,
-					isCohorts,
-					pathVcf,
-					pathVepJson,
-					cnvFile,
-					startPosition
-			);
+			this.mCase = CaseUtils.parseFamFile(assembly, isFam, isFamSampleName, isCohorts);
 		}
 	}
 
-	public AnnotatorResult exec(
-			String caseName,
-			Assembly assembly,
-			CasePlatform casePlatform,
-			InputStream isFam,
-			InputStream isFamSampleName,
-			InputStream isCohorts,
-			Path pathVepVcf,
-			Path pathVepJson,
-			Path cnvFile,
-			int startPosition
-	) throws IOException, ParseException {
+	public AnnotatorResultMetadata buildMetadata() {
+		String caseSequence = String.format("%s_%s", caseName, casePlatform.name().toLowerCase());
 
-		MCase samples = CaseUtils.parseFamFile(assembly, isFam, isFamSampleName, isCohorts);
-
-		String caseId = String.format("%s_%s", caseName, casePlatform.name().toLowerCase());
-
-		return annotateJson(
-				caseId, samples,
-				pathVepVcf, pathVepJson,
-				cnvFile,
-				startPosition
-		);
+		return new AnnotatorResultMetadata(caseSequence, pathVcf, mCase, processing.getAnfisaConnector());
 	}
 
-	public AnnotatorResult annotateJson(
-			String caseSequence, MCase mCase,
-			Path pathVepVcf, Path pathVepJson,
+	public AnnotatorResult exec(
 			Path cnvFile,
 			int startPosition
 	) {
 		return new AnnotatorResult(
-				AnnotatorResult.Metadata.build(caseSequence, pathVepVcf, mCase, processing.getAnfisaConnector()),
 				Observable.create(o -> {
 					new Thread(new Runnable() {
 						@Override
 						public void run() {
 							try (AnnotatorExecutor annotatorExecutor = new AnnotatorExecutor(
 									ensemblVepService, processing,
-									caseSequence, mCase,
-									pathVepVcf, pathVepJson,
+									mCase,
+									pathVcf, pathVepJson,
 									cnvFile,
 									startPosition, getThreads(mCase),
 									(t, e) -> o.tryOnError(e)

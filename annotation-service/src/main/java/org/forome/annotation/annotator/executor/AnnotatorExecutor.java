@@ -38,7 +38,7 @@ public class AnnotatorExecutor implements AutoCloseable {
 	public AnnotatorExecutor(
 			EnsemblVepService ensemblVepService,
 			Processing processing,
-			String caseSequence, MCase mCase,
+			MCase mCase,
 			Path pathVcf, Path pathVepJson,
 			Path cnvFile,
 			int start, int thread,
@@ -61,7 +61,7 @@ public class AnnotatorExecutor implements AutoCloseable {
 					i + 1,
 					ensemblVepService,
 					processing,
-					caseSequence, mCase,
+					mCase,
 					pathVcf, pathVepJson,
 					cnvFile,
 					start + i, thread,
