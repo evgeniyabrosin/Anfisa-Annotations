@@ -93,6 +93,10 @@ public class Recovery {
 				}
 				offset++;
 				countRecords +=jRecoveryRecords.size();
+
+				if (offset % 1000 == 0) {
+					log.debug("Recovery progress (variants): {}", offset);
+				}
 			}
 		} catch (NoSuchElementException nee) {
 			log.debug("Vcf file is end");
