@@ -32,8 +32,11 @@ public class AnfisaResultFilters {
 
 	public List<String> has_variant = new ArrayList<>();
 
-	public long[] distFromExonWorst = new long[0];
+	public String regionCanonical;
+	public String regionWorst;
+
 	public long[] distFromExonCanonical = new long[0];
+	public long[] distFromExonWorst = new long[0];
 
 	public GnomadResult.Popmax gnomadPopmax;
 	public GnomadResult.Popmax gnomadRawPopmax;
@@ -98,8 +101,11 @@ public class AnfisaResultFilters {
 		out.put("gnomad_db_genomes_af", gnomadDbGenomesAf);
 		out.put("has_variant", new JSONArray());
 
-		out.put("dist_from_exon_worst", distFromExonWorst);
+		out.put("region_canonical", regionCanonical);
+		out.put("region_worst", regionWorst);
+
 		out.put("dist_from_exon_canonical", distFromExonCanonical);
+		out.put("dist_from_exon_worst", distFromExonWorst);
 
 		if (clinvarBenign != null) {
 			out.put("clinvar_benign", clinvarBenign);
