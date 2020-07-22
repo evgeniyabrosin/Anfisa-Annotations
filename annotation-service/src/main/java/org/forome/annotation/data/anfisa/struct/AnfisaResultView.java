@@ -229,8 +229,8 @@ public class AnfisaResultView {
 	public static class Bioinformatics {
 
 		public String inheritedFrom;
-		public List<Object> distFromExonWorst = new ArrayList<>();
-		public List<Object> distFromExonCanonical = new ArrayList<>();
+		public long[] distFromExonWorst = new long[0];
+		public long[] distFromExonCanonical = new long[0];
 		public Conservation conservation;
 		public String speciesWithVariant;
 		public String speciesWithOthers;

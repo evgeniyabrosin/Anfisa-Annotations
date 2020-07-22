@@ -1219,20 +1219,17 @@ public class AnfisaConnector implements AutoCloseable {
 		return set.contains(variant.getStrAlt());
 	}
 
-	private static List<Object> getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, VariantVep variantVep, Kind kind) {
+	private static long[] getDistanceFromExon(GtfAnfisaResult gtfAnfisaResult, VariantVep variantVep, Kind kind) {
 		GtfAnfisaResult.RegionAndBoundary region = gtfAnfisaResult.getRegion(kind);
 		if (region != null) {
-			return unique(
-					region.distances.stream().map(distance -> distance.dist).collect(Collectors.toList())
-			);
+			return region.distances.stream().mapToLong(distance -> distance.dist)
+					.distinct().sorted().toArray();
 		}
 
-		return unique(
-				getHgvsList(variantVep, "c", kind.value).stream()
-						.map(hgvcs -> getDistanceHgvsc(hgvcs))
-						.collect(Collectors.toList()),
-				"Exonic"
-		);
+		return getHgvsList(variantVep, "c", kind.value).stream()
+				.map(hgvcs -> getDistanceHgvsc(hgvcs))
+				.filter(Objects::nonNull).mapToLong(Long::longValue)
+				.distinct().sorted().toArray();
 	}
 
 	private static List<Character> hgvs_signs = Lists.newArrayList('-', '+', '*');
