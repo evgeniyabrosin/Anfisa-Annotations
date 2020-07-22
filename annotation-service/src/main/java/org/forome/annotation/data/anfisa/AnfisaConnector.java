@@ -88,7 +88,7 @@ public class AnfisaConnector implements AutoCloseable {
 	public final ClinvarConnector clinvarConnector;
 	public final LiftoverConnector liftoverConnector;
 
-	private final GtfAnfisaBuilder gtfAnfisaBuilder;
+	public final GtfAnfisaBuilder gtfAnfisaBuilder;
 	public final GTEXConnector gtexConnector;
 	public final PharmGKBConnector pharmGKBConnector;
 

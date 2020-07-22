@@ -91,6 +91,8 @@
             mpc_score
             refcodon
             codonpos
+            dist_from_exon
+            region
         }
     },
     __data {

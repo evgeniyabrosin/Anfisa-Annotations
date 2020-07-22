@@ -156,7 +156,7 @@ public class GtfAnfisaBuilder {
 		return new GtfAnfisaResult.RegionAndBoundary(region, distances);
 	}
 
-	private GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary getDistanceFromBoundary(
+	public GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary getDistanceFromBoundary(
 			AnfisaExecuteContext context,
 			String transcriptId,
 			Interval interval
