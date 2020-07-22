@@ -228,6 +228,9 @@ public class AnfisaResultView {
 
 	public static class Bioinformatics {
 
+		public String regionCanonical;
+		public String regionWorst;
+
 		public String inheritedFrom;
 		public long[] distFromExonWorst = new long[0];
 		public long[] distFromExonCanonical = new long[0];
@@ -264,6 +267,8 @@ public class AnfisaResultView {
 
 		private JSONObject toJSON() {
 			JSONObject out = new JSONObject();
+			out.put("region_canonical", regionCanonical);
+			out.put("region_worst", regionWorst);
 			out.put("human_splicing_finder", humanSplicingFinder);
 			out.put("dist_from_exon_worst", distFromExonWorst);
 			out.put("called_by", calledBy);
