@@ -208,11 +208,13 @@ public class AnfisaConnector implements AutoCloseable {
 
 		if (gtfAnfisaResult.canonical != null) {
 			data.distFromBoundaryCanonical = gtfAnfisaResult.canonical.distances;
-			filters.regionCanonical = data.regionCanonical = gtfAnfisaResult.canonical.region;
+			filters.regionCanonical = data.regionCanonical
+					= view.bioinformatics.regionCanonical = gtfAnfisaResult.canonical.region;
 		}
 		if (gtfAnfisaResult.worst != null) {
 			data.distFromBoundaryWorst = gtfAnfisaResult.worst.distances;
-			filters.regionWorst = data.regionWorst = gtfAnfisaResult.worst.region;
+			filters.regionWorst = data.regionWorst
+					= view.bioinformatics.regionWorst = gtfAnfisaResult.worst.region;
 		}
 
 		if (variant instanceof VariantCNV) {
