@@ -257,6 +257,12 @@ public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.codonpos;
 	}
 
+//	@GraphQLField
+//	@GraphQLName("dist_from_exon")
+//	public long getDistFromExon() {
+//
+//	}
+
 	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
 		put("Ala", "A");
 		put("Arg", "R");

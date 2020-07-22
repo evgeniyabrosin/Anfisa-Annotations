@@ -26,6 +26,7 @@ import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
 import org.forome.annotation.struct.Assembly;
+import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
@@ -124,48 +125,79 @@ public class GtfAnfisaBuilder {
 		}
 
 		List<JSONObject> vepTranscripts = getVepTranscripts(variant, kind);
-		List<String> transcripts = vepTranscripts.stream()
+		List<String> transcriptIds = vepTranscripts.stream()
 				.filter(jsonObject -> "Ensembl".equals(jsonObject.getAsString("source")))
 				.map(jsonObject -> jsonObject.getAsString("transcript_id"))
 				.collect(Collectors.toList());
-		if (transcripts.isEmpty()) {
+		if (transcriptIds.isEmpty()) {
 			return null;
 		}
 
 		List<GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary> distances = new ArrayList<>();
-		String region = null;
-		Integer index = null;
-		Integer n = null;
-		for (String t : transcripts) {
-			Long dist = null;
-			for (Position position : positions) {
-				Object[] result = gtfConnector.lookup(context, assembly, position, t);
-				if (result == null) {
-					continue;
-				}
-				long d = (long) result[0];
 
-				GTFRegion gtfRegion = (GTFRegion) result[1];
-				region = gtfRegion.region;
-				if (gtfRegion.indexRegion != null) {
-					index = gtfRegion.indexRegion;
-					n = (int) result[2];
-				}
-
-				if (dist == null || d < dist) {
-					dist = d;
-				}
-			}
-			if (dist != null) {
-				distances.add(
-						new GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary(
-								dist, region, index, n
-						)
-				);
+		Interval interval = Interval.ofWithoutValidation(variant.chromosome, variant.getStart(), variant.end);
+		for (String transcriptId : transcriptIds) {
+			GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distanceFromBoundary = getDistanceFromBoundary(
+					context,
+					transcriptId,
+					interval
+			);
+			if (distanceFromBoundary != null) {
+				distances.add(distanceFromBoundary);
 			}
 		}
 
+		//TODO Ulitin V. Возможно баг, слишком странная логика полчение region
+		String region = null;
+		if (!distances.isEmpty()) {
+			region = distances.get(distances.size() - 1).region;
+		}
+
 		return new GtfAnfisaResult.RegionAndBoundary(region, distances);
+	}
+
+	private GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary getDistanceFromBoundary(
+			AnfisaExecuteContext context,
+			String transcriptId,
+			Interval interval
+	) {
+		Assembly assembly = context.anfisaInput.mCase.assembly;
+
+		List<Position> positions = new ArrayList<>();
+		positions.add(new Position(interval.chromosome, interval.start));
+		if (!interval.isSingle()) {
+			positions.add(new Position(interval.chromosome, interval.end));
+		}
+
+		String region = null;
+		Integer index = null;
+		Integer n = null;
+		Long dist = null;
+		for (Position position : positions) {
+			Object[] result = gtfConnector.lookup(context, assembly, position, transcriptId);
+			if (result == null) {
+				continue;
+			}
+			long d = (long) result[0];
+
+			GTFRegion gtfRegion = (GTFRegion) result[1];
+			region = gtfRegion.region;
+			if (gtfRegion.indexRegion != null) {
+				index = gtfRegion.indexRegion;
+				n = (int) result[2];
+			}
+
+			if (dist == null || d < dist) {
+				dist = d;
+			}
+		}
+		if (dist != null) {
+			return new GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary(
+					dist, region, index, n
+			);
+		} else {
+			return null;
+		}
 	}
 
 	private List<JSONObject> getVepTranscripts(VariantVep variant, Kind kind) {
