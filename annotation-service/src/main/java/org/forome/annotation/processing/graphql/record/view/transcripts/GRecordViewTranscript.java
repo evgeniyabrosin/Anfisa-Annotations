@@ -21,6 +21,7 @@ package org.forome.annotation.processing.graphql.record.view.transcripts;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import net.minidev.json.JSONObject;
+import org.forome.annotation.data.anfisa.struct.GtfAnfisaResult;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacetTranscript;
 import org.forome.annotation.processing.graphql.record.view.general.transcript.GRecordViewGeneralTranscript;
 import org.forome.annotation.struct.variant.vep.VariantVep;
@@ -35,11 +36,18 @@ import java.util.stream.Collectors;
 public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 
 	private final DbNSFPItemFacetTranscript dbNSFPTranscript;
+	private final GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distanceFromBoundary;
 
-	public GRecordViewTranscript(String transcriptId, VariantVep variantVep, JSONObject jTranscript, DbNSFPItemFacetTranscript dbNSFPTranscript) {
+	public GRecordViewTranscript(
+			String transcriptId,
+			VariantVep variantVep, JSONObject jTranscript,
+			DbNSFPItemFacetTranscript dbNSFPTranscript,
+			GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distanceFromBoundary
+	) {
 		super(transcriptId, variantVep, jTranscript);
 
 		this.dbNSFPTranscript = dbNSFPTranscript;
+		this.distanceFromBoundary = distanceFromBoundary;
 	}
 
 	@GraphQLField
@@ -257,11 +265,25 @@ public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 		return (dbNSFPTranscript == null) ? null : dbNSFPTranscript.codonpos;
 	}
 
-//	@GraphQLField
-//	@GraphQLName("dist_from_exon")
-//	public long getDistFromExon() {
-//
-//	}
+	@GraphQLField
+	@GraphQLName("dist_from_exon")
+	public long getDistFromExon() {
+		if (distanceFromBoundary != null) {
+			return distanceFromBoundary.dist;
+		} else {
+			return 0;
+		}
+	}
+
+	@GraphQLField
+	@GraphQLName("region")
+	public String getRegion() {
+		if (distanceFromBoundary != null) {
+			return distanceFromBoundary.region;
+		} else {
+			return null;
+		}
+	}
 
 	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
 		put("Ala", "A");

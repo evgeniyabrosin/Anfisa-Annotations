@@ -22,6 +22,8 @@ import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import org.forome.annotation.data.anfisa.GtfAnfisaBuilder;
+import org.forome.annotation.data.anfisa.struct.GtfAnfisaResult;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacetTranscript;
 import org.forome.annotation.processing.graphql.record.view.bioinformatics.GRecordViewBioinformatics;
@@ -30,6 +32,7 @@ import org.forome.annotation.processing.graphql.record.view.general.GRecordViewG
 import org.forome.annotation.processing.graphql.record.view.predictions.GRecordViewPredictions;
 import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscript;
 import org.forome.annotation.processing.struct.GContext;
+import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vep.VariantVep;
@@ -121,8 +124,20 @@ public class GRecordView {
 				}
 				DbNSFPItemFacetTranscript dbNSFPTranscript = (findTranscripts.isEmpty()) ? null : findTranscripts.get(0);
 
+
+				GtfAnfisaBuilder gtfAnfisaBuilder = gContext.anfisaConnector.gtfAnfisaBuilder;
+				GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distanceFromBoundary = gtfAnfisaBuilder.getDistanceFromBoundary(
+						gContext.context,
+						transcriptId,
+						Interval.ofWithoutValidation(
+								variantVep.chromosome,
+								variantVep.getStart(), variantVep.end
+						)
+				);
+
+
 				transcripts.add(new GRecordViewTranscript(
-						transcriptId, variantVep, jTranscript, dbNSFPTranscript
+						transcriptId, variantVep, jTranscript, dbNSFPTranscript, distanceFromBoundary
 				));
 			}
 			return transcripts;
