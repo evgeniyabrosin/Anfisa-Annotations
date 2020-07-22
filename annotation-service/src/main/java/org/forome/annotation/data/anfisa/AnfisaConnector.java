@@ -186,12 +186,6 @@ public class AnfisaConnector implements AutoCloseable {
 			}
 		}
 
-		List<Object> d = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.WORST);
-		filters.distFromExon = d.stream()
-				.filter(o -> (o instanceof Number))
-				.map(o -> ((Number) o).longValue())
-				.min(Long::compareTo).orElse(0L);
-
 		data.assemblyName = vepJson.getAsString("assembly_name");
 		data.end = variant.end;
 		data.regulatoryFeatureConsequences = (JSONArray) vepJson.get("regulatory_feature_consequences");
@@ -232,9 +226,9 @@ public class AnfisaConnector implements AutoCloseable {
 		createGeneralTab(context, data, filters, view, variant, anfisaInput.mCase);
 		createQualityTab(view, variant, anfisaInput.mCase);
 		createGnomadTab(context, variant, anfisaInput.mCase, view);
-		createDatabasesTab((VariantVep) variant, record, data, view);
+		createDatabasesTab(record, data, view);
 		createPredictionsTab(context, variant, view);
-		createBioinformaticsTab(gtfAnfisaResult, context, data, view);
+		createBioinformaticsTab(gtfAnfisaResult, context, filters, data, view);
 		createPharmacogenomicsTab(view, filters, variant);
 		countCohorts(view, filters, anfisaInput.mCase, variant);
 
@@ -854,7 +848,7 @@ public class AnfisaConnector implements AutoCloseable {
 		return record.hgmdData.hgmdPmidRows.stream().map(hgmdPmidRow -> hgmdPmidRow.tag).collect(Collectors.toSet());
 	}
 
-	private void createDatabasesTab(VariantVep variantVep, Record record, AnfisaResultData data, AnfisaResultView view) {
+	private void createDatabasesTab(Record record, AnfisaResultData data, AnfisaResultView view) {
 		if (data.hgmd != null) {
 			view.databases.hgmd = data.hgmd;
 			view.databases.hgmdHg38 = data.hgmdHg38;
@@ -1022,13 +1016,13 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private void createBioinformaticsTab(GtfAnfisaResult gtfAnfisaResult, AnfisaExecuteContext anfisaExecuteContext, AnfisaResultData data, AnfisaResultView view) {
+	private void createBioinformaticsTab(GtfAnfisaResult gtfAnfisaResult, AnfisaExecuteContext anfisaExecuteContext, AnfisaResultFilters filters, AnfisaResultData data, AnfisaResultView view) {
 		AnfisaInput anfisaInput = anfisaExecuteContext.anfisaInput;
 		Variant variant = anfisaExecuteContext.variant;
 
 		view.bioinformatics.inheritedFrom = inherited_from(variant, anfisaInput.mCase);
-		view.bioinformatics.distFromExonCanonical = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.CANONICAL);
-		view.bioinformatics.distFromExonWorst = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.WORST);
+		filters.distFromExonCanonical = view.bioinformatics.distFromExonCanonical = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.CANONICAL);
+		filters.distFromExonWorst = view.bioinformatics.distFromExonWorst = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.WORST);
 		view.bioinformatics.conservation = buildConservation(anfisaExecuteContext);
 		view.bioinformatics.speciesWithVariant = "";
 		view.bioinformatics.speciesWithOthers = "";

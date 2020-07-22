@@ -289,7 +289,6 @@ public class AnnotationConsole {
 				RecoveryResult recoveryResult = recovery.execute(bos);
 				offset = recoveryResult.offset;
 				countRecords = new AtomicInteger(recoveryResult.countRecords);
-				log.info("Set offset position: {}", offset);
 			} else {
 				offset = startPosition;
 				countRecords = new AtomicInteger();
