@@ -18,6 +18,7 @@
 
 package org.forome.annotation.processing.graphql.record.filters;
 
+import graphql.annotations.annotationTypes.GraphQLDescription;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import htsjdk.variant.variantcontext.CommonInfo;
@@ -32,6 +33,8 @@ import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.utils.MathUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -93,11 +96,26 @@ public class GRecordFilters {
 
 	@GraphQLField
 	@GraphQLName("qd")
+	@GraphQLDescription("Качество секвениерования")
 	public double getQD() {
 		if (variant instanceof VariantVCF) {
 			VariantContext variantContext = ((VariantVCF) variant).maVariantVCF.variantContext;
 			CommonInfo commonInfo = variantContext.getCommonInfo();
 			return MathUtils.toPrimitiveDouble(commonInfo.getAttribute("QD"));
+		} else {
+			return 0;
+		}
+	}
+
+	@GraphQLField
+	@GraphQLName("qual")
+	@GraphQLDescription("Сырое качество секвениерования")
+	public double getQual() {
+		if (variant instanceof VariantVCF) {
+			VariantContext variantContext = ((VariantVCF) variant).maVariantVCF.variantContext;
+			return new BigDecimal(
+					variantContext.getPhredScaledQual()
+			).setScale(2, RoundingMode.HALF_UP).doubleValue();
 		} else {
 			return 0;
 		}
