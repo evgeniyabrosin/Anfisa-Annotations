@@ -32,8 +32,8 @@ public class AnfisaResultFilters {
 
 	public List<String> has_variant = new ArrayList<>();
 
-	public List<Object> distFromExonWorst = new ArrayList<>();
-	public List<Object> distFromExonCanonical = new ArrayList<>();
+	public long[] distFromExonWorst = new long[0];
+	public long[] distFromExonCanonical = new long[0];
 
 	public GnomadResult.Popmax gnomadPopmax;
 	public GnomadResult.Popmax gnomadRawPopmax;
