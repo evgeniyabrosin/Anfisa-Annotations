@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface GTFConnector extends AutoCloseable {
 
-	List<GTFTranscriptRow> getTranscriptRows(String transcript);
+	List<GTFTranscriptRow> getTranscriptRows(Assembly assembly, String transcript);
 
 	CompletableFuture<GTFRegion> getRegion(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript);
 
@@ -39,7 +39,7 @@ public interface GTFConnector extends AutoCloseable {
 
 	CompletableFuture<List<GTFResultLookup>> getRegionByChromosomeAndPositions(AnfisaExecuteContext context, String chromosome, long[] positions);
 
-	CompletableFuture<GTFResult> request(String chromosome, long position);
+	CompletableFuture<GTFResult> request(Assembly assembly, String chromosome, long position);
 
 	void close();
 
