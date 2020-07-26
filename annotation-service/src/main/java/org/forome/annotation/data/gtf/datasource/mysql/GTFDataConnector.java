@@ -47,11 +47,12 @@ public class GTFDataConnector implements GTFDataSource {
         this.databaseConnector = databaseConnector;
     }
 
-    public GTFResult getGene(String chromosome, long position) {
+    public GTFResult getGene(Assembly assembly, String chromosome, long position) {
         long bucket = (position / GENE_BUCKET_SIZE) * GENE_BUCKET_SIZE;
 
         String sql = String.format(
-                "SELECT gene FROM ensembl.GTF_gene WHERE chromosome = %s AND bucket = %s AND %s between `start` and `end`",
+                "SELECT gene FROM %s.GTF_gene WHERE chromosome = %s AND bucket = %s AND %s between `start` and `end`",
+                getDatabase(assembly),
                 chromosome, bucket, position
         );
 
@@ -70,9 +71,10 @@ public class GTFDataConnector implements GTFDataSource {
         return new GTFResult(symbol);
     }
 
-    public List<GTFTranscriptRow> getTranscriptRows(String transcript) {
+    public List<GTFTranscriptRow> getTranscriptRows(Assembly assembly, String transcript) {
         String sql = String.format(
-                "SELECT `gene`, `start`, `end`, `feature` from ensembl.GTF WHERE transcript = '%s' AND feature = 'exon' ORDER BY `start`, `end`",
+                "SELECT `gene`, `start`, `end`, `feature` from %s.GTF WHERE transcript = '%s' AND feature = 'exon' ORDER BY `start`, `end`",
+                getDatabase(assembly),
                 transcript
         );
 
@@ -100,15 +102,16 @@ public class GTFDataConnector implements GTFDataSource {
         return rows;
     }
 
-    public List<GTFTranscriptRowExternal> getTranscriptRowsByChromosomeAndPositions(String chromosome, long[] positions) {
+    public List<GTFTranscriptRowExternal> getTranscriptRowsByChromosomeAndPositions(Assembly assembly, String chromosome, long[] positions) {
 
         String sqlWherePosition = Arrays.stream(positions)
                 .mapToObj(position-> String.format("(`start` < %s and %s < `end`)", position, position))
                 .collect(Collectors.joining(" or ", "(", ")"));
 
         String sql = String.format(
-                "SELECT `transcript`, `gene`, `approved`, `start`, `end`, `feature` from ensembl.GTF WHERE feature IN ('transcript') and chromosome = '%s' and %s" +
+                "SELECT `transcript`, `gene`, `approved`, `start`, `end`, `feature` from %s.GTF WHERE feature IN ('transcript') and chromosome = '%s' and %s" +
                         " ORDER BY `start`, `end`",
+                getDatabase(assembly),
                 chromosome, sqlWherePosition
         );
 
@@ -137,14 +140,15 @@ public class GTFDataConnector implements GTFDataSource {
     }
 
 
-    public List<String> getTranscriptsByChromosomeAndPositions(String chromosome, long[] positions) {
+    public List<String> getTranscriptsByChromosomeAndPositions(Assembly assembly, String chromosome, long[] positions) {
         String sqlWherePosition = Arrays.stream(positions)
                 .mapToObj(position-> String.format("(`start` < %s and %s < `end`)", position, position))
                 .collect(Collectors.joining(" or ", "(", ")"));
 
         String sql = String.format(
-                "SELECT `transcript` from ensembl.GTF WHERE feature IN ('transcript') and chromosome = '%s' and %s" +
+                "SELECT `transcript` from %s.GTF WHERE feature IN ('transcript') and chromosome = '%s' and %s" +
                         " ORDER BY `start`, `end`",
+                getDatabase(assembly),
                 chromosome, sqlWherePosition
         );
 
@@ -175,5 +179,15 @@ public class GTFDataConnector implements GTFDataSource {
 	@Override
     public void close() {
         databaseConnector.close();
+    }
+
+    private static String getDatabase(Assembly assembly) {
+        if (assembly == Assembly.GRCh37) {
+            return "ensembl";
+        } else if (assembly == Assembly.GRCh38) {
+            return "ensembl_hg38";
+        } else {
+            throw new RuntimeException("Unknown assembly: " + assembly);
+        }
     }
 }

@@ -47,7 +47,7 @@ public class GTFConnectorImpl implements GTFConnector {
 	//	private final DatabaseConnector databaseConnector;
 	private final GTFDataConnector gtfDataConnector;
 
-	private final LiftoverConnector liftoverConnector;
+//	private final LiftoverConnector liftoverConnector;
 
 	private final ExecutorService threadPoolGTFExecutor;
 
@@ -64,7 +64,7 @@ public class GTFConnectorImpl implements GTFConnector {
 //		this.gtfDataConnector = new GTFDataConnector(databaseConnector);
 		gtfDataConnector = (GTFDataConnector) gtfDataSource;
 
-		this.liftoverConnector = liftoverConnector;
+//		this.liftoverConnector = liftoverConnector;
 
 		threadPoolGTFExecutor = new DefaultThreadPoolExecutor(
 				MAX_THREAD_COUNT,
@@ -78,11 +78,11 @@ public class GTFConnectorImpl implements GTFConnector {
 	}
 
 	@Override
-	public CompletableFuture<GTFResult> request(String chromosome, long position) {
+	public CompletableFuture<GTFResult> request(Assembly assembly, String chromosome, long position) {
 		CompletableFuture<GTFResult> future = new CompletableFuture();
 		threadPoolGTFExecutor.submit(() -> {
 			try {
-				GTFResult result = gtfDataConnector.getGene(chromosome, position);
+				GTFResult result = gtfDataConnector.getGene(assembly, chromosome, position);
 				future.complete(result);
 			} catch (Throwable e) {
 				future.completeExceptionally(e);
@@ -120,8 +120,8 @@ public class GTFConnectorImpl implements GTFConnector {
 	}
 
 	@Override
-	public List<GTFTranscriptRow> getTranscriptRows(String transcript) {
-		return gtfDataConnector.getTranscriptRows(transcript);
+	public List<GTFTranscriptRow> getTranscriptRows(Assembly assembly, String transcript) {
+		return gtfDataConnector.getTranscriptRows(assembly, transcript);
 	}
 
 	@Override
@@ -130,22 +130,20 @@ public class GTFConnectorImpl implements GTFConnector {
 //		if (rows == null) return null;
 //		return lookup(position.value, rows);
 
-		List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
+		List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(assembly, transcript);
 		if (rows.isEmpty()) return null;
 
-		Position positionHg19 = liftoverConnector.toHG37(assembly, position);
-		if (positionHg19 == null) return null;
-
-		return lookup(positionHg19, rows);
+		return lookup(position, rows);
 	}
 
 	public List<GTFResultLookup> lookupByChromosomeAndPositions(AnfisaExecuteContext context, String chromosome, long[] positions) {
+		Assembly assembly = context.anfisaInput.mCase.assembly;
 		List<GTFResultLookup> result = new ArrayList<>();
 
-		List<String> transcripts = gtfDataConnector.getTranscriptsByChromosomeAndPositions(chromosome, positions);
+		List<String> transcripts = gtfDataConnector.getTranscriptsByChromosomeAndPositions(assembly, chromosome, positions);
 		for (String transcript : transcripts) {
 			for (long position : positions) {
-				List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(transcript);
+				List<GTFTranscriptRow> rows = gtfDataConnector.getTranscriptRows(assembly, transcript);
 				if (rows.isEmpty()) continue;
 
 				Object[] iResult = lookup(context, context.anfisaInput.mCase.assembly, new Position(Chromosome.of(chromosome), (int) position), transcript);
@@ -157,8 +155,8 @@ public class GTFConnectorImpl implements GTFConnector {
 		return result;
 	}
 
-	public Object[] lookup(Position positionHg19, List<GTFTranscriptRow> rows) {
-		int pos = positionHg19.value;
+	public Object[] lookup(Position position, List<GTFTranscriptRow> rows) {
+		int pos = position.value;
 
 		long inf = rows.get(0).start;
 		if (pos < inf) {

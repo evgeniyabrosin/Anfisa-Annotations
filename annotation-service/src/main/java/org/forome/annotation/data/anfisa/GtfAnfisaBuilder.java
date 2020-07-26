@@ -46,7 +46,8 @@ public class GtfAnfisaBuilder {
 
 	public GtfAnfisaResult build(Variant variant, AnfisaExecuteContext context) {
 		if (variant instanceof VariantCNV) {
-			return buildCNV((VariantCNV) variant);
+			Assembly assembly = context.anfisaInput.mCase.assembly;
+			return buildCNV(assembly, (VariantCNV) variant);
 		} else {
 			return buildVep(context, (VariantVep) variant);
 		}
@@ -64,14 +65,14 @@ public class GtfAnfisaBuilder {
 	 * @param variant
 	 * @return
 	 */
-	public GtfAnfisaResult buildCNV(VariantCNV variant) {
+	public GtfAnfisaResult buildCNV(Assembly assembly, VariantCNV variant) {
 		return new GtfAnfisaResult(
-				getRegionByCNV(variant, Kind.CANONICAL),
-				getRegionByCNV(variant, Kind.WORST)
+				getRegionByCNV(assembly, variant, Kind.CANONICAL),
+				getRegionByCNV(assembly, variant, Kind.WORST)
 		);
 	}
 
-	private GtfAnfisaResult.RegionAndBoundary getRegionByCNV(VariantCNV variant, Kind kind) {
+	private GtfAnfisaResult.RegionAndBoundary getRegionByCNV(Assembly assembly, VariantCNV variant, Kind kind) {
 		List<JSONObject> vepTranscripts = getVepTranscripts(variant, kind);
 		List<String> transcripts = vepTranscripts.stream()
 				.filter(jsonObject -> "Ensembl".equals(jsonObject.getAsString("source")))
@@ -83,7 +84,7 @@ public class GtfAnfisaBuilder {
 
 		List<GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary> distances = new ArrayList<>();
 		for (String transcript : transcripts) {
-			List<GTFTranscriptRow> transcriptRows = gtfConnector.getTranscriptRows(transcript);
+			List<GTFTranscriptRow> transcriptRows = gtfConnector.getTranscriptRows(assembly, transcript);
 
 			GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distance = null;
 			for (int index = 0; index < transcriptRows.size(); index++) {

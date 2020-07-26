@@ -29,6 +29,7 @@ import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResult;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.network.authcontext.BuilderAuthContext;
+import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.utils.ExecutorServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +89,7 @@ public class GetGTFDataController {
 				GTFConnector gtfConnector = service.getGtfConnector();
 				for (RequestItem requestItem : requestItems) {
 					futureGTFResults.add(gtfConnector.request(
+							Assembly.GRCh37,
 							requestItem.chromosome,
 							requestItem.position
 					));
