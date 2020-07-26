@@ -83,13 +83,17 @@ public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 			return null;
 		}
 
+		//В основном мы имеем формат: ENST00000323084.9:c.83-5969A>G
+		//Но в кейсе pgp3140_wgs_nist-v3.3.2 вариант: chr1:249168516 A>G
+		//встретили: NC_000001.10:TRNAE24:u_t_1.1:n.70A>G
+
 		String[] splitHgvsc = hgvsc.split(":");
-		if (splitHgvsc.length != 2) {
+		if (splitHgvsc.length < 2) {
 			throw new RuntimeException("Unsupported situation, " + variantVep
 					+ ", transcript.id: " + getId() + ", hgvsc: " + hgvsc);
 		}
 
-		return splitHgvsc[1];
+		return splitHgvsc[splitHgvsc.length-1];
 	}
 
 	@GraphQLField
