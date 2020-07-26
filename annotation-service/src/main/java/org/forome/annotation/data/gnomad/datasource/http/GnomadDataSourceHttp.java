@@ -130,6 +130,12 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 				sequence.ref, sequence.alt,
 				fromWhat, isSNV
 		);
+		if (records.isEmpty() && assembly == Assembly.GRCh38) {
+			List<DataResponse> resultTryFindRefertData = tryFindRefertData(context, variant, fromWhat);
+			if (!resultTryFindRefertData.isEmpty()) {
+				return resultTryFindRefertData;
+			}
+		}
 
 		if (records.isEmpty() && !isSNV) {
 			pos37 = new Position(pos37.chromosome, pos37.value - 1);
@@ -139,6 +145,12 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 					sequence.ref, sequence.alt,
 					fromWhat, isSNV
 			);
+			if (records.isEmpty() && assembly == Assembly.GRCh38) {
+				List<DataResponse> resultTryFindRefertData = tryFindRefertData(context, variant, fromWhat);
+				if (!resultTryFindRefertData.isEmpty()) {
+					return resultTryFindRefertData;
+				}
+			}
 		}
 
 		List<DataResponse> dataResponses = new ArrayList<>();
