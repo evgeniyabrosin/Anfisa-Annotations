@@ -93,7 +93,7 @@ public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 					+ ", transcript.id: " + getId() + ", hgvsc: " + hgvsc);
 		}
 
-		return splitHgvsc[splitHgvsc.length-1];
+		return splitHgvsc[splitHgvsc.length - 1];
 	}
 
 	@GraphQLField
@@ -104,16 +104,20 @@ public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 			return null;
 		}
 
+		//В основном мы имеем формат: ENSP00000383225.3:p.Cys72=
+		//Но в кейсе pgp3140_wgs_nist-v3.3.2 вариант: chr7:38335520 T>G
+		//встретили: NC_000007.13:TRGVB:u_t_1.1:p.Lys68Asn
+
 		String[] splitHgvsp = hgvsp.split(":");
-		if (splitHgvsp.length != 2) {
+		if (splitHgvsp.length < 2) {
 			throw new RuntimeException("Unsupported state, " + variantVep
-					+ ", transcript.id: " + getId() + ", hgvsp: " + splitHgvsp);
+					+ ", transcript.id: " + getId() + ", hgvsp: " + hgvsp);
 		}
 
-		String value = splitHgvsp[1];
+		String value = splitHgvsp[splitHgvsp.length - 1];
 		if (!value.startsWith("p.")) {
 			throw new RuntimeException("Unsupported state, " + variantVep
-					+ ", transcript.id: " + getId() + ", hgvsp: " + splitHgvsp);
+					+ ", transcript.id: " + getId() + ", hgvsp: " + hgvsp);
 		}
 
 		return "p." + convertPPos(value.substring(2));
