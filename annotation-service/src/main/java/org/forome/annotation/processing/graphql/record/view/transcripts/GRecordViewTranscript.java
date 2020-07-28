@@ -275,11 +275,11 @@ public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 
 	@GraphQLField
 	@GraphQLName("dist_from_exon")
-	public long getDistFromExon() {
+	public Long getDistFromExon() {
 		if (distanceFromBoundary != null) {
 			return distanceFromBoundary.dist;
 		} else {
-			return 0;
+			return null;
 		}
 	}
 
