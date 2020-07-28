@@ -102,7 +102,7 @@ public class GtfAnfisaBuilder {
 				distances.add(distance);
 			}
 		}
-		return new GtfAnfisaResult.RegionAndBoundary("exon", distances);
+		return new GtfAnfisaResult.RegionAndBoundary(new String[] {"exon"}, distances);
 	}
 
 	public GtfAnfisaResult buildVep(AnfisaExecuteContext context, VariantVep variant) {
@@ -148,11 +148,10 @@ public class GtfAnfisaBuilder {
 			}
 		}
 
-		//TODO Ulitin V. Возможно баг, слишком странная логика полчение region
-		String region = null;
-		if (!distances.isEmpty()) {
-			region = distances.get(distances.size() - 1).region;
-		}
+		String[] region = distances.stream()
+				.map(distance -> distance.region).distinct()
+				.sorted()
+				.toArray(String[]::new);
 
 		return new GtfAnfisaResult.RegionAndBoundary(region, distances);
 	}

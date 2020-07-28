@@ -50,10 +50,10 @@ public class GtfAnfisaResult {
             }
         }
 
-        public final String region;
+        public final String[] region;
         public final List<DistanceFromBoundary> distances;
 
-        public RegionAndBoundary(String region, List<DistanceFromBoundary> distances) {
+        public RegionAndBoundary(String[] region, List<DistanceFromBoundary> distances) {
             this.region = region;
             this.distances = Collections.unmodifiableList(distances);
         }
