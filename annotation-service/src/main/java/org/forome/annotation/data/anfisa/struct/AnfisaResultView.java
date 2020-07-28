@@ -228,8 +228,8 @@ public class AnfisaResultView {
 
 	public static class Bioinformatics {
 
-		public String regionCanonical;
-		public String regionWorst;
+		public String[] regionCanonical;
+		public String[] regionWorst;
 
 		public String inheritedFrom;
 		public long[] distFromExonWorst = new long[0];

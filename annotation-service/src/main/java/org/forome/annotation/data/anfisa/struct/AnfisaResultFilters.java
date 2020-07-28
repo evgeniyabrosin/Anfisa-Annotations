@@ -32,8 +32,8 @@ public class AnfisaResultFilters {
 
 	public List<String> has_variant = new ArrayList<>();
 
-	public String regionCanonical;
-	public String regionWorst;
+	public String[] regionCanonical;
+	public String[] regionWorst;
 
 	public long[] distFromExonCanonical = new long[0];
 	public long[] distFromExonWorst = new long[0];
