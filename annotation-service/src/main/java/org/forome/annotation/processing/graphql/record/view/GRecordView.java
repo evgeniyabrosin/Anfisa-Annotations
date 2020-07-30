@@ -137,7 +137,7 @@ public class GRecordView {
 
 
 				transcripts.add(new GRecordViewTranscript(
-						transcriptId, variantVep, jTranscript, dbNSFPTranscript, distanceFromBoundary
+						gContext, transcriptId, variantVep, jTranscript, dbNSFPTranscript, distanceFromBoundary
 				));
 			}
 			return transcripts;

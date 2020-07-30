@@ -95,6 +95,7 @@
             codonpos
             dist_from_exon
             region
+            masked_region
         }
     },
     __data {

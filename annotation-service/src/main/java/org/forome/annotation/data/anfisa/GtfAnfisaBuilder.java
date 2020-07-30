@@ -38,9 +38,11 @@ import java.util.stream.Collectors;
 
 public class GtfAnfisaBuilder {
 
+	private final AnfisaConnector anfisaConnector;
 	private final GTFConnector gtfConnector;
 
-	protected GtfAnfisaBuilder(GTFConnector gtfConnector) {
+	protected GtfAnfisaBuilder(AnfisaConnector anfisaConnector, GTFConnector gtfConnector) {
+		this.anfisaConnector = anfisaConnector;
 		this.gtfConnector = gtfConnector;
 	}
 
@@ -102,7 +104,7 @@ public class GtfAnfisaBuilder {
 				distances.add(distance);
 			}
 		}
-		return new GtfAnfisaResult.RegionAndBoundary(new String[] {"exon"}, distances);
+		return new GtfAnfisaResult.RegionAndBoundary(new String[]{ "exon" }, distances);
 	}
 
 	public GtfAnfisaResult buildVep(AnfisaExecuteContext context, VariantVep variant) {
@@ -148,12 +150,19 @@ public class GtfAnfisaBuilder {
 			}
 		}
 
-		String[] region = distances.stream()
-				.map(distance -> distance.region).distinct()
-				.sorted()
-				.toArray(String[]::new);
+		List<String> regions = distances.stream()
+				.map(distance -> distance.region)
+				.distinct().collect(Collectors.toList());
+		if (context.getMaskedRegion(anfisaConnector)) {
+			regions.add("masked_repeats");
+		}
 
-		return new GtfAnfisaResult.RegionAndBoundary(region, distances);
+		regions = regions.stream().sorted().collect(Collectors.toList());
+
+		return new GtfAnfisaResult.RegionAndBoundary(
+				regions.toArray(new String[regions.size()]),
+				distances
+		);
 	}
 
 	public GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary getDistanceFromBoundary(

@@ -121,7 +121,7 @@ public class AnfisaConnector implements AutoCloseable {
 		this.gtexConnector = gtexConnector;
 		this.pharmGKBConnector = pharmGKBConnector;
 
-		this.gtfAnfisaBuilder = new GtfAnfisaBuilder(gtfConnector);
+		this.gtfAnfisaBuilder = new GtfAnfisaBuilder(this, gtfConnector);
 
 		this.aStorageHttp = aStorageHttp;
 
