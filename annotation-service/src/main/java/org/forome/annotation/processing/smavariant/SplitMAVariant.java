@@ -83,7 +83,7 @@ public class SplitMAVariant {
 				}
 
 				//Иногда встречаются vcf-файлы в которых ad не соотвествует аллелям
-				if (ad.length < i) {
+				if (ad.length <= i) {
 					log.warn("Bad vcf format: AD genotype: {}, variant: {}", genotype, maVariant);
 					continue;
 				}
