@@ -203,7 +203,8 @@ public class Service {
 				gtfConnector,
 				gtexConnector,
 				pharmGKBConnector,
-				sourceHttp38
+				sourceHttp38,
+				fastaSource
 		);
 
 		queryPool.execute(this.databaseService.getDomainObjectSource(), new Query<Void>() {

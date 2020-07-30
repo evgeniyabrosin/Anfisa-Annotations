@@ -223,7 +223,8 @@ public class AnnotationConsole {
 					gtfConnector,
 					gtexConnector,
 					pharmGKBConnector,
-					sourceHttp38
+					sourceHttp38,
+					fastaSource
 			);
 			processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 		} catch (Throwable e) {
