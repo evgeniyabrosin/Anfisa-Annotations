@@ -19,9 +19,19 @@
 package org.forome.annotation.data.anfisa.struct;
 
 import net.minidev.json.JSONObject;
+import org.forome.annotation.data.anfisa.AnfisaConnector;
+import org.forome.annotation.data.fasta.FastaSource;
+import org.forome.annotation.struct.Assembly;
+import org.forome.annotation.struct.Interval;
+import org.forome.annotation.struct.Sequence;
 import org.forome.annotation.struct.variant.Variant;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class AnfisaExecuteContext {
+
+	private final String CACHE_MASKED_REGION = "masked_region";
 
 	public final AnfisaInput anfisaInput;
 
@@ -32,6 +42,8 @@ public class AnfisaExecuteContext {
 
 	public JSONObject sourceAStorageHttp;
 
+	private final Map<String, Object> cache;
+
 	public AnfisaExecuteContext(
 			AnfisaInput anfisaInput,
 			Variant variant,
@@ -41,6 +53,26 @@ public class AnfisaExecuteContext {
 
 		this.variant = variant;
 		this.vepJson = vepJson;
+
+		this.cache = new HashMap<>();
 	}
 
+	public boolean getMaskedRegion(AnfisaConnector anfisaConnector) {
+		return (boolean) cache.computeIfAbsent(CACHE_MASKED_REGION, s -> {
+			FastaSource fastaSource = anfisaConnector.fastaSource;
+			Assembly assembly = anfisaInput.mCase.assembly;
+			Interval interval = Interval.of(
+					variant.chromosome,
+					Math.min(variant.getStart(), variant.end),
+					Math.max(variant.getStart(), variant.end)
+			);
+			Sequence sequence = fastaSource.getSequence(assembly, interval);
+			String vSequence = sequence.value;
+
+			//Если есть маленькие буквы, то мы имеем дело с замаскированными регионами тандемных повторов
+			boolean maskedRegion = !vSequence.equals(vSequence.toUpperCase());
+
+			return maskedRegion;
+		});
+	}
 }

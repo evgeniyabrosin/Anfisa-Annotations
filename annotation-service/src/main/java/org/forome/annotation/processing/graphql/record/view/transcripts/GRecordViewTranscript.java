@@ -24,6 +24,7 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.struct.GtfAnfisaResult;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacetTranscript;
 import org.forome.annotation.processing.graphql.record.view.general.transcript.GRecordViewGeneralTranscript;
+import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
 import java.util.ArrayList;
@@ -35,16 +36,20 @@ import java.util.stream.Collectors;
 @GraphQLName("record_view_transcript")
 public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 
+	private final GContext gContext;
 	private final DbNSFPItemFacetTranscript dbNSFPTranscript;
 	private final GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distanceFromBoundary;
 
 	public GRecordViewTranscript(
+			GContext gContext,
 			String transcriptId,
 			VariantVep variantVep, JSONObject jTranscript,
 			DbNSFPItemFacetTranscript dbNSFPTranscript,
 			GtfAnfisaResult.RegionAndBoundary.DistanceFromBoundary distanceFromBoundary
 	) {
 		super(transcriptId, variantVep, jTranscript);
+
+		this.gContext = gContext;
 
 		this.dbNSFPTranscript = dbNSFPTranscript;
 		this.distanceFromBoundary = distanceFromBoundary;
@@ -292,6 +297,13 @@ public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 			return null;
 		}
 	}
+
+	@GraphQLField
+	@GraphQLName("masked_region")
+	public boolean getMaskedRegion() {
+		return gContext.context.getMaskedRegion(gContext.anfisaConnector);
+	}
+
 
 	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
 		put("Ala", "A");

@@ -23,6 +23,8 @@ import org.forome.annotation.struct.mavariant.MAVariant;
 import org.forome.annotation.struct.mavariant.MAVariantVCF;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +33,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SplitMAVariant {
+
+	private static final Logger log = LoggerFactory.getLogger(SplitMAVariant.class);
 
 	public static List<Variant> split(MAVariant maVariant) {
 		try {
@@ -75,6 +79,12 @@ public class SplitMAVariant {
 			for (int i = 0; i < alleles.size(); i++) {
 				Allele al = alleles.get(i);
 				if (al.getBaseString().trim().length() == 0) {
+					continue;
+				}
+
+				//Иногда встречаются vcf-файлы в которых ad не соотвествует аллелям
+				if (ad.length < i) {
+					log.warn("Bad vcf format: AD genotype: {}, variant: {}", genotype, maVariant);
 					continue;
 				}
 
