@@ -33,18 +33,22 @@ import java.util.stream.Collectors;
 public class SplitMAVariant {
 
 	public static List<Variant> split(MAVariant maVariant) {
-		List<Variant> variants = new ArrayList<>();
-		if (maVariant instanceof MAVariantVCF) {
-			MAVariantVCF maVariantVCF = (MAVariantVCF) maVariant;
-			for (Allele alt : getAlts(maVariantVCF)) {
-				VariantVCF variantVCF = new VariantVCF(maVariantVCF, alt);
-				variantVCF.setVepJson(maVariantVCF.getVepJson());
-				variants.add(variantVCF);
+		try {
+			List<Variant> variants = new ArrayList<>();
+			if (maVariant instanceof MAVariantVCF) {
+				MAVariantVCF maVariantVCF = (MAVariantVCF) maVariant;
+				for (Allele alt : getAlts(maVariantVCF)) {
+					VariantVCF variantVCF = new VariantVCF(maVariantVCF, alt);
+					variantVCF.setVepJson(maVariantVCF.getVepJson());
+					variants.add(variantVCF);
+				}
+			} else {
+				throw new RuntimeException();
 			}
-		} else {
-			throw new RuntimeException();
+			return variants;
+		} catch (Throwable e) {
+			throw new RuntimeException("Exception build variant: " + maVariant.toString(), e);
 		}
-		return variants;
 	}
 
 
