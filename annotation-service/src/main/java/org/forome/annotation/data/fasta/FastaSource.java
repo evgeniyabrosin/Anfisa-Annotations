@@ -88,7 +88,11 @@ public class FastaSource {
 				)
 		);
 		String value = response.getAsString("fasta");
-		return new Sequence(interval, value);
+		if (value == null) {
+			return null;
+		} else {
+			return new Sequence(interval, value);
+		}
 	}
 
 
