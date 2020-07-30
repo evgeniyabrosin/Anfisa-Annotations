@@ -84,56 +84,56 @@ public class GRecordFilters {
 
 	@GraphQLField
 	@GraphQLName("fs")
-	public double getFS() {
+	public Double getFS() {
 		if (variant instanceof VariantVCF) {
 			VariantContext variantContext = ((VariantVCF) variant).maVariantVCF.variantContext;
 			CommonInfo commonInfo = variantContext.getCommonInfo();
-			return MathUtils.toPrimitiveDouble(commonInfo.getAttribute("FS"));
+			return MathUtils.toDouble(commonInfo.getAttribute("FS"));
 		} else {
-			return 0;
+			return null;
 		}
 	}
 
 	@GraphQLField
 	@GraphQLName("qd")
 	@GraphQLDescription("Качество секвениерования")
-	public double getQD() {
+	public Double getQD() {
 		if (variant instanceof VariantVCF) {
 			VariantContext variantContext = ((VariantVCF) variant).maVariantVCF.variantContext;
 			CommonInfo commonInfo = variantContext.getCommonInfo();
-			return MathUtils.toPrimitiveDouble(commonInfo.getAttribute("QD"));
+			return MathUtils.toDouble(commonInfo.getAttribute("QD"));
 		} else {
-			return 0;
+			return null;
 		}
 	}
 
 	@GraphQLField
 	@GraphQLName("qual")
 	@GraphQLDescription("Сырое качество секвениерования")
-	public double getQual() {
+	public Double getQual() {
 		if (variant instanceof VariantVCF) {
 			VariantContext variantContext = ((VariantVCF) variant).maVariantVCF.variantContext;
 			return new BigDecimal(
 					variantContext.getPhredScaledQual()
 			).setScale(2, RoundingMode.HALF_UP).doubleValue();
 		} else {
-			return 0;
+			return null;
 		}
 	}
 
 	@GraphQLField
 	@GraphQLName("mq")
-	public double getMQ() {
+	public Double getMQ() {
 		if (variant instanceof VariantVCF) {
 			VariantContext variantContext = ((VariantVCF) variant).maVariantVCF.variantContext;
 			CommonInfo commonInfo = variantContext.getCommonInfo();
 			Object oMQAttribute = commonInfo.getAttribute("MQ");
 			if ("nan".equals(oMQAttribute)) {//В кейсе ipm0001 встретилась такая ситуация
-				return 0;
+				return null;
 			}
-			return MathUtils.toPrimitiveDouble(oMQAttribute);
+			return MathUtils.toDouble(oMQAttribute);
 		} else {
-			return 0;
+			return null;
 		}
 	}
 
