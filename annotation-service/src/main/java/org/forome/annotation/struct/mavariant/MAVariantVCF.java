@@ -18,7 +18,10 @@
 
 package org.forome.annotation.struct.mavariant;
 
+import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
+
+import java.util.stream.Collectors;
 
 public class MAVariantVCF extends MAVariantVep {
 
@@ -26,5 +29,20 @@ public class MAVariantVCF extends MAVariantVep {
 
 	public MAVariantVCF(VariantContext variantContext) {
 		this.variantContext = variantContext;
+	}
+
+	@Override
+	public String toString() {
+		String alts = variantContext.getAlternateAlleles().stream()
+				.map(Allele::getBaseString).collect(Collectors.joining(","));
+
+		StringBuilder sBuilder = new StringBuilder();
+		sBuilder.append("MAVariantVCF{")
+				.append(variantContext.getContig()).append(':')
+				.append(variantContext.getStart()).append(' ')
+				.append(variantContext.getReference().getBaseString()).append('>')
+				.append(alts);
+		sBuilder.append('}');
+		return sBuilder.toString();
 	}
 }
