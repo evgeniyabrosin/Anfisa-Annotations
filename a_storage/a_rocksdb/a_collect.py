@@ -129,10 +129,11 @@ class ACollect:
                 else:
                     _pos, _last_pos = pos, last_pos
                 if _pos is not None:
+                    key = (chrom, _pos)
                     for schema_h in self.mSchemaSeq_hg38:
                         if schema_h.getName() not in arrays:
                             continue
-                        rec_data = schema_h.getRecord((chrom, _pos), filtering)
+                        rec_data = schema_h.getRecord(key, filtering)
                         if rec_data is not None:
                             ret[schema_h.getName()] = rec_data
                         if last_pos is not None and self.mFastaTypes["hg38"] in arrays:
