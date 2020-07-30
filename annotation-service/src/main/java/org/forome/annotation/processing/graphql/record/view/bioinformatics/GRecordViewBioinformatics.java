@@ -115,4 +115,9 @@ public class GRecordViewBioinformatics {
 				.collect(Collectors.toList());
 	}
 
+	@GraphQLField
+	@GraphQLName("masked_region")
+	public boolean getMaskedRegion() {
+		return gContext.getMaskedRegion();
+	}
 }

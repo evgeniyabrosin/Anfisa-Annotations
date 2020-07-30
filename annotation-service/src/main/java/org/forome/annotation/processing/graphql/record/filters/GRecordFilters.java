@@ -210,4 +210,9 @@ public class GRecordFilters {
 				.collect(Collectors.toList());
 	}
 
+	@GraphQLField
+	@GraphQLName("masked_region")
+	public boolean getMaskedRegion() {
+		return gContext.getMaskedRegion();
+	}
 }

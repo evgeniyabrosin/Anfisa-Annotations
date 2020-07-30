@@ -14,6 +14,7 @@
         severity
         primate_ai_pred
         eqtl_gene
+        masked_region
     }
     _view {
         general {
@@ -30,6 +31,7 @@
         bioinformatics {
             refcodon
             eqtl_gene
+            masked_region
         }
         predictions {
             mutation_assessor_predictions

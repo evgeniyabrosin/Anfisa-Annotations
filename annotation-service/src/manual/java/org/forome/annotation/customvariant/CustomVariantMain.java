@@ -26,6 +26,7 @@ import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
+import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
@@ -72,6 +73,7 @@ public class CustomVariantMain {
 	private final HgmdConnector hgmdConnector;
 	private final ClinvarConnector clinvarConnector;
 	private final LiftoverConnector liftoverConnector;
+	private final FastaSource fastaSource;
 	private final GTFConnector gtfConnector;
 	private final GTEXConnector gtexConnector;
 	private final PharmGKBConnector pharmGKBConnector;
@@ -86,6 +88,7 @@ public class CustomVariantMain {
 		databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 
 		liftoverConnector = new LiftoverConnector();
+		fastaSource = new FastaSource(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
 		gnomadConnector = null;
 //		gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
@@ -132,7 +135,8 @@ public class CustomVariantMain {
 				gtfConnector,
 				gtexConnector,
 				pharmGKBConnector,
-				sourceHttp38
+				sourceHttp38,
+				fastaSource
 		);
 		processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 	}

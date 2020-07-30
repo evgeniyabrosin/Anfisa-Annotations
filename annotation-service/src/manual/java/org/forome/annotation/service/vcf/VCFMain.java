@@ -111,7 +111,8 @@ public class VCFMain {
 				gtfConnector,
 				gtexConnector,
 				pharmGKBConnector,
-				sourceHttp38
+				sourceHttp38,
+				fastaSource
 		);
 		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
 

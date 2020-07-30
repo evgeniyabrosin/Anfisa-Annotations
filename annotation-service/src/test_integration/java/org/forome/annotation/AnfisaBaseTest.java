@@ -144,7 +144,8 @@ public class AnfisaBaseTest {
 				gtfConnector,
 				gtexConnector,
 				pharmGKBConnector,
-				sourceHttp38
+				sourceHttp38,
+				fastaSource
 		);
 	}
 

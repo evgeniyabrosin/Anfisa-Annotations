@@ -221,7 +221,8 @@ public class CustomInputMain {
 					gtfConnector,
 					gtexConnector,
 					pharmGKBConnector,
-					sourceHttp38
+					sourceHttp38,
+					fastaSource
 			);
 			processing = new Processing(anfisaConnector, TypeQuery.WIDE_HG19);
 

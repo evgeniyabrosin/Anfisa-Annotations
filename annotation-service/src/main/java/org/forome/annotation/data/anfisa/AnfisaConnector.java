@@ -35,6 +35,7 @@ import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.data.dbnsfp.DbNSFPConnector;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
 import org.forome.annotation.data.dbsnp.DbSNPConnector;
+import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -96,6 +97,8 @@ public class AnfisaConnector implements AutoCloseable {
 
 	public final DbNSFPConnector dbNSFPConnector;
 
+	public final FastaSource fastaSource;
+
 	public AnfisaConnector(
 			GnomadConnector gnomadConnector,
 			SpliceAIConnector spliceAIConnector,
@@ -106,7 +109,8 @@ public class AnfisaConnector implements AutoCloseable {
 			GTFConnector gtfConnector,
 			GTEXConnector gtexConnector,
 			PharmGKBConnector pharmGKBConnector,
-			AStorageHttp aStorageHttp
+			AStorageHttp aStorageHttp,
+			FastaSource fastaSource
 	) {
 		this.gnomadConnector = gnomadConnector;
 		this.spliceAIConnector = spliceAIConnector;
@@ -122,6 +126,8 @@ public class AnfisaConnector implements AutoCloseable {
 		this.aStorageHttp = aStorageHttp;
 
 		this.dbNSFPConnector = new DbNSFPConnector();
+
+		this.fastaSource = fastaSource;
 	}
 
 	public AnfisaResult build(
