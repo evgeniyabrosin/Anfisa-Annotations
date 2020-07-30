@@ -252,11 +252,17 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		if (sequence19Start == null || sequence19End == null || sequence19Start.value > sequence19End.value) {
 			return Collections.emptyList();
 		}
+		if (Math.abs(sequence19End.value - sequence19Start.value) > 1000) {
+			return Collections.emptyList();
+		}
 
 		Sequence sequence19 = fastaSource.getSequence(
 				Assembly.GRCh37,
 				Interval.of(chromosome, sequence19Start.value, sequence19End.value)
 		);
+		if (sequence19 == null) {
+			return Collections.emptyList();
+		}
 
 		//Проверяем, что при наложеная мутация на ref (hg38) мы получим ref (hg19) - обязательное услови
 		if (!sequence19.value.equals(mergeSequence)) {
