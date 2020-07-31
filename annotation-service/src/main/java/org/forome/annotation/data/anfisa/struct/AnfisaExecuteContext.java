@@ -64,8 +64,8 @@ public class AnfisaExecuteContext {
 			Assembly assembly = anfisaInput.mCase.assembly;
 			Interval interval = Interval.of(
 					variant.chromosome,
-					Math.min(variant.getStart(), variant.end),
-					Math.max(variant.getStart(), variant.end)
+					variant.getStart(),
+					(variant.getStart() < variant.end) ? variant.end : variant.getStart()
 			);
 			Sequence sequence = fastaSource.getSequence(context, assembly, interval);
 			String vSequence = sequence.value;
