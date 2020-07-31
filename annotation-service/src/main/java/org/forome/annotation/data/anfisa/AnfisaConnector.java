@@ -376,14 +376,32 @@ public class AnfisaConnector implements AutoCloseable {
 				}
 			}};
 
+			Map<String, LinkedHashSet<String>> clinVarSubmitters = new LinkedHashMap<String, LinkedHashSet<String>>() {{
+				for (ClinvarResult clinvarResult : clinvarResults) {
+					for (Map.Entry<String, String> entry : clinvarResult.submitters.entrySet()) {
+						LinkedHashSet<String> values = getOrDefault(entry.getKey(), new LinkedHashSet<>());
+						values.add(entry.getValue());
+						put(entry.getKey(), values);
+					}
+				}
+			}};
+			view.databases.clinVarSubmitters = clinVarSubmitters.entrySet().stream()
+					.map(entry ->
+							(entry.getValue().size() > 1) ?
+									String.format("%s: {%s}",
+											encodeToAscii(entry.getKey()),
+											String.join(", ", entry.getValue())) :
+									String.format("%s: %s",
+											encodeToAscii(entry.getKey()),
+											String.join(", ", entry.getValue())
+									)
+					).sorted().toArray(String[]::new);
+
 			view.databases.clinVar = clinvarResults.stream()
 					.map(clinvarResult -> clinvarResult.variationID)
 					.map(it -> String.format("https://www.ncbi.nlm.nih.gov/clinvar/variation/%s/", it))
 					.toArray(String[]::new);
 			data.clinvarVariants = variants;
-			view.databases.clinVarSubmitters = data.clinvarSubmitters.entrySet().stream().map(entry -> {
-				return String.format("%s: %s", encodeToAscii(entry.getKey()), entry.getValue());
-			}).sorted().toArray(String[]::new);
 			data.clinvarSignificance = significance.toArray(new String[significance.size()]);
 			data.clinvarPhenotypes = clinvarResults.stream()
 					.map(clinvarResult -> clinvarResult.phenotypeList)
