@@ -18,6 +18,8 @@
 
 package org.forome.annotation.data.fasta;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.apache.http.HttpEntity;
@@ -33,6 +35,8 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
+import org.forome.annotation.data.astorage.struct.AStorageSource;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Assembly;
@@ -60,6 +64,8 @@ public class FastaSource {
 	private final PoolingNHttpClientConnectionManager connectionManager;
 	private final HttpHost httpHost;
 
+	private final Cache cache;
+
 	public FastaSource(
 			DatabaseConnectService databaseConnectService,
 			AStorageConfigConnector aStorageConfigConnector
@@ -77,24 +83,58 @@ public class FastaSource {
 		connectionManager.setDefaultMaxPerRoute(100);
 
 		httpHost = new HttpHost(aStorage.host, aStorage.port, "http");
+
+		this.cache = CacheBuilder.newBuilder()
+				.maximumSize(1000)
+				.build();
 	}
 
-	public Sequence getSequence(Assembly assembly, Interval interval) {
-		JSONObject response = request(
-				String.format("http://%s:%s/get?array=fasta&type=%s&loc=%s:%s-%s",
-						aStorage.host, aStorage.port,
-						(assembly == Assembly.GRCh37) ? "hg19" : "hg38",
-						interval.chromosome.getChar(), interval.start, interval.end
-				)
-		);
-		String value = response.getAsString("fasta");
+	public Sequence getSequence(AnfisaExecuteContext context, Assembly assembly, Interval interval) {
+		AStorageSource sourceAStorageHttp = context.sourceAStorageHttp;
+
+		String value;
+		if (sourceAStorageHttp.assembly == assembly &&
+				interval.start == sourceAStorageHttp.getStart(assembly) &&
+				interval.end == sourceAStorageHttp.getEnd(assembly)
+		) {
+			switch (assembly) {
+				case GRCh37:
+					value = sourceAStorageHttp.data.getAsString("fasta/hg19");
+					break;
+				case GRCh38:
+					value = sourceAStorageHttp.data.getAsString("fasta/hg38");
+					break;
+				default:
+					throw new RuntimeException("Unknown assembly: " + assembly);
+			}
+		} else {
+			String key = String.format(
+					"%s:%s:%s:%s", assembly.name(), interval.chromosome.getChar(),
+					interval.start, interval.end
+			);
+
+			try {
+				value = (String) cache.get(key, () -> {
+					JSONObject response = request(
+							String.format("http://%s:%s/get?array=fasta&type=%s&loc=%s:%s-%s",
+									aStorage.host, aStorage.port,
+									(assembly == Assembly.GRCh37) ? "hg19" : "hg38",
+									interval.chromosome.getChar(), interval.start, interval.end
+							)
+					);
+					return response.getAsString("fasta");
+				});
+			} catch (ExecutionException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		if (value == null) {
 			return null;
 		} else {
 			return new Sequence(interval, value);
 		}
 	}
-
 
 	private JSONObject request(String url) {
 		CompletableFuture<JSONObject> future = new CompletableFuture<>();

@@ -232,6 +232,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		Chromosome chromosome = variant.chromosome;
 
 		Sequence sequence38 = fastaSource.getSequence(
+				context,
 				Assembly.GRCh38,
 				Interval.of(variant.chromosome,
 						variant.getStart() - 1,
@@ -257,6 +258,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		}
 
 		Sequence sequence19 = fastaSource.getSequence(
+				context,
 				Assembly.GRCh37,
 				Interval.of(chromosome, sequence19Start.value, sequence19End.value)
 		);
@@ -291,19 +293,9 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 
 
 	private List<JSONObject> getData(AnfisaExecuteContext context, Position pos37) {
-		JSONObject sourceAStorageHttp = context.sourceAStorageHttp;
-		Assembly assembly = context.anfisaInput.mCase.assembly;
-		Number sourcePos37;
-		switch (assembly) {
-			case GRCh37:
-				sourcePos37 = sourceAStorageHttp.getAsNumber("pos");
-				break;
-			case GRCh38:
-				sourcePos37 = sourceAStorageHttp.getAsNumber("hg19");
-				break;
-			default:
-				throw new RuntimeException("Unknown assembly: " + assembly);
-		}
+		JSONObject sourceAStorageHttp = context.sourceAStorageHttp.data;
+
+		Integer sourcePos37 = context.sourceAStorageHttp.getStart37();
 
 		JSONArray jRecords;
 		if (sourcePos37 != null && sourcePos37.intValue() == pos37.value) {
@@ -320,7 +312,6 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		return jRecords.stream()
 				.map(o -> (JSONObject) o)
 				.collect(Collectors.toList());
-
 	}
 
 	private JSONObject request(String url) {

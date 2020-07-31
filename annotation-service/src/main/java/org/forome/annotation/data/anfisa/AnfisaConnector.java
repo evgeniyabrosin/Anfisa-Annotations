@@ -147,7 +147,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 		data.version = AppVersion.getVersionFormat();
 		context.sourceAStorageHttp = aStorageHttp.get(
-				anfisaInput.mCase.assembly, variant.chromosome, variant.getStart()
+				anfisaInput.mCase.assembly, variant
 		);
 
 		callGnomAD(context, variant, anfisaInput.mCase, filters);

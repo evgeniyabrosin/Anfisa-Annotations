@@ -120,7 +120,7 @@ public class GRecordView {
 						.filter(dbNSFPItemFacetTranscript -> transcriptId.equals(dbNSFPItemFacetTranscript.ensemblTranscriptId))
 						.collect(Collectors.toList());
 				if (findTranscripts.size() > 1) {
-					throw new RuntimeException("Not unique transcriptId:" + transcriptId + ", values: " + gContext.context.sourceAStorageHttp.toJSONString());
+					throw new RuntimeException("Not unique transcriptId:" + transcriptId + ", values: " + gContext.context.sourceAStorageHttp.data.toJSONString());
 				}
 				DbNSFPItemFacetTranscript dbNSFPTranscript = (findTranscripts.isEmpty()) ? null : findTranscripts.get(0);
 

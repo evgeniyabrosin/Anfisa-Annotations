@@ -153,7 +153,7 @@ public class GtfAnfisaBuilder {
 		List<String> regions = distances.stream()
 				.map(distance -> distance.region)
 				.distinct().collect(Collectors.toList());
-		if (context.getMaskedRegion(anfisaConnector)) {
+		if (context.getMaskedRegion(anfisaConnector, context)) {
 			regions.add("masked_repeats");
 		}
 
