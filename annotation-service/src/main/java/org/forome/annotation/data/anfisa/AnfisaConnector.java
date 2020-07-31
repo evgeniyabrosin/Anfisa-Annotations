@@ -88,6 +88,7 @@ public class AnfisaConnector implements AutoCloseable {
 	public final HgmdConnector hgmdConnector;
 	public final ClinvarConnector clinvarConnector;
 	public final LiftoverConnector liftoverConnector;
+	public final GTFConnector gtfConnector;
 
 	public final GtfAnfisaBuilder gtfAnfisaBuilder;
 	public final GTEXConnector gtexConnector;
@@ -118,6 +119,7 @@ public class AnfisaConnector implements AutoCloseable {
 		this.hgmdConnector = hgmdConnector;
 		this.clinvarConnector = clinvarConnector;
 		this.liftoverConnector = liftoverConnector;
+		this.gtfConnector = gtfConnector;
 		this.gtexConnector = gtexConnector;
 		this.pharmGKBConnector = pharmGKBConnector;
 

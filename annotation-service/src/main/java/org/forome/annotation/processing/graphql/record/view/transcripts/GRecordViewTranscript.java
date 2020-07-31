@@ -27,10 +27,7 @@ import org.forome.annotation.processing.graphql.record.view.general.transcript.G
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @GraphQLName("record_view_transcript")
@@ -304,6 +301,12 @@ public class GRecordViewTranscript extends GRecordViewGeneralTranscript {
 		return gContext.context.getMaskedRegion(gContext.anfisaConnector, gContext.context);
 	}
 
+	@GraphQLField
+	@GraphQLName("cds")
+	public boolean isCds() {
+		Set<String> cdsTranscripts = gContext.context.getCdsTranscripts(gContext.anfisaConnector);
+		return cdsTranscripts.contains(transcriptId);
+	}
 
 	private static final Map<String, String> proteins_3_to_1 = new HashMap<String, String>() {{
 		put("Ala", "A");
