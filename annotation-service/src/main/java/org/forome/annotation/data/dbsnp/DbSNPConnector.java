@@ -43,7 +43,7 @@ public class DbSNPConnector {
 			}
 		}
 
-		JSONArray jRecords = (JSONArray) context.sourceAStorageHttp.get("dbSNP");
+		JSONArray jRecords = (JSONArray) context.sourceAStorageHttp.data.get("dbSNP");
 		if (jRecords == null) {
 			return Collections.emptyList();
 		}

@@ -213,6 +213,6 @@ public class GRecordFilters {
 	@GraphQLField
 	@GraphQLName("masked_region")
 	public boolean getMaskedRegion() {
-		return gContext.context.getMaskedRegion(gContext.anfisaConnector);
+		return gContext.context.getMaskedRegion(gContext.anfisaConnector, gContext.context);
 	}
 }

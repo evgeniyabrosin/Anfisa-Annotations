@@ -36,11 +36,12 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
+import org.forome.annotation.data.astorage.struct.AStorageSource;
 import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.variant.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,12 +90,13 @@ public class AStorageHttp {
 
 	}
 
-	public JSONObject get(Assembly assembly, Chromosome chromosome, int position) {
+	public AStorageSource get(Assembly assembly, Variant variant) {
 		JSONObject params = new JSONObject();
 		params.put("variants", new JSONArray() {{
 			add(new JSONObject() {{
-				put("chrom", chromosome.getChromosome());
-				put("pos", position);
+				put("chrom", variant.chromosome.getChromosome());
+				put("pos", variant.getStart());
+				put("last", (variant.getStart() < variant.end) ? variant.end : variant.getStart());
 			}});
 		}});
 		if (assembly == Assembly.GRCh37) {
@@ -104,11 +106,18 @@ public class AStorageHttp {
 		} else {
 			throw new RuntimeException("Unknown assembly: " + assembly);
 		}
-		params.put("arrays", new JSONArray(){{
+		params.put("arrays", new JSONArray() {{
 			add("SpliceAI");
 			add("dbNSFP");
 			add("gnomAD");
 			add("dbSNP");
+			if (assembly == Assembly.GRCh37) {
+				add("fasta/hg19");
+			} else if (assembly == Assembly.GRCh38) {
+				add("fasta/hg38");
+			} else {
+				throw new RuntimeException("Unknown assembly: " + assembly);
+			}
 		}});
 
 		int attempts = 5;
@@ -116,7 +125,7 @@ public class AStorageHttp {
 			JSONObject response = null;
 			try {
 				response = request(params);
-				return response;
+				return new AStorageSource(assembly, response);
 			} catch (Throwable t) {
 				if (attempts-- > 0) {
 					log.error("Exception request, last attempts: {}", attempts, t);
@@ -131,7 +140,7 @@ public class AStorageHttp {
 			} finally {
 				if (assembly == Assembly.GRCh37) {
 					int resultPos = response.getAsNumber("pos").intValue();
-					if (position != resultPos) {
+					if (variant.getStart() != resultPos) {
 						throw new RuntimeException("request: " + params.toJSONString() + "response: " + response);
 					}
 				}

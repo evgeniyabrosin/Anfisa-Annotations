@@ -20,6 +20,7 @@ package org.forome.annotation.data.anfisa.struct;
 
 import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
+import org.forome.annotation.data.astorage.struct.AStorageSource;
 import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Interval;
@@ -40,7 +41,7 @@ public class AnfisaExecuteContext {
 
 	public Double gnomadAfFam;
 
-	public JSONObject sourceAStorageHttp;
+	public AStorageSource sourceAStorageHttp;
 
 	private final Map<String, Object> cache;
 
@@ -57,7 +58,7 @@ public class AnfisaExecuteContext {
 		this.cache = new HashMap<>();
 	}
 
-	public boolean getMaskedRegion(AnfisaConnector anfisaConnector) {
+	public boolean getMaskedRegion(AnfisaConnector anfisaConnector, AnfisaExecuteContext context) {
 		return (boolean) cache.computeIfAbsent(CACHE_MASKED_REGION, s -> {
 			FastaSource fastaSource = anfisaConnector.fastaSource;
 			Assembly assembly = anfisaInput.mCase.assembly;
@@ -66,7 +67,7 @@ public class AnfisaExecuteContext {
 					Math.min(variant.getStart(), variant.end),
 					Math.max(variant.getStart(), variant.end)
 			);
-			Sequence sequence = fastaSource.getSequence(assembly, interval);
+			Sequence sequence = fastaSource.getSequence(context, assembly, interval);
 			String vSequence = sequence.value;
 
 			//Если есть маленькие буквы, то мы имеем дело с замаскированными регионами тандемных повторов
