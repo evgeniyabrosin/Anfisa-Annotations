@@ -22,13 +22,18 @@ import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Position;
+import org.forome.annotation.struct.variant.Variant;
 
 import java.io.Closeable;
 import java.util.List;
+import java.util.Set;
 
 public interface GTFDataSource extends Closeable {
 
 	List<GTFTranscriptRow> lookup(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript);
 
+	Set<String> getCdsTranscript(Assembly assembly, Variant variant);
+
 	void close();
+
 }

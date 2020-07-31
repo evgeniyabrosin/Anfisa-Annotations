@@ -43,12 +43,14 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Position;
+import org.forome.annotation.struct.variant.Variant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -128,6 +130,11 @@ public class GTFDataSourceHttp implements GTFDataSource {
 		}
 
 		return records.stream().map(jsonObject -> build(jsonObject)).collect(Collectors.toList());
+	}
+
+	@Override
+	public Set<String> getCdsTranscript(Assembly assembly, Variant variant) {
+		throw new RuntimeException("Not implemented");
 	}
 
 	private GTFTranscriptRow build(JSONObject item) {

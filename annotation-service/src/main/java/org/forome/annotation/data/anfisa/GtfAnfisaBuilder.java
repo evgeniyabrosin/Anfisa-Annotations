@@ -115,8 +115,6 @@ public class GtfAnfisaBuilder {
 	}
 
 	private GtfAnfisaResult.RegionAndBoundary getRegion(AnfisaExecuteContext context, VariantVep variant, Kind kind) {
-		Assembly assembly = context.anfisaInput.mCase.assembly;
-
 		//TODO Ulitin V. Отличие от python-реализации
 		//Дело в том, что в оригинальной версии используется set для позиции, но в коде ниже используется итерация этому
 		//списку и в конечном итоге это вляет на значение поля region - судя по всему это потенциальный баг и
@@ -208,6 +206,8 @@ public class GtfAnfisaBuilder {
 			return null;
 		}
 	}
+
+
 
 	private List<JSONObject> getVepTranscripts(VariantVep variant, Kind kind) {
 		if (kind == Kind.CANONICAL) {

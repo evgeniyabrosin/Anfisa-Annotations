@@ -29,10 +29,12 @@ import org.forome.annotation.struct.variant.Variant;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class AnfisaExecuteContext {
 
 	private final String CACHE_MASKED_REGION = "masked_region";
+	private final String CACHE_CDS_TRANSCRIPTS = "cds+transcripts";
 
 	public final AnfisaInput anfisaInput;
 
@@ -74,6 +76,13 @@ public class AnfisaExecuteContext {
 			boolean maskedRegion = !vSequence.equals(vSequence.toUpperCase());
 
 			return maskedRegion;
+		});
+	}
+
+	public Set<String> getCdsTranscripts(AnfisaConnector anfisaConnector) {
+		return (Set<String>) cache.computeIfAbsent(CACHE_CDS_TRANSCRIPTS, s -> {
+			Assembly assembly = anfisaInput.mCase.assembly;
+			return anfisaConnector.gtfConnector.getCdsTranscript(assembly, variant);
 		});
 	}
 }

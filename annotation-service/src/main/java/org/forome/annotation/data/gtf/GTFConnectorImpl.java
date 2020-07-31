@@ -29,10 +29,12 @@ import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
+import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -205,6 +207,10 @@ public class GTFConnectorImpl implements GTFConnector {
 		}
 
 		return new Object[]{ d, new GTFRegion(region, (int) index), rows.size() };
+	}
+
+	public Set<String> getCdsTranscript(Assembly assembly, Variant variant) {
+		return gtfDataSource.getCdsTranscript(assembly, variant);
 	}
 
 	@Override

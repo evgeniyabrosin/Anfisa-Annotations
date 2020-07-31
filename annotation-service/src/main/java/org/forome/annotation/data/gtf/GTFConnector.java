@@ -25,8 +25,10 @@ import org.forome.annotation.data.gtf.mysql.struct.GTFResultLookup;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Position;
+import org.forome.annotation.struct.variant.Variant;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public interface GTFConnector extends AutoCloseable {
@@ -36,6 +38,8 @@ public interface GTFConnector extends AutoCloseable {
 	CompletableFuture<GTFRegion> getRegion(AnfisaExecuteContext context, Assembly assembly, Position position, String transcript);
 
 	Object[] lookup(AnfisaExecuteContext context, Assembly assembly, Position pos, String transcript);
+
+	Set<String> getCdsTranscript(Assembly assembly, Variant variant);
 
 	CompletableFuture<List<GTFResultLookup>> getRegionByChromosomeAndPositions(AnfisaExecuteContext context, String chromosome, long[] positions);
 
