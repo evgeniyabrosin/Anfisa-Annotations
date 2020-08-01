@@ -67,6 +67,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.zip.GZIPInputStream;
@@ -312,8 +313,19 @@ public class AnnotationConsole {
 					e -> fail(e, finalVcfFile, arguments),
 					() -> {
 						log.debug("progress completed");
-						log.debug("conservation statistics: {}", conservationConnector.getStatistics());
-						log.debug("aStorage statistics: {}", anfisaConnector.aStorageHttp.getStatistics());
+						log.debug("conservation: {}", conservationConnector.getStatistics());
+						log.debug("aStorage: {}", anfisaConnector.aStorageHttp.getStatistics());
+						log.debug("fasta: {}", anfisaConnector.fastaSource.getStatistics());
+						log.debug("gtf: {}", anfisaConnector.gtfAnfisaBuilder.statisticGtfs.getStat());
+						log.debug("gtf cds: {}", ((GTFConnectorImpl) anfisaConnector.gtfConnector).statisticCds.getStat());
+						log.debug("anfisa: {}", processing.anfisaStatistics.getStat());
+						log.debug("graphql: {}", processing.graphqlStatistics.getStat());
+						processing.statisticsInstrumentation.statistics.entrySet().stream()
+								.sorted(Comparator.comparingLong(o -> o.getValue().getStat().fullMillisTime))
+								.forEach(entry -> {
+									log.debug("graphql: {}, {}", entry.getKey(), entry.getValue().getStat());
+								});
+
 						bos.close();
 						os.close();
 						anfisaConnector.close();

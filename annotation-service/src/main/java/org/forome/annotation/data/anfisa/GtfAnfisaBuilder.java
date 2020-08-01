@@ -31,6 +31,7 @@ import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
 import org.forome.annotation.struct.variant.vep.VariantVep;
+import org.forome.annotation.utils.Statistics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,8 @@ public class GtfAnfisaBuilder {
 
 	private final AnfisaConnector anfisaConnector;
 	private final GTFConnector gtfConnector;
+
+	public final Statistics statisticGtfs = new Statistics();
 
 	protected GtfAnfisaBuilder(AnfisaConnector anfisaConnector, GTFConnector gtfConnector) {
 		this.anfisaConnector = anfisaConnector;
@@ -108,10 +111,15 @@ public class GtfAnfisaBuilder {
 	}
 
 	public GtfAnfisaResult buildVep(AnfisaExecuteContext context, VariantVep variant) {
-		return new GtfAnfisaResult(
-				getRegion(context, variant, Kind.CANONICAL),
-				getRegion(context, variant, Kind.WORST)
-		);
+		long t1 = System.currentTimeMillis();
+		try {
+			return new GtfAnfisaResult(
+					getRegion(context, variant, Kind.CANONICAL),
+					getRegion(context, variant, Kind.WORST)
+			);
+		} finally {
+			statisticGtfs.addTime(System.currentTimeMillis() - t1);
+		}
 	}
 
 	private GtfAnfisaResult.RegionAndBoundary getRegion(AnfisaExecuteContext context, VariantVep variant, Kind kind) {

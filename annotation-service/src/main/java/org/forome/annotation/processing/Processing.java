@@ -33,11 +33,13 @@ import org.forome.annotation.data.anfisa.struct.AnfisaInput;
 import org.forome.annotation.data.anfisa.struct.AnfisaResult;
 import org.forome.annotation.processing.graphql.record.GRecord;
 import org.forome.annotation.processing.smavariant.SplitMAVariant;
+import org.forome.annotation.processing.statistics.StatisticsInstrumentation;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.struct.mavariant.MAVariant;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.utils.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +57,10 @@ public class Processing {
 
 	private final String graphQLQuery;
 
+	public final Statistics graphqlStatistics = new Statistics();
+	public final Statistics anfisaStatistics = new Statistics();
+	public final StatisticsInstrumentation statisticsInstrumentation = new StatisticsInstrumentation();
+
 	public Processing(AnfisaConnector anfisaConnector, TypeQuery typeQuery) {
 		this.anfisaConnector = anfisaConnector;
 
@@ -64,6 +70,7 @@ public class Processing {
 
 		graphQL = GraphQL
 				.newGraphQL(graphQLSchema)
+				.instrumentation(statisticsInstrumentation)
 				.build();
 
 		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("graphql/annotator/" + typeQuery.fileNameGraphQLQuery)) {
@@ -100,12 +107,16 @@ public class Processing {
 
 			JSONObject result = new JSONObject();
 
+			long t1 = System.currentTimeMillis();
 			AnfisaResult anfisaResult = anfisaConnector.build(
 					new AnfisaInput.Builder(mCase.assembly).withSamples(mCase).build(),
 					variant
 			);
+			anfisaStatistics.addTime(System.currentTimeMillis() - t1);
+
 			result.merge(anfisaResult.toJSON());
 
+			t1 = System.currentTimeMillis();
 			ExecutionResult graphQLExecutionResult = graphQL.execute(
 					ExecutionInput.newExecutionInput()
 							.query(graphQLQuery)
@@ -122,6 +133,7 @@ public class Processing {
 				log.error("exception: " + graphQLExecutionResult.getErrors());
 				throw new RuntimeException();
 			}
+			graphqlStatistics.addTime(System.currentTimeMillis() - t1);
 
 			//TODO Ulitin V. удалить временный костыль, введен из-за проблем мержинга данных
 			JSONObject graphQLResult;
