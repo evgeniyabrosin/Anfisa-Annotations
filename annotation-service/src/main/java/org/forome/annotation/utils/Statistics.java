@@ -37,16 +37,16 @@ public class Statistics {
 
 		@Override
 		public String toString() {
-			return "Stat{" +
-					"count=" + count +
-					", fullTime=" + fullMillisTime + " (millis)" +
-					", averageTime=" + String.format ("%.2f", averageMillisTime) + " (millis)" +
-					'}';
+			return "Stat(" +
+					"count: " + count +
+					", time: " + fullMillisTime + " (millis)" +
+					", average: " + String.format ("%.3f", averageMillisTime) + " (millis)" +
+					')';
 		}
 	}
 
-	private final AtomicInteger count;
-	private final AtomicLong time;
+	public final AtomicInteger count;
+	public final AtomicLong time;
 
 	public Statistics() {
 		this.count = new AtomicInteger();

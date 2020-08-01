@@ -31,6 +31,7 @@ import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
+import org.forome.annotation.utils.Statistics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,8 @@ public class GTFConnectorImpl implements GTFConnector {
 //	private final LiftoverConnector liftoverConnector;
 
 	private final ExecutorService threadPoolGTFExecutor;
+
+	public final Statistics statisticCds = new Statistics();
 
 	public GTFConnectorImpl(
 			GTFDataSource gtfDataSource,
@@ -210,7 +213,12 @@ public class GTFConnectorImpl implements GTFConnector {
 	}
 
 	public Set<String> getCdsTranscript(Assembly assembly, Variant variant) {
-		return gtfDataSource.getCdsTranscript(assembly, variant);
+		long t1 = System.currentTimeMillis();
+		try {
+			return gtfDataSource.getCdsTranscript(assembly, variant);
+		} finally {
+			statisticCds.addTime(System.currentTimeMillis() - t1);
+		}
 	}
 
 	@Override

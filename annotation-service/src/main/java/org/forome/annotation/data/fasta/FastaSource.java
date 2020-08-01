@@ -42,6 +42,7 @@ import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Sequence;
+import org.forome.annotation.utils.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +67,8 @@ public class FastaSource {
 
 	private final Cache cache;
 
+	private final Statistics statistics;
+
 	public FastaSource(
 			DatabaseConnectService databaseConnectService,
 			AStorageConfigConnector aStorageConfigConnector
@@ -87,6 +90,8 @@ public class FastaSource {
 		this.cache = CacheBuilder.newBuilder()
 				.maximumSize(1000)
 				.build();
+
+		this.statistics = new Statistics();
 	}
 
 	public Sequence getSequence(AnfisaExecuteContext context, Assembly assembly, Interval interval) {
@@ -113,6 +118,7 @@ public class FastaSource {
 					interval.start, interval.end
 			);
 
+			long t1 = System.currentTimeMillis();
 			try {
 				value = (String) cache.get(key, () -> {
 					JSONObject response = request(
@@ -126,6 +132,8 @@ public class FastaSource {
 				});
 			} catch (ExecutionException e) {
 				throw new RuntimeException(e);
+			} finally {
+				statistics.addTime(System.currentTimeMillis() - t1);
 			}
 		}
 
@@ -210,5 +218,9 @@ public class FastaSource {
 		} catch (ExecutionException e) {
 			throw new RuntimeException(e.getCause());
 		}
+	}
+
+	public Statistics.Stat getStatistics() {
+		return statistics.getStat();
 	}
 }
