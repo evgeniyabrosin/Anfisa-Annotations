@@ -42,6 +42,7 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.utils.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +68,8 @@ public class AStorageHttp {
 	private final PoolingNHttpClientConnectionManager connectionManager;
 	private final HttpHost httpHost;
 
+	private final Statistics statistics;
+
 	public AStorageHttp(
 			DatabaseConnectService databaseConnectService,
 			LiftoverConnector liftoverConnector,
@@ -88,6 +91,7 @@ public class AStorageHttp {
 
 		httpHost = new HttpHost(aStorage.host, aStorage.port, "http");
 
+		this.statistics = new Statistics();
 	}
 
 	public AStorageSource get(Assembly assembly, Variant variant) {
@@ -124,7 +128,9 @@ public class AStorageHttp {
 		while (true) {
 			JSONObject response = null;
 			try {
+				long t1 = System.currentTimeMillis();
 				response = request(params);
+				statistics.addTime(System.currentTimeMillis() - t1);
 				return new AStorageSource(assembly, response);
 			} catch (Throwable t) {
 				if (attempts-- > 0) {
@@ -226,5 +232,9 @@ public class AStorageHttp {
 		} catch (ExecutionException e) {
 			throw new RuntimeException(e.getCause());
 		}
+	}
+
+	public Statistics.Stat getStatistics() {
+		return statistics.getStat();
 	}
 }

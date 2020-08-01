@@ -26,21 +26,21 @@ public class Statistics {
 	public class Stat {
 
 		public final int count;
-		public final long fullNanoTime;
-		public final double averageNanoTime;
+		public final long fullMillisTime;
+		public final double averageMillisTime;
 
-		public Stat(int count, long fullNanoTime) {
+		public Stat(int count, long fullMillisTime) {
 			this.count = count;
-			this.fullNanoTime = fullNanoTime;
-			this.averageNanoTime = fullNanoTime / (float) count;
+			this.fullMillisTime = fullMillisTime;
+			this.averageMillisTime = fullMillisTime / (float) count;
 		}
 
 		@Override
 		public String toString() {
 			return "Stat{" +
 					"count=" + count +
-					", fullNanoTime=" + fullNanoTime +
-					", averageNanoTime=" + averageNanoTime +
+					", fullTime=" + fullMillisTime + " (millis)" +
+					", averageTime=" + String.format ("%.2f", averageMillisTime) + " (millis)" +
 					'}';
 		}
 	}
@@ -53,9 +53,9 @@ public class Statistics {
 		this.time = new AtomicLong();
 	}
 
-	public void addTime(long timeNano) {
+	public void addTime(long timeMillis) {
 		count.incrementAndGet();
-		time.addAndGet(timeNano);
+		time.addAndGet(timeMillis);
 	}
 
 	public Stat getStat() {

@@ -94,7 +94,7 @@ public class AnfisaConnector implements AutoCloseable {
 	public final GTEXConnector gtexConnector;
 	public final PharmGKBConnector pharmGKBConnector;
 
-	private final AStorageHttp aStorageHttp;
+	public final AStorageHttp aStorageHttp;
 
 	public final DbNSFPConnector dbNSFPConnector;
 

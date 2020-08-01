@@ -90,7 +90,7 @@ public class ConservationData {
 	}
 
 	private GerpData getGerpDataFromRocksDB(Assembly assembly, Interval interval) {
-		long t1 = System.nanoTime();
+		long t1 = System.currentTimeMillis();
 		try {
 			Source source = databaseConnectService.getSource(assembly);
 
@@ -133,7 +133,7 @@ public class ConservationData {
 				return null;
 			}
 		} finally {
-			statistics.addTime(System.nanoTime() - t1);
+			statistics.addTime(System.currentTimeMillis() - t1);
 		}
 	}
 

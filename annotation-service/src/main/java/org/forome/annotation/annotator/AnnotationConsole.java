@@ -313,6 +313,7 @@ public class AnnotationConsole {
 					() -> {
 						log.debug("progress completed");
 						log.debug("conservation statistics: {}", conservationConnector.getStatistics());
+						log.debug("aStorage statistics: {}", anfisaConnector.aStorageHttp.getStatistics());
 						bos.close();
 						os.close();
 						anfisaConnector.close();
