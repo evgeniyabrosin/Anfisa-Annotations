@@ -31,17 +31,18 @@ public class VariantVCF extends VariantVep {
 
 	public final MAVariantVCF maVariantVCF;
 
-	private final Allele ref;
-	private final Allele alt;
+	private final AlleleVCF ref;
+	private final AlleleVCF alt;
 
-	public VariantVCF(MAVariantVCF maVariantVCF, Allele alt) {
+	public VariantVCF(MAVariantVCF maVariantVCF, AlleleVCF alt) {
 		super(
 				Chromosome.of(maVariantVCF.variantContext.getContig()),
 				getEnd(maVariantVCF.variantContext)
 		);
 		this.maVariantVCF = maVariantVCF;
 
-		this.ref = new Allele(maVariantVCF.variantContext.getReference().getBaseString());
+		String refBaseString = maVariantVCF.variantContext.getReference().getBaseString();
+		this.ref = new AlleleVCF(refBaseString, new Allele(refBaseString));
 		this.alt = alt;
 	}
 
