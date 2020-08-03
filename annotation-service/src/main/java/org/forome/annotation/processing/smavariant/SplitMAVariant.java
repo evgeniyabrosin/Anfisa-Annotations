@@ -22,6 +22,7 @@ import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.mavariant.MAVariant;
 import org.forome.annotation.struct.mavariant.MAVariantVCF;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.vcf.AlleleVCF;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,12 @@ public class SplitMAVariant {
 			List<Variant> variants = new ArrayList<>();
 			if (maVariant instanceof MAVariantVCF) {
 				MAVariantVCF maVariantVCF = (MAVariantVCF) maVariant;
-				for (Allele alt : getAlts(maVariantVCF)) {
+
+				List<AlleleVCF> vcfAlts = getAlts(maVariantVCF).stream()
+						.map(allele -> new AlleleVCF(allele.getBaseString(), allele))
+						.collect(Collectors.toList());
+
+				for (AlleleVCF alt: vcfAlts) {
 					VariantVCF variantVCF = new VariantVCF(maVariantVCF, alt);
 					variantVCF.setVepJson(maVariantVCF.getVepJson());
 					variants.add(variantVCF);

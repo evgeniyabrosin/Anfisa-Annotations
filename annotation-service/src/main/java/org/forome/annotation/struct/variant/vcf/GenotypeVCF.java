@@ -30,13 +30,11 @@ public class GenotypeVCF extends Genotype {
 
 	private final VariantVCF variantVCF;
 
-	private final VariantContext variantContext;
 	private final htsjdk.variant.variantcontext.Genotype vcfGenotype;
 
 	public GenotypeVCF(VariantVCF variantVCF, VariantContext variantContext, String sampleName) {
 		super(sampleName);
 		this.variantVCF = variantVCF;
-		this.variantContext = variantContext;
 		this.vcfGenotype = variantContext.getGenotype(sampleName);
 	}
 
@@ -68,17 +66,21 @@ public class GenotypeVCF extends Genotype {
 			case HOM_VAR:
 				//Звездочка означает мусор. Считаем, что звездочка – это референс
 
-				String ref = variantContext.getReference().getBaseString();
+				AlleleVCF ref = (AlleleVCF) variantVCF.getRefAllele();
+				String sourceRef = ref.vcfSource.getBaseString();//Изначальную последовательность
+
+				AlleleVCF alt = (AlleleVCF) variantVCF.getAlt();
+				String sourceAlt = alt.vcfSource.getBaseString();//Изначальную последовательность
 
 				String allele1 = vcfGenotype.getAlleles().get(0).getBaseString();
-				boolean isRef1 = "*".equals(allele1) || ref.equals(allele1);
+				boolean isRef1 = "*".equals(allele1) || sourceRef.equals(allele1);
 
 				if (vcfGenotype.getAlleles().size()==1) {
 					//У haploid'ых хромосом только одна алеля, например у хромосомы X
 					if (isRef1) {
 						// REF/REF
 						return HasVariant.REF_REF;
-					} else if (!allele1.equals(variantVCF.getStrAlt())) {
+					} else if (!allele1.equals(sourceAlt)) {
 						// ALTk/ALTk: 0
 						return HasVariant.ALTki_ALTkj;
 					} else {
@@ -87,11 +89,11 @@ public class GenotypeVCF extends Genotype {
 					}
 				} else {
 					String allele2 = vcfGenotype.getAlleles().get(1).getBaseString();
-					boolean isRef2 = "*".equals(allele2) || ref.equals(allele2);
+					boolean isRef2 = "*".equals(allele2) || sourceRef.equals(allele2);
 					if (isRef1 && isRef2) {
 						// REF/REF
 						return HasVariant.REF_REF;
-					} else if (!allele1.equals(variantVCF.getStrAlt()) && !allele2.equals(variantVCF.getStrAlt())) {
+					} else if (!allele1.equals(sourceAlt) && !allele2.equals(sourceAlt)) {
 						// ALTk/ALTk: 0
 						return HasVariant.ALTki_ALTkj;
 					} else if (!isRef1 && !isRef2) {
