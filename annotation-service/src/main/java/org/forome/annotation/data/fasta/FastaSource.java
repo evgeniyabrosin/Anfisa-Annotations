@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -120,7 +121,7 @@ public class FastaSource {
 
 			long t1 = System.currentTimeMillis();
 			try {
-				value = (String) cache.get(key, () -> {
+				value = ((Optional<String>) cache.get(key, () -> {
 					JSONObject response = request(
 							String.format("http://%s:%s/get?array=fasta&type=%s&loc=%s:%s-%s",
 									aStorage.host, aStorage.port,
@@ -128,8 +129,8 @@ public class FastaSource {
 									interval.chromosome.getChar(), interval.start, interval.end
 							)
 					);
-					return response.getAsString("fasta");
-				});
+					return Optional.ofNullable(response.getAsString("fasta"));
+				})).orElse(null);
 			} catch (ExecutionException e) {
 				throw new RuntimeException(e);
 			} finally {
