@@ -9,11 +9,6 @@ from util import detectFileChrom, extendFileList
 #========================================
 #--- table FACETS ----------------
 
-facets_fields = [1, 2, 3, 4, 30, 31, 41, 72, 73, 74, 79,
-    81, 82, 83, 84, 85, 89, 90, 91]
-#print(len(facets_fields))
-#sys.exit()
-
 INSTR_CREATE_FACETS = """CREATE TABLE IF NOT EXISTS FACETS(
     facet_no                        INT(11),
     chr                             VARCHAR(4),
@@ -59,7 +54,7 @@ COLUMNS_FACETS = [
     "MPC_rankscore",
     "PrimateAI_score",
     "PrimateAI_rankscore",
-    "PrimateAI_pred"
+    "PrimateAI_pred",
     "SIFT_converted_rankscore",
     "SIFT4G_converted_rankscore",
     ]
@@ -82,9 +77,6 @@ def new_record_FACETS(records, fac_no):
 
 #========================================
 #--- table VARIANTS ----------------
-
-variants_fields = [1, 2, 3, 4, 53, 55, 92,
-    102, 104, 105, 106, 114, 115, 116, 117, 118, 119, 374, 375, 376]
 
 INSTR_CREATE_VARIANTS = """CREATE TABLE IF NOT EXISTS VARIANTS(
     chr                             VARCHAR(4),
@@ -143,10 +135,6 @@ def new_record_VARIANTS(records):
 
 #========================================
 #--- table TRANSCRIPTS ----------------
-
-transcripts_fields = [1, 14, 15, 16, 17, 19, 20, 21, 22, 26, 37, 39, 40, 42,
-    43, 45, 46, 48,  58, 60, 61, 63,  88]
-
 
 INSTR_CREATE_TRANSCRIPTS = """CREATE TABLE IF NOT EXISTS TRANSCRIPTS(
     facet_no                 INT(11),
@@ -238,6 +226,22 @@ class DataCollector:
         self.mTotal_VARIANTS = 0
         self.mCurVariant = None
         self.mCurFacetNo = 0
+        self.mFacetIdxs = None
+        self.mTranscriptIdxs = None
+        self.mVariantIdxs = None
+
+    def setupIdxs(self, top_rec):
+        idx_map = {field.replace('-', '_'): idx + 1
+            for idx, field in enumerate(top_rec.rstrip().split('\t'))}
+        idx_map["chr"] = 1
+        idx_map["pos38"] = 2
+
+        self.mVariantIdxs = [idx_map[field]
+            for field in COLUMNS_VARIANTS]
+        self.mFacetIdxs = [idx_map[field]
+            for field in COLUMNS_FACETS[1:]]
+        self.mTranscriptIdxs = [idx_map[field]
+            for field in COLUMNS_TRANSCRIPTS[2:]]
 
     def getTotal_FACETS(self):
         return self.mTotal_FACETS
@@ -266,18 +270,18 @@ class DataCollector:
         # TRANSCRIPTS
         fields = line.split('\t')
         records = [fields[i].strip('\n') for i in range(len(fields))]
-        transcripts_records = [records[i-1] for i in transcripts_fields]
+        transcripts_records = [records[i-1] for i in self.mTranscriptIdxs]
         current_record = [transcripts_records[0]]
         current_record_length = len(transcripts_records[1].split(';'))
 
         #FACETS
-        current_facets_record = [records[i-1] for i in facets_fields]
+        current_facets_record = [records[i-1] for i in self.mFacetIdxs]
         self.mFACETS.append(
             new_record_FACETS(current_facets_record, self.mCurFacetNo))
         self.mCurFacetNo += 1
 
         # VARIANTS
-        current_variants_record = [records[i-1] for i in variants_fields]
+        current_variants_record = [records[i-1] for i in self.mVariantIdxs]
         if (current_variants_record != self.mCurVariant):
             self.mVARIANTS.append(
                 new_record_VARIANTS(current_variants_record))
@@ -326,6 +330,7 @@ def ingestDBNSFP4(db_host, db_port, user, password, database,
             collector = DataCollector(conn, batch_size)
             for line_no, line in enumerate(text_inp):
                 if line_no == 0:
+                    collector.setupIdxs(line)
                     continue
                 try:
                     collector.ingestLine(line)
