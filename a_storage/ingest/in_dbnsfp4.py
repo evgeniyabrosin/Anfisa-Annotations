@@ -1,4 +1,5 @@
 import sys, gzip, logging
+from collections import Counter
 
 from .in_util import TimeReport, detectFileChrom, extendFileList, dumpReader
 #========================================
@@ -294,17 +295,60 @@ class DataCollector:
             marks = set()
             if len(v_data["facets"]) > 1:
                 marks.add("multi-facet")
-            tr_ids = set()
+            tr_counts = Counter()
             for f_data in v_data["facets"]:
                 for t_data in f_data["transcripts"]:
-                    tr_id = t_data[TRANSCRIPT_KEY]
-                    if tr_id in tr_ids:
-                        marks.add ("multi-transcript")
-                        break
-                    tr_ids.add(tr_id)
+                    tr_counts[t_data[TRANSCRIPT_KEY]] += 1
+            dup_tr_id = []
+            for tr_id, cnt in tr_counts.items():
+                if cnt > 1:
+                    dup_tr_id.append(tr_id)
+            if len(dup_tr_id) > 0:
+                marks.add ("multi-transcript-%d" % max(tr_counts.values()))
+                for tr_id in dup_tr_id:
+                    self.fixTranscritDup(v_data, tr_id)
             if len(marks) > 0:
                 logging.info("Complications at %s|%s: %s"
                     % (str(self.mCurRecord[0]), key, " ".join(sorted(marks))))
+
+    def fixTranscritDup(self, v_data, tr_id):
+        tr_place_seq = []
+        for f_idx, f_data in enumerate(v_data["facets"]):
+            for t_idx, t_data in enumerate(f_data["transcripts"]):
+                if t_data[TRANSCRIPT_KEY] == tr_id:
+                    tr_place_seq.append([t_data, f_data, f_idx, t_idx])
+        while len(tr_place_seq) > 1:
+            t_data1 = tr_place_seq[0][0]
+            t_data2 = tr_place_seq[-1][0]
+            cnt1, cnt2 = 0, 0
+            res_data = dict()
+            for key, val1 in t_data1.items():
+                val2 = t_data2[key]
+                if val1 == val2:
+                    res_data[key] = val1
+                    continue
+                if val1 is None:
+                    res_data[key] = val2
+                    cnt2 += 1
+                    continue
+                if val2 is None:
+                    res_data[key] = val1
+                    cnt1 += 1
+                logging.info(
+                    "Failed to fix multi-transcript for %s: %d/%d %d/%d"
+                    % (tr_id, tr_place_seq[0][-2], tr_place_seq[0][-1],
+                        tr_place_seq[-1][-2], tr_place_seq[-1][-1]))
+                return
+            if cnt2 > cnt1:
+                f_data, t_data = tr_place_seq[-1]
+                del tr_place_seq[0]
+            else:
+                f_data, t_data = tr_place_seq[0]
+                del tr_place_seq[-1]
+            if any(val != res_data[key] for key, val in t_data):
+                logging.info("Joined multi-transcript: %s" % tr_id)
+                f_data["transcripts"][
+                    f_data["transcripts"].index(t_data)] = res_data
 
 #========================================
 #========================================
