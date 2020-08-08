@@ -25,17 +25,35 @@ import org.forome.annotation.struct.mcase.Sample;
 
 public abstract class Variant {
 
+	public final VariantType variantType;
+
 	public final Chromosome chromosome;
+
+	private final int start;
 	public final int end;
 
-	public Variant(Chromosome chromosome, int end) {
+	public final VariantStruct variantStruct;
+
+	public Variant(
+			VariantType variantType,
+			Chromosome chromosome,
+			int start, int end,
+			VariantStruct variantStruct
+	) {
+		this.variantType = variantType;
 		this.chromosome = chromosome;
+		this.start = start;
 		this.end = end;
+		this.variantStruct = variantStruct;
 	}
 
-	public abstract int getStart();
+	public final int getStart() {
+		return start;
+	}
 
-	public abstract VariantType getVariantType();
+	public final VariantType getVariantType() {
+		return variantType;
+	}
 
 	public Genotype getGenotype(Sample sample) {
 		return getGenotype(sample.id);
@@ -56,7 +74,7 @@ public abstract class Variant {
 	public abstract String getMostSevereConsequence();
 
 	public Interval getInterval() {
-		return Interval.of(chromosome, getStart(), end);
+		return Interval.of(chromosome, start, end);
 	}
 
 	@Override
@@ -64,7 +82,7 @@ public abstract class Variant {
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append("Variant{")
 				.append(chromosome.getChromosome()).append(':')
-				.append(getStart()).append(' ')
+				.append(start).append(' ')
 				.append(getRef()).append('>')
 				.append(getStrAlt());
 		sBuilder.append('}');

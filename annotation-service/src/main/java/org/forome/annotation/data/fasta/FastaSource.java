@@ -98,11 +98,11 @@ public class FastaSource {
 	public Sequence getSequence(AnfisaExecuteContext context, Assembly assembly, Interval interval) {
 		AStorageSource sourceAStorageHttp = context.sourceAStorageHttp;
 
-		String value;
 		if (sourceAStorageHttp.assembly == assembly &&
 				interval.start == sourceAStorageHttp.getStart(assembly) &&
 				interval.end == sourceAStorageHttp.getEnd(assembly)
 		) {
+			String value;
 			switch (assembly) {
 				case GRCh37:
 					value = sourceAStorageHttp.data.getAsString("fasta/hg19");
@@ -113,29 +113,39 @@ public class FastaSource {
 				default:
 					throw new RuntimeException("Unknown assembly: " + assembly);
 			}
-		} else {
-			String key = String.format(
-					"%s:%s:%s:%s", assembly.name(), interval.chromosome.getChar(),
-					interval.start, interval.end
-			);
-
-			long t1 = System.currentTimeMillis();
-			try {
-				value = ((Optional<String>) cache.get(key, () -> {
-					JSONObject response = request(
-							String.format("http://%s:%s/get?array=fasta&type=%s&loc=%s:%s-%s",
-									aStorage.host, aStorage.port,
-									(assembly == Assembly.GRCh37) ? "hg19" : "hg38",
-									interval.chromosome.getChar(), interval.start, interval.end
-							)
-					);
-					return Optional.ofNullable(response.getAsString("fasta"));
-				})).orElse(null);
-			} catch (ExecutionException e) {
-				throw new RuntimeException(e);
-			} finally {
-				statistics.addTime(System.currentTimeMillis() - t1);
+			if (value == null) {
+				return null;
+			} else {
+				return new Sequence(interval, value);
 			}
+		} else {
+			return getSequence(assembly, interval);
+		}
+	}
+
+	public Sequence getSequence(Assembly assembly, Interval interval) {
+		String key = String.format(
+				"%s:%s:%s:%s", assembly.name(), interval.chromosome.getChar(),
+				interval.start, interval.end
+		);
+
+		long t1 = System.currentTimeMillis();
+		String value;
+		try {
+			value = ((Optional<String>) cache.get(key, () -> {
+				JSONObject response = request(
+						String.format("http://%s:%s/get?array=fasta&type=%s&loc=%s:%s-%s",
+								aStorage.host, aStorage.port,
+								(assembly == Assembly.GRCh37) ? "hg19" : "hg38",
+								interval.chromosome.getChar(), interval.start, interval.end
+						)
+				);
+				return Optional.ofNullable(response.getAsString("fasta"));
+			})).orElse(null);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e);
+		} finally {
+			statistics.addTime(System.currentTimeMillis() - t1);
 		}
 
 		if (value == null) {

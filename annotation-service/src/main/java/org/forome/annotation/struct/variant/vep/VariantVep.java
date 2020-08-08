@@ -23,14 +23,19 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
 
 public abstract class VariantVep extends Variant {
 
 	private JSONObject vepJson;
 
-	public VariantVep(Chromosome chromosome, int end) {
-		super(chromosome, end);
+	public VariantVep(
+			VariantType variantType,
+			Chromosome chromosome, int start, int end,
+			VariantStruct variantStruct
+	) {
+		super(variantType, chromosome, start, end, variantStruct);
 	}
 
 	public JSONObject getVepJson() {
@@ -41,16 +46,16 @@ public abstract class VariantVep extends Variant {
 		this.vepJson = vepJson;
 	}
 
-	@Override
-	public int getStart() {
-		return vepJson.getAsNumber("start").intValue();
-	}
+//	@Override
+//	public int getStart() {
+//		return vepJson.getAsNumber("start").intValue();
+//	}
 
-	@Override
-	public VariantType getVariantType() {
-		String value = vepJson.getAsString("variant_class");
-		return VariantType.findByName(value);
-	}
+//	@Override
+//	public VariantType getVariantType() {
+//		String value = vepJson.getAsString("variant_class");
+//		return VariantType.findByName(value);
+//	}
 
 	@Override
 	public String getRef() {

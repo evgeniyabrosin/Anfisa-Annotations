@@ -26,7 +26,7 @@ import org.junit.Test;
 public class СollapseNucleotideSequenceUtilsTest {
 
 	@Test
-	public void test() throws Exception {
+	public void testRight() {
 		Position position1 = new Position(Chromosome.CHR_2, 73613032);
 		String ref1 = "TGGAGGAGGA";
 		String alt1 = "TGGA";
@@ -40,7 +40,7 @@ public class СollapseNucleotideSequenceUtilsTest {
 	}
 
 	@Test
-	public void testSNV() {
+	public void testSNVRight() {
 		Position position1 = new Position(Chromosome.CHR_2, 73613032);
 		String ref1 = "G";
 		String alt1 = "T";
@@ -51,5 +51,47 @@ public class СollapseNucleotideSequenceUtilsTest {
 		Assert.assertEquals(position1, result.position);
 		Assert.assertEquals(ref1, result.ref);
 		Assert.assertEquals(alt1, result.alt);
+	}
+
+	@Test
+	public void testLeftSNV() {
+		Position position1 = new Position(Chromosome.CHR_2, 119999968);
+		String ref1 = "AAAGAAAGA";
+		String alt1 = "AAAGAAAGG";
+
+		СollapseNucleotideSequence.Sequence result = СollapseNucleotideSequence.collapseLeft(
+				position1, ref1, alt1
+		);
+		Assert.assertEquals(119999976, result.position.value);
+		Assert.assertEquals("A", result.ref);
+		Assert.assertEquals("G", result.alt);
+	}
+
+	@Test
+	public void testLeftSubstitution() {
+		Position position1 = new Position(Chromosome.CHR_1, 148670533);
+		String ref1 = "AAAAAAA";
+		String alt1 = "AAT";
+
+		СollapseNucleotideSequence.Sequence result = СollapseNucleotideSequence.collapseLeft(
+				position1, ref1, alt1
+		);
+		Assert.assertEquals(148670534, result.position.value);
+		Assert.assertEquals("AAAAAA", result.ref);
+		Assert.assertEquals("AT", result.alt);
+	}
+
+	@Test
+	public void test(){
+		Position position1 = new Position(Chromosome.CHR_2, 119999968);
+		String ref1 = "AAAGAAAGAGGA";
+		String alt1 = "AAAGAAAGGGGA";
+
+		СollapseNucleotideSequence.Sequence result = СollapseNucleotideSequence.collapse(
+				position1, ref1, alt1
+		);
+		Assert.assertEquals(119999976, result.position.value);
+		Assert.assertEquals("A", result.ref);
+		Assert.assertEquals("G", result.alt);
 	}
 }

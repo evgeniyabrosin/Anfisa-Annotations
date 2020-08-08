@@ -97,7 +97,12 @@ public class FormatAnfisaController {
 					futureAnfisaResults.add(
 							ensemblVepService.getVepJson(requestItem.chromosome, requestItem.start, requestItem.end, requestItem.alternative)
 									.thenApply(vepJson -> {
-										VariantVep variantVep = new VariantCustom(requestItem.chromosome, requestItem.start, requestItem.end, new Allele(requestItem.alternative));
+										VariantVep variantVep = new VariantCustom(
+												requestItem.chromosome,
+												requestItem.start, requestItem.end,
+												null, //TODO Ulitin V. не реализонно
+												new Allele(requestItem.alternative)
+										);
 										variantVep.setVepJson(vepJson);
 										return processing.exec(null, variantVep);
 									})

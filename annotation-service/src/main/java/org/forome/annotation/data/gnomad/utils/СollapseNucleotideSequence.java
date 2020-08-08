@@ -35,6 +35,15 @@ public class СollapseNucleotideSequence {
 		}
 	}
 
+	public static Sequence collapse(Position position, String ref, String alt) {
+		Sequence sequenceCollapseRight = collapseRight(position, ref, alt);
+		return collapseLeft(
+				sequenceCollapseRight.position,
+				sequenceCollapseRight.ref,
+				sequenceCollapseRight.alt
+		);
+	}
+
 	/**
 	 * Схлопываем последовательность (справа), т.е.
 	 * при: ref: TGGAGGAGGA, alt: TGGA
@@ -53,6 +62,37 @@ public class СollapseNucleotideSequence {
 				position,
 				ref.substring(0, ref.length() - rShift),
 				alt.substring(0, alt.length() - rShift)
+		);
+	}
+
+	/**
+	 * Схлопываем последовательность (слева), т.е.
+	 * при: position: 119999968, ref: AAAGAAAGA, alt: AAAGAAAGG
+	 * получаем: position: 119999976, ref: A, alt: G
+	 * -----
+	 * при: position: 148670533, ref: AAAAAAA, alt: AAT
+	 * получаем: position: 148670534, ref: AAAAAA, alt: AT
+	 */
+	public static Sequence collapseLeft(Position position, String ref, String alt) {
+		int lShift = 0;
+		while (true) {
+			if (ref.length() - lShift == 1) break;
+			if (alt.length() - lShift == 1) break;
+			if (ref.charAt(lShift) != alt.charAt(lShift)) break;
+			lShift++;
+		}
+		if (ref.length() - lShift != 1 || alt.length() - lShift != 1) {
+			//Если не snv, то первые буквы у alt и ref должны совпадать,
+			// поэтому если надо отатываем одну позицию назад
+			if (ref.charAt(lShift) != alt.charAt(lShift) && lShift > 0) {
+				lShift--;
+			}
+		}
+
+		return new Sequence(
+				new Position(position.chromosome, position.value + lShift),
+				ref.substring(lShift),
+				alt.substring(lShift)
 		);
 	}
 }
