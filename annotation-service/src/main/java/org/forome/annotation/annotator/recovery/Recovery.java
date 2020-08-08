@@ -74,7 +74,7 @@ public class Recovery {
 
 				List<JSONObject> jRecoveryRecords = new ArrayList<>();
 
-				for (Variant variant : SplitMAVariant.split(maVariant)) {
+				for (Variant variant : SplitMAVariant.build(maVariant).split()) {
 					JSONObject jRecoveryRecord = recoveryJsonIterator.next();
 
 					//Валидируем

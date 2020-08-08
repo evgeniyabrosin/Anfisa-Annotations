@@ -22,6 +22,8 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Interval;
+import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
@@ -34,16 +36,23 @@ public class VariantCNV extends VariantVep {
 
 	public static final String COPY_NUMBER_VARIATION = "copy_number_variation";
 
-	private final int cnvStart;
-
 	public final List<String> exonNums;
 
 	public final Map<String, GenotypeCNV> genotypes;
 	public final List<String> transcripts;
 
 	public VariantCNV(Chromosome chromosome, int start, int end, List<String> exonNums, List<String> transcripts, List<GenotypeCNV> genotypes) {
-		super(chromosome, end);
-		this.cnvStart = start;
+		super(
+				VariantType.CNV,
+				chromosome,
+				start, end,
+				new VariantStruct(
+						VariantType.CNV,
+						Interval.of(chromosome, start, end),
+						null,
+						Allele.EMPTY
+				)
+		);
 		genotypes.forEach(genotypeCNV -> genotypeCNV.setVariantCNV(this));
 		this.exonNums = exonNums;
 		this.transcripts = Collections.unmodifiableList(transcripts);
@@ -54,22 +63,8 @@ public class VariantCNV extends VariantVep {
 	}
 
 	@Override
-	public int getStart() {
-		if (getVepJson() == null) {
-			return cnvStart;
-		} else {
-			return super.getStart();
-		}
-	}
-
-	@Override
 	public GenotypeCNV getGenotype(String sample) {
 		return genotypes.get(sample);
-	}
-
-	@Override
-	public VariantType getVariantType() {
-		return VariantType.CNV;
 	}
 
 	@Override

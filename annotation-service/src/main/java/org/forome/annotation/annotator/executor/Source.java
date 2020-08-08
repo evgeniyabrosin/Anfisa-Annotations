@@ -24,7 +24,6 @@ import org.forome.annotation.controller.utils.RequestParser;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mavariant.MAVariantVCF;
 import org.forome.annotation.struct.mavariant.MAVariantVep;
-import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,14 +81,14 @@ class Source {
 //						)
 //				);
 //			}
-			if (Math.abs(VariantVCF.getEnd(variantContext) - vepJson.getAsNumber("end").intValue()) > 1) {
-				throw new RuntimeException(
-						String.format("Not equals end, vcf: %s, vep.json: %s, input: %s",
-								VariantVCF.getEnd(variantContext), vepJson.getAsNumber("end"),
-								vepJson.getAsString("input")
-						)
-				);
-			}
+//			if (Math.abs(VariantVCF.getEnd(variantContext) - vepJson.getAsNumber("end").intValue()) > 1) {
+//				throw new RuntimeException(
+//						String.format("Not equals end, vcf: %s, vep.json: %s, input: %s",
+//								VariantVCF.getEnd(variantContext), vepJson.getAsNumber("end"),
+//								vepJson.getAsString("input")
+//						)
+//				);
+//			}
 
 		}
 	}

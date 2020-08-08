@@ -16,25 +16,26 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.smavariant;
+package org.forome.annotation.utils.variant;
 
-import org.forome.annotation.processing.smavariant.vcf.SplitMAVariantVcf;
-import org.forome.annotation.struct.mavariant.MAVariant;
-import org.forome.annotation.struct.mavariant.MAVariantVCF;
-import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.variant.VariantType;
 
-import java.util.List;
+public class VariantUtils {
 
-public abstract class SplitMAVariant {
-
-	public abstract List<Variant> split();
-
-	public static SplitMAVariant build(MAVariant maVariant) {
-		if (maVariant instanceof MAVariantVCF) {
-			return new SplitMAVariantVcf((MAVariantVCF) maVariant);
+	public static VariantType getVariantType(Allele ref, Allele alt) {
+		if (ref.length() == alt.length() && ref.length() == 1) {
+			return VariantType.SNV;
+		} else if (alt.length() == 1 && ref.length() > alt.length()
+				&& alt.getBaseString().charAt(0) == ref.getBaseString().charAt(0)
+		) {
+			return VariantType.DEL;
+		} else if (ref.length() == 1 && ref.length() < alt.length()
+				&& alt.getBaseString().charAt(0) == ref.getBaseString().charAt(0)
+		) {
+			return VariantType.INS;
 		} else {
-			throw new RuntimeException();
+			return VariantType.SUBSTITUTION;
 		}
 	}
 }
-

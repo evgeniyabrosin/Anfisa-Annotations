@@ -65,6 +65,7 @@ public class GContext {
 					Chromosome.of(splitvariantFormat[0]),
 					position,
 					position,
+					null,//TODO Ulitin V. не реализовано
 					new Allele(splitvariantFormat[3])
 			);
 		}

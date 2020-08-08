@@ -23,6 +23,8 @@ import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mavariant.MAVariantVCF;
 import org.forome.annotation.struct.variant.Genotype;
+import org.forome.annotation.struct.variant.VariantStruct;
+import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
 import java.util.List;
@@ -34,15 +36,22 @@ public class VariantVCF extends VariantVep {
 	private final AlleleVCF ref;
 	private final AlleleVCF alt;
 
-	public VariantVCF(MAVariantVCF maVariantVCF, AlleleVCF alt) {
+	public VariantVCF(
+			VariantType variantType,
+			int start, int end,
+			AlleleVCF ref, AlleleVCF alt,
+			VariantStruct variantStruct,
+			MAVariantVCF maVariantVCF
+	) {
 		super(
+				variantType,
 				Chromosome.of(maVariantVCF.variantContext.getContig()),
-				getEnd(maVariantVCF.variantContext)
+				start, end,
+				variantStruct
 		);
 		this.maVariantVCF = maVariantVCF;
 
-		String refBaseString = maVariantVCF.variantContext.getReference().getBaseString();
-		this.ref = new AlleleVCF(refBaseString, new Allele(refBaseString));
+		this.ref = ref;
 		this.alt = alt;
 	}
 

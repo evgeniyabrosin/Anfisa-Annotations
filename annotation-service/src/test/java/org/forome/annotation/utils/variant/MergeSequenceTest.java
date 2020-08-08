@@ -37,7 +37,7 @@ public class MergeSequenceTest {
 		);
 
 		VariantCustom variant = new VariantCustom(
-				Chromosome.of("2"), 73448098, 73448100, new Allele("T")
+				Chromosome.of("2"), 73448098, 73448100, new Allele("TCTC"), new Allele("T")
 		);
 		variant.setVepJson(new JSONObject(){{
 			put("allele_string", "TCTC/T");

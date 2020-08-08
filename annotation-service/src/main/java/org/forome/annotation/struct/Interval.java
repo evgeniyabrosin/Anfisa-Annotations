@@ -70,6 +70,10 @@ public class Interval {
 		return Objects.hash(chromosome, start, end);
 	}
 
+	public static Interval of(Position position) {
+		return of(position.chromosome, position.value);
+	}
+
 	public static Interval of(Chromosome chromosome, int position) {
 		return of(chromosome, position, position);
 	}

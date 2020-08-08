@@ -20,23 +20,28 @@ package org.forome.annotation.struct.variant.custom;
 
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
+import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.variant.Genotype;
+import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.vep.VariantVep;
+import org.forome.annotation.utils.variant.VariantUtils;
 
 public class VariantCustom extends VariantVep {
 
-	private final int start;
 	private final Allele alt;
 
-	public VariantCustom(Chromosome chromosome, int start, int end, Allele alt) {
-		super(chromosome, end);
-		this.start = start;
+	public VariantCustom(Chromosome chromosome, int start, int end, Allele ref, Allele alt) {
+		super(
+				VariantUtils.getVariantType(ref, alt),
+				chromosome,
+				start, end,
+				new VariantStruct(
+						VariantUtils.getVariantType(ref, alt),
+						Interval.of(chromosome, start, end),
+						ref, alt
+				)
+		);
 		this.alt = alt;
-	}
-
-	@Override
-	public int getStart() {
-		return start;
 	}
 
 	@Override

@@ -16,25 +16,25 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.processing.smavariant;
+package org.forome.annotation.struct.variant;
 
-import org.forome.annotation.processing.smavariant.vcf.SplitMAVariantVcf;
-import org.forome.annotation.struct.mavariant.MAVariant;
-import org.forome.annotation.struct.mavariant.MAVariantVCF;
-import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.Interval;
 
-import java.util.List;
+public class VariantStruct {
 
-public abstract class SplitMAVariant {
+	public final VariantType variantType;
+	public final Interval interval;
+	public final Allele ref;
+	public final Allele alt;
 
-	public abstract List<Variant> split();
-
-	public static SplitMAVariant build(MAVariant maVariant) {
-		if (maVariant instanceof MAVariantVCF) {
-			return new SplitMAVariantVcf((MAVariantVCF) maVariant);
-		} else {
-			throw new RuntimeException();
-		}
+	public VariantStruct(VariantType variantType, Interval interval, Allele ref, Allele alt) {
+		this.variantType = variantType;
+		this.interval = interval;
+		this.ref = ref;
+		this.alt = alt;
 	}
-}
 
+
+
+}

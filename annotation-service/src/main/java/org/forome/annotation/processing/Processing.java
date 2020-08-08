@@ -36,9 +36,14 @@ import org.forome.annotation.processing.smavariant.SplitMAVariant;
 import org.forome.annotation.processing.statistics.StatisticsInstrumentation;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.processing.struct.ProcessingResult;
+import org.forome.annotation.struct.Assembly;
+import org.forome.annotation.struct.Interval;
+import org.forome.annotation.struct.Sequence;
 import org.forome.annotation.struct.mavariant.MAVariant;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.VariantStruct;
+import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.utils.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +94,11 @@ public class Processing {
 			MAVariant maVariant
 	) {
 		List<ProcessingResult> results = new ArrayList<>();
-		for (Variant variant : SplitMAVariant.split(maVariant)) {
+		for (Variant variant : SplitMAVariant.build(maVariant).split()) {
+
+			//Валидируем ref
+			validate(mCase.assembly, variant);
+
 			ProcessingResult processingResult = exec(mCase, variant);
 			results.add(processingResult);
 		}
@@ -156,4 +165,43 @@ public class Processing {
 		}
 	}
 
+	private void validate(Assembly assembly, Variant variant) {
+		try {
+			VariantStruct variantStruct = variant.variantStruct;
+			VariantType variantType = variant.getVariantType();
+
+			Interval interval;
+			if (variantType == VariantType.SNV) {
+				interval = variantStruct.interval;
+			} else if (variantType == VariantType.INS) {
+				interval = Interval.of(
+						variantStruct.interval.chromosome,
+						variantStruct.interval.start - 1,
+						variantStruct.interval.start - 1
+				);
+			} else if (variantType == VariantType.DEL) {
+				interval = Interval.of(
+						variantStruct.interval.chromosome,
+						variantStruct.interval.start - 1,
+						variantStruct.interval.end
+				);
+			} else if (variantType == VariantType.SUBSTITUTION) {
+				interval = Interval.of(
+						variantStruct.interval.chromosome,
+						variantStruct.interval.start,
+						variantStruct.interval.start + variantStruct.ref.length() - 1
+				);
+				log.error("TODO Необходимо разрезать вариант!!! variant: {}", variant);
+			} else {
+				throw new RuntimeException("Unknown type: " + variantType);
+			}
+
+			Sequence sequence = anfisaConnector.fastaSource.getSequence(assembly, interval);
+			if (!sequence.value.equalsIgnoreCase(variantStruct.ref.getBaseString())) {
+				throw new RuntimeException("Not equals ref: " + variantStruct.ref.getBaseString() + ", and fasta: " + sequence.value);
+			}
+		} catch (Throwable e) {
+			throw new RuntimeException("Variant: " + variant.toString(), e);
+		}
+	}
 }

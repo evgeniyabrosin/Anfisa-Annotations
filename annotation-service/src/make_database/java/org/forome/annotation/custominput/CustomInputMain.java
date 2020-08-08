@@ -332,7 +332,12 @@ public class CustomInputMain {
 							int end = Integer.parseInt(vepJson.getAsString("end"));
 							Allele alt = new Allele(vepJson.getAsString("allele_string").split("/")[1]);
 
-							VariantVep variantVep = new VariantCustom(chromosome, start, end, alt);
+							VariantVep variantVep = new VariantCustom(
+									chromosome,
+									start, end,
+									null, //TODO Ulitin V. Не реализованно
+									alt
+							);
 							variantVep.setVepJson(vepJson);
 
 							ProcessingResult processingResult = processing.exec(mCase, variantVep);

@@ -90,6 +90,8 @@ public class CustomVariantMain {
 		liftoverConnector = new LiftoverConnector();
 		fastaSource = new FastaSource(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
+		FastaSource fastaSource = new FastaSource(databaseConnectService, serviceConfig.aStorageConfigConnector);
+
 		gnomadConnector = null;
 //		gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 //      gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
@@ -147,7 +149,12 @@ public class CustomVariantMain {
 			CustomVariantMain variantMain = new CustomVariantMain();
 
 			ProcessingResult processingResult = variantMain.build(
-					new VariantCustom(Chromosome.of("6"), 53140021, 53140021, new Allele("A"))
+					new VariantCustom(
+							Chromosome.of("6"),
+							53140021, 53140021,
+							null, //TODO Ulitin V. не реализованно
+							new Allele("A")
+					)
 			);
 			log.debug("result: " + processingResult);
 
