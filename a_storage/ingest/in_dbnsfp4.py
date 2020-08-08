@@ -293,8 +293,8 @@ class DataCollector:
             assert key not in v_keys, ("Dup key: %s" % key)
             v_keys.add(key)
             marks = set()
-            if len(v_data["facets"]) > 1:
-                marks.add("multi-facet")
+            if len(v_data["facets"]) > 2:
+                marks.add("multi-facet-%d" % len(v_data["facets"]))
             tr_counts = Counter()
             for f_data in v_data["facets"]:
                 for t_data in f_data["transcripts"]:
@@ -340,12 +340,12 @@ class DataCollector:
                         tr_place_seq[-1][-2], tr_place_seq[-1][-1]))
                 return
             if cnt2 > cnt1:
-                f_data, t_data = tr_place_seq[-1]
+                t_data, f_data = tr_place_seq[-1][:2]
                 del tr_place_seq[0]
             else:
-                f_data, t_data = tr_place_seq[0]
+                t_data, f_data = tr_place_seq[0][:2]
                 del tr_place_seq[-1]
-            if any(val != res_data[key] for key, val in t_data):
+            if any(val != res_data[key] for key, val in t_data.items()):
                 logging.info("Joined multi-transcript: %s" % tr_id)
                 f_data["transcripts"][
                     f_data["transcripts"].index(t_data)] = res_data
