@@ -341,14 +341,21 @@ class DataCollector:
                 return
             if cnt2 > cnt1:
                 t_data, f_data = tr_place_seq[-1][:2]
+                self._removeTranscript(*(tr_place_seq[0][:2]))
                 del tr_place_seq[0]
             else:
                 t_data, f_data = tr_place_seq[0][:2]
+                self._removeTranscript(*(tr_place_seq[-1][:2]))
                 del tr_place_seq[-1]
             if any(val != res_data[key] for key, val in t_data.items()):
                 logging.info("Joined multi-transcript: %s" % tr_id)
                 f_data["transcripts"][
                     f_data["transcripts"].index(t_data)] = res_data
+
+    @staticmethod
+    def _removeTranscript(t_data, f_data):
+        tr_seq = f_data["transcripts"]
+        del tr_seq[tr_seq.index(t_data)]
 
 #========================================
 #========================================
