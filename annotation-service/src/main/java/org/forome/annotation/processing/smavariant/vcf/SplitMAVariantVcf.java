@@ -62,6 +62,8 @@ public class SplitMAVariantVcf extends SplitMAVariant {
 			variants.addAll(iVariants);
 		}
 
+		Collections.sort(variants, Comparator.comparingInt(Variant::getStart));
+
 		return variants;
 	}
 
