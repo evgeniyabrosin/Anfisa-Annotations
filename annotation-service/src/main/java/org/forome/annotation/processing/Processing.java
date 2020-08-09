@@ -191,7 +191,7 @@ public class Processing {
 						variantStruct.interval.start,
 						variantStruct.interval.start + variantStruct.ref.length() - 1
 				);
-				log.error("TODO Необходимо разрезать вариант!!! variant: {}", variant);
+				log.error("TODO Необходима нормализация варианта. Variant: {}", variant);
 			} else {
 				throw new RuntimeException("Unknown type: " + variantType);
 			}

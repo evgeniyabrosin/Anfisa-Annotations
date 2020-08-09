@@ -55,7 +55,7 @@ public class SplitMAVariantVcf extends SplitMAVariant {
 		Position position = new Position(chromosome, maVariantVCF.variantContext.getStart());
 		Allele reference = new Allele(maVariantVCF.variantContext.getReference().getBaseString());
 
-		for (Allele alt: getAlts(maVariantVCF)) {
+		for (Allele alt : getAlts(maVariantVCF)) {
 			List<VariantVCF> iVariants = buildVariantStructs(
 					position, reference, alt
 			);
@@ -118,20 +118,45 @@ public class SplitMAVariantVcf extends SplitMAVariant {
 		//На этом уровне необходимо написать логику разрезание варианта и контроль, того,
 		// что бы первые нуклиотидв в ref и alt - совпадали
 
-		VariantStruct variantStruct = buildVariantStruct(position, vcfRef, vcfAlt);
+		VariantStruct baseVariantStruct = buildVariantStruct(position, vcfRef, vcfAlt);
 
-		VariantVCF variantVCF = new VariantVCF(
-				variantStruct.variantType,
-				variantStruct.interval.start,
-				variantStruct.interval.end,
-				new AlleleVCF(variantStruct.ref.getBaseString(), vcfRef),
-				new AlleleVCF(variantStruct.alt.getBaseString(), vcfAlt),
-				variantStruct,
-				maVariantVCF
-		);
-		variantVCF.setVepJson(maVariantVCF.getVepJson());
+		List<VariantStruct> variantStructs;
+		if (baseVariantStruct.alt.length() == baseVariantStruct.ref.length()
+				&& baseVariantStruct.alt.length() > 1
+				&& baseVariantStruct.alt.length() < 4
+		) {
+			//Необходимо разрезать варианты
+			variantStructs = new ArrayList<>();
+			for (int i = 0; i < baseVariantStruct.alt.length(); i++) {
+				char iRef = baseVariantStruct.ref.getBaseString().charAt(i);
+				char iAlt = baseVariantStruct.alt.getBaseString().charAt(i);
+				if (iRef == iAlt) continue;
 
-		return Collections.singletonList(variantVCF);
+				VariantStruct iVariantStruct = new VariantStruct(
+						VariantType.SNV,
+						Interval.of(baseVariantStruct.interval.chromosome, baseVariantStruct.interval.start + i),
+						new Allele(iRef),
+						new Allele(iAlt)
+				);
+				variantStructs.add(iVariantStruct);
+			}
+		} else {
+			variantStructs = Collections.singletonList(baseVariantStruct);
+		}
+
+		return variantStructs.stream().map(iVariantStruct -> {
+			VariantVCF variantVCF = new VariantVCF(
+					iVariantStruct.variantType,
+					iVariantStruct.interval.start,
+					iVariantStruct.interval.end,
+					new AlleleVCF(iVariantStruct.ref.getBaseString(), vcfRef),
+					new AlleleVCF(iVariantStruct.alt.getBaseString(), vcfAlt),
+					iVariantStruct,
+					maVariantVCF
+			);
+			variantVCF.setVepJson(maVariantVCF.getVepJson());
+			return variantVCF;
+		}).collect(Collectors.toList());
 	}
 
 	private static VariantStruct buildVariantStruct(Position position, Allele ref, Allele alt) {

@@ -28,6 +28,10 @@ public class Allele {
 
 	private final String bases;
 
+	public Allele(char bases) {
+		this(String.valueOf(bases));
+	}
+
 	public Allele(String bases) {
 		this.bases = bases;
 	}
