@@ -307,6 +307,10 @@ class DataCollector:
                 marks.add ("multi-transcript-%d" % max(tr_counts.values()))
                 for tr_id in dup_tr_id:
                     self.fixTranscritDup(v_data, tr_id)
+                for idx in range(len(v_data["facets"])-1, -1, -1):
+                    f_data = v_data["facets"][idx]
+                    if len(f_data) == 0:
+                        del v_data["facets"][idx]
             if len(marks) > 0:
                 logging.info("Complications at %s|%s: %s"
                     % (str(self.mCurRecord[0]), key, " ".join(sorted(marks))))
