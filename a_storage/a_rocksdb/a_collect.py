@@ -115,9 +115,11 @@ class ACollect:
                         rec_data = schema_h.getRecord(key, filtering)
                         if rec_data is not None:
                             ret[schema_h.getName()] = rec_data
-                    if last_pos is not None and self.mFastaTypes["hg19"] in arrays:
-                        ret[self.mFastaTypes["hg19"]] = self.mFastaSchema.getRecord(
-                            key, {"type": "hg19"}, _last_pos)
+                    if (last_pos is not None
+                            and self.mFastaTypes["hg19"] in arrays):
+                        ret[self.mFastaTypes["hg19"]] = (
+                            self.mFastaSchema.getRecord(
+                                key, {"type": "hg19"}, _last_pos))
 
             if len(arrays & self.mSchemaNames_hg38) > 0:
                 if fasta == "hg19":
@@ -136,7 +138,9 @@ class ACollect:
                         rec_data = schema_h.getRecord(key, filtering)
                         if rec_data is not None:
                             ret[schema_h.getName()] = rec_data
-                        if last_pos is not None and self.mFastaTypes["hg38"] in arrays:
-                            ret[self.mFastaTypes["hg38"]] = self.mFastaSchema.getRecord(
-                                key, {"type": "hg38"}, _last_pos)
+                        if (last_pos is not None
+                                and self.mFastaTypes["hg38"] in arrays):
+                            ret[self.mFastaTypes["hg38"]] = (
+                                self.mFastaSchema.getRecord(
+                                    key, {"type": "hg38"}, _last_pos))
         return result

@@ -203,6 +203,7 @@ def ingestGTEX(db_host, db_port, user, password, database,
     conn.close()
     id_registry.checkAll()
 
+
 #========================================
 if __name__ == '__main__':
     ingestGTEX(

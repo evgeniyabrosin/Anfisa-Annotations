@@ -56,7 +56,7 @@ class ReaderSNP:
                     if self.mCurRec and self.mCurRec[0] == key:
                         self.mCurRec[1].append(sub_rec)
                         continue
-                    if self.mCurRec :
+                    if self.mCurRec:
                         yield self.mCurRec
                         total += 1
                         if total % 100000 == 0:

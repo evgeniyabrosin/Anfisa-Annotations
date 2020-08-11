@@ -72,6 +72,7 @@ class FieldH:
             ret["opt"] = self.mOpt
         return ret
 
+
 #========================================
 FieldH("variant", "ALT", opt = "gene", specific = "key")
 FieldH("variant", "REF", opt = "gene", specific = "key")
@@ -199,6 +200,7 @@ def setupFields(field_line):
     FieldH.setupIndexes({_normFieldName(name): idx
         for idx, name in enumerate(field_names)})
 
+
 #========================================
 assert len(FieldH.getRoleKeys("transcript")) == 1, (
     "Transcript keys:" + " ".join(FieldH.getRoleKeys("transcript")))
@@ -256,7 +258,8 @@ class DataCollector:
                     if len(values) > 0:
                         if any(vv != v0 for vv in values[1:]):
                             logging.error("Wrong tr field %s: %s/%d" % (name,
-                                transcript_collections[name], len(transcript_data)))
+                                transcript_collections[name],
+                                len(transcript_data)))
                 else:
                     assert False, "Missing tr field %s" % name
             for idx, vv in enumerate(values):
@@ -270,7 +273,8 @@ class DataCollector:
             self.mCounts[0] += 1
             variant_data["facets"] = [facet_data]
             self.checkRecord()
-            ret, self.mCurRecord = self.mCurRecord, [(chrom, pos), [variant_data]]
+            ret, self.mCurRecord = self.mCurRecord, [
+                (chrom, pos), [variant_data]]
         elif new_variant:
             self.mCounts[0] += 1
             variant_data["facets"] = [facet_data]
@@ -304,13 +308,13 @@ class DataCollector:
                 if cnt > 1:
                     dup_tr_id.append(tr_id)
             if len(dup_tr_id) > 0:
-                marks.add ("multi-transcript-%d" % max(tr_counts.values()))
+                marks.add("multi-transcript-%d" % max(tr_counts.values()))
                 for tr_id in dup_tr_id:
                     self.fixTranscritDup(v_data, tr_id)
-                for idx in range(len(v_data["facets"])-1, -1, -1):
-                    f_data = v_data["facets"][idx]
-                    if len(f_data) == 0:
-                        del v_data["facets"][idx]
+                #for idx in range(len(v_data["facets"])-1, -1, -1):
+                #    f_data = v_data["facets"][idx]
+                #    if len(f_data["transcripts"]) == 0:
+                #        del v_data["facets"][idx]
             if len(marks) > 0:
                 logging.info("Complications at %s|%s: %s"
                     % (str(self.mCurRecord[0]), key, " ".join(sorted(marks))))
