@@ -85,7 +85,7 @@ public class Annotator {
 			Assembly assembly,
 
 			Path pathFam,
-			Path pathFamSampleName,
+			Path patientIdsFile,
 			Path pathCohorts,
 			Path pathVcf,
 			Path pathVepJson
@@ -115,10 +115,10 @@ public class Annotator {
 		this.pathVepJson=pathVepJson;
 
 		try (InputStream isFam = Files.newInputStream(pathFam);
-			 InputStream isFamSampleName = (pathFamSampleName != null) ? Files.newInputStream(pathFamSampleName) : null;
+			 InputStream isPatientIds = (patientIdsFile != null) ? Files.newInputStream(patientIdsFile) : null;
 			 InputStream isCohorts = (pathCohorts != null) ? Files.newInputStream(pathCohorts) : null
 		) {
-			this.mCase = CaseUtils.parseFamFile(assembly, isFam, isFamSampleName, isCohorts);
+			this.mCase = CaseUtils.parseFamFile(assembly, isFam, isPatientIds, isCohorts);
 		}
 	}
 
