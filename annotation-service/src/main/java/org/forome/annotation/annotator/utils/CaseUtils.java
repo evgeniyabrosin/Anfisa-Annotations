@@ -47,12 +47,12 @@ public class CaseUtils {
 	 * sample['sex']       = int(sex)
 	 * sample['affected']  = (int(affected) == 2)
 	 */
-	public static MCase parseFamFile(Assembly assembly, InputStream isFam, InputStream isFamSampleName, InputStream isCohorts) throws IOException, ParseException {
+	public static MCase parseFamFile(Assembly assembly, InputStream isFam, InputStream isPatientIds, InputStream isCohorts) throws IOException, ParseException {
 		LinkedHashMap<String, Sample> samples = new LinkedHashMap<>();
 
 		Map<String, String> sampleNameMap = new HashMap<>();
-		if (isFamSampleName != null) {
-			try (BufferedReader isBFamSampleName = new BufferedReader(new InputStreamReader(isFamSampleName))) {
+		if (isPatientIds != null) {
+			try (BufferedReader isBFamSampleName = new BufferedReader(new InputStreamReader(isPatientIds))) {
 				String line;
 				while ((line = isBFamSampleName.readLine()) != null) {
 					line = line.trim();
