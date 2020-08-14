@@ -18,6 +18,8 @@
 
 package org.forome.annotation.utils.vcf.merge.struct;
 
+import java.util.Objects;
+
 public class Patient {
 
 	public final String patientId;
@@ -33,5 +35,27 @@ public class Patient {
 
 	public String getSourcePatientId(){
 		return patientId + "_" + patientCode;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Patient patient = (Patient) o;
+		return Objects.equals(patientId, patient.patientId) &&
+				Objects.equals(patientCode, patient.patientCode) &&
+				Objects.equals(targetPatientId, patient.targetPatientId);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(patientId, patientCode, targetPatientId);
+	}
+
+	@Override
+	public String toString() {
+		return "Patient{" +
+				"sourcePatientId='" + getSourcePatientId() + '\'' +
+				'}';
 	}
 }
