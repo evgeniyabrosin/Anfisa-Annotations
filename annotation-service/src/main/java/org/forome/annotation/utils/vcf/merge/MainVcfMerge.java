@@ -21,6 +21,7 @@ package org.forome.annotation.utils.vcf.merge;
 import org.forome.annotation.utils.RuntimeExec;
 import org.forome.annotation.utils.vcf.merge.main.argument.Arguments;
 import org.forome.annotation.utils.vcf.merge.main.argument.ParserArgument;
+import org.forome.annotation.utils.vcf.merge.main.interactive.Interactive;
 import org.forome.annotation.utils.vcf.merge.struct.BgzipFile;
 import org.forome.annotation.utils.vcf.merge.struct.Patient;
 import org.forome.annotation.utils.vcf.merge.struct.Source;
@@ -53,16 +54,17 @@ public class MainVcfMerge {
 			return;
 		}
 
+		Interactive interative = new Interactive();
 		try {
 			Map<String, Patient> patients = getPatients(arguments.patientIdsFile);
-			List<Source> sourceFiles = getSourceFiles(patients, arguments.pathSourceVcfs);
+			List<Source> sourceFiles = getSourceFiles(interative, patients, arguments.pathSourceVcfs);
 			List<BgzipFile> reheaderVcfFiles = reheaderVcfFiles(sourceFiles);
 			merge(reheaderVcfFiles, arguments.targetVcf);
 			clear(reheaderVcfFiles);
 			log.debug("Complete");
 		} catch (Throwable e) {
 			log.error("Exception merge vcf files", e);
-			System.exit(2);
+			System.exit(4);
 			return;
 		}
 	}
@@ -85,6 +87,12 @@ public class MainVcfMerge {
 						values[3]
 				);
 
+				if (patients.values().stream()
+						.filter(iPatient -> iPatient.targetPatientId.equals(patient.targetPatientId))
+						.count() > 0
+				) {
+					throw new RuntimeException("Duplicate: " + patient.targetPatientId);
+				}
 				patients.put(patient.getSourcePatientId(), patient);
 			}
 		}
@@ -92,9 +100,10 @@ public class MainVcfMerge {
 	}
 
 
-	private static List<Source> getSourceFiles(Map<String, Patient> patients, Path pathSourceVcfs) throws IOException {
+	private static List<Source> getSourceFiles(Interactive interative, Map<String, Patient> patients, Path pathSourceVcfs) throws IOException {
+		List<Source> sources;
 		try (Stream<Path> paths = Files.walk(pathSourceVcfs)) {
-			return paths
+			sources = paths
 					.filter(Files::isRegularFile)
 					.filter(path -> !path.getFileName().endsWith(".vcf"))
 					.map(path -> {
@@ -115,10 +124,30 @@ public class MainVcfMerge {
 						}
 
 						Patient patient = patients.get(vcfPatientId);
+						if (patient == null) {
+							String question = "Sample: " + vcfPatientId + " not found. Skipped?";
+							boolean skipped = interative.questionBool(question);
+							if (skipped) {
+								return null;
+							} else {
+								System.exit(3);
+							}
+						}
+
 						return new Source(patient, path.toAbsolutePath());
 					})
+					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 		}
+
+		if (sources.size() != patients.size()) {
+			Set<Patient> leftover = new HashSet<>(patients.values());
+			leftover.removeAll(sources.stream().map(source -> source.patient).collect(Collectors.toList()));
+			log.debug("Not found: {}", leftover);
+			System.exit(5);
+		}
+
+		return sources;
 	}
 
 	private static List<BgzipFile> reheaderVcfFiles(List<Source> sourceFiles) throws IOException {
@@ -178,7 +207,7 @@ public class MainVcfMerge {
 	}
 
 	private static void clear(List<BgzipFile> reheaderVcfFiles) throws IOException {
-		for (BgzipFile bgzipFile: reheaderVcfFiles) {
+		for (BgzipFile bgzipFile : reheaderVcfFiles) {
 			log.debug("Clear: {}", bgzipFile.file);
 			Files.deleteIfExists(bgzipFile.file);
 
