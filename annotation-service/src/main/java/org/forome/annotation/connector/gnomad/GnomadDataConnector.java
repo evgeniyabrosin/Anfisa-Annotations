@@ -16,7 +16,7 @@ public class GnomadDataConnector implements Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(GnomadDataConnector.class);
 
-    private static final String TABLE = "gnom2.VARIANTS";
+    private static final String TABLE = "gnomad.VARIANTS";
 
     public class Result {
 

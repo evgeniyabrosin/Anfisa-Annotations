@@ -54,15 +54,15 @@ public class ConservationConnector implements AutoCloseable {
 		String sqlFromGerp;
 		String sqlFromConservation = null;
 		if (position.isSingle()) {
-			sqlFromGerp = String.format("select GerpN, GerpRS from conservation.GERP where Chrom='%s' and Pos = %s",
+			sqlFromGerp = String.format("select GerpN, GerpRS from gerp.GERP where Chrom='%s' and Pos = %s",
 					chromosome.getChar(), position.start
 			);
 
 			if (hg38 != null) {
-				sqlFromConservation = String.format("select priPhCons, mamPhCons, verPhCons, priPhyloP, mamPhyloP, " +
-								"verPhyloP, GerpRSpval, GerpS from conservation.CONSERVATION where Chrom='%s' and Pos = %s",
-						chromosome.getChar(), hg38.start
-				);
+//				sqlFromConservation = String.format("select priPhCons, mamPhCons, verPhCons, priPhyloP, mamPhyloP, " +
+//								"verPhyloP, GerpRSpval, GerpS from conservation.CONSERVATION where Chrom='%s' and Pos = %s",
+//						chromosome.getChar(), hg38.start
+//				);
 			}
 		} else {
 			long hg19Pos1;
@@ -84,19 +84,19 @@ public class ConservationConnector implements AutoCloseable {
 				throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", chromosome.getChar(), position));
 			}
 
-			sqlFromGerp = String.format("select max(GerpN) as GerpN, max(GerpRS) as GerpRS from conservation.GERP " +
+			sqlFromGerp = String.format("select max(GerpN) as GerpN, max(GerpRS) as GerpRS from gerp.GERP " +
 					"where Chrom='%s' and Pos between %s and %s", chromosome.getChar(), hg19Pos1, hg19Pos2);
 
 			if (hg38 != null) {
-				if (hg38Pos1 == Integer.MIN_VALUE || hg38Pos2 == Integer.MIN_VALUE) {
-					throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", chromosome.getChar(), position));
-				}
-				sqlFromConservation = String.format("select max(priPhCons) as priPhCons, max(mamPhCons) as mamPhCons, " +
-								"max(verPhCons) as verPhCons, max(priPhyloP) as priPhyloP, max(mamPhyloP) as mamPhyloP, " +
-								"max(verPhyloP) as verPhyloP, max(GerpRSpval) as GerpRSpval, max(GerpS) as GerpS " +
-								"from conservation.CONSERVATION where Chrom='%s' and Pos between %s and %s",
-						chromosome.getChar(), hg38Pos1, hg38Pos2
-				);
+//				if (hg38Pos1 == Integer.MIN_VALUE || hg38Pos2 == Integer.MIN_VALUE) {
+//					throw new RuntimeException(String.format("Unknown state, chr: %s, position: %s", chromosome.getChar(), position));
+//				}
+//				sqlFromConservation = String.format("select max(priPhCons) as priPhCons, max(mamPhCons) as mamPhCons, " +
+//								"max(verPhCons) as verPhCons, max(priPhyloP) as priPhyloP, max(mamPhyloP) as mamPhyloP, " +
+//								"max(verPhyloP) as verPhyloP, max(GerpRSpval) as GerpRSpval, max(GerpS) as GerpS " +
+//								"from conservation.CONSERVATION where Chrom='%s' and Pos between %s and %s",
+//						chromosome.getChar(), hg38Pos1, hg38Pos2
+//				);
 			}
 		}
 		return getConservation(sqlFromGerp, sqlFromConservation);

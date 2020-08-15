@@ -59,6 +59,9 @@ public class VariantVCF extends VariantVep {
 					continue;
 				}
 
+				if (i>=ad.length) {
+					continue;
+				}
 				long n = ad[i];
 				counts.put(al, counts.getOrDefault(al, 0L) + n);
 			}
