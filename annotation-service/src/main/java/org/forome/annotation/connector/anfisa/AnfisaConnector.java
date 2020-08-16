@@ -569,13 +569,13 @@ public class AnfisaConnector implements AutoCloseable {
 
 		view.general.worstAnnotation = data.mostSevereConsequence;
 		List<String> consequenceTerms = getFromCanonicalTranscript((VariantVep) variant, "consequence_terms");
-		sortConsequences (consequenceTerms);
+		sortConsequences(consequenceTerms);
 
 		if (variant instanceof VariantCNV) {
 //			view.general.canonicalAnnotation = VariantCNV.COPY_NUMBER_VARIATION;
-			view.general.canonicalAnnotation.add (VariantCNV.COPY_NUMBER_VARIATION);
+			view.general.canonicalAnnotation.add(VariantCNV.COPY_NUMBER_VARIATION);
 		} else {
-            view.general.canonicalAnnotation.addAll (consequenceTerms);
+			view.general.canonicalAnnotation.addAll(consequenceTerms);
 /*
 			String canonicalAnnotation = getMostSevere(consequenceTerms);
 			if (consequenceTerms.size() > 1) {
@@ -597,15 +597,15 @@ public class AnfisaConnector implements AutoCloseable {
 		view.general.ensemblTranscriptsWorst = getFromTranscripts(transcripts, "transcript_id", "Ensembl");
 
 		transcripts = getCanonicalTranscripts((VariantVep) variant);
-		if (view.general.canonicalAnnotation.size () > 1) {
-            view.general.refseqTranscriptCanonical = getCsqFromTranscripts (transcripts, "RefSeq");
-            view.general.ensemblTranscriptsCanonical = getCsqFromTranscripts (transcripts, "Ensembl");
-        }   else {
-            view.general.refseqTranscriptCanonical =
-                getFromTranscripts (transcripts, "transcript_id", "RefSeq");
-            view.general.ensemblTranscriptsCanonical =
-                getFromTranscripts (transcripts, "transcript_id", "Ensembl");
-        }
+		if (view.general.canonicalAnnotation.size() > 1) {
+			view.general.refseqTranscriptCanonical = getCsqFromTranscripts(transcripts, "RefSeq");
+			view.general.ensemblTranscriptsCanonical = getCsqFromTranscripts(transcripts, "Ensembl");
+		} else {
+			view.general.refseqTranscriptCanonical =
+					getFromTranscripts(transcripts, "transcript_id", "RefSeq");
+			view.general.ensemblTranscriptsCanonical =
+					getFromTranscripts(transcripts, "transcript_id", "Ensembl");
+		}
 
 		view.general.variantExonWorst = getFromWorstTranscript((VariantVep) variant, "exon");
 		view.general.variantIntronWorst = getFromWorstTranscript((VariantVep) variant, "intron");
@@ -827,12 +827,14 @@ public class AnfisaConnector implements AutoCloseable {
 							);
 						}
 					} else {
-						gnomAD.rawPopmax = String.format(
-								"%s: %s [%s]",
-								gnomadResult.popmax.group.name(),
-								gnomadResult.popmax.af,
-								gnomadResult.popmax.an
-						);
+						if (gnomadResult.popmax != null) {
+							gnomAD.rawPopmax = String.format(
+									"%s: %s [%s]",
+									gnomadResult.popmax.group.name(),
+									gnomadResult.popmax.af,
+									gnomadResult.popmax.an
+							);
+						}
 					}
 
 					gnomAD.url = gnomadResult.urls.stream().map(url -> url.toString()).toArray(String[]::new);
@@ -1463,15 +1465,15 @@ public class AnfisaConnector implements AutoCloseable {
 		);
 	}
 
-    private static List<String> getCsqFromTranscripts(List<JSONObject> transcripts, String source) {
-   		return unique(
-   				transcripts.stream()
-   						.filter(jsonObject -> source.equals(jsonObject.getAsString("source")))
-   						.map(jsonObject -> String.format ("%s: %s", jsonObject.getAsString ("transcript_id"),
-                               jsonObject.getAsString ("consequence_terms")))
-   						.collect(Collectors.toList())
-   		);
-   	}
+	private static List<String> getCsqFromTranscripts(List<JSONObject> transcripts, String source) {
+		return unique(
+				transcripts.stream()
+						.filter(jsonObject -> source.equals(jsonObject.getAsString("source")))
+						.map(jsonObject -> String.format("%s: %s", jsonObject.getAsString("transcript_id"),
+								jsonObject.getAsString("consequence_terms")))
+						.collect(Collectors.toList())
+		);
+	}
 
 	private static List<String> getFromTranscripts(VariantVep variantVep, String key, String type) {
 		if ("all".equals(type)) {
@@ -1694,13 +1696,13 @@ public class AnfisaConnector implements AutoCloseable {
 		return null;
 	}
 
-    private static void sortConsequences (List<String> consequenceTerms) {
-	    consequenceTerms.sort ((o1, o2) -> {
-            int i1 = AnfisaVariant.CONSEQUENCES.indexOf (o1);
-            int i2 = AnfisaVariant.CONSEQUENCES.indexOf (o2);
-            return i1 - i2;
-        });
-   	}
+	private static void sortConsequences(List<String> consequenceTerms) {
+		consequenceTerms.sort((o1, o2) -> {
+			int i1 = AnfisaVariant.CONSEQUENCES.indexOf(o1);
+			int i2 = AnfisaVariant.CONSEQUENCES.indexOf(o2);
+			return i1 - i2;
+		});
+	}
 
 	private static LinkedHashSet<String> getRawCallers(VariantContext variantContext) {
 		LinkedHashSet<String> callers = new LinkedHashSet<>();
