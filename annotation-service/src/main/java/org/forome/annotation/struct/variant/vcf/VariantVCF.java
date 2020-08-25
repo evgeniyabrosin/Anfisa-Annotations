@@ -18,7 +18,6 @@
 
 package org.forome.annotation.struct.variant.vcf;
 
-import htsjdk.variant.variantcontext.VariantContext;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mavariant.MAVariantVCF;
@@ -26,8 +25,6 @@ import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.vep.VariantVep;
-
-import java.util.List;
 
 public class VariantVCF extends VariantVep {
 
@@ -75,31 +72,31 @@ public class VariantVCF extends VariantVep {
 		return alt;
 	}
 
-	public static int getStart(VariantContext variantContext) {
-		if (isAnyEqualsLength(variantContext.getReference(), variantContext.getAlternateAlleles())) {
-			return variantContext.getStart();
-		} else {
-			char fRef = variantContext.getReference().getBaseString().charAt(0);
-			boolean increment = false;
-			for (htsjdk.variant.variantcontext.Allele allele : variantContext.getAlternateAlleles()) {
-				char fAlt = allele.getBaseString().charAt(0);
-				if (fRef == fAlt) {
-					increment = true;
-					break;
-				}
-			}
-
-			if (increment) {
-				return variantContext.getStart() + 1;
-			} else {
-				return variantContext.getStart();
-			}
-		}
-	}
-
-	public static int getEnd(VariantContext variantContext) {
-		return variantContext.getEnd();
-	}
+//	public static int getStart(VariantContext variantContext) {
+//		if (isAnyEqualsLength(variantContext.getReference(), variantContext.getAlternateAlleles())) {
+//			return variantContext.getStart();
+//		} else {
+//			char fRef = variantContext.getReference().getBaseString().charAt(0);
+//			boolean increment = false;
+//			for (htsjdk.variant.variantcontext.Allele allele : variantContext.getAlternateAlleles()) {
+//				char fAlt = allele.getBaseString().charAt(0);
+//				if (fRef == fAlt) {
+//					increment = true;
+//					break;
+//				}
+//			}
+//
+//			if (increment) {
+//				return variantContext.getStart() + 1;
+//			} else {
+//				return variantContext.getStart();
+//			}
+//		}
+//	}
+//
+//	public static int getEnd(VariantContext variantContext) {
+//		return variantContext.getEnd();
+//	}
 
 	/**
 	 * Проверяем, что длина одного из аллелей равна длине реверенса
@@ -108,13 +105,13 @@ public class VariantVCF extends VariantVep {
 	 * @param alleles
 	 * @return
 	 */
-	private static boolean isAnyEqualsLength(htsjdk.variant.variantcontext.Allele reference, List<htsjdk.variant.variantcontext.Allele> alleles) {
-		for (htsjdk.variant.variantcontext.Allele allele : alleles) {
-			if (allele.length() == reference.length()) {
-				return true;
-			}
-		}
-		return false;
-	}
+//	private static boolean isAnyEqualsLength(htsjdk.variant.variantcontext.Allele reference, List<htsjdk.variant.variantcontext.Allele> alleles) {
+//		for (htsjdk.variant.variantcontext.Allele allele : alleles) {
+//			if (allele.length() == reference.length()) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
 }
