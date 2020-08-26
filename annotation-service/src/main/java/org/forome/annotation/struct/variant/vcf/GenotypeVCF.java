@@ -84,8 +84,8 @@ public class GenotypeVCF extends Genotype {
 						// ALTk/ALTk: 0
 						return HasVariant.ALTki_ALTkj;
 					} else {
-						// REF/ALT, ALT/REF
-						return HasVariant.REF_ALT;
+						// ALT/ALTk, ALTk/ALT
+						return HasVariant.ALT_ALTki;
 					}
 				} else {
 					String allele2 = vcfGenotype.getAlleles().get(1).getBaseString();
