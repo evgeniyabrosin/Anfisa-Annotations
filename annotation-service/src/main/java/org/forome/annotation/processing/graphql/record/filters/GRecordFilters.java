@@ -215,4 +215,28 @@ public class GRecordFilters {
 	public boolean getMaskedRegion() {
 		return gContext.context.getMaskedRegion(gContext.anfisaConnector, gContext.context);
 	}
+
+	@GraphQLField
+	@GraphQLName("multiallelic")
+	@GraphQLDescription("Eсли изначальный вариант был мульти-аллельным, то true")
+	public boolean getMultiallelic() {
+		if (!(variant instanceof VariantVCF)) {
+			return false;
+		}
+		VariantVCF variantVCF = (VariantVCF) variant;
+		VariantContext variantContext = variantVCF.maVariantVCF.variantContext;
+		return (variantContext.getAlternateAlleles().size() > 1);
+	}
+
+	@GraphQLField
+	@GraphQLName("altered_vcf")
+	@GraphQLDescription("Eсли изначальный вариант был разрезан по позициям, то true")
+	public boolean getAlteredVcf() {
+		if (!(variant instanceof VariantVCF)) {
+			return false;
+		}
+		VariantVCF variantVCF = (VariantVCF) variant;
+		return variantVCF.isSplitting;
+	}
+
 }

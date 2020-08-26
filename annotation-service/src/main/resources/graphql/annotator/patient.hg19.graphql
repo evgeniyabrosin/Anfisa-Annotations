@@ -16,11 +16,15 @@
         primate_ai_pred
         eqtl_gene
         masked_region
+        multiallelic
+        altered_vcf
     }
     _view {
         general {
             hg19
             hg38
+            original_ref
+            original_alt
             transcripts {
                 id
                 gene
