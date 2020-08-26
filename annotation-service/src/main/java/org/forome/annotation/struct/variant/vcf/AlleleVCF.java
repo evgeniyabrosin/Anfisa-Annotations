@@ -29,4 +29,8 @@ public class AlleleVCF extends Allele {
 
 		this.vcfSource = vcfSource;
 	}
+
+	public boolean isModified() {
+		return !getBaseString().equals(vcfSource.getBaseString());
+	}
 }

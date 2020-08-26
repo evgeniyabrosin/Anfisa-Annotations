@@ -144,6 +144,8 @@ public class SplitMAVariantVcf extends SplitMAVariant {
 			variantStructs = Collections.singletonList(baseVariantStruct);
 		}
 
+		boolean isSplitting = (variantStructs.size() > 1);
+
 		return variantStructs.stream().map(iVariantStruct -> {
 			VariantVCF variantVCF = new VariantVCF(
 					iVariantStruct.variantType,
@@ -152,6 +154,7 @@ public class SplitMAVariantVcf extends SplitMAVariant {
 					new AlleleVCF(iVariantStruct.ref.getBaseString(), vcfRef),
 					new AlleleVCF(iVariantStruct.alt.getBaseString(), vcfAlt),
 					iVariantStruct,
+					isSplitting,
 					maVariantVCF
 			);
 			variantVCF.setVepJson(maVariantVCF.getVepJson());

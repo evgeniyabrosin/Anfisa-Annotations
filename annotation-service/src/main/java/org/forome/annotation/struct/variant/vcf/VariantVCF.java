@@ -28,16 +28,18 @@ import org.forome.annotation.struct.variant.vep.VariantVep;
 
 public class VariantVCF extends VariantVep {
 
+	public final boolean isSplitting;
 	public final MAVariantVCF maVariantVCF;
 
-	private final AlleleVCF ref;
-	private final AlleleVCF alt;
+	public final AlleleVCF ref;
+	public final AlleleVCF alt;
 
 	public VariantVCF(
 			VariantType variantType,
 			int start, int end,
 			AlleleVCF ref, AlleleVCF alt,
 			VariantStruct variantStruct,
+			boolean isSplitting,
 			MAVariantVCF maVariantVCF
 	) {
 		super(
@@ -46,6 +48,8 @@ public class VariantVCF extends VariantVep {
 				start, end,
 				variantStruct
 		);
+
+		this.isSplitting = isSplitting;
 		this.maVariantVCF = maVariantVCF;
 
 		this.ref = ref;

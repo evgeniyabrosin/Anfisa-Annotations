@@ -18,6 +18,7 @@
 
 package org.forome.annotation.processing.graphql.record.view.general;
 
+import graphql.annotations.annotationTypes.GraphQLDescription;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import net.minidev.json.JSONArray;
@@ -28,6 +29,8 @@ import org.forome.annotation.processing.utils.OutUtils;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.annotation.struct.variant.vcf.AlleleVCF;
+import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 
 import java.util.ArrayList;
@@ -47,7 +50,6 @@ public class GRecordViewGeneral {
 		this.variant = variant;
 	}
 
-
 	@GraphQLField
 	@GraphQLName("hg19")
 	public String getHg19() {
@@ -62,7 +64,6 @@ public class GRecordViewGeneral {
 			return (interval37 != null) ? OutUtils.toOut(interval37) : "None";
 		}
 	}
-
 
 	@GraphQLField
 	@GraphQLName("hg38")
@@ -79,6 +80,37 @@ public class GRecordViewGeneral {
 		}
 	}
 
+	@GraphQLField
+	@GraphQLName("original_ref")
+	@GraphQLDescription("Если ref не совпадает с содержанием VCF, то вохврощаем его")
+	public String getOriginalRef() {
+		if (!(variant instanceof VariantVCF)) {
+			return null;
+		}
+		VariantVCF variantVCF = (VariantVCF) variant;
+		AlleleVCF alleleVCF = variantVCF.ref;
+		if (alleleVCF.isModified()) {
+			return alleleVCF.vcfSource.getBaseString();
+		} else {
+			return null;
+		}
+	}
+
+	@GraphQLField
+	@GraphQLName("original_alt")
+	@GraphQLDescription("Если alt не совпадает с содержанием VCF, то вохврощаем его")
+	public String getOriginalAlt() {
+		if (!(variant instanceof VariantVCF)) {
+			return null;
+		}
+		VariantVCF variantVCF = (VariantVCF) variant;
+		AlleleVCF alleleVCF = variantVCF.alt;
+		if (alleleVCF.isModified()) {
+			return alleleVCF.vcfSource.getBaseString();
+		} else {
+			return null;
+		}
+	}
 
 	@GraphQLField
 	@GraphQLName("transcripts")
