@@ -25,6 +25,8 @@ import org.forome.annotation.struct.variant.Genotype;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GenotypeVCF extends Genotype {
 
@@ -75,7 +77,7 @@ public class GenotypeVCF extends Genotype {
 				String allele1 = vcfGenotype.getAlleles().get(0).getBaseString();
 				boolean isRef1 = "*".equals(allele1) || sourceRef.equals(allele1);
 
-				if (vcfGenotype.getAlleles().size()==1) {
+				if (vcfGenotype.getAlleles().size() == 1) {
 					//У haploid'ых хромосом только одна алеля, например у хромосомы X
 					if (isRef1) {
 						// REF/REF
@@ -119,6 +121,36 @@ public class GenotypeVCF extends Genotype {
 			return al;
 		} else {
 			return null;
+		}
+	}
+
+	/**
+	 * Зиготность равна количеству аллелей, отличающихся от базы (reference)
+	 *
+	 * @return
+	 */
+	@Override
+	public int getZygosity() {
+		switch (vcfGenotype.getType()) {
+			case NO_CALL: //Генотип не может быть определен из-за плохого качества секвенирования
+			case UNAVAILABLE: //Не имеет альтернативных аллелей
+			case MIXED:
+				return 0;
+			case HOM_REF:
+			case HET:
+			case HOM_VAR:
+				AlleleVCF ref = (AlleleVCF) variantVCF.getRefAllele();
+				Allele refVcfSource = ref.vcfSource;
+
+				Set<Allele> altAlles = vcfGenotype.getAlleles().stream()
+						.map(allele -> allele.getBaseString())
+						.filter(sAllele -> !"*".equals(sAllele))//Звездочка означает мусор. Считаем, что звездочка – это референс
+						.filter(sAllele -> !refVcfSource.getBaseString().equals(sAllele))
+						.map(sAllele -> new Allele(sAllele))
+						.collect(Collectors.toSet());
+				return altAlles.size();
+			default:
+				throw new RuntimeException("Unknown state: " + vcfGenotype.getType());
 		}
 	}
 

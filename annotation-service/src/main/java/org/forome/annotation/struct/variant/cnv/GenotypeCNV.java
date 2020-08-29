@@ -75,6 +75,16 @@ public class GenotypeCNV extends Genotype {
 		return al;
 	}
 
+	/**
+	 * Зиготность равна количеству аллелей, отличающихся от базы (reference)
+	 * @return
+	 */
+	@Override
+	public int getZygosity() {
+		int[] gts = Arrays.stream(gt.split("/")).map(s -> Integer.parseInt(s)).mapToInt(Integer::intValue).toArray();
+		return gts.length - 1;
+	}
+
 	@Override
 	public Integer getGQ() {
 		return null;
