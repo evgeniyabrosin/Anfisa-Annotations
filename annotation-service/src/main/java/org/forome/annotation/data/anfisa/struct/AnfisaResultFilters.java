@@ -24,7 +24,6 @@ import org.forome.annotation.data.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +49,6 @@ public class AnfisaResultFilters {
 	public Boolean hgmdBenign;
 
 	public Optional<Boolean> clinvarTrustedBenign;
-	public HashMap<String, Integer> altZygosity;
 
 	public String spliceAltering;
 	public Float spliceAiDsmax;
@@ -121,10 +119,6 @@ public class AnfisaResultFilters {
 		}
 		if (has_variant != null) {
 			out.put("has_variant", has_variant);
-		}
-
-		if (altZygosity != null) {
-			out.put("alt_zygosity", altZygosity);
 		}
 
 		out.put("splice_altering", spliceAltering);

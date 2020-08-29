@@ -166,10 +166,8 @@ public class AnfisaConnector implements AutoCloseable {
 			String mother = anfisaInput.mCase.samples.get(probandId).mother;
 			String father = anfisaInput.mCase.samples.get(probandId).father;
 			data.zygosity = new HashMap<>();
-			filters.altZygosity = new HashMap<>();
 			for (Map.Entry<String, Sample> entry : anfisaInput.mCase.samples.entrySet()) {
 				String name = entry.getValue().name;
-				Sex sex = entry.getValue().sex;
 				String label;
 				if (entry.getKey().equals(probandId)) {
 					label = String.format("proband [%s]", name);
@@ -185,9 +183,6 @@ public class AnfisaConnector implements AutoCloseable {
 				if (genotype != null) {
 					HasVariant hasVariant = genotype.getHasVariant();
 					data.zygosity.put(entry.getKey(), hasVariant.getOutValue());
-					int zyg = hasVariant.getOutValue();
-					int modified_zygosity = (!variant.chromosome.equals(Chromosome.CHR_X) || sex == Sex.FEMALE || (zyg == 0)) ? zyg : 2;
-					filters.altZygosity.put(entry.getKey(), modified_zygosity);
 					if (hasVariant.getOutValue() > 0) {
 						filters.has_variant.add(label);
 					}
