@@ -36,6 +36,12 @@ public abstract class Genotype {
 
 	public abstract List<Allele> getAllele();
 
+	/**
+	 * Зиготность равна количеству аллелей, отличающихся от базы (reference)
+	 * @return
+	 */
+	public abstract int getZygosity();
+
 	public String getGenotypeString() {
 		List<Allele> alleles = getAllele();
 		if (alleles == null) {

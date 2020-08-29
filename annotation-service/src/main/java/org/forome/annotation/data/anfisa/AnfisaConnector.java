@@ -182,7 +182,7 @@ public class AnfisaConnector implements AutoCloseable {
 				org.forome.annotation.struct.variant.Genotype genotype = variant.getGenotype(entry.getValue().id);
 				if (genotype != null) {
 					HasVariant hasVariant = genotype.getHasVariant();
-					data.zygosity.put(entry.getKey(), hasVariant.getOutValue());
+					data.zygosity.put(entry.getKey(), genotype.getZygosity());
 					if (hasVariant.getOutValue() > 0) {
 						filters.has_variant.add(label);
 					}
