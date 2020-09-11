@@ -83,8 +83,8 @@ public class MainVcfMerge {
 				}
 
 				Patient patient = new Patient(
-						values[0], values[1],
-						values[3]
+						values[0].trim(), values[1].trim(),
+						values[3].trim()
 				);
 
 				if (patients.values().stream()

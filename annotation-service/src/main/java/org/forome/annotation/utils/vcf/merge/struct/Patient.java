@@ -34,7 +34,11 @@ public class Patient {
 	}
 
 	public String getSourcePatientId(){
-		return patientId + "_" + patientCode;
+		if ("-".equals(patientCode)) {
+			return patientId;
+		} else {
+			return patientId + "_" + patientCode;
+		}
 	}
 
 	@Override
