@@ -22,6 +22,7 @@ public enum CasePlatform {
 
 	WGS,
 
+	/** Whole Exome Sequencing */
 	WES,
 
 	PANEL
