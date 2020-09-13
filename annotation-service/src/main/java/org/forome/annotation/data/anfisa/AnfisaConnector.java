@@ -176,7 +176,7 @@ public class AnfisaConnector implements AutoCloseable {
 				} else if (entry.getKey().equals(father)) {
 					label = String.format("father [%s]", name);
 				} else {
-					label = entry.getKey();
+					label = entry.getValue().name;
 				}
 
 				org.forome.annotation.struct.variant.Genotype genotype = variant.getGenotype(entry.getValue().id);
