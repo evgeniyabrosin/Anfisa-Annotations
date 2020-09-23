@@ -21,6 +21,7 @@ package org.forome.annotation.data.anfisa.struct;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.astorage.struct.AStorageSource;
+import org.forome.annotation.data.dbsnp.DbSNPConnector;
 import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.Interval;
@@ -28,11 +29,13 @@ import org.forome.annotation.struct.Sequence;
 import org.forome.annotation.struct.variant.Variant;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class AnfisaExecuteContext {
 
+	private final String CACHE_VARIANT_IDS = "variant_ids";
 	private final String CACHE_MASKED_REGION = "masked_region";
 	private final String CACHE_CDS_TRANSCRIPTS = "cds+transcripts";
 
@@ -60,7 +63,13 @@ public class AnfisaExecuteContext {
 		this.cache = new HashMap<>();
 	}
 
-	public boolean getMaskedRegion(AnfisaConnector anfisaConnector, AnfisaExecuteContext context) {
+	public List<String> getVariantIds() {
+		return (List<String>) cache.computeIfAbsent(CACHE_VARIANT_IDS, s -> {
+			return new DbSNPConnector().getIds(this, variant);
+		});
+	}
+
+	public boolean getMaskedRegion(AnfisaConnector anfisaConnector) {
 		return (boolean) cache.computeIfAbsent(CACHE_MASKED_REGION, s -> {
 			FastaSource fastaSource = anfisaConnector.fastaSource;
 			Assembly assembly = anfisaInput.mCase.assembly;
@@ -69,7 +78,7 @@ public class AnfisaExecuteContext {
 					variant.getStart(),
 					(variant.getStart() < variant.end) ? variant.end : variant.getStart()
 			);
-			Sequence sequence = fastaSource.getSequence(context, assembly, interval);
+			Sequence sequence = fastaSource.getSequence(this, assembly, interval);
 			String vSequence = sequence.value;
 
 			//Если есть маленькие буквы, то мы имеем дело с замаскированными регионами тандемных повторов

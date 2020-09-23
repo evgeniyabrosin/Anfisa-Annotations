@@ -35,7 +35,6 @@ import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.data.dbnsfp.DbNSFPConnector;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
-import org.forome.annotation.data.dbsnp.DbSNPConnector;
 import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
@@ -204,7 +203,7 @@ public class AnfisaConnector implements AutoCloseable {
 			data.input = vepJson.getAsString("input");
 		}
 		data.transcriptConsequences = ((VariantVep) variant).getTranscriptConsequences();
-		data.id = new DbSNPConnector().getIds(context, variant);
+		data.id = context.getVariantIds();
 		data.strand = (vepJson.containsKey("strand")) ? vepJson.getAsNumber("strand").longValue() : null;
 		data.variantClass = variant.getVariantType();
 
@@ -235,7 +234,7 @@ public class AnfisaConnector implements AutoCloseable {
 		createDatabasesTab(record, data, view);
 		createPredictionsTab(context, variant, view);
 		createBioinformaticsTab(gtfAnfisaResult, context, filters, data, view);
-		createPharmacogenomicsTab(view, filters, variant);
+		createPharmacogenomicsTab(context, view, filters, variant);
 		countCohorts(view, filters, anfisaInput.mCase, variant);
 
 		return new AnfisaResult(filters, data, view, context);
@@ -1114,21 +1113,29 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private void createPharmacogenomicsTab(AnfisaResultView view, AnfisaResultFilters filters, Variant variant) {
-		if (!(variant instanceof VariantVCF)) {
-			return;
-		}
-		String variantId = ((VariantVCF) variant).maVariantVCF.variantContext.getID();
-		if (variantId == null || ".".equals(variantId)) {
+	private void createPharmacogenomicsTab(AnfisaExecuteContext context, AnfisaResultView view, AnfisaResultFilters filters, Variant variant) {
+		List<String> variantIds = context.getVariantIds();
+		if (variantIds.isEmpty()) {
 			return;
 		}
 
-		view.pharmacogenomics.notes = pharmGKBConnector.getNotes(variantId);
-		List<AnfisaResultView.Pharmacogenomics.Item> pmids = pharmGKBConnector.getPmids(variantId);
+		view.pharmacogenomics.notes = variantIds.stream()
+				.flatMap(variantId -> pharmGKBConnector.getNotes(variantId).stream())
+				.collect(Collectors.toList());
+
+		List<AnfisaResultView.Pharmacogenomics.Item> pmids = variantIds.stream()
+				.flatMap(variantId -> pharmGKBConnector.getPmids(variantId).stream())
+				.collect(Collectors.toList());
 		view.pharmacogenomics.pmids = pmids;
-		List<AnfisaResultView.Pharmacogenomics.Item> diseases = pharmGKBConnector.getDiseases(variantId);
+
+		List<AnfisaResultView.Pharmacogenomics.Item> diseases = variantIds.stream()
+				.flatMap(variantId -> pharmGKBConnector.getDiseases(variantId).stream())
+				.collect(Collectors.toList());
 		view.pharmacogenomics.diseases = diseases;
-		List<AnfisaResultView.Pharmacogenomics.Item> chemicals = pharmGKBConnector.getChemicals(variantId);
+
+		List<AnfisaResultView.Pharmacogenomics.Item> chemicals = variantIds.stream()
+				.flatMap(variantId -> pharmGKBConnector.getChemicals(variantId).stream())
+				.collect(Collectors.toList());
 		view.pharmacogenomics.chemicals = chemicals;
 
 		//Add filters

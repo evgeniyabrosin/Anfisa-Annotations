@@ -118,6 +118,6 @@ public class GRecordViewBioinformatics {
 	@GraphQLField
 	@GraphQLName("masked_region")
 	public boolean getMaskedRegion() {
-		return gContext.context.getMaskedRegion(gContext.anfisaConnector, gContext.context);
+		return gContext.context.getMaskedRegion(gContext.anfisaConnector);
 	}
 }
