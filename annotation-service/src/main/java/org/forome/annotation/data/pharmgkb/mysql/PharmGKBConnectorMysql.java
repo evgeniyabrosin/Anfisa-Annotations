@@ -118,11 +118,17 @@ public class PharmGKBConnectorMysql implements PharmGKBConnector, AutoCloseable 
 			try (Statement statement = connection.createStatement()) {
 				try (ResultSet resultSet = statement.executeQuery(sql)) {
 					while (resultSet.next()) {
-						AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
-								resultSet.getString("AssocKind"),
-								resultSet.getString("DisTitle")
-						);
-						items.add(item);
+						String association = resultSet.getString("AssocKind");
+						String values = resultSet.getString("DisTitle");
+						for (String value: values.split(";")) {//Режем по символу ';'
+							String tValue = value.trim();
+							if (tValue.isEmpty()) continue;
+
+							AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
+									association, tValue
+							);
+							items.add(item);
+						}
 					}
 				}
 			}
@@ -145,11 +151,17 @@ public class PharmGKBConnectorMysql implements PharmGKBConnector, AutoCloseable 
 			try (Statement statement = connection.createStatement()) {
 				try (ResultSet resultSet = statement.executeQuery(sql)) {
 					while (resultSet.next()) {
-						AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
-								resultSet.getString("AssocKind"),
-								resultSet.getString("ChTitle")
-						);
-						items.add(item);
+						String association = resultSet.getString("AssocKind");
+						String values = resultSet.getString("ChTitle");
+						for (String value: values.split(";")) {//Режем по символу ';'
+							String tValue = value.trim();
+							if (tValue.isEmpty()) continue;
+
+							AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
+									association, tValue
+							);
+							items.add(item);
+						}
 					}
 				}
 			}
