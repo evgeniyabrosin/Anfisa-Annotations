@@ -23,8 +23,8 @@ import org.forome.annotation.data.spliceai.datasource.SpliceAIDataSource;
 import org.forome.annotation.data.spliceai.struct.Row;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

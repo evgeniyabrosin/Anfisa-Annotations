@@ -23,9 +23,9 @@ import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResult;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResultLookup;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Position;
 
 import java.util.List;
 import java.util.Set;

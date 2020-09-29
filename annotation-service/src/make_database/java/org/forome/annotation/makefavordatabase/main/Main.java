@@ -21,23 +21,18 @@ package org.forome.annotation.makefavordatabase.main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
-import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.favor.processing.Processing;
 import org.forome.annotation.favor.utils.iterator.DumpIterator;
 import org.forome.annotation.favor.utils.source.Source;
 import org.forome.annotation.favor.utils.source.SourceLocal;
 import org.forome.annotation.favor.utils.struct.table.Row;
 import org.forome.annotation.favor.utils.struct.table.Table;
-import org.forome.annotation.makedatabase.make.RocksDBConnector;
 import org.forome.annotation.makefavordatabase.main.argument.Arguments;
 import org.forome.annotation.makefavordatabase.main.argument.ParserArgument;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.service.database.rocksdb.favor.FavorDatabase;
 import org.forome.annotation.service.ssh.SSHConnectService;
-import org.forome.annotation.utils.compression.GZIPCompression;
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.RocksDBException;
+import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,8 +76,8 @@ public class Main {
 //            Source source = new SourceRemote(Source.PATH_FILE);
 			Source source = new SourceLocal(arguments.sourceDump);
 
-			RocksDBConnector rocksDBConnector = new RocksDBConnector(arguments.target.toAbsolutePath());
-			ColumnFamilyHandle columnFamily = getColumnFamily(rocksDBConnector);
+//			RocksDBConnector rocksDBConnector = new RocksDBConnector(arguments.target.toAbsolutePath());
+//			ColumnFamilyHandle columnFamily = getColumnFamily(rocksDBConnector);
 
 			Processing processing = new Processing(hgmdConnector);
 			try (InputStream is = source.getInputStream()) {
@@ -109,11 +104,11 @@ public class Main {
 						ProcessingResult processingResult = processing.exec(row);
 						String record = processingResult.toJSON().toJSONString();
 
-						rocksDBConnector.rocksDB.put(
-								columnFamily,
-								FavorDatabase.getKeyData(row.order),
-								GZIPCompression.compress(record)
-						);
+//						rocksDBConnector.rocksDB.put(
+//								columnFamily,
+//								FavorDatabase.getKeyData(row.order),
+//								GZIPCompression.compress(record)
+//						);
 
 						if (row.order % 100_000 == 0) {
 							log.debug("Processing row order: " + row.order);
@@ -123,7 +118,7 @@ public class Main {
 			}
 
 			log.debug("Compact...");
-			rocksDBConnector.rocksDB.compactRange(columnFamily);
+//			rocksDBConnector.rocksDB.compactRange(columnFamily);
 			log.debug("Compact...complete");
 
 			source.close();
@@ -135,11 +130,11 @@ public class Main {
 		}
 	}
 
-	public static ColumnFamilyHandle getColumnFamily(RocksDBConnector rocksDBConnector) throws RocksDBException {
-		ColumnFamilyHandle columnFamilyHandle = rocksDBConnector.getColumnFamily(FavorDatabase.COLUMN_FAMILY_DATA);
-		if (columnFamilyHandle == null) {
-			columnFamilyHandle = rocksDBConnector.createColumnFamily(FavorDatabase.COLUMN_FAMILY_DATA);
-		}
-		return columnFamilyHandle;
-	}
+//	public static ColumnFamilyHandle getColumnFamily(RocksDBConnector rocksDBConnector) throws RocksDBException {
+//		ColumnFamilyHandle columnFamilyHandle = rocksDBConnector.getColumnFamily(FavorDatabase.COLUMN_FAMILY_DATA);
+//		if (columnFamilyHandle == null) {
+//			columnFamilyHandle = rocksDBConnector.createColumnFamily(FavorDatabase.COLUMN_FAMILY_DATA);
+//		}
+//		return columnFamilyHandle;
+//	}
 }

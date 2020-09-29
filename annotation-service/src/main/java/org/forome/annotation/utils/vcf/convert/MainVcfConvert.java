@@ -18,12 +18,12 @@
 
 package org.forome.annotation.utils.vcf.convert;
 
-import org.forome.annotation.data.liftover.LiftoverConnector;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
 import org.forome.annotation.utils.vcf.convert.main.argument.Arguments;
 import org.forome.annotation.utils.vcf.convert.main.argument.ParserArgument;
 import org.forome.annotation.utils.vcf.convert.struct.Record;
+import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

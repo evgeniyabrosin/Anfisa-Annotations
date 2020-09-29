@@ -21,8 +21,8 @@ package org.forome.annotation.data.ref;
 import org.forome.annotation.config.connector.RefConfigConnector;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.Chromosome;
 
 public class RefConnector implements AutoCloseable {
 

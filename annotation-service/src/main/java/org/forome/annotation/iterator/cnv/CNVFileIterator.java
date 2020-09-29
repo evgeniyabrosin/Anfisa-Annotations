@@ -19,10 +19,10 @@
 package org.forome.annotation.iterator.cnv;
 
 import com.google.common.collect.ImmutableList;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mavariant.MAVariantCNV;
 import org.forome.annotation.struct.variant.cnv.GenotypeCNV;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
+import org.forome.core.struct.Chromosome;
 
 import java.io.BufferedReader;
 import java.io.IOException;

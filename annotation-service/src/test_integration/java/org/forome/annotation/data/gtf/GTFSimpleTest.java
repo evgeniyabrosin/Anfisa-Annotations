@@ -20,9 +20,9 @@ package org.forome.annotation.data.gtf;
 
 import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResultLookup;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Position;
 import org.junit.Assert;
 import org.junit.Test;
 

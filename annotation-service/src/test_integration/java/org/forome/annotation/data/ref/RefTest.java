@@ -18,7 +18,7 @@
 
 package org.forome.annotation.data.ref;
 
-import org.forome.annotation.struct.Chromosome;
+import org.forome.core.struct.Chromosome;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -23,12 +23,12 @@ import graphql.annotations.annotationTypes.GraphQLName;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.HasVariant;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sex;
 import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.Chromosome;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -20,9 +20,9 @@ package org.forome.annotation.data.gtf;
 
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.gtf.datasource.http.GTFDataSourceHttp;
-import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;

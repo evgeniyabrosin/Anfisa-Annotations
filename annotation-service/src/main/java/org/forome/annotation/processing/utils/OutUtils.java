@@ -18,9 +18,9 @@
 
 package org.forome.annotation.processing.utils;
 
-import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantType;
+import org.forome.core.struct.Interval;
 
 public class OutUtils {
 

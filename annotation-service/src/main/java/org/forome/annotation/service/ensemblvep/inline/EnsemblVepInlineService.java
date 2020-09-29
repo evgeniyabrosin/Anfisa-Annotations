@@ -27,8 +27,8 @@ import org.forome.annotation.service.ensemblvep.inline.runner.EnsemblVepRunner;
 import org.forome.annotation.service.ensemblvep.inline.runner.EnsemblVepSshRunner;
 import org.forome.annotation.service.ensemblvep.inline.struct.EnsembleVepRequest;
 import org.forome.annotation.service.ssh.SSHConnectService;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

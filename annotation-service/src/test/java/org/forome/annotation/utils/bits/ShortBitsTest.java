@@ -18,6 +18,7 @@
 
 package org.forome.annotation.utils.bits;
 
+import org.forome.astorage.core.utils.bits.ShortBits;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -19,10 +19,10 @@
 package org.forome.annotation.data.conservation;
 
 import org.forome.annotation.AnfisaBaseTest;
-import org.forome.annotation.data.conservation.struct.Conservation;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Interval;
+import org.forome.astorage.core.data.Conservation;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Interval;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;

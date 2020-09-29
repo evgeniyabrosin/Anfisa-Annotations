@@ -25,11 +25,12 @@ import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
 import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.service.database.rocksdb.annotator.SourceDatabase;
 import org.forome.annotation.service.database.rocksdb.favor.FavorDatabase;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.service.ssh.struct.SSHConnect;
-import org.forome.annotation.struct.Assembly;
+import org.forome.astorage.core.source.Source;
+import org.forome.astorage.core.source.SourceDatabase;
+import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

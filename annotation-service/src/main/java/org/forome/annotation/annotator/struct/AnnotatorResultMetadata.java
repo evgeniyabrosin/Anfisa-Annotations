@@ -25,13 +25,13 @@ import htsjdk.variant.vcf.VCFHeaderLine;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
 import org.forome.annotation.struct.mcase.Sex;
 import org.forome.annotation.utils.AppVersion;
+import org.forome.core.struct.Assembly;
 
 import java.nio.file.Path;
 import java.text.ParseException;

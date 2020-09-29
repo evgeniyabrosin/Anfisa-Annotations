@@ -25,11 +25,11 @@ import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.struct.GnamadGroup;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
 import org.forome.annotation.matcher.SequenceMatcher;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

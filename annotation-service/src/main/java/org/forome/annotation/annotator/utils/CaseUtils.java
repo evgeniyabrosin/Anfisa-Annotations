@@ -22,11 +22,11 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
 import org.forome.annotation.struct.mcase.Sex;
+import org.forome.core.struct.Assembly;
 
 import java.io.BufferedReader;
 import java.io.IOException;

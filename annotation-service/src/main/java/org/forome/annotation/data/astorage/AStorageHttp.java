@@ -37,12 +37,12 @@ import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
 import org.forome.annotation.data.astorage.struct.AStorageSource;
-import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.Statistics;
+import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

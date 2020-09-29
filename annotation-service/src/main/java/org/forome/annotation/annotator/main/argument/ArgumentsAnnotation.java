@@ -19,8 +19,8 @@
 package org.forome.annotation.annotator.main.argument;
 
 import org.apache.commons.cli.CommandLine;
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.CasePlatform;
+import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -21,10 +21,10 @@ package org.forome.annotation.favor.processing.struct;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.favor.utils.struct.table.Row;
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
 
 import java.util.Arrays;
 import java.util.Collections;

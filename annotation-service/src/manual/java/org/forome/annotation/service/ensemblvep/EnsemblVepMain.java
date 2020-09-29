@@ -27,7 +27,7 @@ import org.forome.annotation.data.ref.RefConnector;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
 import org.forome.annotation.service.ssh.SSHConnectService;
-import org.forome.annotation.struct.Chromosome;
+import org.forome.core.struct.Chromosome;
 
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;

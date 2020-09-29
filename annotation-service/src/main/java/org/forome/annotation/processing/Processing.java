@@ -36,8 +36,6 @@ import org.forome.annotation.processing.smavariant.SplitMAVariant;
 import org.forome.annotation.processing.statistics.StatisticsInstrumentation;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.processing.struct.ProcessingResult;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.Sequence;
 import org.forome.annotation.struct.mavariant.MAVariant;
 import org.forome.annotation.struct.mcase.MCase;
@@ -45,6 +43,8 @@ import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.utils.Statistics;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

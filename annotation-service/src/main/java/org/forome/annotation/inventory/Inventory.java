@@ -22,8 +22,8 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.CasePlatform;
+import org.forome.core.struct.Assembly;
 
 import java.io.BufferedReader;
 import java.io.IOException;

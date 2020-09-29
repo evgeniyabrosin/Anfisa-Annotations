@@ -18,7 +18,7 @@
 
 package org.forome.annotation.utils.vcf.convert.struct;
 
-import org.forome.annotation.struct.Position;
+import org.forome.core.struct.Position;
 
 public class Record {
 

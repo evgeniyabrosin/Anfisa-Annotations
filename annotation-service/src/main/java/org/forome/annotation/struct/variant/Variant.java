@@ -19,9 +19,9 @@
 package org.forome.annotation.struct.variant;
 
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.mcase.Sample;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Interval;
 
 public abstract class Variant {
 

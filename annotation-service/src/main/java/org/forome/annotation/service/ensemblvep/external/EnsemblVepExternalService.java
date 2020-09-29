@@ -20,8 +20,8 @@ package org.forome.annotation.service.ensemblvep.external;
 
 import net.minidev.json.JSONObject;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.Chromosome;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;

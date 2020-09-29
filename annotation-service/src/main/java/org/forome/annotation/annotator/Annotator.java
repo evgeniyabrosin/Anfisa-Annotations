@@ -46,9 +46,9 @@ import org.forome.annotation.annotator.utils.CaseUtils;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.struct.mcase.MCase;
+import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -18,7 +18,7 @@
 
 package org.forome.annotation.struct;
 
-import org.forome.annotation.exception.AnnotatorException;
+import org.forome.core.struct.Chromosome;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ public class ChromosomeTest {
 		try {
 			Chromosome.of("");
 			Assert.fail();
-		} catch (AnnotatorException ignore) {
+		} catch (IllegalArgumentException ignore) {
 		}
 
 	}

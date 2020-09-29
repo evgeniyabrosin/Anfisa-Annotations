@@ -21,11 +21,11 @@ package org.forome.annotation.struct.variant.cnv;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.vep.VariantVep;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Interval;
 
 import java.util.Collections;
 import java.util.List;

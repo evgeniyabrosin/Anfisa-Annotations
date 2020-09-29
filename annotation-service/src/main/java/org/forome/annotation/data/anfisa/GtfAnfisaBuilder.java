@@ -25,13 +25,13 @@ import org.forome.annotation.data.anfisa.struct.Kind;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Interval;
-import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.Statistics;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Interval;
+import org.forome.core.struct.Position;
 
 import java.util.ArrayList;
 import java.util.List;

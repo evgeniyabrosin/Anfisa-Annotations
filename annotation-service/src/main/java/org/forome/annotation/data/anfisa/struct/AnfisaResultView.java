@@ -20,7 +20,7 @@ package org.forome.annotation.data.anfisa.struct;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.data.conservation.struct.Conservation;
+import org.forome.astorage.core.data.Conservation;
 
 import java.io.Serializable;
 import java.util.*;

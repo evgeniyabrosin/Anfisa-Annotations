@@ -18,8 +18,8 @@
 
 package org.forome.annotation.inventory;
 
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.CasePlatform;
+import org.forome.core.struct.Assembly;
 import org.junit.Assert;
 import org.junit.Test;
 

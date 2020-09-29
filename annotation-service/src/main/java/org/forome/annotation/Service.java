@@ -37,7 +37,6 @@ import org.forome.annotation.data.gtf.GTFConnectorImpl;
 import org.forome.annotation.data.gtf.datasource.mysql.GTFDataConnector;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
-import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.data.pharmgkb.mysql.PharmGKBConnectorMysql;
 import org.forome.annotation.data.spliceai.SpliceAIConnector;
@@ -55,6 +54,7 @@ import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalServi
 import org.forome.annotation.service.notification.NotificationService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.utils.ArgumentParser;
+import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

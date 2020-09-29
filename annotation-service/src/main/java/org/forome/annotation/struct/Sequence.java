@@ -18,6 +18,8 @@
 
 package org.forome.annotation.struct;
 
+import org.forome.core.struct.Interval;
+
 public class Sequence {
 
 	public final Interval interval;

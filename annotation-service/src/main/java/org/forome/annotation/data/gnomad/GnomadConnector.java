@@ -20,10 +20,10 @@ package org.forome.annotation.data.gnomad;
 
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

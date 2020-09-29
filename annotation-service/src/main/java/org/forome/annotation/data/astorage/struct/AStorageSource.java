@@ -19,7 +19,7 @@
 package org.forome.annotation.data.astorage.struct;
 
 import net.minidev.json.JSONObject;
-import org.forome.annotation.struct.Assembly;
+import org.forome.core.struct.Assembly;
 
 public class AStorageSource {
 
