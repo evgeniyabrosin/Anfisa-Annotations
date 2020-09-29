@@ -20,9 +20,9 @@ package org.forome.annotation.makedatabase;
 
 import com.infomaximum.database.utils.TypeConvert;
 import com.infomaximum.rocksdb.RocksDBProvider;
-import org.forome.annotation.service.database.rocksdb.annotator.SourceDatabase;
-import org.forome.annotation.service.database.struct.packer.PackInterval;
-import org.forome.annotation.struct.Interval;
+import org.forome.astorage.core.packer.PackInterval;
+import org.forome.astorage.core.source.SourceDatabase;
+import org.forome.core.struct.Interval;
 import org.rocksdb.*;
 import org.rocksdb.util.SizeUnit;
 import org.slf4j.Logger;

@@ -20,7 +20,7 @@ package org.forome.annotation.controller.utils;
 
 import com.google.common.base.Strings;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.struct.Chromosome;
+import org.forome.core.struct.Chromosome;
 
 public class RequestParser {
 

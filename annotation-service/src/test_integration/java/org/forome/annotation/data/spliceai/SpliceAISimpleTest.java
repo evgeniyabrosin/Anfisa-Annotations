@@ -20,7 +20,7 @@ package org.forome.annotation.data.spliceai;
 
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Assembly;
+import org.forome.core.struct.Assembly;
 import org.junit.Assert;
 import org.junit.Test;
 

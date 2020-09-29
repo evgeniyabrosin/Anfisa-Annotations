@@ -20,8 +20,8 @@ package org.forome.annotation.data.hgmd;
 
 import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.hgmd.struct.HgmdPmidRow;
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.core.struct.Assembly;
 
 import java.util.List;
 

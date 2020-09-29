@@ -20,7 +20,7 @@ package org.forome.annotation.iterator.vepjson;
 
 import net.minidev.json.JSONObject;
 import org.forome.annotation.iterator.json.JsonFileIterator;
-import org.forome.annotation.struct.Chromosome;
+import org.forome.core.struct.Chromosome;
 
 import java.io.InputStream;
 import java.nio.file.Path;

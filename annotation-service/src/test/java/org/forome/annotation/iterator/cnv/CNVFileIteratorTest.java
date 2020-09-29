@@ -18,8 +18,8 @@
 
 package org.forome.annotation.iterator.cnv;
 
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mavariant.MAVariantCNV;
+import org.forome.core.struct.Chromosome;
 import org.junit.Assert;
 import org.junit.Test;
 

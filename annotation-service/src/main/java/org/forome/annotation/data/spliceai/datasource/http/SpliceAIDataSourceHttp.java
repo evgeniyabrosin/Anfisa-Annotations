@@ -22,11 +22,15 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
-import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.spliceai.datasource.SpliceAIDataSource;
 import org.forome.annotation.data.spliceai.struct.Row;
-import org.forome.annotation.struct.*;
+import org.forome.annotation.struct.Allele;
+import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.utils.MathUtils;
+import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

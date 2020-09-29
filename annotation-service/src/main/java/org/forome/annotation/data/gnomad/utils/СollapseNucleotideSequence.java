@@ -18,7 +18,7 @@
 
 package org.forome.annotation.data.gnomad.utils;
 
-import org.forome.annotation.struct.Position;
+import org.forome.core.struct.Position;
 
 public class СollapseNucleotideSequence {
 

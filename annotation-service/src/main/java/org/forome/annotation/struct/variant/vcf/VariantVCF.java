@@ -19,12 +19,12 @@
 package org.forome.annotation.struct.variant.vcf;
 
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mavariant.MAVariantVCF;
 import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.vep.VariantVep;
+import org.forome.core.struct.Chromosome;
 
 public class VariantVCF extends VariantVep {
 

@@ -19,12 +19,12 @@
 package org.forome.annotation.struct.variant.custom;
 
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.variant.VariantUtils;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Interval;
 
 public class VariantCustom extends VariantVep {
 

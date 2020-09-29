@@ -20,8 +20,8 @@ package org.forome.annotation.data.ref;
 
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.utils.NucleotideUtils;
+import org.forome.core.struct.Chromosome;
 
 import java.io.Closeable;
 import java.sql.Connection;

@@ -18,8 +18,8 @@
 
 package org.forome.annotation.data.anfisa.struct;
 
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.mcase.MCase;
+import org.forome.core.struct.Assembly;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

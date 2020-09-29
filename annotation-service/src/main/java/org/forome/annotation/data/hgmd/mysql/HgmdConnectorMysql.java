@@ -22,13 +22,13 @@ import org.forome.annotation.config.connector.HgmdConfigConnector;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.struct.HgmdPmidRow;
-import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Interval;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

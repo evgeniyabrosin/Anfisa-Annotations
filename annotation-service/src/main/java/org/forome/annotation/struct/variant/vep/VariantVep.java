@@ -21,10 +21,10 @@ package org.forome.annotation.struct.variant.vep;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
+import org.forome.core.struct.Chromosome;
 
 public abstract class VariantVep extends Variant {
 

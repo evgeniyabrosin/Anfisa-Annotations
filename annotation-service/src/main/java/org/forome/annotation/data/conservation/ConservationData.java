@@ -19,15 +19,15 @@
 package org.forome.annotation.data.conservation;
 
 import com.google.common.collect.Lists;
-import org.forome.annotation.data.conservation.struct.Conservation;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.service.database.Source;
-import org.forome.annotation.service.database.struct.record.Record;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Interval;
-import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.utils.Statistics;
+import org.forome.astorage.core.data.Conservation;
+import org.forome.astorage.core.record.Record;
+import org.forome.astorage.core.source.Source;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Interval;
+import org.forome.core.struct.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -24,10 +24,10 @@ import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
 import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.utils.GnomadUtils;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

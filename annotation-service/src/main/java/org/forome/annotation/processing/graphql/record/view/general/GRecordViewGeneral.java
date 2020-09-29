@@ -26,12 +26,12 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.processing.graphql.record.view.general.transcript.GRecordViewGeneralTranscript;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.processing.utils.OutUtils;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vcf.AlleleVCF;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.struct.variant.vep.VariantVep;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Interval;
 
 import java.util.ArrayList;
 import java.util.HashSet;

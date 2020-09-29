@@ -25,13 +25,13 @@ import org.forome.annotation.data.gtf.mysql.struct.GTFRegion;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResult;
 import org.forome.annotation.data.gtf.mysql.struct.GTFResultLookup;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
-import org.forome.annotation.data.liftover.LiftoverConnector;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
 import org.forome.annotation.utils.Statistics;
+import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Position;
 
 import java.util.ArrayList;
 import java.util.List;

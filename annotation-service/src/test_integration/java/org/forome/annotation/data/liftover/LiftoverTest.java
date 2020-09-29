@@ -18,9 +18,10 @@
 
 package org.forome.annotation.data.liftover;
 
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Interval;
-import org.forome.annotation.struct.Position;
+import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Interval;
+import org.forome.core.struct.Position;
 import org.junit.Assert;
 import org.junit.Test;
 

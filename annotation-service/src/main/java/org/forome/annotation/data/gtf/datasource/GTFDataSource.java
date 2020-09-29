@@ -20,9 +20,9 @@ package org.forome.annotation.data.gtf.datasource;
 
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Position;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Position;
 
 import java.io.Closeable;
 import java.util.List;

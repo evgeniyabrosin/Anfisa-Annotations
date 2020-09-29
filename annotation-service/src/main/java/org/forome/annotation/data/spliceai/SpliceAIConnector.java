@@ -21,8 +21,8 @@ package org.forome.annotation.data.spliceai;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Assembly;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.core.struct.Assembly;
 
 import java.util.List;
 

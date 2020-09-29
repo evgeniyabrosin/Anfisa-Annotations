@@ -23,9 +23,9 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.iterator.cnv.CNVFileIterator;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mavariant.MAVariantVCF;
 import org.forome.annotation.struct.mavariant.MAVariantVep;
+import org.forome.core.struct.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

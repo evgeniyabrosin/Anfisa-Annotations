@@ -32,10 +32,10 @@ import org.forome.annotation.processing.graphql.record.view.general.GRecordViewG
 import org.forome.annotation.processing.graphql.record.view.predictions.GRecordViewPredictions;
 import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscript;
 import org.forome.annotation.processing.struct.GContext;
-import org.forome.annotation.struct.Interval;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vep.VariantVep;
+import org.forome.core.struct.Interval;
 
 import java.util.ArrayList;
 import java.util.HashSet;

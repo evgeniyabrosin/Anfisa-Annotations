@@ -19,8 +19,8 @@
 package org.forome.annotation.service.ensemblvep;
 
 import net.minidev.json.JSONObject;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.Chromosome;
 
 import java.io.Closeable;
 import java.util.concurrent.CompletableFuture;

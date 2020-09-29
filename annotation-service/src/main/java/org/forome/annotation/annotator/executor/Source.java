@@ -21,9 +21,9 @@ package org.forome.annotation.annotator.executor;
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.controller.utils.RequestParser;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.mavariant.MAVariantVCF;
 import org.forome.annotation.struct.mavariant.MAVariantVep;
+import org.forome.core.struct.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

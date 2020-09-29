@@ -18,8 +18,8 @@
 
 package org.forome.annotation.data.gnomad.utils;
 
-import org.forome.annotation.struct.Chromosome;
-import org.forome.annotation.struct.Position;
+import org.forome.core.struct.Chromosome;
+import org.forome.core.struct.Position;
 import org.junit.Assert;
 import org.junit.Test;
 

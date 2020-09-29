@@ -19,10 +19,10 @@
 package org.forome.annotation.data.spliceai;
 
 import org.forome.annotation.config.ServiceConfig;
-import org.forome.annotation.data.liftover.LiftoverConnector;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ssh.SSHConnectService;
+import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

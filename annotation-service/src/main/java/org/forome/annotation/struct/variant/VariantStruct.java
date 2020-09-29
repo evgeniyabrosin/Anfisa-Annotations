@@ -19,7 +19,7 @@
 package org.forome.annotation.struct.variant;
 
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Interval;
+import org.forome.core.struct.Interval;
 
 public class VariantStruct {
 

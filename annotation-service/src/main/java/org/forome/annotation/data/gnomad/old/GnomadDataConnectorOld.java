@@ -23,8 +23,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.core.struct.Chromosome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

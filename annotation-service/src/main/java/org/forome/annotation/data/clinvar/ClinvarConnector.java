@@ -20,10 +20,10 @@ package org.forome.annotation.data.clinvar;
 
 import org.forome.annotation.data.clinvar.struct.ClinvarResult;
 import org.forome.annotation.data.clinvar.struct.ClinvarVariantSummary;
-import org.forome.annotation.struct.Assembly;
-import org.forome.annotation.struct.Chromosome;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
 
 import java.util.List;
 
