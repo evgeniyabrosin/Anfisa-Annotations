@@ -62,7 +62,7 @@ public class AStorageHttp {
 
 	private final LiftoverConnector liftoverConnector;
 
-	private final DatabaseConnectService.AStorage aStorage;
+	private final DatabaseConnectService.AStoragePython aStorage;
 
 	private final RequestConfig requestConfig;
 	private final PoolingNHttpClientConnectionManager connectionManager;

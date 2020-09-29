@@ -60,7 +60,7 @@ public class FastaSource {
 
 	private final static Logger log = LoggerFactory.getLogger(FastaSource.class);
 
-	private final DatabaseConnectService.AStorage aStorage;
+	private final DatabaseConnectService.AStoragePython aStorage;
 
 	private final RequestConfig requestConfig;
 	private final PoolingNHttpClientConnectionManager connectionManager;
