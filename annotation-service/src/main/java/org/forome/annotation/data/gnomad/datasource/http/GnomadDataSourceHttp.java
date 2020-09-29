@@ -73,7 +73,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	private final LiftoverConnector liftoverConnector;
 	private final FastaSource fastaSource;
 
-	private final DatabaseConnectService.AStorage aStorage;
+	private final DatabaseConnectService.AStoragePython aStorage;
 
 	private final RequestConfig requestConfig;
 	private final PoolingNHttpClientConnectionManager connectionManager;

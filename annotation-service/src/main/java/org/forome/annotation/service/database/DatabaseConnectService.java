@@ -28,8 +28,8 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.rocksdb.favor.FavorDatabase;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.service.ssh.struct.SSHConnect;
+import org.forome.astorage.AStorage;
 import org.forome.astorage.core.source.Source;
-import org.forome.astorage.core.source.SourceDatabase;
 import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,12 +40,12 @@ import java.util.Map;
 
 public class DatabaseConnectService implements AutoCloseable {
 
-	public class AStorage {
+	public class AStoragePython {
 
 		public final String host;
 		public final int port;
 
-		public AStorage(String host, int port) {
+		public AStoragePython(String host, int port) {
 			this.host = host;
 			this.port = port;
 		}
@@ -53,31 +53,29 @@ public class DatabaseConnectService implements AutoCloseable {
 
 	private final static Logger log = LoggerFactory.getLogger(DatabaseConnectService.class);
 
-	private final SourceDatabase sourceDatabase37;
-	private final SourceDatabase sourceDatabase38;
+	private final AStorage aStorage;
 
 	private final FavorDatabase favorDatabase;
 
 	private final SSHConnectService sshTunnelService;
 	private final Map<String, ComboPooledDataSource> dataSources;
 
-	private final Map<String, AStorage> aStorages;
+	private final Map<String, AStoragePython> aStorages;
 
 	public DatabaseConnectService(SSHConnectService sshTunnelService, DatabaseConfig databaseConfig) throws DatabaseException {
 		this.sshTunnelService = sshTunnelService;
 		this.dataSources = new HashMap<>();
 		this.aStorages = new HashMap<>();
 
+		AStorage.Builder builder = new AStorage.Builder();
 		if (databaseConfig.hg37 != null) {
-			sourceDatabase37 = new SourceDatabase(Assembly.GRCh37, databaseConfig.hg37);
-		} else {
-			sourceDatabase37 = null;
+			builder.withSource(Assembly.GRCh37, databaseConfig.hg37);
 		}
 		if (databaseConfig.hg38 != null) {
-			sourceDatabase38 = new SourceDatabase(Assembly.GRCh38, databaseConfig.hg38);
-		} else {
-			sourceDatabase38 = null;
+			builder.withSource(Assembly.GRCh38, databaseConfig.hg38);
 		}
+		aStorage = builder.build();
+
 		if (databaseConfig.favor != null) {
 			favorDatabase = new FavorDatabase(databaseConfig.favor);
 		} else {
@@ -169,9 +167,9 @@ public class DatabaseConnectService implements AutoCloseable {
 	public Source getSource(Assembly assembly) {
 		switch (assembly) {
 			case GRCh37:
-				return sourceDatabase37;
+				return aStorage.sourceDatabase37;
 			case GRCh38:
-				return sourceDatabase38;
+				return aStorage.sourceDatabase38;
 			default:
 				throw new RuntimeException();
 		}
@@ -182,9 +180,9 @@ public class DatabaseConnectService implements AutoCloseable {
 	}
 
 
-	public AStorage getAStorage(AStorageConfigConnector aStorageConfigConnector) {
+	public AStoragePython getAStorage(AStorageConfigConnector aStorageConfigConnector) {
 		String keyAStorage = getKeyAStorage(aStorageConfigConnector);
-		AStorage aStorage = aStorages.get(keyAStorage);
+		AStoragePython aStorage = aStorages.get(keyAStorage);
 		if (aStorage == null) {
 			synchronized (dataSources) {
 				aStorage = aStorages.get(keyAStorage);
@@ -197,7 +195,7 @@ public class DatabaseConnectService implements AutoCloseable {
 		return aStorage;
 	}
 
-	private AStorage buildAStorage(AStorageConfigConnector aStorageConfigConnector) {
+	private AStoragePython buildAStorage(AStorageConfigConnector aStorageConfigConnector) {
 		try {
 			int port;
 			SshTunnelConfig sshTunnelConfig = aStorageConfigConnector.sshTunnelConfig;
@@ -213,7 +211,7 @@ public class DatabaseConnectService implements AutoCloseable {
 				port = aStorageConfigConnector.astoragePort;
 			}
 
-			return new AStorage(
+			return new AStoragePython(
 					aStorageConfigConnector.astorageHost,
 					port
 			);
