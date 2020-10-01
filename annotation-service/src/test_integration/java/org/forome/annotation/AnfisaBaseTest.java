@@ -19,18 +19,18 @@
 package org.forome.annotation;
 
 import org.forome.annotation.config.ServiceConfig;
+import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
-import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
 import org.forome.annotation.data.gtf.GTFConnector;
 import org.forome.annotation.data.gtf.GTFConnectorImpl;
-import org.forome.annotation.data.gtf.datasource.http.GTFDataSourceHttp;
+import org.forome.annotation.data.gtf.datasource.mysql.GTFDataConnector;
 import org.forome.annotation.data.hgmd.HgmdConnector;
 import org.forome.annotation.data.hgmd.mysql.HgmdConnectorMysql;
 import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
@@ -44,11 +44,15 @@ import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.astorage.core.source.Source;
+import org.forome.core.struct.Assembly;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.file.Paths;
 
 public class AnfisaBaseTest {
 
@@ -57,9 +61,10 @@ public class AnfisaBaseTest {
 	private static SSHConnectService sshTunnelService;
 	private static DatabaseConnectService databaseConnectService;
 
+	public static Source source37;
+
 	protected static GnomadConnectorImpl gnomadConnector;
 	protected static SpliceAIConnector spliceAIConnector;
-	protected static ConservationData conservationConnector;
 	protected static HgmdConnector hgmdConnector;
 	protected static ClinvarConnector clinvarConnector;
 	protected static LiftoverConnector liftoverConnector;
@@ -74,7 +79,7 @@ public class AnfisaBaseTest {
 
 	@BeforeClass
 	public static void init() throws Throwable {
-		ServiceConfig serviceConfig = new ServiceConfig();
+		ServiceConfig serviceConfig = new ServiceConfig(Paths.get("config.6.json").toAbsolutePath());
 		sshTunnelService = new SSHConnectService();
 		databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 //		gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> {
@@ -97,12 +102,12 @@ public class AnfisaBaseTest {
 //			Assert.fail();
 //		});
 
+		source37 = databaseConnectService.getSource(Assembly.GRCh37);
+
 		spliceAIConnector = new SpliceAIConnectorImpl(
 				new SpliceAIDataSourceHttp(liftoverConnector)
 		);
 //		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-
-		conservationConnector = new ConservationData(databaseConnectService);
 
 //		hgmdConnector = new HgmdConnectorHttp();
 		hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);
@@ -112,16 +117,15 @@ public class AnfisaBaseTest {
 
 
 		gtfConnector = new GTFConnectorImpl(
-				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				new GTFDataConnector(
+						new DatabaseConnector(databaseConnectService, serviceConfig.gtfConfigConnector)
+				),
 				liftoverConnector,
 				(t, e) -> {
 					log.error("Fail", e);
 					Assert.fail();
-				});
-//		gtfConnector = new GTFConnectorImpl(databaseConnectService, serviceConfig.gtfConfigConnector, (t, e) -> {
-//			log.error("Fail", e);
-//			Assert.fail();
-//		});
+				}
+		);
 		refConnector = new RefConnector(databaseConnectService, serviceConfig.refConfigConnector);
 
 		gtexConnector = new GTEXConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
@@ -137,7 +141,6 @@ public class AnfisaBaseTest {
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
 				spliceAIConnector,
-				conservationConnector,
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,

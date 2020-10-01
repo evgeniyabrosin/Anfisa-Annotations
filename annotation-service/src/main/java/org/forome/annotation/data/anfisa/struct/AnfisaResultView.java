@@ -20,7 +20,6 @@ package org.forome.annotation.data.anfisa.struct;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.forome.astorage.core.data.Conservation;
 
 import java.io.Serializable;
 import java.util.*;
@@ -234,7 +233,6 @@ public class AnfisaResultView {
 		public String inheritedFrom;
 		public long[] distFromExonWorst = new long[0];
 		public long[] distFromExonCanonical = new long[0];
-		public Conservation conservation;
 		public String speciesWithVariant;
 		public String speciesWithOthers;
 		public List<String> maxEntScan;
@@ -274,7 +272,6 @@ public class AnfisaResultView {
 			out.put("called_by", calledBy);
 			out.put("max_ent_scan", maxEntScan);
 			out.put("dist_from_exon_canonical", distFromExonCanonical);
-			out.put("conservation", build(conservation));
 			out.put("caller_data", callerData);
 			out.put("nn_splice", nnSplice);
 			out.put("species_with_variant", speciesWithVariant);
@@ -286,18 +283,7 @@ public class AnfisaResultView {
 			out.put("splice_ai_al", spliceAiAl);
 			out.put("splice_ai_dg", spliceAiDg);
 			out.put("splice_ai_dl", spliceAiDl);
-			out.put("gerp_rs", (conservation != null) ? conservation.gerpRS : null);
 			out.put("cnv_lo", cnvLO);
-			return out;
-		}
-
-		private static JSONObject build(Conservation conservation) {
-			if (conservation == null) {
-				return null;
-			}
-			JSONObject out = new JSONObject();
-			out.put("gerp_r_s", conservation.gerpRS);
-			out.put("gerp_n", conservation.gerpN);
 			return out;
 		}
 	}

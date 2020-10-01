@@ -25,6 +25,7 @@ import htsjdk.variant.vcf.VCFHeaderLine;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
+import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.mcase.Cohort;
 import org.forome.annotation.struct.mcase.MCase;
@@ -201,7 +202,7 @@ public class AnnotatorResultMetadata {
 			metadataDatabases.addAll(anfisaConnector.clinvarConnector.getSourceMetadata());
 			metadataDatabases.addAll(anfisaConnector.hgmdConnector.getSourceMetadata());
 			metadataDatabases.addAll(anfisaConnector.spliceAIConnector.getSourceMetadata());
-			metadataDatabases.addAll(anfisaConnector.conservationData.getSourceMetadata());
+			metadataDatabases.addAll(ConservationData.getSourceMetadata());
 			metadataDatabases.addAll(anfisaConnector.gnomadConnector.getSourceMetadata());
 			metadataDatabases.addAll(anfisaConnector.gtexConnector.getSourceMetadata());
 			metadataDatabases.addAll(anfisaConnector.pharmGKBConnector.getSourceMetadata());

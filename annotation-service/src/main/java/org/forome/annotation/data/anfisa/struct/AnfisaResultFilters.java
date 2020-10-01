@@ -124,8 +124,6 @@ public class AnfisaResultFilters {
 		out.put("splice_altering", spliceAltering);
 		out.put("splice_ai_dsmax", spliceAiDsmax);
 
-		out.put("gerp_rs", (bioinformatics.conservation != null) ? bioinformatics.conservation.gerpRS : null);
-
 		out.put("num_clinvar_submitters", numClinvarSubmitters);
 
 		if (clinvarReviewStatus != null) {

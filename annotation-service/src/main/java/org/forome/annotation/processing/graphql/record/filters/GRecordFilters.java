@@ -26,12 +26,14 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.forome.annotation.data.anfisa.struct.AnfisaVariant;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
 import org.forome.annotation.processing.struct.GContext;
+import org.forome.annotation.processing.utils.ConvertType;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sample;
 import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.utils.MathUtils;
+import org.forome.astorage.core.data.Conservation;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -237,6 +239,13 @@ public class GRecordFilters {
 		}
 		VariantVCF variantVCF = (VariantVCF) variant;
 		return variantVCF.isSplitting;
+	}
+
+	@GraphQLField
+	@GraphQLName("gerp_rs")
+	public Double getGerpRS() {
+		Conservation conservation = gContext.executeContext.getConservation();
+		return (conservation == null) ? null : ConvertType.toDouble(conservation.gerpRS);
 	}
 
 }
