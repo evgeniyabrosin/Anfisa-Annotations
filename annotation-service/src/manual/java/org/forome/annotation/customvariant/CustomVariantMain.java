@@ -25,7 +25,6 @@ import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
-import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -51,6 +50,7 @@ import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Chromosome;
 import org.slf4j.Logger;
@@ -69,7 +69,6 @@ public class CustomVariantMain {
 	private final DatabaseConnectService databaseConnectService;
 	private final GnomadConnector gnomadConnector;
 	private final SpliceAIConnector spliceAIConnector;
-	private final ConservationData conservationConnector;
 	private final HgmdConnector hgmdConnector;
 	private final ClinvarConnector clinvarConnector;
 	private final LiftoverConnector liftoverConnector;
@@ -101,8 +100,6 @@ public class CustomVariantMain {
 		);
 //		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
-		conservationConnector = new ConservationData(databaseConnectService);
-
 //		hgmdConnector = new HgmdConnectorHttp();
 		hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);
 
@@ -130,7 +127,6 @@ public class CustomVariantMain {
 		anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
 				spliceAIConnector,
-				conservationConnector,
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,
@@ -140,7 +136,10 @@ public class CustomVariantMain {
 				sourceHttp38,
 				fastaSource
 		);
-		processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
+
+		Source source = databaseConnectService.getSource(Assembly.GRCh37);
+
+		processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 	}
 
 	//chr6:53140021 G>A

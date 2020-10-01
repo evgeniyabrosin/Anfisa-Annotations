@@ -56,6 +56,7 @@ import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.utils.AppVersion;
 import org.forome.annotation.utils.RuntimeExec;
 import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -183,8 +184,6 @@ public class AnnotationConsole {
 			);
 //			spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
-			conservationConnector = new ConservationData(databaseConnectService);
-
 //			this.hgmdConnector = new HgmdConnectorHttp();
 			this.hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);
 
@@ -217,7 +216,6 @@ public class AnnotationConsole {
 			anfisaConnector = new AnfisaConnector(
 					gnomadConnector,
 					spliceAIConnector,
-					conservationConnector,
 					hgmdConnector,
 					clinvarConnector,
 					liftoverConnector,
@@ -227,7 +225,10 @@ public class AnnotationConsole {
 					sourceHttp38,
 					fastaSource
 			);
-			processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
+
+			Source source = databaseConnectService.getSource(assembly);
+
+			processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 		} catch (Throwable e) {
 			fail(e, null, arguments);
 		}
@@ -313,7 +314,6 @@ public class AnnotationConsole {
 					e -> fail(e, finalVcfFile, arguments),
 					() -> {
 						log.debug("progress completed");
-						log.debug("conservation: {}", conservationConnector.getStatistics());
 						log.debug("aStorage: {}", anfisaConnector.aStorageHttp.getStatistics());
 						log.debug("fasta: {}", anfisaConnector.fastaSource.getStatistics());
 						log.debug("gtf: {}", anfisaConnector.gtfAnfisaBuilder.statisticGtfs.getStat());

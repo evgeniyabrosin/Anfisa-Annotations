@@ -26,7 +26,6 @@ import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
-import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
@@ -106,7 +105,6 @@ public class Service {
 
 	private final GnomadConnectorImpl gnomadConnector;
 	private final SpliceAIConnector spliceAIConnector;
-	private final ConservationData conservationConnector;
 	private final HgmdConnector hgmdConnector;
 	private final ClinvarConnector clinvarConnector;
 	private final LiftoverConnector liftoverConnector;
@@ -156,8 +154,6 @@ public class Service {
 		);
 //		this.spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
 
-		this.conservationConnector = new ConservationData(databaseConnectService);
-
 //		this.hgmdConnector = new HgmdConnectorHttp();
 		this.hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);
 
@@ -196,7 +192,6 @@ public class Service {
 		this.anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
 				spliceAIConnector,
-				conservationConnector,
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,

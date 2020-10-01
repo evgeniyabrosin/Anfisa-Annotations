@@ -21,13 +21,16 @@ package org.forome.annotation.processing.graphql.record.view.bioinformatics;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
+import org.forome.annotation.processing.graphql.record.view.bioinformatics.conservation.GRecordViewBioinformaticsConservation;
 import org.forome.annotation.processing.struct.GContext;
+import org.forome.annotation.processing.utils.ConvertType;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.HasVariant;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.mcase.Sex;
 import org.forome.annotation.struct.variant.Genotype;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.astorage.core.data.Conservation;
 import org.forome.core.struct.Chromosome;
 
 import java.util.*;
@@ -120,4 +123,19 @@ public class GRecordViewBioinformatics {
 	public boolean getMaskedRegion() {
 		return gContext.context.getMaskedRegion(gContext.anfisaConnector);
 	}
+
+	@GraphQLField
+	@GraphQLName("gerp_rs")
+	public Double getGerpRS() {
+		Conservation conservation = gContext.executeContext.getConservation();
+		return (conservation == null) ? null : ConvertType.toDouble(conservation.gerpRS);
+	}
+
+	@GraphQLField
+	@GraphQLName("conservation")
+	public GRecordViewBioinformaticsConservation getConservation() {
+		Conservation conservation = gContext.executeContext.getConservation();
+		return (conservation == null) ? null : new GRecordViewBioinformaticsConservation(conservation);
+	}
+
 }

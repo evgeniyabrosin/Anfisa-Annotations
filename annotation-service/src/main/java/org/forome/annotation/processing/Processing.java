@@ -43,6 +43,7 @@ import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.utils.Statistics;
+import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;
 import org.slf4j.Logger;
@@ -57,8 +58,11 @@ public class Processing {
 
 	private final static Logger log = LoggerFactory.getLogger(Processing.class);
 
-	private final AnfisaConnector anfisaConnector;
+	private final Source source;
 	private final GraphQL graphQL;
+
+	private final AnfisaConnector anfisaConnector;
+
 
 	private final String graphQLQuery;
 
@@ -66,7 +70,13 @@ public class Processing {
 	public final Statistics anfisaStatistics = new Statistics();
 	public final StatisticsInstrumentation statisticsInstrumentation = new StatisticsInstrumentation();
 
-	public Processing(AnfisaConnector anfisaConnector, TypeQuery typeQuery) {
+	public Processing(
+			Source source,
+			AnfisaConnector anfisaConnector,
+			TypeQuery typeQuery
+	) {
+		this.source = source;
+
 		this.anfisaConnector = anfisaConnector;
 
 		GraphQLSchema graphQLSchema = AnnotationsSchemaCreator.newAnnotationsSchema()
@@ -132,6 +142,7 @@ public class Processing {
 							.variables(Collections.emptyMap())
 							.context(
 									new GContext(
+											source,
 											mCase, variant,
 											anfisaConnector, anfisaResult.context
 									)

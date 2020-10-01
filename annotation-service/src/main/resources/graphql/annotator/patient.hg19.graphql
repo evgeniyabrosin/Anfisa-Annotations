@@ -18,6 +18,7 @@
         masked_region
         multiallelic
         altered_vcf
+        gerp_rs
     }
     _view {
         general {
@@ -38,6 +39,11 @@
             refcodon
             eqtl_gene
             masked_region
+            gerp_rs
+            conservation {
+                gerp_r_s
+                gerp_n
+            }
         }
         predictions {
             mutation_assessor_predictions

@@ -24,7 +24,6 @@ import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
-import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
@@ -48,6 +47,8 @@ import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.astorage.core.source.Source;
+import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,8 +75,6 @@ public class VCFMain {
 				new SpliceAIDataSourceHttp(liftoverConnector)
 		);
 //		SpliceAIConnector spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-
-		ConservationData conservationConnector = new ConservationData(databaseConnectService);
 
 //		HgmdConnector hgmdConnector = new HgmdConnectorHttp();
 		HgmdConnector hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);
@@ -104,7 +103,6 @@ public class VCFMain {
 		AnfisaConnector anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
 				spliceAIConnector,
-				conservationConnector,
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,
@@ -114,7 +112,10 @@ public class VCFMain {
 				sourceHttp38,
 				fastaSource
 		);
-		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
+
+		Source source = databaseConnectService.getSource(Assembly.GRCh37);
+
+		Processing processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 
 		Path pathVcf = Paths.get("/home/kris/processtech/tmp/newvcf/HG002_GRCh37_GIAB_highconf_CG-IllFB-IllGATKHC-Ion-10X-SOLID_CHROM1-22_v.3.3.2_highconf_triophased.vcf");
 		VCFFileIterator vcfFileIterator = new VCFFileIterator(pathVcf);

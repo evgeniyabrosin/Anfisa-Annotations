@@ -22,11 +22,15 @@ import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.astorage.core.source.Source;
 
 public class GContext {
 
+	public final Source source;
+
 	public final MCase mCase;
 	public final Variant variant;
+	public final ExecuteContext executeContext;
 
 	//TODO Ulitin V. Удалить
 	public final AnfisaConnector anfisaConnector;
@@ -34,11 +38,15 @@ public class GContext {
 	public final AnfisaExecuteContext context;
 
 	public GContext(
+			Source source,
 			MCase mCase, Variant variant,
 			AnfisaConnector anfisaConnector, AnfisaExecuteContext context
 	) {
+		this.source = source;
+
 		this.mCase = mCase;
 		this.variant = variant;
+		this.executeContext = new ExecuteContext(this);
 
 		this.anfisaConnector = anfisaConnector;
 		this.context = context;

@@ -26,7 +26,6 @@ import org.forome.annotation.data.anfisa.struct.AnfisaInput;
 import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
-import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
@@ -52,6 +51,7 @@ import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalServi
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.variant.cnv.VariantCNV;
 import org.forome.astorage.core.liftover.LiftoverConnector;
+import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,8 +79,6 @@ public class CNVMain {
 				new SpliceAIDataSourceHttp(liftoverConnector)
 		);
 //		SpliceAIConnector spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
-
-		ConservationData conservationConnector = new ConservationData(databaseConnectService);
 
 //		HgmdConnector hgmdConnector = new HgmdConnectorHttp();
 		HgmdConnector hgmdConnector = new HgmdConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.hgmdConfigConnector);
@@ -110,7 +108,6 @@ public class CNVMain {
 		AnfisaConnector anfisaConnector = new AnfisaConnector(
 				gnomadConnector,
 				spliceAIConnector,
-				conservationConnector,
 				hgmdConnector,
 				clinvarConnector,
 				liftoverConnector,
@@ -120,7 +117,10 @@ public class CNVMain {
 				sourceHttp38,
 				fastaSource
 		);
-		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
+
+		Source source = databaseConnectService.getSource(Assembly.GRCh37);
+
+		Processing processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 
 		Path pathVcf = Paths.get("/home/kris/processtech/tmp/_3/cnv.vcf");
 		CNVFileIterator cnvFileIterator = new CNVFileIterator(pathVcf);

@@ -31,7 +31,6 @@ import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.struct.ClinvarResult;
 import org.forome.annotation.data.clinvar.struct.ClinvarVariantSummary;
-import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.dbnsfp.DbNSFPConnector;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
 import org.forome.annotation.data.fasta.FastaSource;
@@ -62,7 +61,6 @@ import org.forome.annotation.struct.variant.vcf.VariantVCF;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.AppVersion;
 import org.forome.annotation.utils.MathUtils;
-import org.forome.astorage.core.data.Conservation;
 import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Chromosome;
@@ -89,7 +87,6 @@ public class AnfisaConnector implements AutoCloseable {
 
 	public final GnomadConnector gnomadConnector;
 	public final SpliceAIConnector spliceAIConnector;
-	public final ConservationData conservationData;
 	public final HgmdConnector hgmdConnector;
 	public final ClinvarConnector clinvarConnector;
 	public final LiftoverConnector liftoverConnector;
@@ -108,7 +105,6 @@ public class AnfisaConnector implements AutoCloseable {
 	public AnfisaConnector(
 			GnomadConnector gnomadConnector,
 			SpliceAIConnector spliceAIConnector,
-			ConservationData conservationConnector,
 			HgmdConnector hgmdConnector,
 			ClinvarConnector clinvarConnector,
 			LiftoverConnector liftoverConnector,
@@ -120,7 +116,6 @@ public class AnfisaConnector implements AutoCloseable {
 	) {
 		this.gnomadConnector = gnomadConnector;
 		this.spliceAIConnector = spliceAIConnector;
-		this.conservationData = conservationConnector;
 		this.hgmdConnector = hgmdConnector;
 		this.clinvarConnector = clinvarConnector;
 		this.liftoverConnector = liftoverConnector;
@@ -1085,7 +1080,6 @@ public class AnfisaConnector implements AutoCloseable {
 		view.bioinformatics.inheritedFrom = inherited_from(variant, anfisaInput.mCase);
 		filters.distFromExonCanonical = view.bioinformatics.distFromExonCanonical = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.CANONICAL);
 		filters.distFromExonWorst = view.bioinformatics.distFromExonWorst = getDistanceFromExon(gtfAnfisaResult, (VariantVep) variant, Kind.WORST);
-		view.bioinformatics.conservation = buildConservation(anfisaExecuteContext);
 		view.bioinformatics.speciesWithVariant = "";
 		view.bioinformatics.speciesWithOthers = "";
 		view.bioinformatics.maxEntScan = getMaxEnt((VariantVep) variant);
@@ -1153,13 +1147,6 @@ public class AnfisaConnector implements AutoCloseable {
 		);
 	}
 
-	public Conservation buildConservation(AnfisaExecuteContext context) {
-		Assembly assembly = context.anfisaInput.mCase.assembly;
-		Variant variant = context.variant;
-		String ref = variant.getRef();
-		String alt = variant.getStrAlt();
-		return conservationData.getConservation(assembly, variant.getInterval(), ref, alt);
-	}
 
 	private static Map<String, Float> list_dsmax(AnfisaResultData data) {
 		Map<String, Float> result = new HashMap<>();

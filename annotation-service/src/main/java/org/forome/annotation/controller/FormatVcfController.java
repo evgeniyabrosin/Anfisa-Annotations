@@ -37,9 +37,11 @@ import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
+import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +85,10 @@ public class FormatVcfController {
 			throw ExceptionBuilder.buildInvalidOperation("inited");
 		}
 
-		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
+		DatabaseConnectService databaseConnectService = service.getDatabaseConnectService();
+		Source source = databaseConnectService.getSource(Assembly.GRCh37);
+
+		Processing processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 
 		TempVCFFile tempVCFFile = buildTempVCFFile(request);
 

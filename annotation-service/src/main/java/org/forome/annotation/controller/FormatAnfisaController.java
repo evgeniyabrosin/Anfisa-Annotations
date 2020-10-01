@@ -36,6 +36,8 @@ import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.ExecutorServiceUtils;
+import org.forome.astorage.core.source.Source;
+import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -81,7 +83,10 @@ public class FormatAnfisaController {
 		if (anfisaConnector == null) {
 			throw ExceptionBuilder.buildInvalidOperation("inited");
 		}
-		Processing processing = new Processing(anfisaConnector, TypeQuery.PATIENT_HG19);
+
+		Source source = service.getDatabaseConnectService().getSource(Assembly.GRCh37);
+
+		Processing processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 
 		CompletableFuture<JSONArray> future = new CompletableFuture<>();
 		ExecutorServiceUtils.poolExecutor.execute(() -> {
