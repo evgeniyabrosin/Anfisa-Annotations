@@ -36,9 +36,9 @@ import org.forome.annotation.processing.smavariant.SplitMAVariant;
 import org.forome.annotation.processing.statistics.StatisticsInstrumentation;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.processing.struct.ProcessingResult;
-import org.forome.annotation.struct.Sequence;
 import org.forome.annotation.struct.mavariant.MAVariant;
 import org.forome.annotation.struct.mcase.MCase;
+import org.forome.annotation.struct.sequence.Sequence;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
@@ -208,8 +208,8 @@ public class Processing {
 			}
 
 			Sequence sequence = anfisaConnector.fastaSource.getSequence(assembly, interval);
-			if (!sequence.value.equalsIgnoreCase(variantStruct.ref.getBaseString())) {
-				throw new RuntimeException("Not equals ref: " + variantStruct.ref.getBaseString() + ", and fasta: " + sequence.value);
+			if (!sequence.getValue().equalsIgnoreCase(variantStruct.ref.getBaseString())) {
+				throw new RuntimeException("Not equals ref: " + variantStruct.ref.getBaseString() + ", and fasta: " + sequence.getValue());
 			}
 		} catch (Throwable e) {
 			throw new RuntimeException("Variant: " + variant.toString(), e);

@@ -19,7 +19,7 @@
 package org.forome.annotation.utils.variant;
 
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.struct.Sequence;
+import org.forome.annotation.struct.sequence.Sequence;
 import org.forome.annotation.struct.variant.Variant;
 
 public class MergeSequence {
@@ -47,9 +47,9 @@ public class MergeSequence {
 			i2 = i1 + variant.getRefAllele().length();
 		}
 
-		String s1 = sequence.value.substring(0, i1);
-		String change = sequence.value.substring(i1, i2);
-		String s2 = sequence.value.substring(i2);
+		String s1 = sequence.getValue().substring(0, i1);
+		String change = sequence.getValue().substring(i1, i2);
+		String s2 = sequence.getValue().substring(i2);
 
 		//TODO Ulitin V. Нашлась интересная ситуация, кейс: pgp3140_wgs_nist-v4.2
 		//Варинант chr1    147380845       .       T       G,TG
