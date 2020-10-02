@@ -43,8 +43,8 @@ import org.forome.annotation.data.gnomad.utils.СollapseNucleotideSequence;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.struct.Sequence;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.struct.sequence.Sequence;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.variant.MergeSequence;
 import org.forome.astorage.core.liftover.LiftoverConnector;
@@ -272,7 +272,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		}
 
 		//Проверяем, что при наложеная мутация на ref (hg38) мы получим ref (hg19) - обязательное услови
-		if (!sequence19.value.equals(mergeSequence)) {
+		if (!sequence19.getValue().equals(mergeSequence)) {
 			return Collections.emptyList();
 		}
 

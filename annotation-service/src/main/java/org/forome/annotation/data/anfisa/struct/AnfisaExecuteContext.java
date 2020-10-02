@@ -23,7 +23,7 @@ import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.astorage.struct.AStorageSource;
 import org.forome.annotation.data.dbsnp.DbSNPConnector;
 import org.forome.annotation.data.fasta.FastaSource;
-import org.forome.annotation.struct.Sequence;
+import org.forome.annotation.struct.sequence.Sequence;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;
@@ -79,7 +79,7 @@ public class AnfisaExecuteContext {
 					(variant.getStart() < variant.end) ? variant.end : variant.getStart()
 			);
 			Sequence sequence = fastaSource.getSequence(this, assembly, interval);
-			String vSequence = sequence.value;
+			String vSequence = sequence.getValue();
 
 			//Если есть маленькие буквы, то мы имеем дело с замаскированными регионами тандемных повторов
 			boolean maskedRegion = !vSequence.equals(vSequence.toUpperCase());

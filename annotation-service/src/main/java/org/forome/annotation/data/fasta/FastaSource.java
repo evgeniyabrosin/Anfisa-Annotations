@@ -39,7 +39,7 @@ import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.astorage.struct.AStorageSource;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.struct.Sequence;
+import org.forome.annotation.struct.sequence.Sequence;
 import org.forome.annotation.utils.Statistics;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;
@@ -116,7 +116,7 @@ public class FastaSource {
 			if (value == null) {
 				return null;
 			} else {
-				return new Sequence(interval, value);
+				return Sequence.build(interval, value);
 			}
 		} else {
 			return getSequence(assembly, interval);
@@ -151,7 +151,7 @@ public class FastaSource {
 		if (value == null) {
 			return null;
 		} else {
-			return new Sequence(interval, value);
+			return Sequence.build(interval, value);
 		}
 	}
 

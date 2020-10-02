@@ -20,7 +20,7 @@ package org.forome.annotation.utils.variant;
 
 import net.minidev.json.JSONObject;
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.Sequence;
+import org.forome.annotation.struct.sequence.Sequence;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.core.struct.Chromosome;
 import org.forome.core.struct.Interval;
@@ -31,7 +31,7 @@ public class MergeSequenceTest {
 
 	@Test
 	public void testDeletion() {
-		Sequence sequence = new Sequence(
+		Sequence sequence = Sequence.build(
 				Interval.of(Chromosome.of("2"), 73448096, 73448105),
 				"TTCTCCTCTA"
 		);

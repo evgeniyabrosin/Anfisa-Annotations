@@ -16,21 +16,39 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.struct;
+package org.forome.annotation.struct.sequence;
 
+import org.forome.annotation.struct.nucleotide.Nucleotide;
 import org.forome.core.struct.Interval;
 
 public class Sequence {
 
 	public final Interval interval;
-	public final String value;
+	private final Nucleotide[] nucleotides;
 
-	public Sequence(Interval interval, String value) {
-		if (interval.end - interval.start + 1 != value.length()) {
+	public Sequence(Interval interval, Nucleotide[] nucleotides) {
+		if (interval.end - interval.start + 1 != nucleotides.length) {
 			throw new IllegalArgumentException();
 		}
 
 		this.interval = interval;
-		this.value = value;
+		this.nucleotides = nucleotides;
 	}
+
+	public String getValue() {
+		StringBuilder sBuilder = new StringBuilder(nucleotides.length);
+		for (int i = 0; i < nucleotides.length; i++) {
+			sBuilder.append(nucleotides[i].character);
+		}
+		return sBuilder.toString();
+	}
+
+	public static Sequence build(Interval interval, String value) {
+		Nucleotide[] nucleotides = new Nucleotide[value.length()];
+		for (int i = 0; i < value.length(); i++) {
+			nucleotides[i] = Nucleotide.of(value.charAt(i));
+		}
+		return new Sequence(interval, nucleotides);
+	}
+
 }
