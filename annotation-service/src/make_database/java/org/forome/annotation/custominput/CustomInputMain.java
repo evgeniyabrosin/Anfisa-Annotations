@@ -140,7 +140,7 @@ public class CustomInputMain {
 			}
 			Path config = Paths.get(strConfigFile).toAbsolutePath();
 			if (!Files.exists(config)) {
-				throw new IllegalArgumentException("Config file is not exists: " + config);
+				throw new IllegalArgumentException("Config file does not exists: " + config);
 			}
 
 			String strInventoryFile = cmd.getOptionValue(OPTION_FILE_INPUT);
@@ -149,7 +149,7 @@ public class CustomInputMain {
 			}
 			Path pathInputFile = Paths.get(strInventoryFile).toAbsolutePath();
 			if (!Files.exists(pathInputFile)) {
-				throw new IllegalArgumentException("Inventory file is not exists: " + config);
+				throw new IllegalArgumentException("Inventory file does not exists: " + config);
 			}
 
 			String strFileVepJson = cmd.getOptionValue(OPTION_FILE_VEPJSON);
@@ -158,7 +158,7 @@ public class CustomInputMain {
 			}
 			Path pathFileVepJson = Paths.get(strFileVepJson).toAbsolutePath();
 			if (!Files.exists(pathInputFile)) {
-				throw new IllegalArgumentException("Vep.json file is not exists: " + config);
+				throw new IllegalArgumentException("Vep.json file does not exists: " + config);
 			}
 
 			serviceConfig = new ServiceConfig(config);

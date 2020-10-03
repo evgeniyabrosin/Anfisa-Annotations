@@ -42,7 +42,7 @@ public class Arguments {
 		}
 		sourceDump = Paths.get(strSourceFile).toAbsolutePath();
 		if (!Files.exists(sourceDump)) {
-			throw new IllegalArgumentException("Source file is not exists: " + sourceDump);
+			throw new IllegalArgumentException("Source file does not exists: " + sourceDump);
 		}
 		if (!sourceDump.getFileName().toString().endsWith(".gz")) {
 			throw new IllegalArgumentException("Bad source file: " + sourceDump.toAbsolutePath());

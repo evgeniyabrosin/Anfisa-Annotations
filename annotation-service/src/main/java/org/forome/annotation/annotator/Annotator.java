@@ -99,14 +99,14 @@ public class Annotator {
 
 		this.pathVcf = pathVcf;
 		if (!Files.exists(pathVcf)) {
-			throw new RuntimeException("Vcf file is not exists: " + pathVcf.toAbsolutePath());
+			throw new RuntimeException("Vcf file does not exists: " + pathVcf.toAbsolutePath());
 		}
 		if (!pathVcf.getFileName().toString().endsWith(".vcf")) {
 			throw new IllegalArgumentException("Bad name vcf file (Need *.vcf): " + pathVcf.toAbsolutePath());
 		}
 
 		if (!Files.exists(pathFam)) {
-			throw new RuntimeException("Fam file is not exists: " + pathFam.toAbsolutePath());
+			throw new RuntimeException("Fam file does not exists: " + pathFam.toAbsolutePath());
 		}
 		if (!pathFam.getFileName().toString().endsWith(".fam")) {
 			throw new IllegalArgumentException("Bad name fam file: " + pathFam.toAbsolutePath());

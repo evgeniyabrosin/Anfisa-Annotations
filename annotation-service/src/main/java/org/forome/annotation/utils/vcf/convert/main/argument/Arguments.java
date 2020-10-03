@@ -39,7 +39,7 @@ public class Arguments {
 		}
 		sourceVcf = Paths.get(strSourceFile).toAbsolutePath();
 		if (!Files.exists(sourceVcf)) {
-			throw new IllegalArgumentException("Source file is not exists: " + sourceVcf);
+			throw new IllegalArgumentException("Source file does not exists: " + sourceVcf);
 		}
 		if (!sourceVcf.getFileName().toString().endsWith(".vcf.gz")) {
 			throw new IllegalArgumentException("Bad source file: " + sourceVcf.toAbsolutePath());

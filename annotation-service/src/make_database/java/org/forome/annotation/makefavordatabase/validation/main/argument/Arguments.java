@@ -36,7 +36,7 @@ public class Arguments {
 		}
 		database = Paths.get(strSourceFile).toAbsolutePath();
 		if (!Files.exists(database)) {
-			throw new IllegalArgumentException("Database is not exists: " + database);
+			throw new IllegalArgumentException("Database does not exists: " + database);
 		}
 	}
 

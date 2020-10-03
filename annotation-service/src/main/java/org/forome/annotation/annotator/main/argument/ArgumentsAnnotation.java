@@ -134,7 +134,7 @@ public class ArgumentsAnnotation extends Arguments {
 		if (strRecoveryAnfisaJsonFile != null) {
 			pathRecoveryAnfisaJson = Paths.get(strRecoveryAnfisaJsonFile).toAbsolutePath();
 			if (!Files.exists(pathRecoveryAnfisaJson)) {
-				throw new IllegalArgumentException("Recovery file is not exists: " + pathRecoveryAnfisaJson);
+				throw new IllegalArgumentException("Recovery file does not exists: " + pathRecoveryAnfisaJson);
 			}
 		} else {
 			pathRecoveryAnfisaJson = null;
