@@ -60,6 +60,13 @@ public class Allele {
 		return Objects.equals(bases, allele.bases);
 	}
 
+	public boolean equalsIgnoreConservative(Object o) {
+		if (this == o) return true;
+		if (o == null) return false;
+		Allele allele = (Allele) o;
+		return bases.equalsIgnoreCase(allele.bases);
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(bases);
