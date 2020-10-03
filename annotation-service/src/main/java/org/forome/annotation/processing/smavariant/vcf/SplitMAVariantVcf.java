@@ -27,6 +27,7 @@ import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.vcf.AlleleVCF;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
+import org.forome.annotation.utils.Distinct;
 import org.forome.annotation.utils.variant.VariantUtils;
 import org.forome.core.struct.Chromosome;
 import org.forome.core.struct.Interval;
@@ -62,7 +63,10 @@ public class SplitMAVariantVcf extends SplitMAVariant {
 			variants.addAll(iVariants);
 		}
 
-		Collections.sort(variants, Comparator.comparingInt(Variant::getStart));
+		variants = variants.stream()
+				.sorted(Comparator.comparingInt(Variant::getStart))
+				.filter(Distinct.custom(variant -> getUniqueKey(variant)))
+				.collect(Collectors.toList());
 
 		return variants;
 	}
@@ -213,5 +217,14 @@ public class SplitMAVariantVcf extends SplitMAVariant {
 		} else {
 			throw new RuntimeException("not support variantType: " + variantType);
 		}
+	}
+
+	private static String getUniqueKey(Variant variant) {
+		return new StringBuilder()
+				.append(variant.chromosome.getChar()).append(':')
+				.append(variant.getStart())
+				.append(variant.getRefAllele().getBaseString()).append('>')
+				.append(variant.getAlt().getBaseString())
+				.toString();
 	}
 }
