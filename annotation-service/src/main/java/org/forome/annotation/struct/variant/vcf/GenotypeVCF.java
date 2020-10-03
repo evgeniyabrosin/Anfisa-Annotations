@@ -22,10 +22,10 @@ import htsjdk.variant.variantcontext.VariantContext;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.HasVariant;
 import org.forome.annotation.struct.variant.Genotype;
+import org.forome.annotation.utils.ZygosityUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GenotypeVCF extends Genotype {
@@ -139,16 +139,16 @@ public class GenotypeVCF extends Genotype {
 			case HOM_REF:
 			case HET:
 			case HOM_VAR:
-				AlleleVCF ref = (AlleleVCF) variantVCF.getRefAllele();
-				Allele refVcfSource = ref.vcfSource;
+				AlleleVCF alt = (AlleleVCF) variantVCF.getAlt();
+				Allele altVcfSource = alt.vcfSource;
 
-				Set<Allele> altAlles = vcfGenotype.getAlleles().stream()
-						.map(allele -> allele.getBaseString())
-						.filter(sAllele -> !"*".equals(sAllele))//Звездочка означает мусор. Считаем, что звездочка – это референс
-						.filter(sAllele -> !refVcfSource.getBaseString().equals(sAllele))
-						.map(sAllele -> new Allele(sAllele))
-						.collect(Collectors.toSet());
-				return altAlles.size();
+				int zygosity = ZygosityUtils.getGenotypeZygosity(
+						altVcfSource,
+						vcfGenotype.getAlleles().stream()
+								.map(allele -> new Allele(allele.getBaseString()))
+								.collect(Collectors.toList())
+				);
+				return zygosity;
 			default:
 				throw new RuntimeException("Unknown state: " + vcfGenotype.getType());
 		}
