@@ -38,7 +38,7 @@ public class ArgumentsScanInventory extends Arguments {
 		}
 		config = Paths.get(strConfigFile).toAbsolutePath();
 		if (!Files.exists(config)) {
-			throw new IllegalArgumentException("Config file is not exists: " + config);
+			throw new IllegalArgumentException("Config file does not exists: " + config);
 		}
 	}
 

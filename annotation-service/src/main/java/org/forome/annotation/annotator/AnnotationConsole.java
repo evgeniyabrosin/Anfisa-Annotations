@@ -411,7 +411,7 @@ public class AnnotationConsole {
 
 	private static Path gunzipVcfFile(Path vcfFile, Path pathDir) throws IOException {
 		if (!vcfFile.getFileName().toString().endsWith(".vcf.gz")) {
-			throw new RuntimeException("VcfFile is not *.vcf.gz" + vcfFile.toAbsolutePath());
+			throw new RuntimeException("VcfFile does not *.vcf.gz" + vcfFile.toAbsolutePath());
 		}
 
 		String fileNameVcfFile = vcfFile.getFileName().toString();

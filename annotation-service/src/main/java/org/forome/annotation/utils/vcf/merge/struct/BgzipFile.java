@@ -28,10 +28,10 @@ public class BgzipFile {
 
 	public BgzipFile(Path file, Path fileIndex) {
 		if (!Files.exists(file)) {
-			throw new RuntimeException("File is not exist: " + file);
+			throw new RuntimeException("File does not exist: " + file);
 		}
 		if (!Files.exists(fileIndex)) {
-			throw new RuntimeException("File is not exist: " + fileIndex);
+			throw new RuntimeException("File does not exist: " + fileIndex);
 		}
 
 		this.file = file;

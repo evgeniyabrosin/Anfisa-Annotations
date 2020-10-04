@@ -43,7 +43,7 @@ public class ArgumentsInventory extends Arguments {
 		}
 		config = Paths.get(strConfigFile).toAbsolutePath();
 		if (!Files.exists(config)) {
-			throw new IllegalArgumentException("Config file is not exists: " + config);
+			throw new IllegalArgumentException("Config file does not exists: " + config);
 		}
 
 		String strInventoryFile = cmd.getOptionValue(ParserArgument.OPTION_FILE_INVENTORY);
@@ -52,7 +52,7 @@ public class ArgumentsInventory extends Arguments {
 		}
 		pathInventory = Paths.get(strInventoryFile).toAbsolutePath();
 		if (!Files.exists(pathInventory)) {
-			throw new IllegalArgumentException("Inventory file is not exists: " + pathInventory);
+			throw new IllegalArgumentException("Inventory file does not exists: " + pathInventory);
 		}
 
 		this.start = Integer.parseInt(cmd.getOptionValue(ParserArgument.OPTION_START_POSITION, "0"));
@@ -61,7 +61,7 @@ public class ArgumentsInventory extends Arguments {
 		if (strRecoveryAnfisaJsonFile != null) {
 			pathRecoveryAnfisaJson = Paths.get(strRecoveryAnfisaJsonFile).toAbsolutePath();
 			if (!Files.exists(pathRecoveryAnfisaJson)) {
-				throw new IllegalArgumentException("Recovery file is not exists: " + pathRecoveryAnfisaJson);
+				throw new IllegalArgumentException("Recovery file does not exists: " + pathRecoveryAnfisaJson);
 			}
 		} else {
 			pathRecoveryAnfisaJson = null;

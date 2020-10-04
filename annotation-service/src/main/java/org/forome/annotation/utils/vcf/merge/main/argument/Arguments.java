@@ -40,7 +40,7 @@ public class Arguments {
 		}
 		patientIdsFile = Paths.get(strPatientIdsFile).toAbsolutePath();
 		if (!Files.exists(patientIdsFile)) {
-			throw new IllegalArgumentException("Samples file is not exists: " + patientIdsFile);
+			throw new IllegalArgumentException("Samples file does not exists: " + patientIdsFile);
 		}
 		if (!patientIdsFile.getFileName().toString().endsWith(".csv")) {
 			throw new IllegalArgumentException("Bad source file: " + patientIdsFile);
@@ -53,10 +53,10 @@ public class Arguments {
 		}
 		pathSourceVcfs = Paths.get(strSourceFile).toAbsolutePath();
 		if (!Files.exists(pathSourceVcfs)) {
-			throw new IllegalArgumentException("Path source vcf's is not exists: " + pathSourceVcfs);
+			throw new IllegalArgumentException("Path source vcf's does not exists: " + pathSourceVcfs);
 		}
 		if (!Files.isDirectory(pathSourceVcfs)) {
-			throw new IllegalArgumentException("Path source vcf's is not directory: " + pathSourceVcfs);
+			throw new IllegalArgumentException("Path source vcf's does not directory: " + pathSourceVcfs);
 		}
 
 

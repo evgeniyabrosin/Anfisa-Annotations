@@ -40,12 +40,18 @@ public enum Nucleotide {
 		this.conservative = conservative;
 	}
 
-	public static Nucleotide of(char character){
-		for (Nucleotide item: Nucleotide.values()) {
-			if (item.character==character) {
+	public static Nucleotide of(char character) {
+		for (Nucleotide item : Nucleotide.values()) {
+			if (item.character == character) {
 				return item;
 			}
 		}
+
+		//Временный хах
+		if ('n' == character){
+			return NONE;
+		}
+
 		throw new RuntimeException("Not support char: " + character);
 	}
 }
