@@ -19,8 +19,8 @@
 package org.forome.annotation.utils.variant;
 
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.struct.sequence.Sequence;
 import org.forome.annotation.struct.variant.Variant;
+import org.forome.core.struct.sequence.Sequence;
 
 public class MergeSequence {
 

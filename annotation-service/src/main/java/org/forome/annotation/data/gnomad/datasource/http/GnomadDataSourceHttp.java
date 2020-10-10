@@ -44,7 +44,6 @@ import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.SourceMetadata;
-import org.forome.annotation.struct.sequence.Sequence;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.variant.MergeSequence;
 import org.forome.astorage.core.liftover.LiftoverConnector;
@@ -52,6 +51,7 @@ import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Chromosome;
 import org.forome.core.struct.Interval;
 import org.forome.core.struct.Position;
+import org.forome.core.struct.sequence.Sequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
