@@ -20,10 +20,10 @@ package org.forome.annotation.utils.variant;
 
 import net.minidev.json.JSONObject;
 import org.forome.annotation.struct.Allele;
-import org.forome.annotation.struct.sequence.Sequence;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.core.struct.Chromosome;
 import org.forome.core.struct.Interval;
+import org.forome.core.struct.sequence.Sequence;
 import org.junit.Assert;
 import org.junit.Test;
 

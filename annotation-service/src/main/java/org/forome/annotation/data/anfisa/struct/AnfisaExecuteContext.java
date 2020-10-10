@@ -23,10 +23,10 @@ import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.astorage.struct.AStorageSource;
 import org.forome.annotation.data.dbsnp.DbSNPConnector;
 import org.forome.annotation.data.fasta.FastaSource;
-import org.forome.annotation.struct.sequence.Sequence;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;
+import org.forome.core.struct.sequence.Sequence;
 
 import java.util.HashMap;
 import java.util.List;
