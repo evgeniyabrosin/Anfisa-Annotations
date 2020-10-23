@@ -77,8 +77,8 @@ public class AnnotatorResultMetadata {
 
 	public static class Versions {
 
-		private static Pattern PATTERN_GATK_VERSION = Pattern.compile(
-				"^<ID=(ApplyRecalibration|CombineVariants|SelectVariants|HaplotypeCaller),Version=(.*?)[,](.*)$", Pattern.CASE_INSENSITIVE
+		private static Pattern PATTERN_GATK = Pattern.compile(
+				"^<ID=(.*)>$", Pattern.CASE_INSENSITIVE
 		);
 
 		private static Pattern PATTERN_VEP_VERSION = Pattern.compile(
@@ -124,49 +124,13 @@ public class AnnotatorResultMetadata {
 					pipelineDate = null;
 				}
 
-				VCFHeaderLine hlGatk = vcfHeader.getMetaDataLine("GATKCommandLine");
-				if (hlGatk != null) {
-					Matcher matcher = PATTERN_GATK_VERSION.matcher(hlGatk.getValue());
-					if (!matcher.matches()) {
-						throw new RuntimeException("Not support format GATK version: " + hlGatk.getValue());
-					}
-					toolGatk = matcher.group(2);
-				} else {
-					toolGatk = null;
-				}
+				toolGatk = getGatkVersion(vcfHeader.getMetaDataLine("GATKCommandLine"));
 
-				VCFHeaderLine hlGatkCV = vcfHeader.getMetaDataLine("GATKCommandLine.CombineVariants");
-				if (hlGatkCV != null) {
-					Matcher matcher = PATTERN_GATK_VERSION.matcher(hlGatkCV.getValue());
-					if (!matcher.matches()) {
-						throw new RuntimeException("Not support format GATK version: " + hlGatkCV.getValue());
-					}
-					toolGatksCombineVariants = matcher.group(2);
-				} else {
-					toolGatksCombineVariants = null;
-				}
+				toolGatksCombineVariants = getGatkVersion(vcfHeader.getMetaDataLine("GATKCommandLine.CombineVariants"));
 
-				VCFHeaderLine hlGatkAR = vcfHeader.getMetaDataLine("GATKCommandLine.ApplyRecalibration");
-				if (hlGatkAR != null) {
-					Matcher matcher = PATTERN_GATK_VERSION.matcher(hlGatkAR.getValue());
-					if (!matcher.matches()) {
-						throw new RuntimeException("Not support format GATK version: " + hlGatkAR.getValue());
-					}
-					toolGatksApplyRecalibration = matcher.group(2);
-				} else {
-					toolGatksApplyRecalibration = null;
-				}
+				toolGatksApplyRecalibration = getGatkVersion(vcfHeader.getMetaDataLine("GATKCommandLine.ApplyRecalibration"));
 
-				VCFHeaderLine hlGatkSV = vcfHeader.getMetaDataLine("GATKCommandLine.SelectVariants");
-				if (hlGatkSV != null) {
-					Matcher matcher = PATTERN_GATK_VERSION.matcher(hlGatkSV.getValue());
-					if (!matcher.matches()) {
-						throw new RuntimeException("Not support format GATK version: " + hlGatkSV.getValue());
-					}
-					toolGatkSelectVariants = matcher.group(2);
-				} else {
-					toolGatkSelectVariants = null;
-				}
+				toolGatkSelectVariants = getGatkVersion(vcfHeader.getMetaDataLine("GATKCommandLine.SelectVariants"));
 
 				VCFHeaderLine hlBCFAnnotateVersion = vcfHeader.getMetaDataLine("bcftools_annotateVersion");
 				if (hlBCFAnnotateVersion != null) {
@@ -275,7 +239,7 @@ public class AnnotatorResultMetadata {
 		out.put("case", caseSequence);
 		out.put("record_type", recordType);
 		out.put("modes", new JSONArray() {{
-			if (mCase.assembly== Assembly.GRCh37) {
+			if (mCase.assembly == Assembly.GRCh37) {
 				add(Mode.HG19.value);
 			} else if (mCase.assembly == Assembly.GRCh38) {
 				add(Mode.HG38.value);
@@ -327,5 +291,26 @@ public class AnnotatorResultMetadata {
 		out.put("mother", sample.mother);
 		out.put("id", sample.id);
 		return out;
+	}
+
+	private static String getGatkVersion(VCFHeaderLine headerLine) {
+		if (headerLine != null) {
+			Matcher matcher = Versions.PATTERN_GATK.matcher(headerLine.getValue());
+			if (!matcher.matches()) {
+				throw new RuntimeException("Not support format GATK version: " + headerLine.getValue());
+			}
+			String[] values = matcher.group(1).split(",");
+			for (String item : values) {
+				if (!item.startsWith("Version=")) continue;
+				String version = item.substring("Version=".length());
+				if (version.charAt(0) == '"' && version.charAt(version.length() - 1) == '"') {
+					version = version.substring(1, version.length() - 1);
+				}
+				return version;
+			}
+			return null;
+		} else {
+			return null;
+		}
 	}
 }
