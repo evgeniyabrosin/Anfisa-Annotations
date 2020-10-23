@@ -16,9 +16,10 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.astorage;
+package org.forome.annotation.data.fasta;
 
-import net.minidev.json.JSONArray;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.apache.http.HttpEntity;
@@ -27,8 +28,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
@@ -36,31 +35,29 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
 import org.forome.annotation.config.connector.base.AStorageConfigConnector;
-import org.forome.annotation.data.astorage.struct.AStorageSource;
+import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
-import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.Statistics;
-import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Interval;
+import org.forome.core.struct.sequence.Sequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
- * curl -d '{"variants":[{"chrom":"chr3","pos":38603929}], "fasta":"hg38"}' -H "Content-Type: application/json" -X POST "localhost:8290/collect"
- * <p>
- * curl "localhost:8290/get?array=hg38&loc=3:38603929&alt=C"
+ * curl "localhost:8290/get?array=fasta&type=hg19&loc=2:73675217-73675248"
+ * curl "localhost:8290/get?array=fasta&type=hg38&loc=2:73448087-73448121"
  */
-public class AStorageHttp {
+public class FastaSourcePython implements FastaSource {
 
-	private final static Logger log = LoggerFactory.getLogger(AStorageHttp.class);
-
-	private final LiftoverConnector liftoverConnector;
+	private final static Logger log = LoggerFactory.getLogger(FastaSourcePython.class);
 
 	private final DatabaseConnectService.AStoragePython aStorage;
 
@@ -68,15 +65,14 @@ public class AStorageHttp {
 	private final PoolingNHttpClientConnectionManager connectionManager;
 	private final HttpHost httpHost;
 
+	private final Cache cache;
+
 	private final Statistics statistics;
 
-	public AStorageHttp(
+	public FastaSourcePython(
 			DatabaseConnectService databaseConnectService,
-			LiftoverConnector liftoverConnector,
 			AStorageConfigConnector aStorageConfigConnector
 	) throws IOReactorException {
-		this.liftoverConnector = liftoverConnector;
-
 		aStorage = databaseConnectService.getAStorage(aStorageConfigConnector);
 
 		requestConfig = RequestConfig.custom()
@@ -91,63 +87,74 @@ public class AStorageHttp {
 
 		httpHost = new HttpHost(aStorage.host, aStorage.port, "http");
 
+		this.cache = CacheBuilder.newBuilder()
+				.maximumSize(1000)
+				.build();
+
 		this.statistics = new Statistics();
 	}
 
-	public AStorageSource get(Assembly assembly, Variant variant) {
-		JSONObject params = new JSONObject();
-		params.put("variants", new JSONArray() {{
-			add(new JSONObject() {{
-				put("chrom", variant.chromosome.getChromosome());
-				put("pos", variant.getStart());
-				put("last", (variant.getStart() < variant.end) ? variant.end : variant.getStart());
-			}});
-		}});
-		if (assembly == Assembly.GRCh37) {
-			params.put("fasta", "hg19");
-		} else if (assembly == Assembly.GRCh38) {
-			params.put("fasta", "hg38");
-		} else {
-			throw new RuntimeException("Unknown assembly: " + assembly);
-		}
-		params.put("arrays", new JSONArray() {{
-			add("SpliceAI");
-			add("dbNSFP");
-			add("gnomAD");
-			add("dbSNP");
-		}});
+	public Sequence getSequence(AnfisaExecuteContext context, Assembly assembly, Interval interval) {
+//		AStorageSource sourceAStorageHttp = context.sourceAStorageHttp;
+//
+//		if (sourceAStorageHttp.assembly == assembly &&
+//				interval.start == sourceAStorageHttp.getStart(assembly) &&
+//				interval.end == sourceAStorageHttp.getEnd(assembly)
+//		) {
+//			String value;
+//			switch (assembly) {
+//				case GRCh37:
+//					value = sourceAStorageHttp.data.getAsString("fasta/hg19");
+//					break;
+//				case GRCh38:
+//					value = sourceAStorageHttp.data.getAsString("fasta/hg38");
+//					break;
+//				default:
+//					throw new RuntimeException("Unknown assembly: " + assembly);
+//			}
+//			if (value == null) {
+//				return null;
+//			} else {
+//				return Sequence.build(interval, value);
+//			}
+//		} else {
+			return getSequence(assembly, interval);
+//		}
+	}
 
-		int attempts = 5;
-		while (true) {
-			JSONObject response = null;
-			try {
-				long t1 = System.currentTimeMillis();
-				response = request(params);
-				statistics.addTime(System.currentTimeMillis() - t1);
-				return new AStorageSource(assembly, response);
-			} catch (Throwable t) {
-				if (attempts-- > 0) {
-					log.error("Exception request, last attempts: {}", attempts, t);
-					try {
-						Thread.sleep(1000L);
-					} catch (InterruptedException e) {
-					}
-					continue;
-				} else {
-					throw t;
-				}
-			} finally {
-				if (assembly == Assembly.GRCh37) {
-					int resultPos = response.getAsNumber("pos").intValue();
-					if (variant.getStart() != resultPos) {
-						throw new RuntimeException("request: " + params.toJSONString() + "response: " + response);
-					}
-				}
-			}
+	public Sequence getSequence(Assembly assembly, Interval interval) {
+		String key = String.format(
+				"%s:%s:%s:%s", assembly.name(), interval.chromosome.getChar(),
+				interval.start, interval.end
+		);
+
+		long t1 = System.currentTimeMillis();
+		String value;
+		try {
+			value = ((Optional<String>) cache.get(key, () -> {
+				JSONObject response = request(
+						String.format("http://%s:%s/get?array=fasta&type=%s&loc=%s:%s-%s",
+								aStorage.host, aStorage.port,
+								(assembly == Assembly.GRCh37) ? "hg19" : "hg38",
+								interval.chromosome.getChar(), interval.start, interval.end
+						)
+				);
+				return Optional.ofNullable(response.getAsString("fasta"));
+			})).orElse(null);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e);
+		} finally {
+			statistics.addTime(System.currentTimeMillis() - t1);
+		}
+
+		if (value == null) {
+			return null;
+		} else {
+			return Sequence.build(interval, value);
 		}
 	}
 
-	private JSONObject request(JSONObject params) {
+	private JSONObject request(String url) {
 		CompletableFuture<JSONObject> future = new CompletableFuture<>();
 		try {
 			CloseableHttpAsyncClient httpclient = HttpAsyncClients.custom()
@@ -155,9 +162,7 @@ public class AStorageHttp {
 					.build();
 			httpclient.start();
 
-			URI uri = new URI(String.format("http://%s:%s/collect", aStorage.host, aStorage.port));
-			HttpPost httpPostRequest = new HttpPost(uri);
-			httpPostRequest.setEntity(new StringEntity(params.toJSONString(), ContentType.APPLICATION_JSON));
+			HttpPost httpPostRequest = new HttpPost(new URI(url));
 
 			httpclient.execute(httpHost, httpPostRequest, new FutureCallback<HttpResponse>() {
 				@Override
@@ -172,13 +177,11 @@ public class AStorageHttp {
 						} catch (Exception e) {
 							throw ExceptionBuilder.buildExternalServiceException(new RuntimeException("Exception parse response external service, response: " + entityBody));
 						}
-						if (rawResponse instanceof JSONArray) {
-							JSONObject jResponse = (JSONObject) ((JSONArray) rawResponse).get(0);
-							future.complete(jResponse);
+						if (rawResponse instanceof JSONObject) {
+							future.complete((JSONObject) rawResponse);
 						} else {
 							throw ExceptionBuilder.buildExternalServiceException(
-									new RuntimeException("Exception external service(AStorage), request: " + uri
-											+ ", response: " + entityBody),
+									new RuntimeException("Exception external service(AStorage), response: " + entityBody),
 									"AStorage", "Response: " + entityBody
 							);
 						}

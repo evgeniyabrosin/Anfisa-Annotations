@@ -175,6 +175,10 @@ public class DatabaseConnectService implements AutoCloseable {
 		}
 	}
 
+	public AStorage getAStorage() {
+		return aStorage;
+	}
+
 	public FavorDatabase getFavorDatabase() {
 		return favorDatabase;
 	}
