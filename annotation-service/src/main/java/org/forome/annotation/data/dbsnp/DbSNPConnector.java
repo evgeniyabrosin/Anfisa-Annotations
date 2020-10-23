@@ -34,13 +34,9 @@ import java.util.stream.Collectors;
 public class DbSNPConnector {
 
 	public List<String> getIds(AnfisaExecuteContext context, Variant variant) {
-		if (variant instanceof VariantVCF) {
-			VariantVCF variantVCF = (VariantVCF) variant;
-			VariantContext variantContext = variantVCF.maVariantVCF.variantContext;
-			String id = variantContext.getID();
-			if (id != null && !".".equals(id.trim())) {
-				return Collections.singletonList(id);
-			}
+		String vcfVariantId = getVcfVariantId(variant);
+		if (vcfVariantId != null) {
+			return Collections.singletonList(vcfVariantId);
 		}
 
 		JSONArray jRecords = (JSONArray) context.sourceAStorageHttp.data.get("dbSNP");
@@ -57,4 +53,23 @@ public class DbSNPConnector {
 
 		return ids;
 	}
+
+	private String getVcfVariantId(Variant variant) {
+		if (!(variant instanceof VariantVCF)) {
+			return null;
+		}
+
+		VariantVCF variantVCF = (VariantVCF) variant;
+		VariantContext variantContext = variantVCF.maVariantVCF.variantContext;
+		String id = variantContext.getID();
+
+		if (id == null) return null;
+
+		String tid = id.trim();
+		if (".".equals(tid)) return null;
+		if (tid.startsWith("chr")) return null; //В однои из vcf фалов встретился формат: chr1:565130_G/A
+
+		return tid;
+	}
+
 }
