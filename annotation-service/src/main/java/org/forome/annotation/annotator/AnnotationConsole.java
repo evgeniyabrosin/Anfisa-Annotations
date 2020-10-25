@@ -31,7 +31,7 @@ import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
 import org.forome.annotation.data.fasta.FastaSource;
-import org.forome.annotation.data.fasta.FastaSourcePython;
+import org.forome.annotation.data.fasta.FastaSourcePortPython;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -174,7 +174,8 @@ public class AnnotationConsole {
 			liftoverConnector = new LiftoverConnector();
 
 //			this.fastaSource = new FastaSourceRocksDB(databaseConnectService.getAStorage());
-			this.fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
+			this.fastaSource = new FastaSourcePortPython(databaseConnectService.getAStorage());
+//			this.fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
 			gnomadConnector = new GnomadConnectorImpl(
 					new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, fastaSource, serviceConfig.aStorageConfigConnector),
@@ -318,7 +319,7 @@ public class AnnotationConsole {
 					() -> {
 						log.debug("progress completed");
 						log.debug("aStorage: {}", anfisaConnector.aStorageHttp.getStatistics());
-						log.debug("fasta: {}", anfisaConnector.fastaSource.getStatistics());
+						log.debug("fasta ({}): {}", anfisaConnector.fastaSource.getClass().getSimpleName(), anfisaConnector.fastaSource.getStatistics());
 						log.debug("gtf: {}", anfisaConnector.gtfAnfisaBuilder.statisticGtfs.getStat());
 						log.debug("gtf cds: {}", ((GTFConnectorImpl) anfisaConnector.gtfConnector).statisticCds.getStat());
 						log.debug("anfisa: {}", processing.anfisaStatistics.getStat());

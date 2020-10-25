@@ -74,6 +74,9 @@ public class DatabaseConnectService implements AutoCloseable {
 		if (databaseConfig.hg38 != null) {
 			builder.withSource(Assembly.GRCh38, databaseConfig.hg38);
 		}
+		if (databaseConfig.pastorage != null) {
+			builder.withSourcePAStorage(databaseConfig.pastorage);
+		}
 		aStorage = builder.build();
 
 		if (databaseConfig.favor != null) {

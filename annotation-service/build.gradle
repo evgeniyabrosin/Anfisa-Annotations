@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.forome'
-version '0.6.1.126'
+version '0.6.1.127'
 
 sourceCompatibility = 1.8
 
@@ -106,7 +106,7 @@ jar {
 dependencies {
 
 //    compile project(':astorage')
-    compile 'org.forome.astorage:core:1.0.0p3'
+    compile 'org.forome.astorage:core:1.0.0p5'
 
     compile 'org.rocksdb:rocksdbjni:6.6.4'
 
