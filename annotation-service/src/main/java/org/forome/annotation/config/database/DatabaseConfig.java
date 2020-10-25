@@ -28,10 +28,13 @@ public class DatabaseConfig {
 
 	private final static String FIELD_PATH_HG37 = "hg37";
 	private final static String FIELD_PATH_HG38 = "hg38";
+	private final static String FIELD_PATH_PASTORAGE = "pastorage";
 	private final static String FIELD_PATH_FAVOR = "favor";
 
 	public final Path hg37;
 	public final Path hg38;
+
+	public final Path pastorage;
 
 	public final Path favor;
 
@@ -52,6 +55,15 @@ public class DatabaseConfig {
 			}
 		} else {
 			this.hg38 = null;
+		}
+
+		if (parse.containsKey(FIELD_PATH_PASTORAGE)) {
+			this.pastorage = Paths.get(parse.getAsString(FIELD_PATH_PASTORAGE)).toAbsolutePath();
+			if (!Files.exists(pastorage) || !Files.isDirectory(pastorage)) {
+				throw new RuntimeException("Exception pastorage path: " + hg38);
+			}
+		} else {
+			this.pastorage = null;
 		}
 
 		if (parse.containsKey(FIELD_PATH_FAVOR)) {
