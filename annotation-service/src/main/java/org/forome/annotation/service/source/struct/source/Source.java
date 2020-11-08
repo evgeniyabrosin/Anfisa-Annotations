@@ -16,32 +16,22 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gnomad.datasource;
+package org.forome.annotation.service.source.struct.source;
 
-import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
+import org.forome.annotation.service.source.struct.Record;
 import org.forome.annotation.service.source.tmp.GnomadDataResponse;
-import org.forome.annotation.struct.SourceMetadata;
-import org.forome.annotation.struct.variant.Variant;
-import org.forome.core.struct.Assembly;
-import org.forome.core.struct.Chromosome;
+import org.forome.astorage.core.data.Conservation;
+import org.forome.core.struct.Interval;
+import org.forome.core.struct.Position;
+import org.forome.core.struct.sequence.Sequence;
 
-import java.net.URISyntaxException;
-import java.util.List;
+public interface Source {
 
-public interface GnomadDataSource {
+	Record getRecord(Position position);
 
-	List<GnomadDataResponse> getData(
-			AnfisaExecuteContext context,
-			Assembly assembly,
-			Variant variant,
-			Chromosome chromosome,
-			int position,
-			String ref,
-			String alt,
-			String fromWhat
-	) throws URISyntaxException;
+	Sequence getFastaSequence(Interval interval);
 
-	List<SourceMetadata> getSourceMetadata();
+	GnomadDataResponse getGnomad(Position pos37);
 
-	void close();
+	Conservation getConservation(Position position);
 }

@@ -33,16 +33,15 @@ import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
-import org.forome.annotation.config.connector.base.AStorageConfigConnector;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
-import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
-import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.utils.GnomadUtils;
 import org.forome.annotation.data.gnomad.utils.СollapseNucleotideSequence;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.source.DataSource;
+import org.forome.annotation.service.source.external.HttpDataSource;
+import org.forome.annotation.service.source.tmp.GnomadDataResponse;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.variant.MergeSequence;
@@ -57,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -71,24 +71,20 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	private final static Logger log = LoggerFactory.getLogger(GnomadDataSourceHttp.class);
 
 	private final LiftoverConnector liftoverConnector;
-	private final FastaSource fastaSource;
-
-	private final DatabaseConnectService.AStoragePython aStorage;
+	private final DataSource dataSource;
 
 	private final RequestConfig requestConfig;
 	private final PoolingNHttpClientConnectionManager connectionManager;
 	private final HttpHost httpHost;
 
+	private final URL url;
+
 	public GnomadDataSourceHttp(
-			DatabaseConnectService databaseConnectService,
 			LiftoverConnector liftoverConnector,
-			FastaSource fastaSource,
-			AStorageConfigConnector aStorageConfigConnector
+			DataSource dataSource
 	) throws IOReactorException {
 		this.liftoverConnector = liftoverConnector;
-		this.fastaSource = fastaSource;
-
-		aStorage = databaseConnectService.getAStorage(aStorageConfigConnector);
+		this.dataSource = dataSource;
 
 		requestConfig = RequestConfig.custom()
 				.setConnectTimeout(5000)//Таймаут на подключение
@@ -100,11 +96,13 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		connectionManager.setMaxTotal(100);
 		connectionManager.setDefaultMaxPerRoute(100);
 
-		httpHost = new HttpHost(aStorage.host, aStorage.port, "http");
+		url = ((HttpDataSource)dataSource).url;
+
+		httpHost = new HttpHost(url.getHost(), url.getPort(), "http");
 	}
 
 	@Override
-	public List<DataResponse> getData(
+	public List<GnomadDataResponse> getData(
 			AnfisaExecuteContext context,
 			Assembly assembly,
 			Variant variant,
@@ -136,7 +134,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 				fromWhat, isSNV
 		);
 		if (records.isEmpty() && assembly == Assembly.GRCh38) {
-			List<DataResponse> resultTryFindRefertData = tryFindRefertData(context, variant, fromWhat);
+			List<GnomadDataResponse> resultTryFindRefertData = tryFindRefertData(context, variant, fromWhat);
 			if (!resultTryFindRefertData.isEmpty()) {
 				return resultTryFindRefertData;
 			}
@@ -151,14 +149,14 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 					fromWhat, isSNV
 			);
 			if (records.isEmpty() && assembly == Assembly.GRCh38) {
-				List<DataResponse> resultTryFindRefertData = tryFindRefertData(context, variant, fromWhat);
+				List<GnomadDataResponse> resultTryFindRefertData = tryFindRefertData(context, variant, fromWhat);
 				if (!resultTryFindRefertData.isEmpty()) {
 					return resultTryFindRefertData;
 				}
 			}
 		}
 
-		List<DataResponse> dataResponses = new ArrayList<>();
+		List<GnomadDataResponse> dataResponses = new ArrayList<>();
 		for (JSONObject record : records) {
 			String diff_ref_alt = GnomadUtils.diff(sequence.ref, sequence.alt);
 			if (Objects.equals(diff_ref_alt, GnomadUtils.diff(record.getAsString("REF"), record.getAsString("ALT")))
@@ -229,16 +227,14 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	 *
 	 * @return
 	 */
-	private List<DataResponse> tryFindRefertData(
+	private List<GnomadDataResponse> tryFindRefertData(
 			AnfisaExecuteContext context, Variant variant, String fromWhat
 	) {
 		Assembly assembly = context.anfisaInput.mCase.assembly;
 		if (assembly != Assembly.GRCh38) throw new IllegalArgumentException();
 		Chromosome chromosome = variant.chromosome;
 
-		Sequence sequence38 = fastaSource.getSequence(
-				context,
-				Assembly.GRCh38,
+		Sequence sequence38 = dataSource.getSource(Assembly.GRCh38).getFastaSequence(
 				Interval.of(variant.chromosome,
 						variant.getStart() - 1,
 						variant.getStart() + Math.max(variant.getRef().length(), variant.getStrAlt().length()) + 2
@@ -262,9 +258,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 			return Collections.emptyList();
 		}
 
-		Sequence sequence19 = fastaSource.getSequence(
-				context,
-				Assembly.GRCh37,
+		Sequence sequence19 = dataSource.getSource(Assembly.GRCh37).getFastaSequence(
 				Interval.of(chromosome, sequence19Start.value, sequence19End.value)
 		);
 		if (sequence19 == null) {
@@ -307,7 +301,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 			jRecords = (JSONArray) sourceAStorageHttp.get("gnomAD");
 		} else {
 			JSONObject response = request(
-					String.format("http://%s:%s/get?array=hg19&loc=%s:%s", aStorage.host, aStorage.port, pos37.chromosome.getChar(), pos37.value)
+					String.format("http://%s:%s/get?array=hg19&loc=%s:%s", url.getHost(), url.getPort(), pos37.chromosome.getChar(), pos37.value)
 			);
 			jRecords = (JSONArray) response.get("gnomAD");
 		}
@@ -405,7 +399,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 
 	}
 
-	private static DataResponse build(Position pos37, JSONObject record) {
+	private static GnomadDataResponse build(Position pos37, JSONObject record) {
 		Map<String, Object> columns = new HashMap<>();
 
 		columns.put("CHROM", pos37.chromosome.getChar());
@@ -431,7 +425,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		columns.put("nhomalt", record.get("nhomalt"));
 		columns.put("hem", record.get("hem"));
 
-		return new DataResponse(columns);
+		return new GnomadDataResponse(columns);
 	}
 
 	private static void addGroup(Map<String, Object> columns, JSONObject record, String group) {
@@ -442,7 +436,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		columns.put("AN_" + group, jGroup.get("AN"));
 	}
 
-	private static DataResponse buildRevert(Position pos37, JSONObject record) {
+	private static GnomadDataResponse buildRevert(Position pos37, JSONObject record) {
 		Map<String, Object> columns = new HashMap<>();
 
 		columns.put("CHROM", pos37.chromosome.getChar());
@@ -481,7 +475,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		columns.put("nhomalt", null);
 		columns.put("hem", null);
 
-		return new DataResponse(columns);
+		return new GnomadDataResponse(columns);
 	}
 
 	private static void addGroupRevert(Map<String, Object> columns, JSONObject record, String group) {

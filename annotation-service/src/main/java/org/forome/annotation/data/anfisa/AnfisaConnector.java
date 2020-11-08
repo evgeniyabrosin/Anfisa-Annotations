@@ -27,13 +27,11 @@ import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.struct.*;
-import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.struct.ClinvarResult;
 import org.forome.annotation.data.clinvar.struct.ClinvarVariantSummary;
 import org.forome.annotation.data.dbnsfp.DbNSFPConnector;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
-import org.forome.annotation.data.fasta.FastaSource;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -47,6 +45,8 @@ import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscript;
 import org.forome.annotation.processing.utils.OutUtils;
+import org.forome.annotation.service.source.SourceService;
+import org.forome.annotation.service.source.external.HttpDataSource;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.HasVariant;
 import org.forome.annotation.struct.mcase.Cohort;
@@ -85,6 +85,7 @@ public class AnfisaConnector implements AutoCloseable {
 		put("gene_dx", "GeneDx");
 	}};
 
+	public final SourceService sourceService;
 	public final GnomadConnector gnomadConnector;
 	public final SpliceAIConnector spliceAIConnector;
 	public final HgmdConnector hgmdConnector;
@@ -96,13 +97,12 @@ public class AnfisaConnector implements AutoCloseable {
 	public final GTEXConnector gtexConnector;
 	public final PharmGKBConnector pharmGKBConnector;
 
-	public final AStorageHttp aStorageHttp;
+//	public final AStorageHttp aStorageHttp;
 
 	public final DbNSFPConnector dbNSFPConnector;
 
-	public final FastaSource fastaSource;
-
 	public AnfisaConnector(
+			SourceService sourceService,
 			GnomadConnector gnomadConnector,
 			SpliceAIConnector spliceAIConnector,
 			HgmdConnector hgmdConnector,
@@ -110,10 +110,9 @@ public class AnfisaConnector implements AutoCloseable {
 			LiftoverConnector liftoverConnector,
 			GTFConnector gtfConnector,
 			GTEXConnector gtexConnector,
-			PharmGKBConnector pharmGKBConnector,
-			AStorageHttp aStorageHttp,
-			FastaSource fastaSource
+			PharmGKBConnector pharmGKBConnector
 	) {
+		this.sourceService = sourceService;
 		this.gnomadConnector = gnomadConnector;
 		this.spliceAIConnector = spliceAIConnector;
 		this.hgmdConnector = hgmdConnector;
@@ -125,11 +124,9 @@ public class AnfisaConnector implements AutoCloseable {
 
 		this.gtfAnfisaBuilder = new GtfAnfisaBuilder(this, gtfConnector);
 
-		this.aStorageHttp = aStorageHttp;
+//		this.aStorageHttp = aStorageHttp;
 
 		this.dbNSFPConnector = new DbNSFPConnector();
-
-		this.fastaSource = fastaSource;
 	}
 
 	public AnfisaResult build(
@@ -148,7 +145,9 @@ public class AnfisaConnector implements AutoCloseable {
 		AnfisaResultView view = new AnfisaResultView();
 
 		data.version = AppVersion.getVersionFormat();
-		context.sourceAStorageHttp = aStorageHttp.get(
+
+		HttpDataSource httpDataSource = (HttpDataSource)sourceService.dataSource;
+		context.sourceAStorageHttp = httpDataSource.aStorageHttp.get(
 				anfisaInput.mCase.assembly, variant
 		);
 

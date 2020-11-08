@@ -21,10 +21,8 @@ package org.forome.annotation;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
-import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
-import org.forome.annotation.data.fasta.FastaSourcePython;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
@@ -42,9 +40,10 @@ import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHtt
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.inline.EnsemblVepInlineService;
+import org.forome.annotation.service.source.SourceService;
+import org.forome.annotation.service.source.struct.source.Source;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.astorage.core.liftover.LiftoverConnector;
-import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -60,6 +59,7 @@ public class AnfisaBaseTest {
 
 	private static SSHConnectService sshTunnelService;
 	private static DatabaseConnectService databaseConnectService;
+	private static SourceService sourceService;
 
 	public static Source source37;
 
@@ -68,12 +68,12 @@ public class AnfisaBaseTest {
 	protected static HgmdConnector hgmdConnector;
 	protected static ClinvarConnector clinvarConnector;
 	protected static LiftoverConnector liftoverConnector;
-	protected static FastaSourcePython fastaSource;
+//	protected static FastaSourcePython fastaSource;
 	protected static GTFConnector gtfConnector;
 	protected static RefConnector refConnector;
 	protected static GTEXConnectorMysql gtexConnector;
 	protected static PharmGKBConnector pharmGKBConnector;
-	protected static AStorageHttp sourceHttp38;
+//	protected static AStorageHttp sourceHttp38;
 	protected static EnsemblVepService ensemblVepService;
 	protected static AnfisaConnector anfisaConnector;
 
@@ -82,16 +82,17 @@ public class AnfisaBaseTest {
 		ServiceConfig serviceConfig = new ServiceConfig(Paths.get("config.6.json").toAbsolutePath());
 		sshTunnelService = new SSHConnectService();
 		databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
+		sourceService = new SourceService(serviceConfig.sourceConfig);
 //		gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> {
 //			log.error("Fail", e);
 //			Assert.fail();
 //		});
 
 		liftoverConnector = new LiftoverConnector();
-		fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
+//		fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
 		gnomadConnector = new GnomadConnectorImpl(
-				new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, fastaSource, serviceConfig.aStorageConfigConnector),
+				new GnomadDataSourceHttp(liftoverConnector, sourceService.dataSource),
 				(t, e) -> {
 					log.error("Fail", e);
 					Assert.fail();
@@ -102,7 +103,7 @@ public class AnfisaBaseTest {
 //			Assert.fail();
 //		});
 
-		source37 = databaseConnectService.getSource(Assembly.GRCh37);
+		source37 = sourceService.dataSource.getSource(Assembly.GRCh37);
 
 		spliceAIConnector = new SpliceAIConnectorImpl(
 				new SpliceAIDataSourceHttp(liftoverConnector)
@@ -133,12 +134,13 @@ public class AnfisaBaseTest {
 //		pharmGKBConnector = new PharmGKBConnectorHttp();
 		pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-		sourceHttp38 = new AStorageHttp(
-				databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
-		);
+//		sourceHttp38 = new AStorageHttp(
+//				databaseConnectService, liftoverConnector
+//		);
 
 		ensemblVepService = new EnsemblVepInlineService(sshTunnelService, serviceConfig.ensemblVepConfigConnector, refConnector);
 		anfisaConnector = new AnfisaConnector(
+				sourceService,
 				gnomadConnector,
 				spliceAIConnector,
 				hgmdConnector,
@@ -146,9 +148,9 @@ public class AnfisaBaseTest {
 				liftoverConnector,
 				gtfConnector,
 				gtexConnector,
-				pharmGKBConnector,
-				sourceHttp38,
-				fastaSource
+				pharmGKBConnector
+//				,
+//				sourceHttp38
 		);
 	}
 

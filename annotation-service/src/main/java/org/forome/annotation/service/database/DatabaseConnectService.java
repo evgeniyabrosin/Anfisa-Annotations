@@ -20,7 +20,6 @@ package org.forome.annotation.service.database;
 
 import com.infomaximum.database.exception.DatabaseException;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import org.forome.annotation.config.connector.base.AStorageConfigConnector;
 import org.forome.annotation.config.connector.base.DatabaseConfigConnector;
 import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
@@ -28,9 +27,6 @@ import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.rocksdb.favor.FavorDatabase;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.service.ssh.struct.SSHConnect;
-import org.forome.astorage.AStorage;
-import org.forome.astorage.core.source.Source;
-import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,31 +49,17 @@ public class DatabaseConnectService implements AutoCloseable {
 
 	private final static Logger log = LoggerFactory.getLogger(DatabaseConnectService.class);
 
-	private final AStorage aStorage;
-
 	private final FavorDatabase favorDatabase;
 
 	private final SSHConnectService sshTunnelService;
 	private final Map<String, ComboPooledDataSource> dataSources;
 
-	private final Map<String, AStoragePython> aStorages;
+//	private final Map<String, AStoragePython> aStorages;
 
 	public DatabaseConnectService(SSHConnectService sshTunnelService, DatabaseConfig databaseConfig) throws DatabaseException {
 		this.sshTunnelService = sshTunnelService;
 		this.dataSources = new HashMap<>();
-		this.aStorages = new HashMap<>();
-
-		AStorage.Builder builder = new AStorage.Builder();
-		if (databaseConfig.hg37 != null) {
-			builder.withSource(Assembly.GRCh37, databaseConfig.hg37);
-		}
-		if (databaseConfig.hg38 != null) {
-			builder.withSource(Assembly.GRCh38, databaseConfig.hg38);
-		}
-		if (databaseConfig.pastorage != null) {
-			builder.withSourcePAStorage(databaseConfig.pastorage);
-		}
-		aStorage = builder.build();
+//		this.aStorages = new HashMap<>();
 
 		if (databaseConfig.favor != null) {
 			favorDatabase = new FavorDatabase(databaseConfig.favor);
@@ -167,77 +149,62 @@ public class DatabaseConnectService implements AutoCloseable {
 		}
 	}
 
-	public Source getSource(Assembly assembly) {
-		switch (assembly) {
-			case GRCh37:
-				return aStorage.sourceDatabase37;
-			case GRCh38:
-				return aStorage.sourceDatabase38;
-			default:
-				throw new RuntimeException();
-		}
-	}
-
-	public AStorage getAStorage() {
-		return aStorage;
-	}
-
 	public FavorDatabase getFavorDatabase() {
 		return favorDatabase;
 	}
 
 
-	public AStoragePython getAStorage(AStorageConfigConnector aStorageConfigConnector) {
-		String keyAStorage = getKeyAStorage(aStorageConfigConnector);
-		AStoragePython aStorage = aStorages.get(keyAStorage);
-		if (aStorage == null) {
-			synchronized (dataSources) {
-				aStorage = aStorages.get(keyAStorage);
-				if (aStorage == null) {
-					aStorage = buildAStorage(aStorageConfigConnector);
-					aStorages.put(keyAStorage, aStorage);
-				}
-			}
-		}
-		return aStorage;
-	}
-
-	private AStoragePython buildAStorage(AStorageConfigConnector aStorageConfigConnector) {
-		try {
-			int port;
-			SshTunnelConfig sshTunnelConfig = aStorageConfigConnector.sshTunnelConfig;
-			if (sshTunnelConfig != null) {
-				SSHConnect sshTunnel = sshTunnelService.getSSHConnect(
-						sshTunnelConfig.host,
-						sshTunnelConfig.port,
-						sshTunnelConfig.user,
-						sshTunnelConfig.key
-				);
-				port = sshTunnel.getTunnel(aStorageConfigConnector.astoragePort);
-			} else {
-				port = aStorageConfigConnector.astoragePort;
-			}
-
-			return new AStoragePython(
-					aStorageConfigConnector.astorageHost,
-					port
-			);
-		} catch (Throwable ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
-		}
-	}
-
-	private static String getKeyAStorage(AStorageConfigConnector aStorageConfigConnector) {
-		StringBuilder builderKey = new StringBuilder();
-		if (aStorageConfigConnector.sshTunnelConfig != null) {
-			SshTunnelConfig sshTunnelConfig = aStorageConfigConnector.sshTunnelConfig;
-			String keySSHConnect = SSHConnectService.getKeySSHConnect(
-					sshTunnelConfig.host, sshTunnelConfig.port, sshTunnelConfig.user
-			);
-			builderKey.append(keySSHConnect);
-		}
-		return builderKey.append(aStorageConfigConnector.astorageHost)
-				.append(aStorageConfigConnector.astoragePort)
-				.toString();
-	}
+//	public AStoragePython getAStorage(AStorageConfigConnector aStorageConfigConnector) {
+//		String keyAStorage = getKeyAStorage(aStorageConfigConnector);
+//		AStoragePython aStorage = aStorages.get(keyAStorage);
+//		if (aStorage == null) {
+//			synchronized (dataSources) {
+//				aStorage = aStorages.get(keyAStorage);
+//				if (aStorage == null) {
+//					aStorage = buildAStorage(aStorageConfigConnector);
+//					aStorages.put(keyAStorage, aStorage);
+//				}
+//			}
+//		}
+//		return aStorage;
+//	}
+//
+//	private AStoragePython buildAStorage(AStorageConfigConnector aStorageConfigConnector) {
+//		try {
+//			int port;
+//			SshTunnelConfig sshTunnelConfig = aStorageConfigConnector.sshTunnelConfig;
+//			if (sshTunnelConfig != null) {
+//				SSHConnect sshTunnel = sshTunnelService.getSSHConnect(
+//						sshTunnelConfig.host,
+//						sshTunnelConfig.port,
+//						sshTunnelConfig.user,
+//						sshTunnelConfig.key
+//				);
+//				port = sshTunnel.getTunnel(aStorageConfigConnector.astoragePort);
+//			} else {
+//				port = aStorageConfigConnector.astoragePort;
+//			}
+//
+//			return new AStoragePython(
+//					aStorageConfigConnector.astorageHost,
+//					port
+//			);
+//		} catch (Throwable ex) {
+//			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+//		}
+//	}
+//
+//	private static String getKeyAStorage(AStorageConfigConnector aStorageConfigConnector) {
+//		StringBuilder builderKey = new StringBuilder();
+//		if (aStorageConfigConnector.sshTunnelConfig != null) {
+//			SshTunnelConfig sshTunnelConfig = aStorageConfigConnector.sshTunnelConfig;
+//			String keySSHConnect = SSHConnectService.getKeySSHConnect(
+//					sshTunnelConfig.host, sshTunnelConfig.port, sshTunnelConfig.user
+//			);
+//			builderKey.append(keySSHConnect);
+//		}
+//		return builderKey.append(aStorageConfigConnector.astorageHost)
+//				.append(aStorageConfigConnector.astoragePort)
+//				.toString();
+//	}
 }

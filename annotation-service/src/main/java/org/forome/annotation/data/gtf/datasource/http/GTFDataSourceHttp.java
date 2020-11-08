@@ -33,13 +33,13 @@ import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
-import org.forome.annotation.config.connector.base.AStorageConfigConnector;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtf.datasource.GTFDataSource;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
 import org.forome.annotation.exception.ExceptionBuilder;
-import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.source.DataSource;
+import org.forome.annotation.service.source.external.HttpDataSource;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.forome.core.struct.Assembly;
@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -65,20 +66,17 @@ public class GTFDataSourceHttp implements GTFDataSource {
 
 	private final LiftoverConnector liftoverConnector;
 
-	private final DatabaseConnectService.AStoragePython aStorage;
-
 	private final RequestConfig requestConfig;
 	private final PoolingNHttpClientConnectionManager connectionManager;
 	private final HttpHost httpHost;
 
+	private final URL url;
+
 	public GTFDataSourceHttp(
-			DatabaseConnectService databaseConnectService,
 			LiftoverConnector liftoverConnector,
-			AStorageConfigConnector aStorageConfigConnector
+			DataSource dataSource
 	) throws IOReactorException {
 		this.liftoverConnector = liftoverConnector;
-
-		aStorage = databaseConnectService.getAStorage(aStorageConfigConnector);
 
 		requestConfig = RequestConfig.custom()
 				.setConnectTimeout(5000)//Таймаут на подключение
@@ -90,7 +88,9 @@ public class GTFDataSourceHttp implements GTFDataSource {
 		connectionManager.setMaxTotal(100);
 		connectionManager.setDefaultMaxPerRoute(100);
 
-		httpHost = new HttpHost(aStorage.host, aStorage.port, "http");
+		url = ((HttpDataSource)dataSource).url;
+
+		httpHost = new HttpHost(url.getHost(), url.getPort(), "http");
 	}
 
 
@@ -102,20 +102,9 @@ public class GTFDataSourceHttp implements GTFDataSource {
 		}
 
 		JSONObject response = request(
-				String.format("http://%s:%s/get?array=gtf&loc=%s:%s", aStorage.host, aStorage.port, pos38.chromosome.getChar(), pos38.value)
+				String.format("http://%s:%s/get?array=gtf&loc=%s:%s", url.getHost(), url.getPort(), pos38.chromosome.getChar(), pos38.value)
 		);
 		JSONArray jRecords = (JSONArray) response.get("gtf");
-
-//		JSONArray jRecords2 = (JSONArray) context.sourceAStorageHttp.get("gtf");
-//
-//		if (!jRecords.toJSONString().equals(jRecords2.toJSONString())) {
-//			log.error("pos37: {}, pos38: {}", position, pos38);
-//			log.error("response1: {}", response.toJSONString());
-//			log.error("response2: {}", context.sourceAStorageHttp.toJSONString());
-//
-//			throw new RuntimeException("not equals");
-//		}
-
 
 		if (jRecords == null || jRecords.isEmpty()) {
 			return null;

@@ -23,10 +23,8 @@ import org.forome.annotation.config.Config;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
-import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
-import org.forome.annotation.data.fasta.FastaSourcePython;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -51,6 +49,7 @@ import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.notification.NotificationService;
+import org.forome.annotation.service.source.SourceService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.utils.ArgumentParser;
 import org.forome.astorage.core.liftover.LiftoverConnector;
@@ -103,16 +102,17 @@ public class Service {
 	private final DatabaseService databaseService;
 	private final NetworkService networkService;
 
+	private final SourceService sourceService;
 	private final GnomadConnectorImpl gnomadConnector;
 	private final SpliceAIConnector spliceAIConnector;
 	private final HgmdConnector hgmdConnector;
 	private final ClinvarConnector clinvarConnector;
 	private final LiftoverConnector liftoverConnector;
-	private final FastaSourcePython fastaSource;
+//	private final FastaSourcePython fastaSource;
 	private final GTFConnector gtfConnector;
 	private final GTEXConnector gtexConnector;
 	private final PharmGKBConnector pharmGKBConnector;
-	private final AStorageHttp sourceHttp38;
+//	private final AStorageHttp sourceHttp38;
 	private final EnsemblVepService ensemblVepService;
 	private final AnfisaConnector anfisaConnector;
 
@@ -138,13 +138,15 @@ public class Service {
 			this.notificationService = null;
 		}
 
+		this.sourceService = new SourceService(serviceConfig.sourceConfig);
+
 //        this.gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
 
 		this.liftoverConnector = new LiftoverConnector();
-		this.fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
+//		this.fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
 		this.gnomadConnector = new GnomadConnectorImpl(
-				new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, fastaSource, serviceConfig.aStorageConfigConnector),
+				new GnomadDataSourceHttp(liftoverConnector, sourceService.dataSource),
 				uncaughtExceptionHandler
 		);
 //		this.gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, uncaughtExceptionHandler);
@@ -178,9 +180,9 @@ public class Service {
 //		this.pharmGKBConnector = new PharmGKBConnectorHttp();
 		this.pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-		this.sourceHttp38 = new AStorageHttp(
-				databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
-		);
+//		this.sourceHttp38 = new AStorageHttp(
+//				databaseConnectService, liftoverConnector
+//		);
 
 		this.ensemblVepService = new EnsemblVepExternalService(uncaughtExceptionHandler);
 //        this.ensemblVepService = new EnsemblVepInlineService(
@@ -190,6 +192,7 @@ public class Service {
 //        );
 
 		this.anfisaConnector = new AnfisaConnector(
+				sourceService,
 				gnomadConnector,
 				spliceAIConnector,
 				hgmdConnector,
@@ -197,9 +200,9 @@ public class Service {
 				liftoverConnector,
 				gtfConnector,
 				gtexConnector,
-				pharmGKBConnector,
-				sourceHttp38,
-				fastaSource
+				pharmGKBConnector
+//				,
+//				sourceHttp38
 		);
 
 		queryPool.execute(this.databaseService.getDomainObjectSource(), new Query<Void>() {
@@ -245,6 +248,10 @@ public class Service {
 
 	public NetworkService getNetworkService() {
 		return networkService;
+	}
+
+	public SourceService getSourceService() {
+		return sourceService;
 	}
 
 	public DatabaseConnectService getDatabaseConnectService() {

@@ -21,6 +21,7 @@ package org.forome.annotation.data.gtf;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.gtf.datasource.http.GTFDataSourceHttp;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.source.SourceService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.junit.Assert;
@@ -40,9 +41,10 @@ public class GTFBaseTest {
 		SSHConnectService sshTunnelService = new SSHConnectService();
 		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 		LiftoverConnector liftoverConnector = new LiftoverConnector();
+		SourceService sourceService = new SourceService(serviceConfig.sourceConfig);
 
 		gtfConnector = new GTFConnectorImpl(
-				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				new GTFDataSourceHttp(liftoverConnector, sourceService.dataSource),
 				liftoverConnector,
 				(t, e) -> {
 					log.error("Fail", e);

@@ -32,11 +32,11 @@ import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.service.source.struct.source.Source;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.ExecutorServiceUtils;
-import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Chromosome;
 import org.slf4j.Logger;
@@ -105,7 +105,7 @@ public class GetAnfisaJSONController {
 
 				AnfisaConnector anfisaConnector = service.getAnfisaConnector();
 
-				Source source = service.getDatabaseConnectService().getSource(Assembly.GRCh37);
+				Source source = service.getSourceService().dataSource.getSource(Assembly.GRCh37);
 				Processing processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 
 				for (RequestItem requestItem : requestItems) {
