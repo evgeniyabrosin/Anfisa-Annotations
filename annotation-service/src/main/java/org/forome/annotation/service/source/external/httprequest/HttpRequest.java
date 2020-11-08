@@ -83,7 +83,7 @@ public class HttpRequest {
 		}
 	}
 
-	private JSONObject request(HttpPost httpPostRequest) {
+	public JSONObject request(HttpPost httpPostRequest) {
 		CompletableFuture<JSONObject> future = new CompletableFuture<>();
 		try {
 			CloseableHttpAsyncClient httpclient = HttpAsyncClients.custom()

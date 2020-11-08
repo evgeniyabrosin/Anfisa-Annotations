@@ -16,9 +16,8 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.fasta;
+package org.forome.annotation.service.source.internal.fasta;
 
-import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.utils.Statistics;
 import org.forome.astorage.AStorage;
 import org.forome.astorage.pastorage.record.RecordFasta;
@@ -29,7 +28,7 @@ import org.forome.core.struct.Position;
 import org.forome.core.struct.nucleotide.Nucleotide;
 import org.forome.core.struct.sequence.Sequence;
 
-public class FastaSourcePortPython implements FastaSource {
+public class FastaSourcePortPython {
 
 	private final AStorage aStorage;
 
@@ -41,12 +40,6 @@ public class FastaSourcePortPython implements FastaSource {
 		this.statistics = new Statistics();
 	}
 
-	@Override
-	public Sequence getSequence(AnfisaExecuteContext context, Assembly assembly, Interval interval) {
-		return getSequence(assembly, interval);
-	}
-
-	@Override
 	public Sequence getSequence(Assembly assembly, Interval interval) {
 		SchemaFasta schemaFasta = (SchemaFasta) aStorage.getSchema(SchemaFasta.SCHEMA_FASTA_NAME);
 
@@ -76,7 +69,6 @@ public class FastaSourcePortPython implements FastaSource {
 		return sequence;
 	}
 
-	@Override
 	public Statistics.Stat getStatistics() {
 		return statistics.getStat();
 	}

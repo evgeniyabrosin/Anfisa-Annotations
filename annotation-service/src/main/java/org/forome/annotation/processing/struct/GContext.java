@@ -20,7 +20,7 @@ package org.forome.annotation.processing.struct;
 
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
-import org.forome.annotation.service.source.struct.source.Source;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
 

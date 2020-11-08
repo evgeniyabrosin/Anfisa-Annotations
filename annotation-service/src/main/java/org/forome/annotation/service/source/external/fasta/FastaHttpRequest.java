@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.fasta;
+package org.forome.annotation.service.source.external.fasta;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -34,7 +34,6 @@ import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
-import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.utils.Statistics;
 import org.forome.core.struct.Assembly;
@@ -54,11 +53,9 @@ import java.util.concurrent.ExecutionException;
  * curl "localhost:8290/get?array=fasta&type=hg19&loc=2:73675217-73675248"
  * curl "localhost:8290/get?array=fasta&type=hg38&loc=2:73448087-73448121"
  */
-public class FastaSourcePython implements FastaSource {
+public class FastaHttpRequest {
 
-	private final static Logger log = LoggerFactory.getLogger(FastaSourcePython.class);
-
-//	private final DatabaseConnectService.AStoragePython aStorage;
+	private final static Logger log = LoggerFactory.getLogger(FastaHttpRequest.class);
 
 	private final URL url;
 
@@ -70,12 +67,10 @@ public class FastaSourcePython implements FastaSource {
 
 	private final Statistics statistics;
 
-	public FastaSourcePython(
+	public FastaHttpRequest(
 			URL url
 	) throws IOReactorException {
 		this.url = url;
-//		aStorage = databaseConnectService.getAStorage(aStorageConfigConnector);
-//		aStorage = null;
 
 		requestConfig = RequestConfig.custom()
 				.setConnectTimeout(5000)//Таймаут на подключение
@@ -94,34 +89,6 @@ public class FastaSourcePython implements FastaSource {
 				.build();
 
 		this.statistics = new Statistics();
-	}
-
-	public Sequence getSequence(AnfisaExecuteContext context, Assembly assembly, Interval interval) {
-//		AStorageSource sourceAStorageHttp = context.sourceAStorageHttp;
-//
-//		if (sourceAStorageHttp.assembly == assembly &&
-//				interval.start == sourceAStorageHttp.getStart(assembly) &&
-//				interval.end == sourceAStorageHttp.getEnd(assembly)
-//		) {
-//			String value;
-//			switch (assembly) {
-//				case GRCh37:
-//					value = sourceAStorageHttp.data.getAsString("fasta/hg19");
-//					break;
-//				case GRCh38:
-//					value = sourceAStorageHttp.data.getAsString("fasta/hg38");
-//					break;
-//				default:
-//					throw new RuntimeException("Unknown assembly: " + assembly);
-//			}
-//			if (value == null) {
-//				return null;
-//			} else {
-//				return Sequence.build(interval, value);
-//			}
-//		} else {
-		return getSequence(assembly, interval);
-//		}
 	}
 
 	public Sequence getSequence(Assembly assembly, Interval interval) {

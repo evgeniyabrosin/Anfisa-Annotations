@@ -26,7 +26,7 @@ public class SourceConfig {
 	private final static String FIELD_EXTERNAL = "external";
 
 	public final SourceInternalConfig sourceInternalConfig;
-	public final SourceHttpConfig sourceHttpConfig;
+	public final SourceExternalConfig sourceExternalConfig;
 
 	public SourceConfig(JSONObject parse) {
 		if (parse.containsKey(FIELD_INTERNAL)) {
@@ -36,12 +36,12 @@ public class SourceConfig {
 		}
 
 		if (parse.containsKey(FIELD_EXTERNAL)) {
-			sourceHttpConfig = new SourceHttpConfig((JSONObject) parse.get(FIELD_EXTERNAL));
+			sourceExternalConfig = new SourceExternalConfig((JSONObject) parse.get(FIELD_EXTERNAL));
 		} else {
-			sourceHttpConfig = null;
+			sourceExternalConfig = null;
 		}
 
-		if (sourceInternalConfig != null && sourceHttpConfig != null) {
+		if (sourceInternalConfig != null && sourceExternalConfig != null) {
 			throw new RuntimeException("Conflict configuration");
 		}
 	}

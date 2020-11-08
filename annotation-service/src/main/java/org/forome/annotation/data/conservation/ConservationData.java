@@ -19,7 +19,7 @@
 package org.forome.annotation.data.conservation;
 
 import com.google.common.collect.Lists;
-import org.forome.annotation.service.source.struct.source.Source;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.astorage.core.data.Conservation;
 import org.forome.core.struct.Interval;

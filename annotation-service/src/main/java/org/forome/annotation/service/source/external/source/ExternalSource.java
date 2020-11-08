@@ -16,44 +16,54 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.service.source.struct.source.internal;
+package org.forome.annotation.service.source.external.source;
 
+import org.apache.http.nio.reactor.IOReactorException;
+import org.forome.annotation.service.source.external.ExternalDataSource;
+import org.forome.annotation.service.source.external.conservation.ConservationHttpRequest;
+import org.forome.annotation.service.source.external.fasta.FastaHttpRequest;
 import org.forome.annotation.service.source.struct.Record;
-import org.forome.annotation.service.source.struct.source.Source;
-import org.forome.annotation.service.source.struct.source.http.HttpSource;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.service.source.tmp.GnomadDataResponse;
 import org.forome.astorage.core.data.Conservation;
+import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;
 import org.forome.core.struct.Position;
 import org.forome.core.struct.sequence.Sequence;
 
-public class InternalSource implements Source {
+public class ExternalSource implements Source {
 
-	private final org.forome.astorage.core.source.Source source;
-	public final HttpSource httpSource;
+	public final ExternalDataSource httpDataSource;
+	public final Assembly assembly;
 
-	public InternalSource(org.forome.astorage.core.source.Source source, HttpSource httpSource) {
-		this.source = source;
-		this.httpSource = httpSource;
+	public ExternalSource(ExternalDataSource httpDataSource, Assembly assembly) {
+		this.httpDataSource = httpDataSource;
+		this.assembly = assembly;
 	}
 
 	@Override
 	public Record getRecord(Position position) {
-		return httpSource.getRecord(position);
+		throw new RuntimeException();
 	}
 
 	@Override
 	public Sequence getFastaSequence(Interval interval) {
-		return httpSource.getFastaSequence(interval);
+		try {
+			FastaHttpRequest fastaSourcePython = new FastaHttpRequest(httpDataSource.url);
+			return fastaSourcePython.getSequence(assembly, interval);
+		} catch (IOReactorException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public GnomadDataResponse getGnomad(Position pos37) {
-		return httpSource.getGnomad(pos37);
+		throw new RuntimeException();
 	}
 
 	@Override
 	public Conservation getConservation(Position position) {
-		return getRecord(position).getConservation();
+		ConservationHttpRequest conservationHttpRequest = new ConservationHttpRequest(this);
+		return conservationHttpRequest.getConservation(position);
 	}
 }
