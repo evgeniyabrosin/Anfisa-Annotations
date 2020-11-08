@@ -21,10 +21,10 @@ package org.forome.annotation.service.source.internal;
 import com.infomaximum.database.exception.DatabaseException;
 import org.forome.annotation.config.source.SourceInternalConfig;
 import org.forome.annotation.service.source.DataSource;
-import org.forome.annotation.service.source.external.HttpDataSource;
-import org.forome.annotation.service.source.struct.source.Source;
-import org.forome.annotation.service.source.struct.source.http.HttpSource;
-import org.forome.annotation.service.source.struct.source.internal.InternalSource;
+import org.forome.annotation.service.source.external.ExternalDataSource;
+import org.forome.annotation.service.source.external.source.ExternalSource;
+import org.forome.annotation.service.source.internal.source.InternalSource;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.astorage.AStorage;
 import org.forome.core.struct.Assembly;
 
@@ -32,7 +32,7 @@ public class InternalDataSource implements DataSource {
 
 	private final AStorage aStorage;
 
-	private final HttpDataSource httpDataSource;
+	private final ExternalDataSource httpDataSource;
 
 	public InternalDataSource(SourceInternalConfig config) throws DatabaseException {
 		AStorage.Builder builder = new AStorage.Builder();
@@ -47,7 +47,7 @@ public class InternalDataSource implements DataSource {
 		}
 		aStorage = builder.build();
 
-		httpDataSource = new HttpDataSource(config.sourceHttpConfig);
+		httpDataSource = new ExternalDataSource(config.sourceExternalConfig);
 	}
 
 	public AStorage getAStorage() {
@@ -58,9 +58,9 @@ public class InternalDataSource implements DataSource {
 	public Source getSource(Assembly assembly) {
 		switch (assembly) {
 			case GRCh37:
-				return new InternalSource(aStorage.sourceDatabase37, (HttpSource)httpDataSource.getSource(assembly));
+				return new InternalSource(aStorage.sourceDatabase37, (ExternalSource)httpDataSource.getSource(assembly));
 			case GRCh38:
-				return new InternalSource(aStorage.sourceDatabase38, (HttpSource)httpDataSource.getSource(assembly));
+				return new InternalSource(aStorage.sourceDatabase38, (ExternalSource)httpDataSource.getSource(assembly));
 			default:
 				throw new RuntimeException();
 		}

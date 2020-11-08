@@ -40,7 +40,7 @@ import org.forome.annotation.data.gnomad.utils.СollapseNucleotideSequence;
 import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.source.DataSource;
-import org.forome.annotation.service.source.external.HttpDataSource;
+import org.forome.annotation.service.source.external.ExternalDataSource;
 import org.forome.annotation.service.source.tmp.GnomadDataResponse;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
@@ -96,7 +96,7 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		connectionManager.setMaxTotal(100);
 		connectionManager.setDefaultMaxPerRoute(100);
 
-		url = ((HttpDataSource)dataSource).url;
+		url = ((ExternalDataSource)dataSource).url;
 
 		httpHost = new HttpHost(url.getHost(), url.getPort(), "http");
 	}

@@ -32,7 +32,7 @@ import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
-import org.forome.annotation.service.source.struct.source.Source;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vep.VariantVep;

@@ -20,7 +20,7 @@ package org.forome.annotation.service.source;
 
 import com.infomaximum.database.exception.DatabaseException;
 import org.forome.annotation.config.source.SourceConfig;
-import org.forome.annotation.service.source.external.HttpDataSource;
+import org.forome.annotation.service.source.external.ExternalDataSource;
 import org.forome.annotation.service.source.internal.InternalDataSource;
 
 public class SourceService {
@@ -35,8 +35,8 @@ public class SourceService {
 			} catch (DatabaseException e) {
 				throw new RuntimeException(e);
 			}
-		} else if (config.sourceHttpConfig != null) {
-			dataSource = new HttpDataSource(config.sourceHttpConfig);
+		} else if (config.sourceExternalConfig != null) {
+			dataSource = new ExternalDataSource(config.sourceExternalConfig);
 		} else {
 			throw new RuntimeException();
 		}

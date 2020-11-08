@@ -35,7 +35,7 @@ public class SourceInternalConfig {
 
 	public final Path pastorage;
 
-	public final SourceHttpConfig sourceHttpConfig;
+	public final SourceExternalConfig sourceExternalConfig;
 
 	public SourceInternalConfig(JSONObject parse) {
 
@@ -66,6 +66,6 @@ public class SourceInternalConfig {
 			this.pastorage = null;
 		}
 
-		sourceHttpConfig = new SourceHttpConfig((JSONObject) parse.get("external"));
+		sourceExternalConfig = new SourceExternalConfig((JSONObject) parse.get("external"));
 	}
 }

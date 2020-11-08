@@ -16,19 +16,30 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.fasta;
+package org.forome.annotation.config.source;
 
-import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
-import org.forome.annotation.utils.Statistics;
-import org.forome.core.struct.Assembly;
-import org.forome.core.struct.Interval;
-import org.forome.core.struct.sequence.Sequence;
+import net.minidev.json.JSONObject;
+import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 
-public interface FastaSource {
+import java.net.MalformedURLException;
+import java.net.URL;
 
-	Sequence getSequence(AnfisaExecuteContext context, Assembly assembly, Interval interval);
+public class SourceExternalConfig {
 
-	Sequence getSequence(Assembly assembly, Interval interval);
+	public final SshTunnelConfig sshTunnelConfig;
+	public final URL url;
 
-	Statistics.Stat getStatistics();
+	public SourceExternalConfig(JSONObject parse) {
+		if (parse.containsKey("ssh_tunnel")) {
+			sshTunnelConfig = new SshTunnelConfig((JSONObject) parse.get("ssh_tunnel"));
+		} else {
+			sshTunnelConfig = null;
+		}
+
+		try {
+			url = new URL(parse.getAsString("url"));
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

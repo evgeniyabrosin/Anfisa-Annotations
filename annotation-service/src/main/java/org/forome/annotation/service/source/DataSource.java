@@ -18,7 +18,7 @@
 
 package org.forome.annotation.service.source;
 
-import org.forome.annotation.service.source.struct.source.Source;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.core.struct.Assembly;
 
 public interface DataSource {

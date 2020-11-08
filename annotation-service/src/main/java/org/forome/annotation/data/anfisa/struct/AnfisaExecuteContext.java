@@ -22,7 +22,7 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
 import org.forome.annotation.data.dbsnp.DbSNPConnector;
 import org.forome.annotation.service.source.external.astorage.struct.AStorageSource;
-import org.forome.annotation.service.source.struct.source.Source;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;

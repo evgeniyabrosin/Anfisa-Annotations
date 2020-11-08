@@ -46,7 +46,7 @@ import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscript;
 import org.forome.annotation.processing.utils.OutUtils;
 import org.forome.annotation.service.source.SourceService;
-import org.forome.annotation.service.source.external.HttpDataSource;
+import org.forome.annotation.service.source.external.ExternalDataSource;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.HasVariant;
 import org.forome.annotation.struct.mcase.Cohort;
@@ -146,7 +146,7 @@ public class AnfisaConnector implements AutoCloseable {
 
 		data.version = AppVersion.getVersionFormat();
 
-		HttpDataSource httpDataSource = (HttpDataSource)sourceService.dataSource;
+		ExternalDataSource httpDataSource = (ExternalDataSource)sourceService.dataSource;
 		context.sourceAStorageHttp = httpDataSource.aStorageHttp.get(
 				anfisaInput.mCase.assembly, variant
 		);

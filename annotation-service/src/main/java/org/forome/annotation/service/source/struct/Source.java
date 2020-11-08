@@ -16,30 +16,21 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.config.source;
+package org.forome.annotation.service.source.struct;
 
-import net.minidev.json.JSONObject;
-import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
+import org.forome.annotation.service.source.tmp.GnomadDataResponse;
+import org.forome.astorage.core.data.Conservation;
+import org.forome.core.struct.Interval;
+import org.forome.core.struct.Position;
+import org.forome.core.struct.sequence.Sequence;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+public interface Source {
 
-public class SourceHttpConfig {
+	Record getRecord(Position position);
 
-	public final SshTunnelConfig sshTunnelConfig;
-	public final URL url;
+	Sequence getFastaSequence(Interval interval);
 
-	public SourceHttpConfig(JSONObject parse) {
-		if (parse.containsKey("ssh_tunnel")) {
-			sshTunnelConfig = new SshTunnelConfig((JSONObject) parse.get("ssh_tunnel"));
-		} else {
-			sshTunnelConfig = null;
-		}
+	GnomadDataResponse getGnomad(Position pos37);
 
-		try {
-			url = new URL(parse.getAsString("url"));
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
-	}
+	Conservation getConservation(Position position);
 }

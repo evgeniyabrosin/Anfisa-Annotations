@@ -39,7 +39,7 @@ import org.forome.annotation.data.gtf.datasource.GTFDataSource;
 import org.forome.annotation.data.gtf.mysql.struct.GTFTranscriptRow;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.source.DataSource;
-import org.forome.annotation.service.source.external.HttpDataSource;
+import org.forome.annotation.service.source.external.ExternalDataSource;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.forome.core.struct.Assembly;
@@ -88,7 +88,7 @@ public class GTFDataSourceHttp implements GTFDataSource {
 		connectionManager.setMaxTotal(100);
 		connectionManager.setDefaultMaxPerRoute(100);
 
-		url = ((HttpDataSource)dataSource).url;
+		url = ((ExternalDataSource)dataSource).url;
 
 		httpHost = new HttpHost(url.getHost(), url.getPort(), "http");
 	}

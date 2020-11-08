@@ -18,13 +18,13 @@
 
 package org.forome.annotation.service.source.external;
 
-import org.forome.annotation.config.source.SourceHttpConfig;
+import org.forome.annotation.config.source.SourceExternalConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.service.source.DataSource;
 import org.forome.annotation.service.source.external.astorage.AStorageHttp;
 import org.forome.annotation.service.source.external.httprequest.HttpRequest;
-import org.forome.annotation.service.source.struct.source.Source;
-import org.forome.annotation.service.source.struct.source.http.HttpSource;
+import org.forome.annotation.service.source.external.source.ExternalSource;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.service.ssh.struct.SSHConnect;
 import org.forome.astorage.core.liftover.LiftoverConnector;
@@ -33,22 +33,23 @@ import org.forome.core.struct.Assembly;
 import java.io.IOException;
 import java.net.URL;
 
-public class HttpDataSource implements DataSource {
+public class ExternalDataSource implements DataSource {
 
 	public final URL url;
-	public final AStorageHttp aStorageHttp;
 	public final HttpRequest httpRequest;
+	public final AStorageHttp aStorageHttp;
+
 
 	public final LiftoverConnector liftoverConnector;
 
-	public HttpDataSource(SourceHttpConfig sourceHttpConfig) {
+	public ExternalDataSource(SourceExternalConfig sourceHttpConfig) {
 		this.url = buildUrl(sourceHttpConfig);
+		this.httpRequest = new HttpRequest(url);
 		try {
-			this.aStorageHttp = new AStorageHttp(url);
+			this.aStorageHttp = new AStorageHttp(httpRequest);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		this.httpRequest = new HttpRequest(url);
 
 		try {
 			this.liftoverConnector = new LiftoverConnector();
@@ -59,10 +60,10 @@ public class HttpDataSource implements DataSource {
 
 	@Override
 	public Source getSource(Assembly assembly) {
-		return new HttpSource(this, assembly);
+		return new ExternalSource(this, assembly);
 	}
 
-	private final URL buildUrl(SourceHttpConfig sourceHttpConfig) {
+	private final URL buildUrl(SourceExternalConfig sourceHttpConfig) {
 		if (sourceHttpConfig.sshTunnelConfig == null) {
 			return sourceHttpConfig.url;
 		} else {

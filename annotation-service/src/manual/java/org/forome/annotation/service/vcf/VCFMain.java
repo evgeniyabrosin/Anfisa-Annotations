@@ -44,7 +44,7 @@ import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.source.SourceService;
-import org.forome.annotation.service.source.struct.source.Source;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.forome.core.struct.Assembly;

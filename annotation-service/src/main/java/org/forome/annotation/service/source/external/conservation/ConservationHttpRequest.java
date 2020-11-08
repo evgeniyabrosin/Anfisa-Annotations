@@ -20,7 +20,7 @@ package org.forome.annotation.service.source.external.conservation;
 
 import net.minidev.json.JSONObject;
 import org.forome.annotation.service.source.external.httprequest.HttpRequest;
-import org.forome.annotation.service.source.struct.source.http.HttpSource;
+import org.forome.annotation.service.source.external.source.ExternalSource;
 import org.forome.astorage.core.data.Conservation;
 import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.forome.core.struct.Assembly;
@@ -31,13 +31,13 @@ import org.forome.core.struct.Position;
  */
 public class ConservationHttpRequest {
 
-	private final HttpSource httpSource;
+	private final ExternalSource httpSource;
 	private final HttpRequest httpRequest;
 
 	private final Assembly assembly;
 	private final LiftoverConnector liftoverConnector;
 
-	public ConservationHttpRequest(HttpSource httpSource) {
+	public ConservationHttpRequest(ExternalSource httpSource) {
 		this.httpSource = httpSource;
 		this.httpRequest = httpSource.httpDataSource.httpRequest;
 		this.assembly = httpSource.assembly;
