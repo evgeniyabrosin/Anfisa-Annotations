@@ -22,10 +22,8 @@ import net.minidev.json.JSONObject;
 import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
-import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
-import org.forome.annotation.data.fasta.FastaSourcePython;
 import org.forome.annotation.data.gnomad.GnomadConnector;
 import org.forome.annotation.data.gtex.GTEXConnector;
 import org.forome.annotation.data.gtex.mysql.GTEXConnectorMysql;
@@ -45,12 +43,13 @@ import org.forome.annotation.processing.struct.ProcessingResult;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
+import org.forome.annotation.service.source.SourceService;
+import org.forome.annotation.service.source.struct.source.Source;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.astorage.core.liftover.LiftoverConnector;
-import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Chromosome;
 import org.slf4j.Logger;
@@ -67,16 +66,16 @@ public class CustomVariantMain {
 	private final ServiceConfig serviceConfig;
 	private final SSHConnectService sshTunnelService;
 	private final DatabaseConnectService databaseConnectService;
+	private final SourceService sourceService;
 	private final GnomadConnector gnomadConnector;
 	private final SpliceAIConnector spliceAIConnector;
 	private final HgmdConnector hgmdConnector;
 	private final ClinvarConnector clinvarConnector;
 	private final LiftoverConnector liftoverConnector;
-	private final FastaSourcePython fastaSource;
 	private final GTFConnector gtfConnector;
 	private final GTEXConnector gtexConnector;
 	private final PharmGKBConnector pharmGKBConnector;
-	private final AStorageHttp sourceHttp38;
+//	private final AStorageHttp sourceHttp38;
 	private final EnsemblVepService ensemblVepService;
 	private final AnfisaConnector anfisaConnector;
 	private final Processing processing;
@@ -85,11 +84,12 @@ public class CustomVariantMain {
 		serviceConfig = new ServiceConfig();
 		sshTunnelService = new SSHConnectService();
 		databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
+		sourceService = new SourceService(serviceConfig.sourceConfig);
 
 		liftoverConnector = new LiftoverConnector();
-		fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
+//		fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
-		FastaSourcePython fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
+//		FastaSourcePython fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
 		gnomadConnector = null;
 //		gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
@@ -107,7 +107,7 @@ public class CustomVariantMain {
 		clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
 		gtfConnector = new GTFConnectorImpl(
-				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				new GTFDataSourceHttp(liftoverConnector, sourceService.dataSource),
 				liftoverConnector,
 				(t, e) -> crash(e)
 		);
@@ -119,12 +119,13 @@ public class CustomVariantMain {
 //		pharmGKBConnector = new PharmGKBConnectorHttp();
 		pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-		sourceHttp38 = new AStorageHttp(
-				databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
-		);
+//		sourceHttp38 = new AStorageHttp(
+//				databaseConnectService, liftoverConnector
+//		);
 
 		ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
 		anfisaConnector = new AnfisaConnector(
+				sourceService,
 				gnomadConnector,
 				spliceAIConnector,
 				hgmdConnector,
@@ -132,12 +133,12 @@ public class CustomVariantMain {
 				liftoverConnector,
 				gtfConnector,
 				gtexConnector,
-				pharmGKBConnector,
-				sourceHttp38,
-				fastaSource
+				pharmGKBConnector
+//				,
+//				sourceHttp38
 		);
 
-		Source source = databaseConnectService.getSource(Assembly.GRCh37);
+		Source source = sourceService.dataSource.getSource(Assembly.GRCh37);
 
 		processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 	}

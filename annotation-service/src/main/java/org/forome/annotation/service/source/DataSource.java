@@ -16,24 +16,13 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.gnomad.struct;
+package org.forome.annotation.service.source;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.forome.annotation.service.source.struct.source.Source;
+import org.forome.core.struct.Assembly;
 
-public class DataResponse {
+public interface DataSource {
 
-	private final Map<String, Object> columns;
+	Source getSource(Assembly assembly);
 
-	public DataResponse(Map<String, Object> columns) {
-		this.columns = new HashMap<>();
-		for (Map.Entry<String, Object> entry: columns.entrySet()) {
-			this.columns.put(entry.getKey().toLowerCase(), entry.getValue());
-		}
-
-	}
-
-	public <T> T getValue(String column) {
-		return (T) columns.get(column.toLowerCase());
-	}
 }

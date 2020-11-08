@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.data.astorage.struct;
+package org.forome.annotation.service.source.external.astorage.struct;
 
 import net.minidev.json.JSONObject;
 import org.forome.core.struct.Assembly;

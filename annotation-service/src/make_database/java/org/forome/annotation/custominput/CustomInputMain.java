@@ -28,10 +28,8 @@ import org.forome.annotation.annotator.struct.AnnotatorResultMetadata;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.controller.GetAnfisaJSONController;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
-import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
-import org.forome.annotation.data.fasta.FastaSourcePython;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -54,6 +52,8 @@ import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.notification.NotificationService;
+import org.forome.annotation.service.source.SourceService;
+import org.forome.annotation.service.source.struct.source.Source;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.mcase.MCase;
@@ -61,7 +61,6 @@ import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.astorage.core.liftover.LiftoverConnector;
-import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Chromosome;
 import org.slf4j.Logger;
@@ -92,17 +91,18 @@ public class CustomInputMain {
 	private static NotificationService notificationService;
 	private static SSHConnectService sshTunnelService;
 	private static DatabaseConnectService databaseConnectService;
+	private static SourceService sourceService;
 
 	private static GnomadConnectorImpl gnomadConnector;
 	private static SpliceAIConnector spliceAIConnector;
 	private static HgmdConnector hgmdConnector;
 	private static ClinvarConnector clinvarConnector;
 	private static LiftoverConnector liftoverConnector;
-	private static FastaSourcePython fastaSource;
+//	private static FastaSourcePython fastaSource;
 	private static GTFConnector gtfConnector;
 	private static GTEXConnector gtexConnector;
 	private static PharmGKBConnector pharmGKBConnector;
-	private static AStorageHttp sourceHttp38;
+//	private static AStorageHttp sourceHttp38;
 	private static EnsemblVepService ensemblVepService;
 	private static AnfisaConnector anfisaConnector;
 	private static Processing processing;
@@ -169,12 +169,13 @@ public class CustomInputMain {
 
 			sshTunnelService = new SSHConnectService();
 			databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
+			sourceService = new SourceService(serviceConfig.sourceConfig);
 //            gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
 
 			liftoverConnector = new LiftoverConnector();
-			fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
+//			fastaSource = new FastaSourcePython(databaseConnectService, sourceService.dataSource);
 
-			gnomadConnector = new GnomadConnectorImpl(new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, fastaSource, serviceConfig.aStorageConfigConnector),
+			gnomadConnector = new GnomadConnectorImpl(new GnomadDataSourceHttp(liftoverConnector, sourceService.dataSource),
 					(t, e) -> fail(e)
 			);
 //			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e));
@@ -191,7 +192,7 @@ public class CustomInputMain {
 			clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
 			gtfConnector = new GTFConnectorImpl(
-					new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+					new GTFDataSourceHttp(liftoverConnector, sourceService.dataSource),
 					liftoverConnector,
 					(t, e) -> fail(e)
 			);
@@ -203,12 +204,13 @@ public class CustomInputMain {
 //			pharmGKBConnector = new PharmGKBConnectorHttp();
 			pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-			sourceHttp38 = new AStorageHttp(
-					databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
-			);
+//			sourceHttp38 = new AStorageHttp(
+//					databaseConnectService, liftoverConnector
+//			);
 
 			ensemblVepService = new EnsemblVepExternalService((t, e) -> fail(e));
 			anfisaConnector = new AnfisaConnector(
+					sourceService,
 					gnomadConnector,
 					spliceAIConnector,
 					hgmdConnector,
@@ -216,12 +218,12 @@ public class CustomInputMain {
 					liftoverConnector,
 					gtfConnector,
 					gtexConnector,
-					pharmGKBConnector,
-					sourceHttp38,
-					fastaSource
+					pharmGKBConnector
+//					,
+//					sourceHttp38
 			);
 
-			Source source = databaseConnectService.getSource(Assembly.GRCh37);
+			Source source = sourceService.dataSource.getSource(Assembly.GRCh37);
 
 			processing = new Processing(source, anfisaConnector, TypeQuery.WIDE_HG19);
 

@@ -26,12 +26,9 @@ import org.forome.annotation.annotator.struct.AnnotatorResult;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
-import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
 import org.forome.annotation.data.conservation.ConservationData;
-import org.forome.annotation.data.fasta.FastaSource;
-import org.forome.annotation.data.fasta.FastaSourcePortPython;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -52,12 +49,13 @@ import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
 import org.forome.annotation.service.notification.NotificationService;
+import org.forome.annotation.service.source.SourceService;
+import org.forome.annotation.service.source.struct.source.Source;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.annotation.struct.CasePlatform;
 import org.forome.annotation.utils.AppVersion;
 import org.forome.annotation.utils.RuntimeExec;
 import org.forome.astorage.core.liftover.LiftoverConnector;
-import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +105,7 @@ public class AnnotationConsole {
 	private NotificationService notificationService;
 	private SSHConnectService sshTunnelService;
 	private DatabaseConnectService databaseConnectService;
+	private SourceService sourceService;
 
 	private GnomadConnectorImpl gnomadConnector;
 	private SpliceAIConnector spliceAIConnector;
@@ -114,11 +113,11 @@ public class AnnotationConsole {
 	private HgmdConnector hgmdConnector;
 	private ClinvarConnector clinvarConnector;
 	private LiftoverConnector liftoverConnector;
-	private FastaSource fastaSource;
+//	private FastaSource fastaSource;
 	private GTFConnector gtfConnector;
 	private GTEXConnector gtexConnector;
 	private PharmGKBConnector pharmGKBConnector;
-	private AStorageHttp sourceHttp38;
+//	private AStorageHttp sourceHttp38;
 	private EnsemblVepService ensemblVepService;
 	private AnfisaConnector anfisaConnector;
 	private Processing processing;
@@ -168,17 +167,20 @@ public class AnnotationConsole {
 			}
 
 			sshTunnelService = new SSHConnectService();
+
+			sourceService = new SourceService(serviceConfig.sourceConfig);
+
 			databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
 //            gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, arguments));
 
 			liftoverConnector = new LiftoverConnector();
 
 //			this.fastaSource = new FastaSourceRocksDB(databaseConnectService.getAStorage());
-			this.fastaSource = new FastaSourcePortPython(databaseConnectService.getAStorage());
+//			this.fastaSource = new FastaSourcePortPython(databaseConnectService.getAStorage());
 //			this.fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
 			gnomadConnector = new GnomadConnectorImpl(
-					new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, fastaSource, serviceConfig.aStorageConfigConnector),
+					new GnomadDataSourceHttp(liftoverConnector, sourceService.dataSource),
 					(t, e) -> fail(e, null, arguments)
 			);
 //			gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> fail(e, null, arguments));
@@ -212,12 +214,13 @@ public class AnnotationConsole {
 //			pharmGKBConnector = new PharmGKBConnectorHttp();
 			pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-			this.sourceHttp38 = new AStorageHttp(
-					databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
-			);
+//			this.sourceHttp38 = new AStorageHttp(
+//					databaseConnectService, liftoverConnector
+//			);
 
 			ensemblVepService = new EnsemblVepExternalService((t, e) -> fail(e, null, arguments));
 			anfisaConnector = new AnfisaConnector(
+					sourceService,
 					gnomadConnector,
 					spliceAIConnector,
 					hgmdConnector,
@@ -225,12 +228,12 @@ public class AnnotationConsole {
 					liftoverConnector,
 					gtfConnector,
 					gtexConnector,
-					pharmGKBConnector,
-					sourceHttp38,
-					fastaSource
+					pharmGKBConnector
+//					,
+//					sourceHttp38
 			);
 
-			Source source = databaseConnectService.getSource(assembly);
+			Source source = sourceService.dataSource.getSource(assembly);
 
 			processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 		} catch (Throwable e) {
@@ -318,8 +321,8 @@ public class AnnotationConsole {
 					e -> fail(e, finalVcfFile, arguments),
 					() -> {
 						log.debug("progress completed");
-						log.debug("aStorage: {}", anfisaConnector.aStorageHttp.getStatistics());
-						log.debug("fasta ({}): {}", anfisaConnector.fastaSource.getClass().getSimpleName(), anfisaConnector.fastaSource.getStatistics());
+//						log.debug("aStorage: {}", anfisaConnector.aStorageHttp.getStatistics());
+//						log.debug("fasta ({}): {}", anfisaConnector.fastaSource.getClass().getSimpleName(), anfisaConnector.fastaSource.getStatistics());
 						log.debug("gtf: {}", anfisaConnector.gtfAnfisaBuilder.statisticGtfs.getStat());
 						log.debug("gtf cds: {}", ((GTFConnectorImpl) anfisaConnector.gtfConnector).statisticCds.getStat());
 						log.debug("anfisa: {}", processing.anfisaStatistics.getStat());

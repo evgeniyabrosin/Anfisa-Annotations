@@ -16,20 +16,30 @@
  *  limitations under the License.
  */
 
-package org.forome.annotation.config.connector.base;
+package org.forome.annotation.config.source;
 
 import net.minidev.json.JSONObject;
+import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 
-public class AStorageConfigConnector extends SshTunnelConfigConnector {
+import java.net.MalformedURLException;
+import java.net.URL;
 
-	public final String astorageHost;
-	public final int astoragePort;
+public class SourceHttpConfig {
 
-	public AStorageConfigConnector(JSONObject parse) {
-		super(parse);
+	public final SshTunnelConfig sshTunnelConfig;
+	public final URL url;
 
-		JSONObject parseMysql = (JSONObject) parse.get("astorage");
-		astorageHost = parseMysql.getAsString("host");
-		astoragePort = parseMysql.getAsNumber("port").intValue();
+	public SourceHttpConfig(JSONObject parse) {
+		if (parse.containsKey("ssh_tunnel")) {
+			sshTunnelConfig = new SshTunnelConfig((JSONObject) parse.get("ssh_tunnel"));
+		} else {
+			sshTunnelConfig = null;
+		}
+
+		try {
+			url = new URL(parse.getAsString("url"));
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

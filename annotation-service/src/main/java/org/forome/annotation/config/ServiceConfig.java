@@ -24,11 +24,11 @@ import org.forome.annotation.config.connector.ForomeConfigConnector;
 import org.forome.annotation.config.connector.GTFConfigConnector;
 import org.forome.annotation.config.connector.HgmdConfigConnector;
 import org.forome.annotation.config.connector.RefConfigConnector;
-import org.forome.annotation.config.connector.base.AStorageConfigConnector;
 import org.forome.annotation.config.database.DatabaseConfig;
 import org.forome.annotation.config.ensemblvep.EnsemblVepConfig;
 import org.forome.annotation.config.frontend.FrontendConfig;
 import org.forome.annotation.config.notification.NotificationSlackConfig;
+import org.forome.annotation.config.source.SourceConfig;
 
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -42,10 +42,11 @@ public class ServiceConfig {
 
 	public final DatabaseConfig databaseConfig;
 
+	public final SourceConfig sourceConfig;
+
 	public final EnsemblVepConfig ensemblVepConfigConnector;
 
 	public final ForomeConfigConnector foromeConfigConnector;
-	public final AStorageConfigConnector aStorageConfigConnector;
 
 	public final HgmdConfigConnector hgmdConfigConnector;
 	public final GTFConfigConnector gtfConfigConnector;
@@ -70,11 +71,12 @@ public class ServiceConfig {
 
 		databaseConfig = new DatabaseConfig((JSONObject) configFileJson.get("database"));
 
+		sourceConfig = new SourceConfig((JSONObject) configFileJson.get("source"));
+
 		ensemblVepConfigConnector = new EnsemblVepConfig((JSONObject) configFileJson.get("ensembl-vep"));
 
 		JSONObject jConnectors = (JSONObject) configFileJson.get("connectors");
 		foromeConfigConnector = new ForomeConfigConnector((JSONObject) jConnectors.get("forome"));
-		aStorageConfigConnector = new AStorageConfigConnector((JSONObject) jConnectors.get("astorage"));
 		hgmdConfigConnector = new HgmdConfigConnector((JSONObject) jConnectors.get("hgmd"));
 		gtfConfigConnector = new GTFConfigConnector((JSONObject) jConnectors.get("gtf"));
 		refConfigConnector = new RefConfigConnector((JSONObject) jConnectors.get("ref"));

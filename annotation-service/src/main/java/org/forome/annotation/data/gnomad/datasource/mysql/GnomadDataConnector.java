@@ -21,9 +21,9 @@ package org.forome.annotation.data.gnomad.datasource.mysql;
 import org.forome.annotation.data.DatabaseConnector;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
-import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.utils.GnomadUtils;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.source.tmp.GnomadDataResponse;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.core.struct.Assembly;
@@ -52,7 +52,7 @@ public class GnomadDataConnector implements GnomadDataSource, Closeable {
 	}
 
 	@Override
-	public List<DataResponse> getData(
+	public List<GnomadDataResponse> getData(
 			AnfisaExecuteContext context,
 			Assembly assembly,
 			Variant variant,
@@ -114,7 +114,7 @@ public class GnomadDataConnector implements GnomadDataSource, Closeable {
 				);
 			}
 
-			List<DataResponse> results = new ArrayList<>();
+			List<GnomadDataResponse> results = new ArrayList<>();
 			resultSet.beforeFirst();
 			while (resultSet.next()) {
 				String diff_ref_alt = GnomadUtils.diff(ref, alt);
@@ -140,14 +140,14 @@ public class GnomadDataConnector implements GnomadDataSource, Closeable {
 		databaseConnector.close();
 	}
 
-	private static DataResponse build(ResultSet resultSet) throws SQLException {
+	private static GnomadDataResponse build(ResultSet resultSet) throws SQLException {
 		Map<String, Object> columns = new HashMap<>();
 		ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 		for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
 			String columnName = resultSetMetaData.getColumnName(i).toLowerCase();
 			columns.put(columnName, resultSet.getObject(i));
 		}
-		return new DataResponse(columns);
+		return new GnomadDataResponse(columns);
 	}
 
 }

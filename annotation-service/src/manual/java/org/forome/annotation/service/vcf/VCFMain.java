@@ -21,10 +21,8 @@ package org.forome.annotation.service.vcf;
 import org.forome.annotation.Main;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.anfisa.AnfisaConnector;
-import org.forome.annotation.data.astorage.AStorageHttp;
 import org.forome.annotation.data.clinvar.ClinvarConnector;
 import org.forome.annotation.data.clinvar.mysql.ClinvarConnectorMysql;
-import org.forome.annotation.data.fasta.FastaSourcePython;
 import org.forome.annotation.data.gnomad.GnomadConnectorImpl;
 import org.forome.annotation.data.gnomad.datasource.http.GnomadDataSourceHttp;
 import org.forome.annotation.data.gtex.GTEXConnector;
@@ -45,9 +43,10 @@ import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
 import org.forome.annotation.service.ensemblvep.external.EnsemblVepExternalService;
+import org.forome.annotation.service.source.SourceService;
+import org.forome.annotation.service.source.struct.source.Source;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.astorage.core.liftover.LiftoverConnector;
-import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,11 +62,12 @@ public class VCFMain {
 		ServiceConfig serviceConfig = new ServiceConfig();
 		SSHConnectService sshTunnelService = new SSHConnectService();
 		DatabaseConnectService databaseConnectService = new DatabaseConnectService(sshTunnelService, serviceConfig.databaseConfig);
+		SourceService sourceService = new SourceService(serviceConfig.sourceConfig);
 
 		LiftoverConnector liftoverConnector = new LiftoverConnector();
-		FastaSourcePython fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
+//		FastaSourcePython fastaSource = new FastaSourcePython(databaseConnectService, serviceConfig.aStorageConfigConnector);
 
-		GnomadConnectorImpl gnomadConnector = new GnomadConnectorImpl(new GnomadDataSourceHttp(databaseConnectService, liftoverConnector, fastaSource, serviceConfig.aStorageConfigConnector), (t, e) -> crash(e));
+		GnomadConnectorImpl gnomadConnector = new GnomadConnectorImpl(new GnomadDataSourceHttp(liftoverConnector, sourceService.dataSource), (t, e) -> crash(e));
 //		GnomadConnector gnomadConnector = new GnomadConnectorImpl(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 //        GnomadConnector gnomadConnector = new GnomadConnectorOld(databaseConnectService, serviceConfig.gnomadConfigConnector, (t, e) -> crash(e));
 
@@ -83,7 +83,7 @@ public class VCFMain {
 		ClinvarConnector clinvarConnector = new ClinvarConnectorMysql(databaseConnectService, liftoverConnector, serviceConfig.foromeConfigConnector);
 
 		GTFConnector gtfConnector = new GTFConnectorImpl(
-				new GTFDataSourceHttp(databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector),
+				new GTFDataSourceHttp(liftoverConnector, sourceService.dataSource),
 				liftoverConnector,
 				(t, e) -> crash(e)
 		);
@@ -95,12 +95,13 @@ public class VCFMain {
 //		PharmGKBConnector pharmGKBConnector = new PharmGKBConnectorHttp();
 		PharmGKBConnector pharmGKBConnector = new PharmGKBConnectorMysql(databaseConnectService, serviceConfig.foromeConfigConnector);
 
-		AStorageHttp sourceHttp38 = new AStorageHttp(
-				databaseConnectService, liftoverConnector, serviceConfig.aStorageConfigConnector
-		);
+//		AStorageHttp sourceHttp38 = new AStorageHttp(
+//				databaseConnectService, liftoverConnector
+//		);
 
 		EnsemblVepService ensemblVepService = new EnsemblVepExternalService((t, e) -> crash(e));
 		AnfisaConnector anfisaConnector = new AnfisaConnector(
+				sourceService,
 				gnomadConnector,
 				spliceAIConnector,
 				hgmdConnector,
@@ -108,12 +109,12 @@ public class VCFMain {
 				liftoverConnector,
 				gtfConnector,
 				gtexConnector,
-				pharmGKBConnector,
-				sourceHttp38,
-				fastaSource
+				pharmGKBConnector
+//				,
+//				sourceHttp38
 		);
 
-		Source source = databaseConnectService.getSource(Assembly.GRCh37);
+		Source source = sourceService.dataSource.getSource(Assembly.GRCh37);
 
 		Processing processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 

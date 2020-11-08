@@ -36,13 +36,13 @@ import org.forome.annotation.processing.smavariant.SplitMAVariant;
 import org.forome.annotation.processing.statistics.StatisticsInstrumentation;
 import org.forome.annotation.processing.struct.GContext;
 import org.forome.annotation.processing.struct.ProcessingResult;
+import org.forome.annotation.service.source.struct.source.Source;
 import org.forome.annotation.struct.mavariant.MAVariant;
 import org.forome.annotation.struct.mcase.MCase;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantStruct;
 import org.forome.annotation.struct.variant.VariantType;
 import org.forome.annotation.utils.Statistics;
-import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;
 import org.forome.core.struct.sequence.Sequence;
@@ -207,7 +207,7 @@ public class Processing {
 				throw new RuntimeException("Unknown type: " + variantType);
 			}
 
-			Sequence sequence = anfisaConnector.fastaSource.getSequence(assembly, interval);
+			Sequence sequence = anfisaConnector.sourceService.dataSource.getSource(assembly).getFastaSequence(interval);
 			if (!sequence.getValue().equalsIgnoreCase(variantStruct.ref.getBaseString())) {
 				throw new RuntimeException("Not equals ref: " + variantStruct.ref.getBaseString() + ", and fasta: " + sequence.getValue());
 			}

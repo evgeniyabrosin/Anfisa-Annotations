@@ -19,10 +19,9 @@
 package org.forome.annotation.data.conservation;
 
 import com.google.common.collect.Lists;
+import org.forome.annotation.service.source.struct.source.Source;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.astorage.core.data.Conservation;
-import org.forome.astorage.core.record.Record;
-import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Interval;
 import org.forome.core.struct.Position;
 import org.slf4j.Logger;
@@ -103,12 +102,15 @@ public class ConservationData {
 					interval.chromosome,
 					pos
 			);
-			Record record = source.getRecord(position);
-			if (record == null) {
-				continue;
-			}
+//			Record record = source.getRecord(position);
+//			if (record == null) {
+//				continue;
+//			}
+//			Conservation conservation = record.getConservation();
 
-			Conservation conservation = record.getConservation();
+			Conservation conservation = source.getConservation(position);
+
+
 			if ((conservation.gerpN != null) && (maxGerpN == null || maxGerpN < conservation.gerpN)) {
 				maxGerpN = conservation.gerpN;
 			}

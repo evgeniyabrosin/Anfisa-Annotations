@@ -32,11 +32,11 @@ import org.forome.annotation.network.authcontext.BuilderAuthContext;
 import org.forome.annotation.processing.Processing;
 import org.forome.annotation.processing.TypeQuery;
 import org.forome.annotation.service.ensemblvep.EnsemblVepService;
+import org.forome.annotation.service.source.struct.source.Source;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.variant.custom.VariantCustom;
 import org.forome.annotation.struct.variant.vep.VariantVep;
 import org.forome.annotation.utils.ExecutorServiceUtils;
-import org.forome.astorage.core.source.Source;
 import org.forome.core.struct.Assembly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +84,7 @@ public class FormatAnfisaController {
 			throw ExceptionBuilder.buildInvalidOperation("inited");
 		}
 
-		Source source = service.getDatabaseConnectService().getSource(Assembly.GRCh37);
+		Source source = service.getSourceService().dataSource.getSource(Assembly.GRCh37);
 
 		Processing processing = new Processing(source, anfisaConnector, TypeQuery.PATIENT_HG19);
 

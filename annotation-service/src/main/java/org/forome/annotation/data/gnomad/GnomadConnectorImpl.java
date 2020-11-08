@@ -21,10 +21,10 @@ package org.forome.annotation.data.gnomad;
 import com.google.common.collect.ImmutableList;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
-import org.forome.annotation.data.gnomad.struct.DataResponse;
 import org.forome.annotation.data.gnomad.struct.GnamadGroup;
 import org.forome.annotation.data.gnomad.struct.GnomadResult;
 import org.forome.annotation.matcher.SequenceMatcher;
+import org.forome.annotation.service.source.tmp.GnomadDataResponse;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.DefaultThreadPoolExecutor;
@@ -88,14 +88,14 @@ public class GnomadConnectorImpl implements GnomadConnector {
 	}
 
 	private GnomadResult syncRequest(AnfisaExecuteContext context, Assembly assembly, Variant variant, Chromosome chromosome, int position, String reference, String alternative) throws Exception {
-		List<DataResponse> exomes = gnomadDataSource.getData(
+		List<GnomadDataResponse> exomes = gnomadDataSource.getData(
 				context, assembly, variant, chromosome, position, reference, alternative, "e"
 		);
-		List<DataResponse> genomes = gnomadDataSource.getData(
+		List<GnomadDataResponse> genomes = gnomadDataSource.getData(
 				context, assembly, variant, chromosome, position, reference, alternative, "g"
 		);
 
-		List<DataResponse> overall = new ImmutableList.Builder().addAll(exomes).addAll(genomes).build();
+		List<GnomadDataResponse> overall = new ImmutableList.Builder().addAll(exomes).addAll(genomes).build();
 		if (overall.isEmpty()) {
 			return null;
 		}
@@ -134,7 +134,7 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		GnomadResult.Popmax widePopmax = countPopmaxFromRows(overall, null);
 
 		Set<GnomadResult.Url> urls = new HashSet<>();
-		for (DataResponse item : overall) {
+		for (GnomadDataResponse item : overall) {
 			String chrom = item.getValue("CHROM");
 			long pos = ((Number) item.getValue("POS")).longValue();
 			String ref = item.getValue("REF");
@@ -177,7 +177,7 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		gnomadDataSource.close();
 	}
 
-	private static long countAN(List<DataResponse> items, GnamadGroup group) {
+	private static long countAN(List<GnomadDataResponse> items, GnamadGroup group) {
 		long an = 0;
 		String anColumn;
 		if (group == null) {
@@ -185,7 +185,7 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		} else {
 			anColumn = "AN_" + group.name();
 		}
-		for (DataResponse item : items) {
+		for (GnomadDataResponse item : items) {
 			Number value = item.getValue(anColumn);
 			if (value == null) continue;
 			an += value.longValue();
@@ -193,7 +193,7 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		return an;
 	}
 
-	private static long countAC(List<DataResponse> items, GnamadGroup group) {
+	private static long countAC(List<GnomadDataResponse> items, GnamadGroup group) {
 		long ac = 0;
 		String acColumn;
 		if (group == null) {
@@ -201,7 +201,7 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		} else {
 			acColumn = "AC_" + group;
 		}
-		for (DataResponse item : items) {
+		for (GnomadDataResponse item : items) {
 			Number value = item.getValue(acColumn);
 			if (value == null) continue;
 			ac += value.longValue();
@@ -219,7 +219,7 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		return af;
 	}
 
-	private static GnomadResult.Popmax countPopmaxFromRows(List<DataResponse> overall, GnamadGroup.Type type) {
+	private static GnomadResult.Popmax countPopmaxFromRows(List<GnomadDataResponse> overall, GnamadGroup.Type type) {
 		GnamadGroup group = null;
 		Double popmaxAF = null;
 		long popmaxAN = 0;
@@ -248,10 +248,10 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		}
 	}
 
-	private static long countHom(List<DataResponse> items) {
+	private static long countHom(List<GnomadDataResponse> items) {
 		long hom = 0;
 		String column = "nhomalt";
-		for (DataResponse item : items) {
+		for (GnomadDataResponse item : items) {
 			Number value = item.getValue(column);
 			if (value == null) continue;
 			hom += value.longValue();
@@ -259,10 +259,10 @@ public class GnomadConnectorImpl implements GnomadConnector {
 		return hom;
 	}
 
-	private static Long countHem(List<DataResponse> items) {
+	private static Long countHem(List<GnomadDataResponse> items) {
 		Long hem = null;
 		String column = "hem";
-		for (DataResponse item : items) {
+		for (GnomadDataResponse item : items) {
 			Number value = item.getValue(column);
 			if (value == null) continue;
 			if (hem == null) {
