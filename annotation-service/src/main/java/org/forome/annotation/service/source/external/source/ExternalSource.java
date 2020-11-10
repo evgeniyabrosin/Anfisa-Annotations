@@ -18,13 +18,14 @@
 
 package org.forome.annotation.service.source.external.source;
 
+import net.minidev.json.JSONArray;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.forome.annotation.service.source.external.ExternalDataSource;
 import org.forome.annotation.service.source.external.conservation.ConservationHttpRequest;
 import org.forome.annotation.service.source.external.fasta.FastaHttpRequest;
+import org.forome.annotation.service.source.external.gnomad.GnomadHttpRequest;
 import org.forome.annotation.service.source.struct.Record;
 import org.forome.annotation.service.source.struct.Source;
-import org.forome.annotation.service.source.tmp.GnomadDataResponse;
 import org.forome.astorage.core.data.Conservation;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;
@@ -57,8 +58,9 @@ public class ExternalSource implements Source {
 	}
 
 	@Override
-	public GnomadDataResponse getGnomad(Position pos37) {
-		throw new RuntimeException();
+	public JSONArray getGnomad(Position position) {
+		GnomadHttpRequest gnomadHttpRequest = new GnomadHttpRequest(this);
+		return gnomadHttpRequest.get(assembly, position);
 	}
 
 	@Override

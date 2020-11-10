@@ -18,7 +18,7 @@
 
 package org.forome.annotation.service.source.struct;
 
-import org.forome.annotation.service.source.tmp.GnomadDataResponse;
+import net.minidev.json.JSONArray;
 import org.forome.astorage.core.data.Conservation;
 import org.forome.core.struct.Interval;
 import org.forome.core.struct.Position;
@@ -30,7 +30,7 @@ public interface Source {
 
 	Sequence getFastaSequence(Interval interval);
 
-	GnomadDataResponse getGnomad(Position pos37);
-
 	Conservation getConservation(Position position);
+
+	JSONArray getGnomad(Position position);
 }

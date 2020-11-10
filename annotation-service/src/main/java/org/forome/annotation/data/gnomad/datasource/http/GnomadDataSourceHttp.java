@@ -20,27 +20,12 @@ package org.forome.annotation.data.gnomad.datasource.http;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
-import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
-import org.apache.http.nio.reactor.IOReactorException;
-import org.apache.http.util.EntityUtils;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.gnomad.datasource.GnomadDataSource;
 import org.forome.annotation.data.gnomad.utils.GnomadUtils;
 import org.forome.annotation.data.gnomad.utils.СollapseNucleotideSequence;
 import org.forome.annotation.exception.AnnotatorException;
-import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.source.DataSource;
-import org.forome.annotation.service.source.external.ExternalDataSource;
 import org.forome.annotation.service.source.tmp.GnomadDataResponse;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
@@ -54,18 +39,9 @@ import org.forome.core.struct.sequence.Sequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-/**
- * curl "localhost:8290/get?array=hg19&loc=18:67760501"
- * {"chrom": "chr18", "array": "hg19", "pos": 67760501, "Gerp": {"GerpN": 2.45, "GerpRS": -1.87}, "gnomAD": [{"ALT": "C", "REF": "A", "SOURCE": "g", "AC": 2, "AN": 31248, "AF": 6.4e-05, "nhomalt": 0, "faf95": 1.06e-05, "faf99": 1.096e-05, "male": {"AC": 1, "AN": 17400, "AF": 5.747e-05}, "female": {"AC": 1, "AN": 13848, "AF": 7.221e-05}, "afr": {"AC": 2, "AN": 8692, "AF": 0.0002301}, "amr": {"AC": 0, "AN": 842, "AF": 0}, "asj": {"AC": 0, "AN": 290, "AF": 0}, "eas": {"AC": 0, "AN": 1560, "AF": 0}, "fin": {"AC": 0, "AN": 3408, "AF": 0}, "nfe": {"AC": 0, "AN": 15380, "AF": 0}, "oth": {"AC": 0, "AN": 1076, "AF": 0}, "raw": {"AC": 2, "AN": 31416, "AF": 6.366e-05}, "hem": null}]}
- */
 public class GnomadDataSourceHttp implements GnomadDataSource {
 
 	private final static Logger log = LoggerFactory.getLogger(GnomadDataSourceHttp.class);
@@ -73,32 +49,12 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	private final LiftoverConnector liftoverConnector;
 	private final DataSource dataSource;
 
-	private final RequestConfig requestConfig;
-	private final PoolingNHttpClientConnectionManager connectionManager;
-	private final HttpHost httpHost;
-
-	private final URL url;
-
 	public GnomadDataSourceHttp(
 			LiftoverConnector liftoverConnector,
 			DataSource dataSource
-	) throws IOReactorException {
+	) {
 		this.liftoverConnector = liftoverConnector;
 		this.dataSource = dataSource;
-
-		requestConfig = RequestConfig.custom()
-				.setConnectTimeout(5000)//Таймаут на подключение
-				.setSocketTimeout(10 * 60 * 1000)//Таймаут между пакетами
-				.setConnectionRequestTimeout(10 * 60 * 1000)//Таймаут на ответ
-				.build();
-
-		connectionManager = new PoolingNHttpClientConnectionManager(new DefaultConnectingIOReactor());
-		connectionManager.setMaxTotal(100);
-		connectionManager.setDefaultMaxPerRoute(100);
-
-		url = ((ExternalDataSource)dataSource).url;
-
-		httpHost = new HttpHost(url.getHost(), url.getPort(), "http");
 	}
 
 	@Override
@@ -128,7 +84,6 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		}
 
 		List<JSONObject> records = getRecord(
-				context,
 				pos37,
 				sequence.ref, sequence.alt,
 				fromWhat, isSNV
@@ -143,7 +98,6 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		if (records.isEmpty() && !isSNV) {
 			pos37 = new Position(pos37.chromosome, pos37.value - 1);
 			records = getRecord(
-					context,
 					pos37,
 					sequence.ref, sequence.alt,
 					fromWhat, isSNV
@@ -170,14 +124,13 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	}
 
 	private List<JSONObject> getRecord(
-			AnfisaExecuteContext context,
 			Position pos37,
 			String ref,
 			String alt,
 			String fromWhat,
 			boolean isSNV
 	) {
-		List<JSONObject> jRecords = getData(context, pos37);
+		List<JSONObject> jRecords = getData(pos37);
 		if (jRecords == null) {
 			return Collections.emptyList();
 		}
@@ -273,7 +226,6 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 		for (int pos = sequence19Start.value; pos <= sequence19End.value; pos++) {
 			Position iPosition = new Position(chromosome, pos);
 			List<JSONObject> jRecords = getRecord(
-					context,
 					iPosition,
 					variant.getStrAlt(),
 					variant.getRef(),
@@ -291,102 +243,14 @@ public class GnomadDataSourceHttp implements GnomadDataSource {
 	}
 
 
-	private List<JSONObject> getData(AnfisaExecuteContext context, Position pos37) {
-		JSONObject sourceAStorageHttp = context.sourceAStorageHttp.data;
-
-		Integer sourcePos37 = context.sourceAStorageHttp.getStart37();
-
-		JSONArray jRecords;
-		if (sourcePos37 != null && sourcePos37.intValue() == pos37.value) {
-			jRecords = (JSONArray) sourceAStorageHttp.get("gnomAD");
-		} else {
-			JSONObject response = request(
-					String.format("http://%s:%s/get?array=hg19&loc=%s:%s", url.getHost(), url.getPort(), pos37.chromosome.getChar(), pos37.value)
-			);
-			jRecords = (JSONArray) response.get("gnomAD");
-		}
+	private List<JSONObject> getData(Position pos37) {
+		JSONArray jRecords = dataSource.getSource(Assembly.GRCh37).getGnomad(pos37);
 		if (jRecords == null) {
 			return null;
 		}
 		return jRecords.stream()
 				.map(o -> (JSONObject) o)
 				.collect(Collectors.toList());
-	}
-
-	private JSONObject request(String url) {
-		CompletableFuture<JSONObject> future = new CompletableFuture<>();
-		try {
-			CloseableHttpAsyncClient httpclient = HttpAsyncClients.custom()
-					.setDefaultRequestConfig(requestConfig)
-					.build();
-			httpclient.start();
-
-			HttpPost httpPostRequest = new HttpPost(new URI(url));
-
-			httpclient.execute(httpHost, httpPostRequest, new FutureCallback<HttpResponse>() {
-				@Override
-				public void completed(HttpResponse response) {
-					try {
-						HttpEntity entity = response.getEntity();
-						String entityBody = EntityUtils.toString(entity);
-
-						Object rawResponse;
-						try {
-							rawResponse = new JSONParser(JSONParser.DEFAULT_PERMISSIVE_MODE).parse(entityBody);
-						} catch (Exception e) {
-							throw ExceptionBuilder.buildExternalServiceException(new RuntimeException("Exception parse response external service, response: " + entityBody));
-						}
-						if (rawResponse instanceof JSONObject) {
-							future.complete((JSONObject) rawResponse);
-						} else {
-							throw ExceptionBuilder.buildExternalServiceException(
-									new RuntimeException("Exception external service(AStorage), response: " + entityBody),
-									"AStorage", "Response: " + entityBody
-							);
-						}
-					} catch (Throwable ex) {
-						future.completeExceptionally(ex);
-					}
-
-					try {
-						httpclient.close();
-					} catch (IOException ignore) {
-						log.error("Exception close connect");
-					}
-				}
-
-				@Override
-				public void failed(Exception ex) {
-					future.completeExceptionally(ex);
-					try {
-						httpclient.close();
-					} catch (IOException ignore) {
-						log.error("Exception close connect");
-					}
-				}
-
-				@Override
-				public void cancelled() {
-					future.cancel(true);
-					try {
-						httpclient.close();
-					} catch (IOException ignore) {
-						log.error("Exception close connect");
-					}
-				}
-			});
-		} catch (Throwable t) {
-			log.error("Exception close connect", t);
-			future.completeExceptionally(t);
-		}
-
-		try {
-			return future.get();
-		} catch (InterruptedException e) {
-			throw new RuntimeException();
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e.getCause());
-		}
 	}
 
 	@Override
