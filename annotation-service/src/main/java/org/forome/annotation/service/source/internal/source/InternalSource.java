@@ -18,10 +18,10 @@
 
 package org.forome.annotation.service.source.internal.source;
 
+import net.minidev.json.JSONArray;
 import org.forome.annotation.service.source.external.source.ExternalSource;
 import org.forome.annotation.service.source.struct.Record;
 import org.forome.annotation.service.source.struct.Source;
-import org.forome.annotation.service.source.tmp.GnomadDataResponse;
 import org.forome.astorage.core.data.Conservation;
 import org.forome.core.struct.Interval;
 import org.forome.core.struct.Position;
@@ -48,7 +48,7 @@ public class InternalSource implements Source {
 	}
 
 	@Override
-	public GnomadDataResponse getGnomad(Position pos37) {
+	public JSONArray getGnomad(Position pos37) {
 		return externalSource.getGnomad(pos37);
 	}
 
