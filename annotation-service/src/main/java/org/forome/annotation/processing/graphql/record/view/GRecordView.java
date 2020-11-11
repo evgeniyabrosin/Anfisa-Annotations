@@ -78,7 +78,7 @@ public class GRecordView {
 	@GraphQLName("facets")
 	public List<GRecordViewFacet> getFacets() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
+				gContext.source, variant
 		);
 
 		List<GRecordViewFacet> facets = items.stream()
@@ -94,7 +94,7 @@ public class GRecordView {
 	@GraphQLName("transcripts")
 	public List<GRecordViewTranscript> getTranscripts() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
+				gContext.source, variant
 		);
 
 		if (variant instanceof VariantVep) {
@@ -120,7 +120,7 @@ public class GRecordView {
 						.filter(dbNSFPItemFacetTranscript -> transcriptId.equals(dbNSFPItemFacetTranscript.ensemblTranscriptId))
 						.collect(Collectors.toList());
 				if (findTranscripts.size() > 1) {
-					throw new RuntimeException("Not unique transcriptId:" + transcriptId + ", values: " + gContext.context.sourceAStorageHttp.data.toJSONString());
+					throw new RuntimeException("Not unique transcriptId:" + transcriptId + ", variant: " + variant);
 				}
 				DbNSFPItemFacetTranscript dbNSFPTranscript = (findTranscripts.isEmpty()) ? null : findTranscripts.get(0);
 

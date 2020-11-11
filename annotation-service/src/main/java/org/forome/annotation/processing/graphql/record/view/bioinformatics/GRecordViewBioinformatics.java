@@ -92,7 +92,7 @@ public class GRecordViewBioinformatics {
 	@GraphQLName("refcodon")
 	public List<String> getRefcodons() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
+				gContext.source, variant
 		);
 
 		return items.stream()
@@ -108,7 +108,7 @@ public class GRecordViewBioinformatics {
 	@GraphQLName("eqtl_gene")
 	public List<String> getEqtlGene() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
+				gContext.source, variant
 		);
 
 		return items.stream()

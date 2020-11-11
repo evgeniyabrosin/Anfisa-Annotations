@@ -58,6 +58,11 @@ public class InternalSource implements Source {
 	}
 
 	@Override
+	public JSONArray getDbNSFP(Interval interval) {
+		return externalSource.getDbNSFP(interval);
+	}
+
+	@Override
 	public Conservation getConservation(Position position) {
 		return getRecord(position).getConservation();
 	}

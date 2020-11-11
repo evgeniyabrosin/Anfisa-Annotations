@@ -235,7 +235,7 @@ public class AnfisaConnector implements AutoCloseable {
 		createQualityTab(view, variant, anfisaInput.mCase);
 		createGnomadTab(context, variant, anfisaInput.mCase, view);
 		createDatabasesTab(record, data, view);
-		createPredictionsTab(context, variant, view);
+		createPredictionsTab(source, context, variant, view);
 		createBioinformaticsTab(gtfAnfisaResult, context, filters, data, view);
 		createPharmacogenomicsTab(context, view, filters, variant, source);
 		countCohorts(view, filters, anfisaInput.mCase, variant);
@@ -946,7 +946,7 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private void createPredictionsTab(AnfisaExecuteContext context, Variant variant, AnfisaResultView view) {
+	private void createPredictionsTab(Source source, AnfisaExecuteContext context, Variant variant, AnfisaResultView view) {
 		if (variant instanceof VariantVep) {
 			VariantVep variantVep = (VariantVep) variant;
 
@@ -965,7 +965,7 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 
 
-		List<DbNSFPItem> items = dbNSFPConnector.getAll(context, variant);
+		List<DbNSFPItem> items = dbNSFPConnector.getAll(source, variant);
 
 		view.predictions.caddRaw = items.stream().map(item -> item.caddRaw).filter(Objects::nonNull).collect(Collectors.toList());
 		view.predictions.caddPhred = items.stream().map(item -> item.caddPhred).filter(Objects::nonNull).collect(Collectors.toList());

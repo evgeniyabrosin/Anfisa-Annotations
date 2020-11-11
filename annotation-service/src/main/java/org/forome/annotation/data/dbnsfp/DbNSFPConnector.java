@@ -20,10 +20,10 @@ package org.forome.annotation.data.dbnsfp;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItem;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacet;
 import org.forome.annotation.data.dbnsfp.struct.DbNSFPItemFacetTranscript;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.MathUtils;
 
@@ -34,8 +34,8 @@ import java.util.stream.Collectors;
 
 public class DbNSFPConnector {
 
-	public List<DbNSFPItem> getAll(AnfisaExecuteContext context, Variant variant) {
-		JSONArray jRecords = (JSONArray) context.sourceAStorageHttp.data.get("dbNSFP");
+	public List<DbNSFPItem> getAll(Source source, Variant variant) {
+		JSONArray jRecords = source.getDbNSFP(variant.getInterval());
 		if (jRecords == null) {
 			return Collections.emptyList();
 		}
