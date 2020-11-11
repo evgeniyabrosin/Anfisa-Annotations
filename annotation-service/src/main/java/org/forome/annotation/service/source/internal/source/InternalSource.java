@@ -20,19 +20,28 @@ package org.forome.annotation.service.source.internal.source;
 
 import net.minidev.json.JSONArray;
 import org.forome.annotation.service.source.external.source.ExternalSource;
+import org.forome.annotation.service.source.internal.fasta.FastaSourcePortPython;
 import org.forome.annotation.service.source.struct.Record;
 import org.forome.annotation.service.source.struct.Source;
 import org.forome.astorage.core.data.Conservation;
+import org.forome.astorage.pastorage.PAStorage;
+import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;
 import org.forome.core.struct.Position;
 import org.forome.core.struct.sequence.Sequence;
 
 public class InternalSource implements Source {
 
+	private final Assembly assembly;
+
+	private final PAStorage paStorage;
 	private final org.forome.astorage.core.source.Source source;
+
 	public final ExternalSource externalSource;
 
-	public InternalSource(org.forome.astorage.core.source.Source source, ExternalSource externalSource) {
+	public InternalSource(Assembly assembly, PAStorage paStorage, org.forome.astorage.core.source.Source source, ExternalSource externalSource) {
+		this.assembly = assembly;
+		this.paStorage = paStorage;
 		this.source = source;
 		this.externalSource = externalSource;
 	}
@@ -44,7 +53,8 @@ public class InternalSource implements Source {
 
 	@Override
 	public Sequence getFastaSequence(Interval interval) {
-		return externalSource.getFastaSequence(interval);
+		FastaSourcePortPython fastaSourcePortPython = new FastaSourcePortPython(paStorage);
+		return fastaSourcePortPython.getSequence(assembly, interval);
 	}
 
 	@Override
@@ -69,6 +79,6 @@ public class InternalSource implements Source {
 
 	@Override
 	public Conservation getConservation(Position position) {
-		return getRecord(position).getConservation();
+		return externalSource.getConservation(position);
 	}
 }

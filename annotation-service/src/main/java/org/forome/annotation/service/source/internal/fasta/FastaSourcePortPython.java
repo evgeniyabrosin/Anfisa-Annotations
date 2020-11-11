@@ -18,8 +18,7 @@
 
 package org.forome.annotation.service.source.internal.fasta;
 
-import org.forome.annotation.utils.Statistics;
-import org.forome.astorage.AStorage;
+import org.forome.astorage.pastorage.PAStorage;
 import org.forome.astorage.pastorage.record.RecordFasta;
 import org.forome.astorage.pastorage.schema.SchemaFasta;
 import org.forome.core.struct.Assembly;
@@ -30,20 +29,14 @@ import org.forome.core.struct.sequence.Sequence;
 
 public class FastaSourcePortPython {
 
-	private final AStorage aStorage;
+	private final PAStorage paStorage;
 
-	private final Statistics statistics;
-
-	public FastaSourcePortPython(AStorage aStorage) {
-		this.aStorage = aStorage;
-
-		this.statistics = new Statistics();
+	public FastaSourcePortPython(PAStorage paStorage) {
+		this.paStorage = paStorage;
 	}
 
 	public Sequence getSequence(Assembly assembly, Interval interval) {
-		SchemaFasta schemaFasta = (SchemaFasta) aStorage.getSchema(SchemaFasta.SCHEMA_FASTA_NAME);
-
-		long t1 = System.currentTimeMillis();
+		SchemaFasta schemaFasta = (SchemaFasta) paStorage.getSchema(SchemaFasta.SCHEMA_FASTA_NAME);
 
 		Nucleotide[] nucleotides = new Nucleotide[interval.end - interval.start + 1];
 		for (int i = 0; i < nucleotides.length; i++) {
@@ -64,12 +57,6 @@ public class FastaSourcePortPython {
 
 		Sequence sequence = new Sequence(interval, nucleotides);
 
-		statistics.addTime(System.currentTimeMillis() - t1);
-
 		return sequence;
-	}
-
-	public Statistics.Stat getStatistics() {
-		return statistics.getStat();
 	}
 }

@@ -58,9 +58,9 @@ public class InternalDataSource implements DataSource {
 	public Source getSource(Assembly assembly) {
 		switch (assembly) {
 			case GRCh37:
-				return new InternalSource(aStorage.sourceDatabase37, (ExternalSource)httpDataSource.getSource(assembly));
+				return new InternalSource(assembly, aStorage.getPaStorage(), aStorage.sourceDatabase37, (ExternalSource)httpDataSource.getSource(assembly));
 			case GRCh38:
-				return new InternalSource(aStorage.sourceDatabase38, (ExternalSource)httpDataSource.getSource(assembly));
+				return new InternalSource(assembly, aStorage.getPaStorage(), aStorage.sourceDatabase38, (ExternalSource)httpDataSource.getSource(assembly));
 			default:
 				throw new RuntimeException();
 		}
