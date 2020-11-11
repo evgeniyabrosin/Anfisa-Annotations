@@ -21,6 +21,7 @@ package org.forome.annotation.data.spliceai;
 import org.forome.annotation.config.ServiceConfig;
 import org.forome.annotation.data.spliceai.datasource.http.SpliceAIDataSourceHttp;
 import org.forome.annotation.service.database.DatabaseConnectService;
+import org.forome.annotation.service.source.SourceService;
 import org.forome.annotation.service.ssh.SSHConnectService;
 import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.junit.Before;
@@ -34,6 +35,7 @@ public class SpliceAIBaseTest {
 	private final static Logger log = LoggerFactory.getLogger(SpliceAIBaseTest.class);
 
 	protected SpliceAIConnector spliceAIConnector;
+	protected SourceService sourceService;
 
 	@Before
 	public void init() throws Throwable {
@@ -48,5 +50,7 @@ public class SpliceAIBaseTest {
 				new SpliceAIDataSourceHttp(liftoverConnector)
 		);
 //		spliceAIConnector = new SpliceAIConnector(databaseConnectService, serviceConfig.spliceAIConfigConnector);
+
+		sourceService = new SourceService(serviceConfig.sourceConfig);
 	}
 }

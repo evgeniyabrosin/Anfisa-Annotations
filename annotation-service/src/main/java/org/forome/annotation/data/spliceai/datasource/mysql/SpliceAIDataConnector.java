@@ -24,6 +24,7 @@ import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.spliceai.datasource.SpliceAIDataSource;
 import org.forome.annotation.data.spliceai.struct.Row;
 import org.forome.annotation.exception.ExceptionBuilder;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.core.struct.Assembly;
@@ -81,7 +82,7 @@ public class SpliceAIDataConnector implements SpliceAIDataSource, Closeable {
 	}
 
 	@Override
-	public List<Row> getAll(AnfisaExecuteContext context, Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
+	public List<Row> getAll(Source source, AnfisaExecuteContext context, Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
 		if (assembly != Assembly.GRCh37) {
 			throw new RuntimeException("Not implemented");
 		}

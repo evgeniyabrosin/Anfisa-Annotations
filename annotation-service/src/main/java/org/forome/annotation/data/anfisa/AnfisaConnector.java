@@ -46,7 +46,6 @@ import org.forome.annotation.exception.AnnotatorException;
 import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordViewTranscript;
 import org.forome.annotation.processing.utils.OutUtils;
 import org.forome.annotation.service.source.SourceService;
-import org.forome.annotation.service.source.external.ExternalDataSource;
 import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.HasVariant;
@@ -150,13 +149,8 @@ public class AnfisaConnector implements AutoCloseable {
 
 		Source source = sourceService.dataSource.getSource(assembly);
 
-		ExternalDataSource httpDataSource = (ExternalDataSource)sourceService.dataSource;
-		context.sourceAStorageHttp = httpDataSource.aStorageHttp.get(
-				anfisaInput.mCase.assembly, variant
-		);
-
 		callGnomAD(context, variant, anfisaInput.mCase, filters);
-		callSpliceai(context, data, filters, variant);
+		callSpliceai(source, context, data, filters, variant);
 		callHgmd(record, context, filters, data);
 		callClinvar(context, record, variant.chromosome.getChar(), filters, data, view, vepJson);
 		GtfAnfisaResult gtfAnfisaResult = gtfAnfisaBuilder.build(variant, context);
@@ -538,10 +532,11 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private void callSpliceai(AnfisaExecuteContext context, AnfisaResultData data, AnfisaResultFilters filters, Variant variant) {
+	private void callSpliceai(Source source, AnfisaExecuteContext context, AnfisaResultData data, AnfisaResultFilters filters, Variant variant) {
 		Assembly assembly = context.anfisaInput.mCase.assembly;
 
 		SpliceAIResult spliceAIResult = spliceAIConnector.getAll(
+				source,
 				context,
 				assembly,
 				variant.chromosome.getChar(),

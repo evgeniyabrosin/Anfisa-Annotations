@@ -19,6 +19,7 @@
 package org.forome.annotation.data.spliceai;
 
 import org.forome.annotation.data.spliceai.struct.SpliceAIResult;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.Allele;
 import org.forome.core.struct.Assembly;
 import org.junit.Assert;
@@ -28,7 +29,9 @@ public class SpliceAISimpleTest extends SpliceAIBaseTest {
 
 	@Test
 	public void testGetAll() throws Exception {
-		SpliceAIResult spliceAIResult = spliceAIConnector.getAll(null, Assembly.GRCh37,"10", 92897, "A", new Allele("C"));
+		Source source = sourceService.dataSource.getSource(Assembly.GRCh37);
+
+		SpliceAIResult spliceAIResult = spliceAIConnector.getAll( source, null, Assembly.GRCh37,"10", 92897, "A", new Allele("C"));
 		Assert.assertEquals("unlikely", spliceAIResult.cases);
 		Assert.assertEquals(0.1391f, spliceAIResult.max_ds, 0.000001f);
 

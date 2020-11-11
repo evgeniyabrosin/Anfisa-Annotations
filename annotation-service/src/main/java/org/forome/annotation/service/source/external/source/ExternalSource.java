@@ -26,6 +26,7 @@ import org.forome.annotation.service.source.external.dbNSFP.DbNSFPHttpRequest;
 import org.forome.annotation.service.source.external.dbSNP.DbSNPHttpRequest;
 import org.forome.annotation.service.source.external.fasta.FastaHttpRequest;
 import org.forome.annotation.service.source.external.gnomad.GnomadHttpRequest;
+import org.forome.annotation.service.source.external.spliceai.SpliceAIHttpRequest;
 import org.forome.annotation.service.source.struct.Record;
 import org.forome.annotation.service.source.struct.Source;
 import org.forome.astorage.core.data.Conservation;
@@ -82,6 +83,16 @@ public class ExternalSource implements Source {
 		try {
 			DbNSFPHttpRequest dbNSFPHttpRequest = new DbNSFPHttpRequest(this);
 			return dbNSFPHttpRequest.get(interval);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public JSONArray getSpliceAI(Interval interval) {
+		try {
+			SpliceAIHttpRequest spliceAIHttpRequest = new SpliceAIHttpRequest(this);
+			return spliceAIHttpRequest.get(interval);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
