@@ -187,7 +187,7 @@ public class GRecordFilters {
 	@GraphQLName("primate_ai_pred")
 	public List<String> getPrimateAiPred() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
+				gContext.source, variant
 		);
 
 		return items.stream()
@@ -202,7 +202,7 @@ public class GRecordFilters {
 	@GraphQLName("eqtl_gene")
 	public List<String> getEqtlGene() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
+				gContext.source, variant
 		);
 
 		return items.stream()

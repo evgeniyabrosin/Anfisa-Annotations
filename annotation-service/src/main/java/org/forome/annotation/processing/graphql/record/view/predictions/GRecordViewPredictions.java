@@ -43,7 +43,7 @@ public class GRecordViewPredictions {
 	@GraphQLName("mutation_assessor_predictions")
 	public List<String> getmutationAssessorPredictions() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
+				gContext.source, variant
 		);
 
 		return items.stream()
@@ -58,7 +58,7 @@ public class GRecordViewPredictions {
 	@GraphQLName("mutation_assessor_scores")
 	public List<Double> getMutationAssessorScores() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
+				gContext.source, variant
 		);
 
 		return items.stream()
@@ -73,7 +73,7 @@ public class GRecordViewPredictions {
 	@GraphQLName("primate_ai_pred")
 	public List<String> getPrimateAiPred() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
+				gContext.source, variant
 		);
 
 		return items.stream()
@@ -88,7 +88,7 @@ public class GRecordViewPredictions {
 	@GraphQLName("dann_score")
 	public List<Double> getDannScore() {
 		List<DbNSFPItem> items = gContext.anfisaConnector.dbNSFPConnector.getAll(
-				gContext.context, variant
+				gContext.source, variant
 		);
 
 		return items.stream()

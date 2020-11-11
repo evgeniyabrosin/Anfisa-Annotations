@@ -70,7 +70,6 @@ public class AStorageHttp {
 		}
 		params.put("arrays", new JSONArray() {{
 			add("SpliceAI");
-			add("dbNSFP");
 		}});
 
 		int attempts = 5;

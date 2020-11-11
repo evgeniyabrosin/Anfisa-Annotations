@@ -22,6 +22,7 @@ import net.minidev.json.JSONArray;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.forome.annotation.service.source.external.ExternalDataSource;
 import org.forome.annotation.service.source.external.conservation.ConservationHttpRequest;
+import org.forome.annotation.service.source.external.dbNSFP.DbNSFPHttpRequest;
 import org.forome.annotation.service.source.external.dbSNP.DbSNPHttpRequest;
 import org.forome.annotation.service.source.external.fasta.FastaHttpRequest;
 import org.forome.annotation.service.source.external.gnomad.GnomadHttpRequest;
@@ -71,6 +72,16 @@ public class ExternalSource implements Source {
 		try {
 			DbSNPHttpRequest dbSNPHttpRequest = new DbSNPHttpRequest(this);
 			return dbSNPHttpRequest.get(interval);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public JSONArray getDbNSFP(Interval interval) {
+		try {
+			DbNSFPHttpRequest dbNSFPHttpRequest = new DbNSFPHttpRequest(this);
+			return dbNSFPHttpRequest.get(interval);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}

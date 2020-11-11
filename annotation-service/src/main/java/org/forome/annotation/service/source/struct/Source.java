@@ -35,4 +35,6 @@ public interface Source {
 	JSONArray getGnomad(Position position);
 
 	JSONArray getDbSNP(Interval interval);
+
+	JSONArray getDbNSFP(Interval interval);
 }
