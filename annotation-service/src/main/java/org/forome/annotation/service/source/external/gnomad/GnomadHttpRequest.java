@@ -45,7 +45,7 @@ public class GnomadHttpRequest {
 		this.liftoverConnector = httpSource.httpDataSource.liftoverConnector;
 	}
 
-	public JSONArray get(Assembly assembly, Position position) {
+	public JSONArray get(Position position) {
 		Position position19 = liftoverConnector.toHG37(assembly, position);
 		if (position19 == null) {
 			return null;

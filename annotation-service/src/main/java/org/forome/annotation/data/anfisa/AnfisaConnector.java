@@ -47,6 +47,7 @@ import org.forome.annotation.processing.graphql.record.view.transcripts.GRecordV
 import org.forome.annotation.processing.utils.OutUtils;
 import org.forome.annotation.service.source.SourceService;
 import org.forome.annotation.service.source.external.ExternalDataSource;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.HasVariant;
 import org.forome.annotation.struct.mcase.Cohort;
@@ -133,6 +134,7 @@ public class AnfisaConnector implements AutoCloseable {
 			AnfisaInput anfisaInput,
 			Variant variant
 	) {
+		Assembly assembly = anfisaInput.mCase.assembly;
 		JSONObject vepJson = (variant instanceof VariantVep) ? ((VariantVep) variant).getVepJson() : null;
 
 		Record record = new Record();
@@ -145,6 +147,8 @@ public class AnfisaConnector implements AutoCloseable {
 		AnfisaResultView view = new AnfisaResultView();
 
 		data.version = AppVersion.getVersionFormat();
+
+		Source source = sourceService.dataSource.getSource(assembly);
 
 		ExternalDataSource httpDataSource = (ExternalDataSource)sourceService.dataSource;
 		context.sourceAStorageHttp = httpDataSource.aStorageHttp.get(
@@ -202,7 +206,7 @@ public class AnfisaConnector implements AutoCloseable {
 			data.input = vepJson.getAsString("input");
 		}
 		data.transcriptConsequences = ((VariantVep) variant).getTranscriptConsequences();
-		data.id = context.getVariantIds();
+		data.id = context.getVariantIds(source);
 		data.strand = (vepJson.containsKey("strand")) ? vepJson.getAsNumber("strand").longValue() : null;
 		data.variantClass = variant.getVariantType();
 
@@ -233,7 +237,7 @@ public class AnfisaConnector implements AutoCloseable {
 		createDatabasesTab(record, data, view);
 		createPredictionsTab(context, variant, view);
 		createBioinformaticsTab(gtfAnfisaResult, context, filters, data, view);
-		createPharmacogenomicsTab(context, view, filters, variant);
+		createPharmacogenomicsTab(context, view, filters, variant, source);
 		countCohorts(view, filters, anfisaInput.mCase, variant);
 
 		return new AnfisaResult(filters, data, view, context);
@@ -1111,8 +1115,8 @@ public class AnfisaConnector implements AutoCloseable {
 		}
 	}
 
-	private void createPharmacogenomicsTab(AnfisaExecuteContext context, AnfisaResultView view, AnfisaResultFilters filters, Variant variant) {
-		List<String> variantIds = context.getVariantIds();
+	private void createPharmacogenomicsTab(AnfisaExecuteContext context, AnfisaResultView view, AnfisaResultFilters filters, Variant variant, Source source) {
+		List<String> variantIds = context.getVariantIds(source);
 		if (variantIds.isEmpty()) {
 			return;
 		}

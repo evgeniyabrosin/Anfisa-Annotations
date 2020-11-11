@@ -22,6 +22,7 @@ import net.minidev.json.JSONArray;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.forome.annotation.service.source.external.ExternalDataSource;
 import org.forome.annotation.service.source.external.conservation.ConservationHttpRequest;
+import org.forome.annotation.service.source.external.dbSNP.DbSNPHttpRequest;
 import org.forome.annotation.service.source.external.fasta.FastaHttpRequest;
 import org.forome.annotation.service.source.external.gnomad.GnomadHttpRequest;
 import org.forome.annotation.service.source.struct.Record;
@@ -31,6 +32,8 @@ import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;
 import org.forome.core.struct.Position;
 import org.forome.core.struct.sequence.Sequence;
+
+import java.net.URISyntaxException;
 
 public class ExternalSource implements Source {
 
@@ -60,7 +63,17 @@ public class ExternalSource implements Source {
 	@Override
 	public JSONArray getGnomad(Position position) {
 		GnomadHttpRequest gnomadHttpRequest = new GnomadHttpRequest(this);
-		return gnomadHttpRequest.get(assembly, position);
+		return gnomadHttpRequest.get(position);
+	}
+
+	@Override
+	public JSONArray getDbSNP(Interval interval) {
+		try {
+			DbSNPHttpRequest dbSNPHttpRequest = new DbSNPHttpRequest(this);
+			return dbSNPHttpRequest.get(interval);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

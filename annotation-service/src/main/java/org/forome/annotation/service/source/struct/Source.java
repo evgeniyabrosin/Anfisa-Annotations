@@ -33,4 +33,6 @@ public interface Source {
 	Conservation getConservation(Position position);
 
 	JSONArray getGnomad(Position position);
+
+	JSONArray getDbSNP(Interval interval);
 }
