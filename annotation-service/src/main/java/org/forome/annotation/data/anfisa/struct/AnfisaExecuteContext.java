@@ -63,9 +63,9 @@ public class AnfisaExecuteContext {
 		this.cache = new HashMap<>();
 	}
 
-	public List<String> getVariantIds() {
+	public List<String> getVariantIds(Source source) {
 		return (List<String>) cache.computeIfAbsent(CACHE_VARIANT_IDS, s -> {
-			return new DbSNPConnector().getIds(this, variant);
+			return new DbSNPConnector().getIds(source, variant);
 		});
 	}
 

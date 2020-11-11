@@ -21,7 +21,7 @@ package org.forome.annotation.data.dbsnp;
 import htsjdk.variant.variantcontext.VariantContext;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.vcf.VariantVCF;
 
@@ -33,13 +33,13 @@ import java.util.stream.Collectors;
 
 public class DbSNPConnector {
 
-	public List<String> getIds(AnfisaExecuteContext context, Variant variant) {
+	public List<String> getIds(Source source, Variant variant) {
 		String vcfVariantId = getVcfVariantId(variant);
 		if (vcfVariantId != null) {
 			return Collections.singletonList(vcfVariantId);
 		}
 
-		JSONArray jRecords = (JSONArray) context.sourceAStorageHttp.data.get("dbSNP");
+		JSONArray jRecords = source.getDbSNP(variant.getInterval());
 		if (jRecords == null) {
 			return Collections.emptyList();
 		}
