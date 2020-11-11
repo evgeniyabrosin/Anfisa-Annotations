@@ -21,7 +21,6 @@ package org.forome.annotation.service.source.external;
 import org.forome.annotation.config.source.SourceExternalConfig;
 import org.forome.annotation.config.sshtunnel.SshTunnelConfig;
 import org.forome.annotation.service.source.DataSource;
-import org.forome.annotation.service.source.external.astorage.AStorageHttp;
 import org.forome.annotation.service.source.external.httprequest.HttpRequest;
 import org.forome.annotation.service.source.external.source.ExternalSource;
 import org.forome.annotation.service.source.struct.Source;
@@ -37,7 +36,6 @@ public class ExternalDataSource implements DataSource {
 
 	public final URL url;
 	public final HttpRequest httpRequest;
-	public final AStorageHttp aStorageHttp;
 
 
 	public final LiftoverConnector liftoverConnector;
@@ -45,11 +43,6 @@ public class ExternalDataSource implements DataSource {
 	public ExternalDataSource(SourceExternalConfig sourceHttpConfig) {
 		this.url = buildUrl(sourceHttpConfig);
 		this.httpRequest = new HttpRequest(url);
-		try {
-			this.aStorageHttp = new AStorageHttp(httpRequest);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
 
 		try {
 			this.liftoverConnector = new LiftoverConnector();

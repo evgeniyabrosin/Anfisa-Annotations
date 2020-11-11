@@ -37,4 +37,6 @@ public interface Source {
 	JSONArray getDbSNP(Interval interval);
 
 	JSONArray getDbNSFP(Interval interval);
+
+	JSONArray getSpliceAI(Interval interval);
 }

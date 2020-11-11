@@ -20,12 +20,13 @@ package org.forome.annotation.data.spliceai.datasource.http;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import org.apache.http.nio.reactor.IOReactorException;
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.spliceai.datasource.SpliceAIDataSource;
 import org.forome.annotation.data.spliceai.struct.Row;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.utils.MathUtils;
 import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.forome.core.struct.Assembly;
@@ -46,20 +47,21 @@ public class SpliceAIDataSourceHttp implements SpliceAIDataSource {
 
 	public SpliceAIDataSourceHttp(
 			LiftoverConnector liftoverConnector
-	) throws IOReactorException {
+	) {
 		this.liftoverConnector = liftoverConnector;
 
 	}
 
 	@Override
-	public List<Row> getAll(AnfisaExecuteContext context, Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
+	public List<Row> getAll(Source source, AnfisaExecuteContext context, Assembly assembly, String chromosome, int position, String ref, Allele altAllele) {
+		Variant variant = context.variant;
+
 		Position pos38 = liftoverConnector.toHG38(assembly, new Position(Chromosome.of(chromosome), position));
 		if (pos38 == null) {
 			return Collections.emptyList();
 		}
 
-		JSONObject response = context.sourceAStorageHttp.data;
-		JSONArray jRecords = (JSONArray) response.get("SpliceAI");
+		JSONArray jRecords = source.getSpliceAI(variant.getInterval());
 		if (jRecords == null) {
 			return Collections.emptyList();
 		}

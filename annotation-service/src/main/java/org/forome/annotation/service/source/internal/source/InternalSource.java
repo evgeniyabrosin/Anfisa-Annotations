@@ -63,6 +63,11 @@ public class InternalSource implements Source {
 	}
 
 	@Override
+	public JSONArray getSpliceAI(Interval interval) {
+		return externalSource.getSpliceAI(interval);
+	}
+
+	@Override
 	public Conservation getConservation(Position position) {
 		return getRecord(position).getConservation();
 	}

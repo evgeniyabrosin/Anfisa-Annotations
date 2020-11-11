@@ -20,6 +20,7 @@ package org.forome.annotation.data.spliceai.datasource;
 
 import org.forome.annotation.data.anfisa.struct.AnfisaExecuteContext;
 import org.forome.annotation.data.spliceai.struct.Row;
+import org.forome.annotation.service.source.struct.Source;
 import org.forome.annotation.struct.Allele;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.core.struct.Assembly;
@@ -29,7 +30,7 @@ import java.util.List;
 
 public interface SpliceAIDataSource extends Closeable {
 
-	List<Row> getAll(AnfisaExecuteContext context, Assembly assembly, String chromosome, int position, String ref, Allele altAllele);
+	List<Row> getAll(Source source, AnfisaExecuteContext context, Assembly assembly, String chromosome, int position, String ref, Allele altAllele);
 
 	List<SourceMetadata> getSourceMetadata();
 
