@@ -321,6 +321,7 @@ public class AnnotationConsole {
 					e -> fail(e, finalVcfFile, arguments),
 					() -> {
 						log.debug("progress completed");
+						sourceService.dataSource.printStatistics();
 //						log.debug("aStorage: {}", anfisaConnector.aStorageHttp.getStatistics());
 //						log.debug("fasta ({}): {}", anfisaConnector.fastaSource.getClass().getSimpleName(), anfisaConnector.fastaSource.getStatistics());
 						log.debug("gtf: {}", anfisaConnector.gtfAnfisaBuilder.statisticGtfs.getStat());
