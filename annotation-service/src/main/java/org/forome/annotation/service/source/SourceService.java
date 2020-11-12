@@ -22,24 +22,28 @@ import com.infomaximum.database.exception.DatabaseException;
 import org.forome.annotation.config.source.SourceConfig;
 import org.forome.annotation.service.source.external.ExternalDataSource;
 import org.forome.annotation.service.source.internal.InternalDataSource;
+import org.forome.annotation.service.source.wrapper.WrapperDataSource;
 
 public class SourceService {
 
-	public final DataSource dataSource;
+	public final WrapperDataSource dataSource;
 
 	public SourceService(SourceConfig config) {
 
+		DataSource ds;
 		if (config.sourceInternalConfig != null) {
 			try {
-				dataSource = new InternalDataSource(config.sourceInternalConfig);
+				ds = new InternalDataSource(config.sourceInternalConfig);
 			} catch (DatabaseException e) {
 				throw new RuntimeException(e);
 			}
 		} else if (config.sourceExternalConfig != null) {
-			dataSource = new ExternalDataSource(config.sourceExternalConfig);
+			ds = new ExternalDataSource(config.sourceExternalConfig);
 		} else {
 			throw new RuntimeException();
 		}
+
+		dataSource = new WrapperDataSource(ds);
 	}
 
 }
