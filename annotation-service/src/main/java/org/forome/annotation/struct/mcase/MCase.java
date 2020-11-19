@@ -65,7 +65,7 @@ public class MCase {
 			for (Map.Entry<String, Sample> entry : samples.entrySet()) {
 				if (entry.getValue() == proband) continue;
 				if (entry.getValue().id.endsWith("a1")) {
-					throw new RuntimeException("Not valid samples, a1 does not first record");
+					throw new RuntimeException("Not valid samples, a1 is not first record");
 				}
 			}
 
