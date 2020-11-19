@@ -164,7 +164,7 @@ public class AnfisaConnector implements AutoCloseable {
 			data.zygosity = new HashMap<>();
 			for (Map.Entry<String, Sample> entry : anfisaInput.mCase.samples.entrySet()) {
 				String name = entry.getValue().name;
-				String label;
+				String label;//Есть завязка в коде анфисы на этот формат
 				if (entry.getKey().equals(probandId)) {
 					label = String.format("proband [%s]", name);
 				} else if (entry.getKey().equals(mother)) {
@@ -691,7 +691,7 @@ public class AnfisaConnector implements AutoCloseable {
 		if (commonInfo == null) return;
 
 		JSONObject q_all = new JSONObject();
-		q_all.put("title", "All");
+		q_all.put("title", "All");//Есть завязка в коде анфисы на этот формат
 		q_all.put("strand_odds_ratio", MathUtils.toDouble(commonInfo.getAttribute("SOR")));
 		q_all.put("mq", getVariantMQ(commonInfo));
 
@@ -715,13 +715,13 @@ public class AnfisaConnector implements AutoCloseable {
 			String s = sample.id;
 			JSONObject q_s = new JSONObject();
 			if (s.equals(probandId)) {
-				q_s.put("title", String.format("Proband: %s", sample.name));
+				q_s.put("title", String.format("Proband: %s", sample.name));//Есть завязка в коде анфисы на этот формат
 			} else if (s.equals(mother)) {
-				q_s.put("title", String.format("Mother: %s", sample.name));
+				q_s.put("title", String.format("Mother: %s", sample.name));//Есть завязка в коде анфисы на этот формат
 			} else if (s.equals(father)) {
-				q_s.put("title", String.format("Father: %s", sample.name));
+				q_s.put("title", String.format("Father: %s", sample.name));//Есть завязка в коде анфисы на этот формат
 			} else {
-				q_s.put("title", sample.name);
+				q_s.put("title", sample.name);//Есть завязка в коде анфисы на этот формат
 			}
 
 			Genotype oGenotype = variantContext.getGenotype(sample.id);

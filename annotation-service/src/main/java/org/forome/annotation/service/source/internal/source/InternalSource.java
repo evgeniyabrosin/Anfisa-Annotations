@@ -20,15 +20,20 @@ package org.forome.annotation.service.source.internal.source;
 
 import net.minidev.json.JSONArray;
 import org.forome.annotation.service.source.external.source.ExternalSource;
+import org.forome.annotation.service.source.internal.common.CommonSourcePortPython;
 import org.forome.annotation.service.source.internal.fasta.FastaSourcePortPython;
 import org.forome.annotation.service.source.struct.Record;
 import org.forome.annotation.service.source.struct.Source;
 import org.forome.astorage.core.data.Conservation;
+import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.forome.astorage.pastorage.PAStorage;
+import org.forome.astorage.pastorage.schema.SchemaCommon;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Interval;
 import org.forome.core.struct.Position;
 import org.forome.core.struct.sequence.Sequence;
+
+import java.io.IOException;
 
 public class InternalSource implements Source {
 
@@ -37,12 +42,21 @@ public class InternalSource implements Source {
 	private final PAStorage paStorage;
 	private final org.forome.astorage.core.source.Source source;
 
+	public final LiftoverConnector liftoverConnector;
+
 	public final ExternalSource externalSource;
 
 	public InternalSource(Assembly assembly, PAStorage paStorage, org.forome.astorage.core.source.Source source, ExternalSource externalSource) {
 		this.assembly = assembly;
 		this.paStorage = paStorage;
 		this.source = source;
+
+		try {
+			this.liftoverConnector = new LiftoverConnector();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
 		this.externalSource = externalSource;
 	}
 
@@ -64,7 +78,9 @@ public class InternalSource implements Source {
 
 	@Override
 	public JSONArray getDbSNP(Interval interval) {
-		return externalSource.getDbSNP(interval);
+		Interval interval38 = liftoverConnector.toHG38(assembly, interval);
+		CommonSourcePortPython сommonSourcePortPython = new CommonSourcePortPython(paStorage);
+		return сommonSourcePortPython.get(SchemaCommon.SCHEMA_DBSNP_NAME, Assembly.GRCh38, interval38);
 	}
 
 	@Override
