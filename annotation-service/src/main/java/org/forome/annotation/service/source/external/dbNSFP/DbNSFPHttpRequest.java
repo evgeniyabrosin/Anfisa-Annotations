@@ -32,6 +32,9 @@ import org.forome.core.struct.Interval;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * curl -d '{"variants":[{"chrom":"chr1","pos":16044572}], "fasta":"hg38", "arrays":["dbNSFP"]}' -H "Content-Type: application/json" -X POST "localhost:8290/collect"
+ */
 public class DbNSFPHttpRequest {
 
 	private final ExternalSource httpSource;

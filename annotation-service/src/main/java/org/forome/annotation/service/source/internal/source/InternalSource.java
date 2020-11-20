@@ -79,13 +79,21 @@ public class InternalSource implements Source {
 	@Override
 	public JSONArray getDbSNP(Interval interval) {
 		Interval interval38 = liftoverConnector.toHG38(assembly, interval);
+		if (interval38 == null) {
+			return new JSONArray();
+		}
 		CommonSourcePortPython сommonSourcePortPython = new CommonSourcePortPython(paStorage);
 		return сommonSourcePortPython.get(SchemaCommon.SCHEMA_DBSNP_NAME, Assembly.GRCh38, interval38);
 	}
 
 	@Override
 	public JSONArray getDbNSFP(Interval interval) {
-		return externalSource.getDbNSFP(interval);
+		Interval interval38 = liftoverConnector.toHG38(assembly, interval);
+		if (interval38 == null) {
+			return new JSONArray();
+		}
+		CommonSourcePortPython сommonSourcePortPython = new CommonSourcePortPython(paStorage);
+		return сommonSourcePortPython.get(SchemaCommon.SCHEMA_DBNSFP_NAME, Assembly.GRCh38, interval38);
 	}
 
 	@Override
