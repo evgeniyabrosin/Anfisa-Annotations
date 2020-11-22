@@ -29,6 +29,7 @@ import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.forome.astorage.pastorage.PAStorage;
 import org.forome.astorage.pastorage.schema.SchemaCommon;
 import org.forome.core.struct.Assembly;
+import org.forome.core.struct.Chromosome;
 import org.forome.core.struct.Interval;
 import org.forome.core.struct.Position;
 import org.forome.core.struct.sequence.Sequence;
@@ -58,6 +59,13 @@ public class InternalSource implements Source {
 		}
 
 		this.externalSource = externalSource;
+
+//		if (assembly == Assembly.GRCh37) {
+//			getGnomad(new Position(Chromosome.CHR_18, 67760501));
+//		}
+		if (assembly == Assembly.GRCh37) {
+			getGnomad(new Position(Chromosome.CHR_12, 885081));
+		}
 	}
 
 	@Override
@@ -73,7 +81,13 @@ public class InternalSource implements Source {
 
 	@Override
 	public JSONArray getGnomad(Position pos37) {
-		return externalSource.getGnomad(pos37);
+		//TODO Ulitin V. В этот метод приходят сразу hg37 координаты, хотя они должны конвертироваться тут
+		//		Position position37 = liftoverConnector.toHG37(assembly, position);
+//		if (position37 == null) {
+//			return new JSONArray();
+//		}
+		CommonSourcePortPython сommonSourcePortPython = new CommonSourcePortPython(paStorage);
+		return сommonSourcePortPython.get(SchemaCommon.SCHEMA_GNOMAD_NAME, Assembly.GRCh37, Interval.of(pos37));
 	}
 
 	@Override
@@ -103,6 +117,33 @@ public class InternalSource implements Source {
 
 	@Override
 	public Conservation getConservation(Position position) {
+//		Position position37 = liftoverConnector.toHG37(assembly, position);
+//		if (position37 == null) {
+//			return new Conservation(null, null);
+//		}
+//
+//		CommonSourcePortPython сommonSourcePortPython = new CommonSourcePortPython(paStorage);
+//		JSONArray results = сommonSourcePortPython.get(SchemaCommon.SCHEMA_GERP_NAME, Assembly.GRCh37, Interval.of(position37));
+//
+//		if (results.isEmpty()) {
+//			return new Conservation(null, null);
+//		} else if (results.size()>1) {
+//			throw new RuntimeException();
+//		} else {
+//			JSONObject result = new JSONObject();
+//			result = (JSONObject) result.get(0);
+//
+//			JSONObject jGerp = (JSONObject) result.get("Gerp");
+//			if (jGerp == null) {
+//				return new Conservation(null, null);
+//			} else {
+//				Float gerpRS = ConservationHttpRequest.toFloat(jGerp.getAsNumber("GerpRS"));
+//				Float gerpN = ConservationHttpRequest.toFloat(jGerp.getAsNumber("GerpN"));
+//
+//				return new Conservation(gerpRS, gerpN);
+//			}
+//		}
+
 		return externalSource.getConservation(position);
 	}
 }
