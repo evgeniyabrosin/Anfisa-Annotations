@@ -67,7 +67,7 @@ public class ConservationHttpRequest {
 		}
 	}
 
-	private static Float toFloat(Number number) {
+	public static Float toFloat(Number number) {
 		if (number == null) {
 			return null;
 		} else {
