@@ -62,7 +62,7 @@ public class SpliceAIDataSourceHttp implements SpliceAIDataSource {
 		}
 
 		JSONArray jRecords = source.getSpliceAI(variant.getInterval());
-		if (jRecords == null) {
+		if (jRecords == null || jRecords.isEmpty()) {
 			return Collections.emptyList();
 		}
 
