@@ -106,7 +106,21 @@ public class InternalSource implements Source {
 
 	@Override
 	public JSONArray getSpliceAI(Interval interval) {
-		return externalSource.getSpliceAI(interval);
+		Interval interval38 = liftoverConnector.toHG38(assembly, interval);
+		if (interval38 == null) {
+			return new JSONArray();
+		}
+		CommonSourcePortPython сommonSourcePortPython = new CommonSourcePortPython(paStorage);
+		JSONArray sources = сommonSourcePortPython.get(SchemaCommon.SCHEMA_SPLICEAI_NAME, Assembly.GRCh38, interval38);
+
+		JSONArray result = new JSONArray();
+		for (Object o : sources) {
+			JSONArray item = (JSONArray) o;
+			if (item == null) continue;
+
+			result.addAll(item);
+		}
+		return result;
 	}
 
 	@Override

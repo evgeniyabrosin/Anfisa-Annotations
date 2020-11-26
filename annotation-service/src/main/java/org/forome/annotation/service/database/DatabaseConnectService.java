@@ -113,11 +113,11 @@ public class DatabaseConnectService implements AutoCloseable {
 			pooledDataSource.setDriverClass(driverName);
 			pooledDataSource.setJdbcUrl(jdbcUrl.toString());
 			pooledDataSource.setMinPoolSize(1);
-			pooledDataSource.setAcquireIncrement(1);
-			pooledDataSource.setMaxPoolSize(20);
+			pooledDataSource.setAcquireIncrement(10);
+			pooledDataSource.setMaxPoolSize(40);
 			pooledDataSource.setCheckoutTimeout((int) Duration.ofMinutes(1).toMillis());
 			pooledDataSource.setTestConnectionOnCheckin(false);
-			pooledDataSource.setTestConnectionOnCheckout(true);
+			pooledDataSource.setTestConnectionOnCheckout(false);
 
 			log.debug("Database connected by: {}", databaseConfigConnector.mysqlHost);
 
