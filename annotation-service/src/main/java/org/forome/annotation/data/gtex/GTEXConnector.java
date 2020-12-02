@@ -20,6 +20,7 @@ package org.forome.annotation.data.gtex;
 
 import org.forome.annotation.data.gtex.struct.Tissue;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.utils.Statistics;
 
 import java.util.List;
 
@@ -28,4 +29,6 @@ public interface GTEXConnector {
 	List<SourceMetadata> getSourceMetadata();
 
 	List<Tissue> getTissues(String gene);
+
+	Statistics getStatistics();
 }

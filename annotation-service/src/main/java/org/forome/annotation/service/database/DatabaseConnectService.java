@@ -103,8 +103,7 @@ public class DatabaseConnectService implements AutoCloseable {
 			}
 			jdbcUrl.append(mysqlUrlPort).append('/').append(databaseConfigConnector.mysqlDatabase)
 					.append("?user=").append(databaseConfigConnector.mysqlUser)
-					.append("&password=").append(databaseConfigConnector.mysqlPassword)
-					.append("&useSSL=false");
+					.append("&password=").append(databaseConfigConnector.mysqlPassword);
 
 			String driverName = "com.mysql.jdbc.Driver";
 			Class.forName(driverName).newInstance();

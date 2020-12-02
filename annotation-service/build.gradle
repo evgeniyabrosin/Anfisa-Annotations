@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.forome'
-version '0.6.1.140'
+version '0.6.1.141'
 
 sourceCompatibility = 1.8
 
@@ -110,7 +110,7 @@ dependencies {
 
     compile 'org.rocksdb:rocksdbjni:6.6.4'
 
-    compile 'mysql:mysql-connector-java:5.1.47'
+    compile 'mysql:mysql-connector-java:8.0.22'
     compile 'com.mchange:c3p0:0.9.5.2'
 
     compile 'org.apache.httpcomponents:httpasyncclient:4.1.4'

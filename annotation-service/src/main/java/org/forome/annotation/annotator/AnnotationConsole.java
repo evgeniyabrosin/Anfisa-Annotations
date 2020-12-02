@@ -322,10 +322,13 @@ public class AnnotationConsole {
 					() -> {
 						log.debug("progress completed");
 						sourceService.dataSource.printStatistics();
-//						log.debug("aStorage: {}", anfisaConnector.aStorageHttp.getStatistics());
-//						log.debug("fasta ({}): {}", anfisaConnector.fastaSource.getClass().getSimpleName(), anfisaConnector.fastaSource.getStatistics());
 						log.debug("gtf: {}", anfisaConnector.gtfAnfisaBuilder.statisticGtfs.getStat());
 						log.debug("gtf cds: {}", ((GTFConnectorImpl) anfisaConnector.gtfConnector).statisticCds.getStat());
+						log.debug("clinvar submitters: {}", anfisaConnector.clinvarConnector.getStatisticClinvarSubmitters().getStat());
+						log.debug("clinvar data: {}", anfisaConnector.clinvarConnector.getStatisticClinvarData().getStat());
+						log.debug("clinvar expanded data: {}", anfisaConnector.clinvarConnector.getStatisticClinvarExpandedData().getStat());
+						log.debug("clinvar variant summary: {}", anfisaConnector.clinvarConnector.getStatisticClinvarVariantSummary().getStat());
+						log.debug("gtex: {}", anfisaConnector.gtexConnector.getStatistics().getStat());
 						log.debug("anfisa: {}", processing.anfisaStatistics.getStat());
 						log.debug("graphql: {}", processing.graphqlStatistics.getStat());
 						processing.statisticsInstrumentation.statistics.entrySet().stream()
