@@ -27,6 +27,7 @@ import org.forome.annotation.data.gtex.struct.Tissue;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.utils.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,8 @@ public class GTEXConnectorMysql implements GTEXConnector, AutoCloseable {
 	private final Map<Integer, String> tissueTypes;
 
 	private final Cache<String, List<Tissue>> cacheTissues;
+
+	public final Statistics statistic = new Statistics();
 
 	public GTEXConnectorMysql(
 			DatabaseConnectService databaseConnectService,
@@ -80,37 +83,47 @@ public class GTEXConnectorMysql implements GTEXConnector, AutoCloseable {
 		}
 	}
 
+	@Override
+	public Statistics getStatistics() {
+		return statistic;
+	}
+
 	private List<Tissue> loadTissues(String gene) {
-		String sql = String.format(
-				"select TissueNo, Expression, RelExp from %s.GTexGENE2TISSUE where GeneName = (select GeneName from %s.GTexGENE where Description='%s')",
-				databaseConnector.getDatabase(),
-				databaseConnector.getDatabase(),
-				gene
-		);
-		List<Tissue> tissues = new ArrayList<>();
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(sql)) {
-					while (resultSet.next()) {
-						String tissueName = tissueTypes.get(resultSet.getInt("TissueNo"));
-						Tissue tissue = new Tissue(
-								tissueName,
-								resultSet.getFloat("Expression"),
-								resultSet.getFloat("RelExp")
-						);
-						tissues.add(tissue);
+		long t1 = System.currentTimeMillis();
+		try {
+			String sql = String.format(
+					"select TissueNo, Expression, RelExp from %s.GTexGENE2TISSUE where GeneName = (select GeneName from %s.GTexGENE where Description='%s')",
+					databaseConnector.getDatabase(),
+					databaseConnector.getDatabase(),
+					gene
+			);
+			List<Tissue> tissues = new ArrayList<>();
+			try (Connection connection = databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					try (ResultSet resultSet = statement.executeQuery(sql)) {
+						while (resultSet.next()) {
+							String tissueName = tissueTypes.get(resultSet.getInt("TissueNo"));
+							Tissue tissue = new Tissue(
+									tissueName,
+									resultSet.getFloat("Expression"),
+									resultSet.getFloat("RelExp")
+							);
+							tissues.add(tissue);
+						}
 					}
 				}
+			} catch (SQLException ex) {
+				log.debug("Ошибка в логике. необходимо врочно исправить", ex);
+				//TODO Ulitin V. временное решение. после исправление базы gtex - вернуть кидание ошибки
+				return Collections.singletonList(
+						new Tissue("ERROR", 0, 0)
+				);
+				//throw ExceptionBuilder.buildExternalDatabaseException(ex, "sql: " + sql);
 			}
-		} catch (SQLException ex) {
-			log.debug("Ошибка в логике. необходимо врочно исправить", ex);
-			//TODO Ulitin V. временное решение. после исправление базы gtex - вернуть кидание ошибки
-			return Collections.singletonList(
-					new Tissue("ERROR", 0, 0)
-			);
-			//throw ExceptionBuilder.buildExternalDatabaseException(ex, "sql: " + sql);
+			return tissues;
+		} finally {
+			statistic.addTime(System.currentTimeMillis() - t1);
 		}
-		return tissues;
 	}
 
 

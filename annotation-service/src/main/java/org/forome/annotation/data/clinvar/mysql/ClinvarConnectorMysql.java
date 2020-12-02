@@ -29,6 +29,7 @@ import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.SourceMetadata;
 import org.forome.annotation.struct.variant.Variant;
 import org.forome.annotation.struct.variant.VariantType;
+import org.forome.annotation.utils.Statistics;
 import org.forome.astorage.core.liftover.LiftoverConnector;
 import org.forome.core.struct.Assembly;
 import org.forome.core.struct.Chromosome;
@@ -81,6 +82,11 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 	private final LiftoverConnector liftoverConnector;
 	private final DatabaseConnector databaseConnector;
 
+	public final Statistics statisticClinvarSubmitters = new Statistics();
+	public final Statistics statisticClinvarData = new Statistics();
+	public final Statistics statisticClinvarExpandedData = new Statistics();
+	public final Statistics statisticClinvarVariantSummary = new Statistics();
+
 	public ClinvarConnectorMysql(DatabaseConnectService databaseConnectService, LiftoverConnector liftoverConnector, ForomeConfigConnector foromeConfigConnector) {
 		this.liftoverConnector = liftoverConnector;
 		this.databaseConnector = new DatabaseConnector(databaseConnectService, foromeConfigConnector);
@@ -93,30 +99,35 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 	}
 
 	private ClinvarResult getSubmitters(Row row) {
-		String[] rcvAccessions = row.rcvAccession.split(";");
-		String args = String.join(",", Stream.of(rcvAccessions).map(s -> "'" + s + "'").collect(Collectors.toList()));
+		long t1 = System.currentTimeMillis();
+		try {
+			String[] rcvAccessions = row.rcvAccession.split(";");
+			String args = String.join(",", Stream.of(rcvAccessions).map(s -> "'" + s + "'").collect(Collectors.toList()));
 
-		Map<String, String> submitters = new HashMap<>();
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(String.format(SUBMITTER_QUERY, args))) {
-					while (resultSet.next()) {
-						submitters.put(resultSet.getString(1), resultSet.getString(2));
+			Map<String, String> submitters = new HashMap<>();
+			try (Connection connection = databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					try (ResultSet resultSet = statement.executeQuery(String.format(SUBMITTER_QUERY, args))) {
+						while (resultSet.next()) {
+							submitters.put(resultSet.getString(1), resultSet.getString(2));
+						}
 					}
 				}
+			} catch (SQLException ex) {
+				throw ExceptionBuilder.buildExternalDatabaseException(ex);
 			}
-		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
-		}
 
-		return new ClinvarResult(
-				row.start, row.end,
-				row.referenceAllele, row.alternateAllele,
-				row.variationID, row.clinicalSignificance,
-				row.phenotypeIDs, row.otherIDs,
-				row.phenotypeList,
-				submitters
-		);
+			return new ClinvarResult(
+					row.start, row.end,
+					row.referenceAllele, row.alternateAllele,
+					row.variationID, row.clinicalSignificance,
+					row.phenotypeIDs, row.otherIDs,
+					row.phenotypeList,
+					submitters
+			);
+		} finally {
+			statisticClinvarSubmitters.addTime(System.currentTimeMillis() - t1);
+		}
 	}
 
 	private List<ClinvarResult> addSubmittersToRows(List<Row> rows) {
@@ -129,75 +140,86 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 
 	@Override
 	public List<ClinvarResult> getExpandedData(Assembly assembly, Variant variant) {
-		Position pStart = liftoverConnector.toHG37(assembly,
-				new Position(variant.chromosome, variant.getStart())
-		);
-		if (pStart == null) {
-			return Collections.emptyList();
-		}
+		long t1 = System.currentTimeMillis();
+		try {
+			Position pStart = liftoverConnector.toHG37(assembly,
+					new Position(variant.chromosome, variant.getStart())
+			);
+			if (pStart == null) {
+				return Collections.emptyList();
+			}
 
-		List<Row> rows = new ArrayList<>();
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(String.format(
-						QUERY_BASE, variant.chromosome.getChar(), pStart.value
-				))) {
-					while (resultSet.next()) {
-						Row row = _build(resultSet);
-						//TODO Ulitin V. Необходим комплексный подход - сейчас проверяем только на SNV //и Deletion
-						if (variant.getVariantType() != VariantType.INDEL && variant.getVariantType() != VariantType.SEQUENCE_ALTERATION) {
-							if (CLINVAR_TYPE_SNV.equals(row.type) && variant.getVariantType() != VariantType.SNV) {
-								continue;
-							}
+			List<Row> rows = new ArrayList<>();
+			try (Connection connection = databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					try (ResultSet resultSet = statement.executeQuery(String.format(
+							QUERY_BASE, variant.chromosome.getChar(), pStart.value
+					))) {
+						while (resultSet.next()) {
+							Row row = _build(resultSet);
+							//TODO Ulitin V. Необходим комплексный подход - сейчас проверяем только на SNV //и Deletion
+							if (variant.getVariantType() != VariantType.INDEL && variant.getVariantType() != VariantType.SEQUENCE_ALTERATION) {
+								if (CLINVAR_TYPE_SNV.equals(row.type) && variant.getVariantType() != VariantType.SNV) {
+									continue;
+								}
 //						else if (CLINVAR_TYPE_DELETION.equals(row.type) && variant.getVariantType() != VariantType.DEL) {
 //							continue;
 //						}
 
-						}
+							}
 
-						rows.add(row);
+							rows.add(row);
+						}
 					}
 				}
+			} catch (SQLException ex) {
+				throw ExceptionBuilder.buildExternalDatabaseException(ex);
 			}
-		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+			return addSubmittersToRows(rows);
+		} finally {
+			statisticClinvarExpandedData.addTime(System.currentTimeMillis() - t1);
 		}
-		return addSubmittersToRows(rows);
 	}
 
 	@Override
 	public List<ClinvarResult> getData(Assembly assembly, String chromosome, long qStart, long qEnd, String alt) {
-		Position pStart = liftoverConnector.toHG37(assembly,
-				new Position(Chromosome.of(chromosome), (int)qStart)
-		);
-		Position pEnd = liftoverConnector.toHG37(assembly,
-				new Position(Chromosome.of(chromosome), (int)qEnd)
-		);
-		if (pStart == null || pEnd == null) {
-			return Collections.emptyList();
-		}
+		long t1 = System.currentTimeMillis();
+		try {
 
-		List<Row> rows = new ArrayList<>();
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_EXACT, chromosome, pStart.value, pEnd.value, alt))) {
-					while (resultSet.next()) {
-						rows.add(_build(resultSet));
-					}
-				}
+			Position pStart = liftoverConnector.toHG37(assembly,
+					new Position(Chromosome.of(chromosome), (int) qStart)
+			);
+			Position pEnd = liftoverConnector.toHG37(assembly,
+					new Position(Chromosome.of(chromosome), (int) qEnd)
+			);
+			if (pStart == null || pEnd == null) {
+				return Collections.emptyList();
+			}
 
-				if (rows.isEmpty()) {
-					try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_NA, chromosome, pStart.value, pEnd.value))) {
+			List<Row> rows = new ArrayList<>();
+			try (Connection connection = databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_EXACT, chromosome, pStart.value, pEnd.value, alt))) {
 						while (resultSet.next()) {
 							rows.add(_build(resultSet));
 						}
 					}
+
+					if (rows.isEmpty()) {
+						try (ResultSet resultSet = statement.executeQuery(String.format(QUERY_NA, chromosome, pStart.value, pEnd.value))) {
+							while (resultSet.next()) {
+								rows.add(_build(resultSet));
+							}
+						}
+					}
 				}
+			} catch (SQLException ex) {
+				throw ExceptionBuilder.buildExternalDatabaseException(ex);
 			}
-		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+			return addSubmittersToRows(rows);
+		} finally {
+			statisticClinvarData.addTime(System.currentTimeMillis() - t1);
 		}
-		return addSubmittersToRows(rows);
 	}
 
 	private static Row _build(ResultSet resultSet) throws SQLException {
@@ -224,50 +246,77 @@ public class ClinvarConnectorMysql implements ClinvarConnector, AutoCloseable {
 
 	@Override
 	public ClinvarVariantSummary getDataVariantSummary(Assembly assembly, Chromosome chromosome, long start, long end) {
-		Position pStart = liftoverConnector.toHG37(assembly,
-				new Position(chromosome, (int)start)
-		);
-		Position pEnd = liftoverConnector.toHG37(assembly,
-				new Position(chromosome, (int)end)
-		);
-		if (pStart == null || pEnd == null) {
-			return null;
-		}
+		long t1 = System.currentTimeMillis();
+		try {
 
-		String sql = String.format(QUERY_VARIANT_SUMMARY, chromosome.getChar(), pStart.value, pEnd.value);
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(sql)) {
+			Position pStart = liftoverConnector.toHG37(assembly,
+					new Position(chromosome, (int) start)
+			);
+			Position pEnd = liftoverConnector.toHG37(assembly,
+					new Position(chromosome, (int) end)
+			);
+			if (pStart == null || pEnd == null) {
+				return null;
+			}
 
-					List<ClinvarVariantSummary> results = new ArrayList<>();
-					while (resultSet.next()) {
-						String reviewStatus = resultSet.getString("ReviewStatus");
-						Integer numberSubmitters = resultSet.getInt("NumberSubmitters");
-						String guidelines = resultSet.getString("Guidelines");
+			String sql = String.format(QUERY_VARIANT_SUMMARY, chromosome.getChar(), pStart.value, pEnd.value);
+			try (Connection connection = databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					try (ResultSet resultSet = statement.executeQuery(sql)) {
 
-						results.add(new ClinvarVariantSummary(reviewStatus, numberSubmitters, guidelines));
-					}
+						List<ClinvarVariantSummary> results = new ArrayList<>();
+						while (resultSet.next()) {
+							String reviewStatus = resultSet.getString("ReviewStatus");
+							Integer numberSubmitters = resultSet.getInt("NumberSubmitters");
+							String guidelines = resultSet.getString("Guidelines");
 
-					if (results.isEmpty()) {
-						return null;
-					} else if (results.size() == 1) {
-						return results.get(0);
-					} else {
-						//TODO Пока не найденно решение пытаемся найти "лучше", исходим: что лучше добавить неправильную, чем пропустить правильную.
-						results.sort((o1, o2) -> {
-							int i1 = (o1.reviewStatus.conflicts == null) ? 0 : (o1.reviewStatus.conflicts) ? 1 : 2;
-							int i2 = (o2.reviewStatus.conflicts == null) ? 0 : (o2.reviewStatus.conflicts) ? 1 : 2;
-							return i2 - i1;
-						});
-						ClinvarVariantSummary result = results.get(0);
-						log.warn("WARNING!!! Many record({}), sql: {}, select: {}", results.size(), sql, result.reviewStatus.text);
-						return result;
+							results.add(new ClinvarVariantSummary(reviewStatus, numberSubmitters, guidelines));
+						}
+
+						if (results.isEmpty()) {
+							return null;
+						} else if (results.size() == 1) {
+							return results.get(0);
+						} else {
+							//TODO Пока не найденно решение пытаемся найти "лучше", исходим: что лучше добавить неправильную, чем пропустить правильную.
+							results.sort((o1, o2) -> {
+								int i1 = (o1.reviewStatus.conflicts == null) ? 0 : (o1.reviewStatus.conflicts) ? 1 : 2;
+								int i2 = (o2.reviewStatus.conflicts == null) ? 0 : (o2.reviewStatus.conflicts) ? 1 : 2;
+								return i2 - i1;
+							});
+							ClinvarVariantSummary result = results.get(0);
+							log.warn("WARNING!!! Many record({}), sql: {}, select: {}", results.size(), sql, result.reviewStatus.text);
+							return result;
+						}
 					}
 				}
+			} catch (SQLException ex) {
+				throw ExceptionBuilder.buildExternalDatabaseException(ex, "query: " + sql);
 			}
-		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex, "query: " + sql);
+
+		} finally {
+			statisticClinvarVariantSummary.addTime(System.currentTimeMillis() - t1);
 		}
+	}
+
+	@Override
+	public Statistics getStatisticClinvarSubmitters() {
+		return statisticClinvarSubmitters;
+	}
+
+	@Override
+	public Statistics getStatisticClinvarData() {
+		return statisticClinvarData;
+	}
+
+	@Override
+	public Statistics getStatisticClinvarExpandedData() {
+		return statisticClinvarExpandedData;
+	}
+
+	@Override
+	public Statistics getStatisticClinvarVariantSummary() {
+		return statisticClinvarVariantSummary;
 	}
 
 	@Override
