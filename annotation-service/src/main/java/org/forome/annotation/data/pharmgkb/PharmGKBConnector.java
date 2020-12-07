@@ -20,6 +20,7 @@ package org.forome.annotation.data.pharmgkb;
 
 import org.forome.annotation.data.anfisa.struct.AnfisaResultView;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.utils.Statistics;
 
 import java.util.List;
 
@@ -34,6 +35,14 @@ public interface PharmGKBConnector extends AutoCloseable {
 	List<AnfisaResultView.Pharmacogenomics.Item> getDiseases(String variantId);
 
 	List<AnfisaResultView.Pharmacogenomics.Item> getChemicals(String variantId);
+
+	Statistics getStatisticNotes();
+
+	Statistics getStatisticPmids();
+
+	Statistics getStatisticDiseases();
+
+	Statistics getStatisticChemicals();
 
 	void close();
 
