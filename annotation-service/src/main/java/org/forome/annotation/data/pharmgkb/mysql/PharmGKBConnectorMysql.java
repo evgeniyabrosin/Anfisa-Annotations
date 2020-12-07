@@ -25,6 +25,7 @@ import org.forome.annotation.data.pharmgkb.PharmGKBConnector;
 import org.forome.annotation.exception.ExceptionBuilder;
 import org.forome.annotation.service.database.DatabaseConnectService;
 import org.forome.annotation.struct.SourceMetadata;
+import org.forome.annotation.utils.Statistics;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -38,6 +39,11 @@ public class PharmGKBConnectorMysql implements PharmGKBConnector, AutoCloseable 
 
 	private final DatabaseConnector databaseConnector;
 
+	public final Statistics statisticNotes = new Statistics();
+	public final Statistics statisticPmids = new Statistics();
+	public final Statistics statisticDiseases = new Statistics();
+	public final Statistics statisticChemicals = new Statistics();
+
 	public PharmGKBConnectorMysql(
 			DatabaseConnectService databaseConnectService,
 			ForomeConfigConnector foromeConfigConnector
@@ -46,129 +52,169 @@ public class PharmGKBConnectorMysql implements PharmGKBConnector, AutoCloseable 
 	}
 
 	@Override
-	public List<SourceMetadata> getSourceMetadata(){
+	public List<SourceMetadata> getSourceMetadata() {
 		return Collections.emptyList();
 //		return databaseConnector.getSourceMetadata();
 	}
 
 	@Override
 	public List<AnfisaResultView.Pharmacogenomics.Item> getNotes(String variantId) {
-		String sql = String.format(
-				"select AssocKind, Note from %s.PharmNOTES where Variant = '%s'",
-				databaseConnector.getDatabase(),
-				variantId
-		);
+		long t1 = System.currentTimeMillis();
+		try {
+			String sql = String.format(
+					"select AssocKind, Note from %s.PharmNOTES where Variant = '%s'",
+					databaseConnector.getDatabase(),
+					variantId
+			);
 
-		List<AnfisaResultView.Pharmacogenomics.Item> items = new ArrayList<>();
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(sql)) {
-					while (resultSet.next()) {
-						AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
-								resultSet.getString("AssocKind"),
-								resultSet.getString("Note")
-						);
-						items.add(item);
+			List<AnfisaResultView.Pharmacogenomics.Item> items = new ArrayList<>();
+			try (Connection connection = databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					try (ResultSet resultSet = statement.executeQuery(sql)) {
+						while (resultSet.next()) {
+							AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
+									resultSet.getString("AssocKind"),
+									resultSet.getString("Note")
+							);
+							items.add(item);
+						}
 					}
 				}
+			} catch (SQLException ex) {
+				throw ExceptionBuilder.buildExternalDatabaseException(ex);
 			}
-		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+			return items;
+		} finally {
+			statisticNotes.addTime(System.currentTimeMillis() - t1);
 		}
-		return items;
 	}
 
 	@Override
 	public List<AnfisaResultView.Pharmacogenomics.Item> getPmids(String variantId) {
-		String sql = String.format(
-				"select AssocKind, PMID from %s.PharmPMIDS where Variant = '%s'",
-				databaseConnector.getDatabase(),
-				variantId
-		);
+		long t1 = System.currentTimeMillis();
+		try {
+			String sql = String.format(
+					"select AssocKind, PMID from %s.PharmPMIDS where Variant = '%s'",
+					databaseConnector.getDatabase(),
+					variantId
+			);
 
-		List<AnfisaResultView.Pharmacogenomics.Item> items = new ArrayList<>();
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(sql)) {
-					while (resultSet.next()) {
-						AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
-								resultSet.getString("AssocKind"),
-								resultSet.getString("PMID")
-						);
-						items.add(item);
+			List<AnfisaResultView.Pharmacogenomics.Item> items = new ArrayList<>();
+			try (Connection connection = databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					try (ResultSet resultSet = statement.executeQuery(sql)) {
+						while (resultSet.next()) {
+							AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
+									resultSet.getString("AssocKind"),
+									resultSet.getString("PMID")
+							);
+							items.add(item);
+						}
 					}
 				}
+			} catch (SQLException ex) {
+				throw ExceptionBuilder.buildExternalDatabaseException(ex);
 			}
-		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+			return items;
+		} finally {
+			statisticPmids.addTime(System.currentTimeMillis() - t1);
 		}
-		return items;
 	}
 
 	@Override
 	public List<AnfisaResultView.Pharmacogenomics.Item> getDiseases(String variantId) {
-		String sql = String.format(
-				"select AssocKind, DisTitle from %s.PharmDISEASES where Variant = '%s'",
-				databaseConnector.getDatabase(),
-				variantId
-		);
+		long t1 = System.currentTimeMillis();
+		try {
+			String sql = String.format(
+					"select AssocKind, DisTitle from %s.PharmDISEASES where Variant = '%s'",
+					databaseConnector.getDatabase(),
+					variantId
+			);
 
-		List<AnfisaResultView.Pharmacogenomics.Item> items = new ArrayList<>();
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(sql)) {
-					while (resultSet.next()) {
-						String association = resultSet.getString("AssocKind");
-						String values = resultSet.getString("DisTitle");
-						for (String value: values.split(";")) {//Режем по символу ';'
-							String tValue = value.trim();
-							if (tValue.isEmpty()) continue;
+			List<AnfisaResultView.Pharmacogenomics.Item> items = new ArrayList<>();
+			try (Connection connection = databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					try (ResultSet resultSet = statement.executeQuery(sql)) {
+						while (resultSet.next()) {
+							String association = resultSet.getString("AssocKind");
+							String values = resultSet.getString("DisTitle");
+							for (String value : values.split(";")) {//Режем по символу ';'
+								String tValue = value.trim();
+								if (tValue.isEmpty()) continue;
 
-							AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
-									association, tValue
-							);
-							items.add(item);
+								AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
+										association, tValue
+								);
+								items.add(item);
+							}
 						}
 					}
 				}
+			} catch (SQLException ex) {
+				throw ExceptionBuilder.buildExternalDatabaseException(ex);
 			}
-		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+			return items;
+		} finally {
+			statisticDiseases.addTime(System.currentTimeMillis() - t1);
 		}
-		return items;
 	}
 
 	@Override
 	public List<AnfisaResultView.Pharmacogenomics.Item> getChemicals(String variantId) {
-		String sql = String.format(
-				"select AssocKind, ChTitle from %s.PharmCHEMICALS where Variant = '%s'",
-				databaseConnector.getDatabase(),
-				variantId
-		);
+		long t1 = System.currentTimeMillis();
+		try {
+			String sql = String.format(
+					"select AssocKind, ChTitle from %s.PharmCHEMICALS where Variant = '%s'",
+					databaseConnector.getDatabase(),
+					variantId
+			);
 
-		List<AnfisaResultView.Pharmacogenomics.Item> items = new ArrayList<>();
-		try (Connection connection = databaseConnector.createConnection()) {
-			try (Statement statement = connection.createStatement()) {
-				try (ResultSet resultSet = statement.executeQuery(sql)) {
-					while (resultSet.next()) {
-						String association = resultSet.getString("AssocKind");
-						String values = resultSet.getString("ChTitle");
-						for (String value: values.split(";")) {//Режем по символу ';'
-							String tValue = value.trim();
-							if (tValue.isEmpty()) continue;
+			List<AnfisaResultView.Pharmacogenomics.Item> items = new ArrayList<>();
+			try (Connection connection = databaseConnector.createConnection()) {
+				try (Statement statement = connection.createStatement()) {
+					try (ResultSet resultSet = statement.executeQuery(sql)) {
+						while (resultSet.next()) {
+							String association = resultSet.getString("AssocKind");
+							String values = resultSet.getString("ChTitle");
+							for (String value : values.split(";")) {//Режем по символу ';'
+								String tValue = value.trim();
+								if (tValue.isEmpty()) continue;
 
-							AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
-									association, tValue
-							);
-							items.add(item);
+								AnfisaResultView.Pharmacogenomics.Item item = new AnfisaResultView.Pharmacogenomics.Item(
+										association, tValue
+								);
+								items.add(item);
+							}
 						}
 					}
 				}
+			} catch (SQLException ex) {
+				throw ExceptionBuilder.buildExternalDatabaseException(ex);
 			}
-		} catch (SQLException ex) {
-			throw ExceptionBuilder.buildExternalDatabaseException(ex);
+			return items;
+		} finally {
+			statisticChemicals.addTime(System.currentTimeMillis() - t1);
 		}
-		return items;
+	}
+
+	@Override
+	public Statistics getStatisticNotes() {
+		return statisticNotes;
+	}
+
+	@Override
+	public Statistics getStatisticPmids() {
+		return statisticPmids;
+	}
+
+	@Override
+	public Statistics getStatisticDiseases() {
+		return statisticDiseases;
+	}
+
+	@Override
+	public Statistics getStatisticChemicals() {
+		return statisticChemicals;
 	}
 
 	@Override

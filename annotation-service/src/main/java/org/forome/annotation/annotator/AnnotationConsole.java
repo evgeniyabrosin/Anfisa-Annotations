@@ -329,6 +329,10 @@ public class AnnotationConsole {
 						log.debug("clinvar expanded data: {}", anfisaConnector.clinvarConnector.getStatisticClinvarExpandedData().getStat());
 						log.debug("clinvar variant summary: {}", anfisaConnector.clinvarConnector.getStatisticClinvarVariantSummary().getStat());
 						log.debug("gtex: {}", anfisaConnector.gtexConnector.getStatistics().getStat());
+						log.debug("pharmGKB notes: {}", anfisaConnector.pharmGKBConnector.getStatisticNotes().getStat());
+						log.debug("pharmGKB pmids: {}", anfisaConnector.pharmGKBConnector.getStatisticPmids().getStat());
+						log.debug("pharmGKB diseases: {}", anfisaConnector.pharmGKBConnector.getStatisticDiseases().getStat());
+						log.debug("pharmGKB chemicals: {}", anfisaConnector.pharmGKBConnector.getStatisticChemicals().getStat());
 						log.debug("anfisa: {}", processing.anfisaStatistics.getStat());
 						log.debug("graphql: {}", processing.graphqlStatistics.getStat());
 						processing.statisticsInstrumentation.statistics.entrySet().stream()
