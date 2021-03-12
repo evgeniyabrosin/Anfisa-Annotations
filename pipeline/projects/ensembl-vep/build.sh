@@ -7,8 +7,8 @@ set -euxo pipefail
 source env.sh
 
 if [ -d $VEP_CACHE_DIR ]; then
-    echo "Forome VEP setup is already built. Remove $VEP_CACHE_DIR cache directory to perform a new build."
-    exit
+    echo "Forome VEP setup is already built. Remove $VEP_CACHE_DIR cache directory to generate a new build."
+    exit 1
 fi      
 
 echo "Pull Ensembl VEP image for ${VEP_RELEASE} release"
@@ -25,11 +25,10 @@ docker run --rm -it --init --user $(id -u):$(id -g) -e 'HOME=/opt/vep' -v $(real
 
 echo "Download Plugins config files"
 
-wget https://raw.github.com/Ensembl/VEP_plugins/${VEP_RELEASE/_/\/}/ExACpLI_values.txt -o /dev/null -O ${VEP_CACHE_DIR}/Plugins/ExACpLI_values.txt
-wget http://hollywood.mit.edu/burgelab/maxent/download/fordownload.tar.gz -o /dev/null && tar xzf fordownload.tar.gz -C ${VEP_CACHE_DIR}/Plugins/ && rm fordownload.tar.gz
-wget https://raw.github.com/Ensembl/VEP_plugins/${VEP_RELEASE/_/\/}/LoFtool_scores.txt -o /dev/null -O ${VEP_CACHE_DIR}/Plugins/LoFtool_scores.txt
+VEP_RELEASE_SHORT=$(echo ${VEP_RELEASE}|awk -F'[_.]' '{print$2}')
 
-#echo "export VEP_IMAGE=${VEP_IMAGE}   # VEP image" > ./_vep_env.sh
-#echo "export VEP_CACHE_DIR=${VEP_CACHE_DIR}   # The local directory to store cached files" >>  ./_vep_env.sh
+wget https://raw.github.com/Ensembl/VEP_plugins/release/${VEP_RELEASE_SHORT}/ExACpLI_values.txt -o /dev/null -O ${VEP_CACHE_DIR}/Plugins/ExACpLI_values.txt
+wget http://hollywood.mit.edu/burgelab/maxent/download/fordownload.tar.gz -o /dev/null && tar xzf fordownload.tar.gz -C ${VEP_CACHE_DIR}/Plugins/ && rm fordownload.tar.gz
+wget https://raw.github.com/Ensembl/VEP_plugins/release/${VEP_RELEASE_SHORT}/LoFtool_scores.txt -o /dev/null -O ${VEP_CACHE_DIR}/Plugins/LoFtool_scores.txt
 
 echo "Forome VEP setup is done"

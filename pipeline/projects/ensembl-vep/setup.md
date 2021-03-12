@@ -1,23 +1,20 @@
 ## Guidelines for working with Ensembl VEP locally using its docker image.
 
-1. Define the following parameters for the run:
+1. Edit `env.sh` file and define all parameters for the run. The parameters that may change between different builds: 
 
-		export VEP_RELEASE=release_103         # Ensemble VEP release
-		export VEP_CACHE_DIR=$HOME/vep-cache   # The local directory to store cached files
-		export VEP_ASSEMBLY=GRCh38             # The homo-sapiens species genome assembly
+		VEP_RELEASE=release_103         # Ensemble VEP release
+		VEP_ASSEMBLY=GRCh38             # The homo-sapiens species genome assembly
 
-2. Launch build script - this should be done only once for a particular release, when it is required to download the new cache and fasta files. They will be saved into a local directory, defined by `$VEP_CACHE_DIR` variable.
+2. Launch build script - this should be done only once for a particular release and genome, when it is required to download the new cache and fasta files. They will be saved into a local directory, defined by `$VEP_CACHE_DIR` variable (`/data/vep/vep-cache-${VEP_ASSEMBLY}-${VEP_RELEASE}` by default).
 
 		bash build.sh
 
-3. Now start a new ensembl-vep container instance:
+3. Now it is possible to run VEP, providing the input file as an argument:
 
-		docker run --rm -it -v $(realpath $VEP_CACHE_DIR):/opt/vep/.vep ensemblorg/ensembl-vep:$VEP_RELEASE bash
+                bash run.sh pgp3140_wgs_hlpanel.vcf
 
-4. Run VEP with the required options, for example:
+    An example that shows how to run it in detached mode from an arbitrary location:
 
-		./vep --cache --offline --format vcf --vcf --force_overwrite \
-		--dir_cache /opt/vep/.vep/ \
-		--dir_plugins /opt/vep/.vep/Plugins/ \
-		--input_file /opt/vep/.vep/input/my_input.vcf \
-		--output_file /opt/vep/.vep/output/my_output.vcf
+                nohup bash ~/work/Anfisa-Annotations/pipeline/projects/ensembl-vep/run.sh pgp3140_wgs_hlpanel.vcf &> vep.log &
+
+    In case it is needed to switch to a different release/assembly - edit `env.sh` again and launch `run.sh`.
