@@ -27,3 +27,4 @@
 *.js~
 *.md~
 
+docker/astorage.cfg
