@@ -17,7 +17,8 @@ OUTPUT_FULL_PATH="${DIR_PATH}/${OUTPUT_FILE}"
 
 VEP_SETUP_DIR=$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-source ${VEP_SETUP_DIR}/env.sh
+#source ${VEP_SETUP_DIR}/env.sh
+source /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh
 
 if [ ! -d $VEP_CACHE_DIR ]; then
     echo "$VEP_CACHE_DIR does not exist! Run `build.sh` to download the cache files for these parameters."
