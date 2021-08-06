@@ -1,13 +1,12 @@
 FROM ensemblorg/ensembl-vep:release_103
 USER root
 COPY --chown=vep:vep . /data/project/AStorage/Anfisa-Annotations
-RUN apt update && apt install -y git curl libcurl4-openssl-dev wget software-properties-common && \
+RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget software-properties-common && \
 add-apt-repository -y ppa:deadsnakes/ppa && \
 apt update && apt install -y python3.8 python3.8-dev python3.8-distutils librocksdb-dev openjdk-8-jdk && \
 ln -sf /usr/bin/python3.8 /usr/bin/python3 && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/entrypoint.sh && \
-ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoint.sh && \
-rm -rf /opt/vep/.vep
+ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoint.sh
 
 
 
