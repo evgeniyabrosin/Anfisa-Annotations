@@ -7,6 +7,5 @@ then
 fi
 if [ "$1" = "configurevep" ] ;
 then
-    rm -rf /opt/vep/.vep/
     exec bash /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/build_incontainer.sh
 fi
