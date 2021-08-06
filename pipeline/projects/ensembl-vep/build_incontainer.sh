@@ -6,11 +6,11 @@ set -euxo pipefail
 
 source /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh
 
-if [ -d $VEP_CACHE_DIR ]; then
+#if [ -d $VEP_CACHE_DIR ]; then
     #echo "Forome VEP setup is already built. Remove $VEP_CACHE_DIR cache directory to generate a new build."
     #sudo rm -rf $VEP_CACHE_DIR
     #exit 1
-fi
+#fi
 
 echo "Download VEP cache files"
 
