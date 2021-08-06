@@ -14,8 +14,8 @@ source /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/e
 
 echo "Download VEP cache files"
 
-mkdir -p $VEP_CACHE_DIR
-chmod a+rwx $VEP_CACHE_DIR
+#mkdir -p $VEP_CACHE_DIR
+#chmod a+rwx $VEP_CACHE_DIR
 
 perl INSTALL.pl -a p -g $VEP_PLUGINS -c $(realpath $VEP_CACHE_DIR)
 perl INSTALL.pl -a cf -s $VEP_SPECIES -y $VEP_ASSEMBLY -c $(realpath $VEP_CACHE_DIR)
