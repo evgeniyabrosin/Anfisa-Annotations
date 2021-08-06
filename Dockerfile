@@ -7,7 +7,7 @@ apt update && apt install -y python3.8 python3.8-dev python3.8-distutils librock
 ln -sf /usr/bin/python3.8 /usr/bin/python3 && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/entrypoint.sh && \
 ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoint.sh && \
-rm -rf vep:vep /opt/vep/.vep
+rm -rf /opt/vep/.vep
 
 
 
