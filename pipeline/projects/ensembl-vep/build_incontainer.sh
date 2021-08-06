@@ -8,6 +8,7 @@ source /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/e
 
 if [ -d $VEP_CACHE_DIR ]; then
     echo "Forome VEP setup is already built. Remove $VEP_CACHE_DIR cache directory to generate a new build."
+    sudo rm -rf $VEP_CACHE_DIR
     exit 1
 fi
 
