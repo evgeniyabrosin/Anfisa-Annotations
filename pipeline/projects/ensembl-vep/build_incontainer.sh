@@ -17,8 +17,8 @@ echo "Download VEP cache files"
 #mkdir -p $VEP_CACHE_DIR
 #chmod a+rwx $VEP_CACHE_DIR
 
-perl INSTALL.pl -q -a p -g $VEP_PLUGINS -c $(realpath $VEP_CACHE_DIR)
-perl INSTALL.pl -q -a cf -s $VEP_SPECIES -y $VEP_ASSEMBLY -c $(realpath $VEP_CACHE_DIR)
+perl INSTALL.pl --NO_UPDATE -q -a p -g $VEP_PLUGINS -c $(realpath $VEP_CACHE_DIR)
+perl INSTALL.pl --NO_UPDATE -q -a cf -s $VEP_SPECIES -y $VEP_ASSEMBLY -c $(realpath $VEP_CACHE_DIR)
 
 echo "Download Plugins config files"
 
