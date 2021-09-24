@@ -8,7 +8,8 @@ ln -sf /usr/bin/python3.8 /usr/bin/python3 && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/entrypoint.sh && \
 ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoint.sh && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/build_incontainer.sh && \
-chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh
+chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh && \
+mkdir -p /db/download/{Gerp,dbNSFP4,dbSNP} && chown -R vep:vep /db/
 
 
 
