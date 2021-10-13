@@ -12,9 +12,10 @@ chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh && \
 mkdir -p /db/download/{Gerp,dbNSFP4,dbSNP} && chown -R vep:vep /db/ && \
 wget https://projects.unbit.it/downloads/uwsgi-latest.tar.gz && \
-tar zxvf uwsgi-latest.tar.gz -C /opt/vep/.local/bin && \
-cd /opt/vep/.local/bin/uwsgi* && \
+tar zxvf uwsgi-latest.tar.gz -C /opt/ && \
+cd /opt/uwsgi* && \
 make && \
+mv ./uwsgi* /opt/vep/.local/bin/
 
 USER vep:vep
 ENV PATH=$PATH:/opt/vep/.local/bin
