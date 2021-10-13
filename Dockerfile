@@ -26,6 +26,6 @@ USER root
 RUN bash -c 'mv /data/project/AStorage/Anfisa-Annotations/docker/uwsgi.ini /data/project/AStorage/uwsgi.ini && \
 cp /data/project/AStorage/Anfisa-Annotations/docker/astorage.cfg.template /data/project/AStorage/astorage.cfg && \
 cp /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env.sh && \
-mkdir -p /data/project/AStorage/logs/ && chown -R vep:vep /data/project/AStorage/logs/'
+mkdir -p /data/project/AStorage/logs/ && chown -R vep:vep /data/project/AStorage/ && chmod 755 /data/project/AStorage/logs/'
 
 ENTRYPOINT [ "entrypoint.sh" ]
