@@ -4,13 +4,17 @@ COPY --chown=vep:vep . /data/project/AStorage/Anfisa-Annotations
 
 RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget software-properties-common && \
 add-apt-repository -y ppa:deadsnakes/ppa && \
-apt update && apt install -y python3.8 python3.8-dev python3.8-distutils pyvcf librocksdb-dev openjdk-8-jdk && \
+apt update && apt install -y python3.8 python3.8-dev python3.8-distutils pyvcf librocksdb-dev openjdk-8-jdk build-essential python-dev && \
 ln -sf /usr/bin/python3.8 /usr/bin/python3 && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/entrypoint.sh && \
 ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoint.sh && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/build_incontainer.sh && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh && \
-mkdir -p /db/download/{Gerp,dbNSFP4,dbSNP} && chown -R vep:vep /db/
+mkdir -p /db/download/{Gerp,dbNSFP4,dbSNP} && chown -R vep:vep /db/ && \
+wget https://projects.unbit.it/downloads/uwsgi-latest.tar.gz && \
+tar zxvf uwsgi-latest.tar.gz -C /opt/vep/.local/bin && \
+cd /opt/vep/.local/bin/uwsgi* && \
+make && \
 
 USER vep:vep
 ENV PATH=$PATH:/opt/vep/.local/bin
