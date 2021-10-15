@@ -27,6 +27,6 @@ cp /data/project/AStorage/Anfisa-Annotations/docker/astorage.cfg.template /data/
 cp /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env.sh && \
 mkdir -p /data/project/AStorage/logs/ && chown -R vep:vep /data/project/AStorage/ && chmod 755 /data/project/AStorage/logs/'
 
-RUN  ln -sf /proc/1/fd/1 /data/project/AStorage/logs/uwsgi.log
+#RUN  ln -sf /proc/1/fd/1 /data/project/AStorage/logs/uwsgi.log
 
 ENTRYPOINT [ "entrypoint.sh" ]
