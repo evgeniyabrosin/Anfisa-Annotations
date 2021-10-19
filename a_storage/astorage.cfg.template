@@ -1,7 +1,7 @@
 {
     "file-path-def": {
         "LOAD": "/db/download",
-        "WORK": "/projects/AStorage"
+        "WORK": "/project/AStorage"
     },
 
     "db-dir": "${WORK}/rdbs",
