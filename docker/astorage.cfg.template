@@ -25,8 +25,8 @@
             "file_list": "${LOAD}/Gerp/chr*.maf.rates"
         },
         "SpliceAI": {
-            "indel_file_list": "--/projects/AStorage/prep/spliceAI/indel.spliceai.chr*.vcf.gz",
-            "snv_file_list": "--/projects/AStorage/prep/spliceAI/snv.spliceai.chr*.vcf.gz"
+            "indel_file_list": "--/project/AStorage/prep/spliceAI/indel.spliceai.chr*.vcf.gz",
+            "snv_file_list": "--/project/AStorage/prep/spliceAI/snv.spliceai.chr*.vcf.gz"
         },
         "dbNSFP": {
             "file_list": "${LOAD}/dbNSFP4/dbNSFP4.0a_variant.chr*.gz"
