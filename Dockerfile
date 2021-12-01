@@ -2,7 +2,7 @@ FROM ensemblorg/ensembl-vep:release_103
 USER root
 COPY --chown=vep:vep . /data/project/AStorage/Anfisa-Annotations
 
-RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget software-properties-common rsync grsync screen && \
+RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget software-properties-common rsync grsync screen openssh-server less nano && \
 add-apt-repository -y ppa:deadsnakes/ppa && \
 apt update && apt install -y python3.8 python3.8-dev python3.8-distutils librocksdb-dev openjdk-8-jdk pyvcf uwsgi && \
 ln -sf /usr/bin/python3.8 /usr/bin/python3 && \
@@ -10,7 +10,8 @@ chmod +x /data/project/AStorage/Anfisa-Annotations/entrypoint.sh && \
 ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoint.sh && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/build_incontainer.sh && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh && \
-mkdir -p /db/download/{Gerp,dbNSFP4,dbSNP} && chown -R vep:vep /db/
+mkdir -p /db/download/{Gerp,dbNSFP4,dbSNP} && chown -R vep:vep /db/ && \
+mkdir -p /data/projects/AStorage/{.venv,schema,rdbs} && chown -R vep:vep /data/
 
 USER vep:vep
 ENV PATH=$PATH:/opt/vep/.local/bin
