@@ -33,4 +33,4 @@ mkdir -p /data/project/AStorage/logs/ && chown -R vep:vep /data/project/AStorage
 
 #RUN  ln -sf /proc/1/fd/1 /data/project/AStorage/logs/uwsgi.log
 
-ENTRYPOINT [ "entrypoint.sh" ]
+ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
