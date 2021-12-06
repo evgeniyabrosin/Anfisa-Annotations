@@ -11,7 +11,7 @@ ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoi
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/build_incontainer.sh && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh && \
 mkdir -p /db/download/{Gerp,dbNSFP4,dbSNP} && chown -R vep:vep /db/ && \
-mkdir -p /data/project/AStorage/.venv && \
+mkdir -p /data/project/AStorage/venv && \
 mkdir -p /data/project/AStorage/schema && \
 mkdir -p /data/project/AStorage/rdbs && \
 mkdir -p /data/vep && chown -R vep:vep /data/
