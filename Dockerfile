@@ -21,7 +21,7 @@ mkdir -p /data/project/AStorage/schema && \
 mkdir -p /data/project/AStorage/rdbs && \
 mkdir -p /data/vep && chown -R vep:vep /data/ && \
 
-cd /data/project/AStorage/ && wget http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/libc6_2.31-0ubuntu9.2_amd64.deb && dpkg -i libc6_2.31-0ubuntu9.2_amd64.deb
+#cd /data/project/AStorage/ && wget http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/libc6_2.31-0ubuntu9.2_amd64.deb && dpkg -i libc6_2.31-0ubuntu9.2_amd64.deb
 
 USER vep:vep
 ENV PATH=$PATH:/opt/vep/.local/bin
@@ -33,12 +33,15 @@ RUN bash -c 'export PATH=$PATH:/opt/vep/.local/bin && wget https://bootstrap.pyp
 cd /data/project/AStorage/Anfisa-Annotations && pip install -r requirements.txt && cd a_storage/plainrocks && \
 pip3 install Cython && pip3 install . && pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && pip3 install uwsgi'
 
+USER root
+
 RUN bash -c 'mv /data/project/AStorage/Anfisa-Annotations/docker/uwsgi.ini /data/project/AStorage/uwsgi.ini && \
 cp /data/project/AStorage/Anfisa-Annotations/docker/astorage.cfg.template /data/project/AStorage/astorage.cfg && \
 cp /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env.sh && \
 mkdir -p /data/project/AStorage/logs/ && chown -R vep:vep /data/project/AStorage/ && chmod 755 /data/project/AStorage/logs/'
 
 #RUN  ln -sf /proc/1/fd/1 /data/project/AStorage/logs/uwsgi.log
+
 EXPOSE 80
 EXPOSE 443
 EXPOSE 8290
