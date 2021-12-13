@@ -19,7 +19,9 @@ mkdir -p /db/download/{Gerp,dbNSFP4,dbSNP} && chown -R vep:vep /db/ && \
 mv /data/project/AStorage/Anfisa-Annotations/venv /data/project/AStorage/venv && \
 mkdir -p /data/project/AStorage/schema && \
 mkdir -p /data/project/AStorage/rdbs && \
-mkdir -p /data/vep && chown -R vep:vep /data/
+mkdir -p /data/vep && chown -R vep:vep /data/ && \
+
+cd /data/project/AStorage/ && wget http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/libc6_2.31-0ubuntu9.2_amd64.deb && dpkg -i libc6_2.31-0ubuntu9.2_amd64.deb
 
 USER vep:vep
 ENV PATH=$PATH:/opt/vep/.local/bin
