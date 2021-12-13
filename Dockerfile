@@ -23,8 +23,7 @@ mkdir -p /data/vep && chown -R vep:vep /data/ && \
 
 #cd /data/project/AStorage/ && wget http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/libc6_2.31-0ubuntu9.2_amd64.deb && dpkg -i libc6_2.31-0ubuntu9.2_amd64.deb
 
-#USER vep:vep
-USER root:root
+USER vep:vep
 
 ENV PATH=$PATH:/opt/vep/.local/bin
 RUN cd /data/project/AStorage/Anfisa-Annotations/annotation-service/ && \
