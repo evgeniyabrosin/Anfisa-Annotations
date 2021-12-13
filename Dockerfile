@@ -1,4 +1,4 @@
-FROM ensemblorg/ensembl-vep:release_105.0
+FROM ensemblorg/ensembl-vep:release_104.3
 USER root
 COPY --chown=vep:vep . /data/project/AStorage/Anfisa-Annotations
 
