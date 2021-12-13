@@ -1,5 +1,4 @@
 FROM ensemblorg/ensembl-vep:release_105.0
-#FROM ensemblorg/ensembl-vep:release_103
 USER root
 COPY --chown=vep:vep . /data/project/AStorage/Anfisa-Annotations
 
@@ -7,24 +6,20 @@ RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget softwar
 add-apt-repository -y ppa:deadsnakes/ppa && \
 apt update && apt install -y python3.8 python3.8-dev python3.8-distutils librocksdb-dev openjdk-8-jdk pyvcf uwsgi && \
 ln -sf /usr/bin/python3.8 /usr/bin/python3 && \
-
-#curl -L http://xrl.us/installperlnix | bash && \
-
 chmod +x /data/project/AStorage/Anfisa-Annotations/entrypoint.sh && \
 ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoint.sh && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/build_incontainer.sh && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh && \
 mkdir -p /db/download/{Gerp,dbNSFP4,dbSNP} && chown -R vep:vep /db/ && \
+
 #mkdir -p /data/project/AStorage/venv && \
+
 mv /data/project/AStorage/Anfisa-Annotations/venv /data/project/AStorage/venv && \
 mkdir -p /data/project/AStorage/schema && \
 mkdir -p /data/project/AStorage/rdbs && \
-mkdir -p /data/vep && chown -R vep:vep /data/ && \
-
-#cd /data/project/AStorage/ && wget http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/libc6_2.31-0ubuntu9.2_amd64.deb && dpkg -i libc6_2.31-0ubuntu9.2_amd64.deb
+mkdir -p /data/vep && chown -R vep:vep /data/
 
 USER vep:vep
-
 ENV PATH=$PATH:/opt/vep/.local/bin
 RUN cd /data/project/AStorage/Anfisa-Annotations/annotation-service/ && \
 ./gradlew clean --refresh-dependencies && \
@@ -40,7 +35,6 @@ cp /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_i
 mkdir -p /data/project/AStorage/logs/ && chown -R vep:vep /data/project/AStorage/ && chmod 755 /data/project/AStorage/logs/'
 
 #RUN  ln -sf /proc/1/fd/1 /data/project/AStorage/logs/uwsgi.log
-
 EXPOSE 80
 EXPOSE 443
 EXPOSE 8290
