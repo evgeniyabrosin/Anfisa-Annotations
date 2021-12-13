@@ -23,7 +23,8 @@ mkdir -p /data/vep && chown -R vep:vep /data/ && \
 
 #cd /data/project/AStorage/ && wget http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/libc6_2.31-0ubuntu9.2_amd64.deb && dpkg -i libc6_2.31-0ubuntu9.2_amd64.deb
 
-USER vep:vep
+#USER vep:vep
+
 ENV PATH=$PATH:/opt/vep/.local/bin
 RUN cd /data/project/AStorage/Anfisa-Annotations/annotation-service/ && \
 ./gradlew clean --refresh-dependencies && \
@@ -39,7 +40,7 @@ cp /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_i
 mkdir -p /data/project/AStorage/logs/ && chown -R vep:vep /data/project/AStorage/ && chmod 755 /data/project/AStorage/logs/'
 
 #RUN  ln -sf /proc/1/fd/1 /data/project/AStorage/logs/uwsgi.log
-USER root
+
 EXPOSE 80
 EXPOSE 443
 EXPOSE 8290
