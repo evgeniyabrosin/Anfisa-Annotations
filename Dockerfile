@@ -19,7 +19,7 @@ mkdir -p /data/project/AStorage/schema && \
 mkdir -p /data/project/AStorage/rdbs && \
 mkdir -p /data/vep && chown -R vep:vep /data/
 
-RUN apt update && apt install ubuntu-release-upgrader-core && \
+RUN apt update && apt install -y ubuntu-release-upgrader-core && \
 unlink /usr/bin/python3 && \
 ln -s /usr/bin/python3.6 /usr/bin/python3 && \
 cd  /usr/lib/python3/dist-packages && \
