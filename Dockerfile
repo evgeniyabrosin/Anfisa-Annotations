@@ -13,9 +13,8 @@ ln -s /usr/bin/python3.6 /usr/bin/python3 && \
 cd  /usr/lib/python3/dist-packages && \
 ls -la /usr/lib/python3/dist-packages && \
 sudo cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so && \
-apt install ubuntu-release-upgrader-core && \
-apt-get install -y whatever && \
-apt dist-upgrade -y && \
+apt --yes --force-yes install ubuntu-release-upgrader-core && \
+apt --force-yes dist-upgrade && \
 do-release-upgrade && \
 apt-get install python3-pip && \
 pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
