@@ -22,6 +22,10 @@ mkdir -p /data/project/AStorage/rdbs && \
 mkdir -p /data/vep && chown -R vep:vep /data/
 
 USER vep:vep
+RUN useradd -ms /bin/bash vep && \
+    usermod -aG sudo vep
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
 ENV PATH=$PATH:/opt/vep/.local/bin
 RUN cd /data/project/AStorage/Anfisa-Annotations/annotation-service/ && \
 ./gradlew clean --refresh-dependencies && \
@@ -43,7 +47,7 @@ cd  /usr/lib/python3/dist-packages && \
 cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so
 
 #ARG DEBIAN_FRONTEND=noninteractive
-apt --assume-yes dist-upgrade && \
+#apt --assume-yes dist-upgrade && \
 #do-release-upgrade && \
 #apt-get install python3-pip && \
 #pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
