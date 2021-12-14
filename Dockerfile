@@ -31,10 +31,8 @@ RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-conf
 
 RUN do-release-upgrade -f DistUpgradeViewNonInteractive
 
-
-RUN apt-get install python3-pip && \
+RUN apt-get -y install python3-pip && \
 pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools
-
 
 USER vep:vep
 ENV PATH=$PATH:/opt/vep/.local/bin
