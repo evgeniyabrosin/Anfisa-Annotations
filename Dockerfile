@@ -18,8 +18,6 @@ chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh && \
 mkdir -p /db/download/{Gerp,dbNSFP4,dbSNP} && chown -R vep:vep /db/ && \
 
-#mkdir -p /data/project/AStorage/venv && \
-
 mv /data/project/AStorage/Anfisa-Annotations/venv /data/project/AStorage/venv && \
 mkdir -p /data/project/AStorage/schema && \
 mkdir -p /data/project/AStorage/rdbs && \
@@ -33,7 +31,6 @@ cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so
 
 RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' upgrade
 RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' dist-upgrade
-#RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' do-release-upgrade
 
 RUN do-release-upgrade -f DistUpgradeViewNonInteractive
 
@@ -62,5 +59,5 @@ EXPOSE 8290
 EXPOSE 3141
 EXPOSE 3142
 
-#ENTRYPOINT ["tail", "-f", "/dev/null"]
-ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
+#ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
