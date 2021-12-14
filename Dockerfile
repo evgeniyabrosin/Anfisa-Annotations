@@ -23,8 +23,6 @@ mkdir -p /data/vep && chown -R vep:vep /data/
 
 USER vep:vep
 
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
 ENV PATH=$PATH:/opt/vep/.local/bin
 RUN cd /data/project/AStorage/Anfisa-Annotations/annotation-service/ && \
 ./gradlew clean --refresh-dependencies && \
