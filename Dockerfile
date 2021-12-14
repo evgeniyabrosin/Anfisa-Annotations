@@ -14,7 +14,7 @@ cd  /usr/lib/python3/dist-packages && \
 ls -la /usr/lib/python3/dist-packages && \
 cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so
 
-ARG DEBIAN_FRONTEND=noninteractive
+#ARG DEBIAN_FRONTEND=noninteractive
 apt -y install ubuntu-release-upgrader-core && \
 #apt --assume-yes dist-upgrade && \
 #do-release-upgrade && \
