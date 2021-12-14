@@ -55,11 +55,12 @@ cp /data/project/AStorage/Anfisa-Annotations/docker/astorage.cfg.template /data/
 cp /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env.sh && \
 mkdir -p /data/project/AStorage/logs/ && chown -R vep:vep /data/project/AStorage/ && chmod 755 /data/project/AStorage/logs/'
 
-#RUN  ln -sf /proc/1/fd/1 /data/project/AStorage/logs/uwsgi.log
+
 EXPOSE 80
 EXPOSE 443
 EXPOSE 8290
 EXPOSE 3141
 EXPOSE 3142
 
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]
+ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
