@@ -25,8 +25,10 @@ ln -s /usr/bin/python3.6 /usr/bin/python3 && \
 cd  /usr/lib/python3/dist-packages && \
 cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so
 
-ARG DEBIAN_FRONTEND=noninteractive
-apt -y dist-upgrade && \
+#ARG DEBIAN_FRONTEND=noninteractive
+RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' upgrade
+RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' dist-upgrade
+#apt -y dist-upgrade && \
 do-release-upgrade && \
 #apt-get install python3-pip && \
 #pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
