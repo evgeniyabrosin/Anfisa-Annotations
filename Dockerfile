@@ -2,7 +2,7 @@ FROM ensemblorg/ensembl-vep:release_105.0
 USER root
 COPY --chown=vep:vep . /data/project/AStorage/Anfisa-Annotations
 
-RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget software-properties-common rsync grsync screen openssh-server less nano net-tools && \
+RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget software-properties-common rsync grsync screen openssh-server less nano net-tools ubuntu-release-upgrader-core && \
 add-apt-repository -y ppa:deadsnakes/ppa && \
 apt update && apt install -y python3.8 python3.8-dev python3.8-distutils librocksdb-dev openjdk-8-jdk pyvcf && \
 
@@ -16,7 +16,7 @@ cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so
 
 #ARG DEBIAN_FRONTEND=noninteractive
 #apt install ubuntu-release-upgrader-core && \
-#apt --assume-yes dist-upgrade && \
+apt --assume-yes dist-upgrade && \
 #do-release-upgrade && \
 #apt-get install python3-pip && \
 #pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
