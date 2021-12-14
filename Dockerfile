@@ -19,6 +19,19 @@ mkdir -p /data/project/AStorage/schema && \
 mkdir -p /data/project/AStorage/rdbs && \
 mkdir -p /data/vep && chown -R vep:vep /data/
 
+RUN apt update && apt install ubuntu-release-upgrader-core && \
+unlink /usr/bin/python3 && \
+ln -s /usr/bin/python3.6 /usr/bin/python3 && \
+cd  /usr/lib/python3/dist-packages && \
+cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so
+
+#ARG DEBIAN_FRONTEND=noninteractive
+apt -y dist-upgrade && \
+do-release-upgrade && \
+#apt-get install python3-pip && \
+#pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
+
+
 USER vep:vep
 ENV PATH=$PATH:/opt/vep/.local/bin
 RUN cd /data/project/AStorage/Anfisa-Annotations/annotation-service/ && \
