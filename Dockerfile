@@ -5,7 +5,20 @@ COPY --chown=vep:vep . /data/project/AStorage/Anfisa-Annotations
 RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget software-properties-common rsync grsync screen openssh-server less nano net-tools && \
 add-apt-repository -y ppa:deadsnakes/ppa && \
 apt update && apt install -y python3.8 python3.8-dev python3.8-distutils librocksdb-dev openjdk-8-jdk pyvcf && \
-ln -sf /usr/bin/python3.8 /usr/bin/python3 && \
+
+#ln -sf /usr/bin/python3.8 /usr/bin/python3 && \
+
+unlink /usr/bin/python3 && \
+ln -s /usr/bin/python3.6 /usr/bin/python3 && \
+cd  /usr/lib/python3/dist-packages && \
+ls -la /usr/lib/python3/dist-packages && \
+sudo cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so && \
+apt install ubuntu-release-upgrader-core && \
+apt dist-upgrade -y && \
+do-release-upgrade && \
+apt-get install python3-pip && \
+pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
+
 chmod +x /data/project/AStorage/Anfisa-Annotations/entrypoint.sh && \
 ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoint.sh && \
 chmod +x /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/build_incontainer.sh && \
