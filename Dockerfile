@@ -3,7 +3,10 @@ USER root
 COPY --chown=vep:vep . /data/project/AStorage/Anfisa-Annotations
 
 RUN tar -xvf /data/forannotation/schema.tar -C /data/project/AStorage && \
-    tar -xvf /data/forannotation/venv.tar -C /data/project/AStorage
+    chown vep:vep -R /data/project/AStorage/schema && \
+    tar -xvf /data/forannotation/venv.tar -C /data/project/AStorage && \
+    chown vep:vep -R /data/project/AStorage/venv
+    
 
 RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget software-properties-common rsync grsync screen openssh-server less nano net-tools && \
 add-apt-repository -y ppa:deadsnakes/ppa && \
