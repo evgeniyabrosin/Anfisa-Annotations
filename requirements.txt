@@ -8,4 +8,4 @@ mysql-connector-python==8.0.20
 numpy==1.18.5
 pyliftover==0.4
 PyVCF==0.6.8
-uWSGI==2.0.18
+#uWSGI==2.0.18
