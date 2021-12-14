@@ -35,7 +35,8 @@ RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-conf
 RUN do-release-upgrade -f DistUpgradeViewNonInteractive
 
 RUN apt-get -y install python3-pip && \
-pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools
+pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
+apt-get -y install libdbi-perl
 
 USER vep:vep
 ENV PATH=$PATH:/opt/vep/.local/bin
