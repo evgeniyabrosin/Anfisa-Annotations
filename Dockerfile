@@ -2,24 +2,11 @@ FROM ensemblorg/ensembl-vep:release_105.0
 USER root
 COPY --chown=vep:vep . /data/project/AStorage/Anfisa-Annotations
 
-RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget software-properties-common rsync grsync screen openssh-server less nano net-tools ubuntu-release-upgrader-core && \
+RUN apt update && apt install -y sudo git curl libcurl4-openssl-dev wget software-properties-common rsync grsync screen openssh-server less nano net-tools && \
 add-apt-repository -y ppa:deadsnakes/ppa && \
 apt update && apt install -y python3.8 python3.8-dev python3.8-distutils librocksdb-dev openjdk-8-jdk pyvcf && \
 
 #ln -sf /usr/bin/python3.8 /usr/bin/python3 && \
-
-unlink /usr/bin/python3 && \
-ln -s /usr/bin/python3.6 /usr/bin/python3 && \
-cd  /usr/lib/python3/dist-packages && \
-#ls -la /usr/lib/python3/dist-packages && \
-cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so
-
-#ARG DEBIAN_FRONTEND=noninteractive
-#apt install ubuntu-release-upgrader-core && \
-apt --assume-yes dist-upgrade && \
-#do-release-upgrade && \
-#apt-get install python3-pip && \
-#pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
 
 chmod +x /data/project/AStorage/Anfisa-Annotations/entrypoint.sh && \
 ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoint.sh && \
@@ -48,6 +35,18 @@ RUN bash -c 'mv /data/project/AStorage/Anfisa-Annotations/docker/uwsgi.ini /data
 cp /data/project/AStorage/Anfisa-Annotations/docker/astorage.cfg.template /data/project/AStorage/astorage.cfg && \
 cp /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env_incontainer.sh /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env.sh && \
 mkdir -p /data/project/AStorage/logs/ && chown -R vep:vep /data/project/AStorage/ && chmod 755 /data/project/AStorage/logs/'
+
+RUN apt update && apt install ubuntu-release-upgrader-core && \
+unlink /usr/bin/python3 && \
+ln -s /usr/bin/python3.6 /usr/bin/python3 && \
+cd  /usr/lib/python3/dist-packages && \
+cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so
+
+#ARG DEBIAN_FRONTEND=noninteractive
+apt --assume-yes dist-upgrade && \
+#do-release-upgrade && \
+#apt-get install python3-pip && \
+#pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
 
 #RUN  ln -sf /proc/1/fd/1 /data/project/AStorage/logs/uwsgi.log
 EXPOSE 80
