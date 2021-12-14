@@ -14,10 +14,10 @@ cd  /usr/lib/python3/dist-packages && \
 ls -la /usr/lib/python3/dist-packages && \
 sudo cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so && \
 apt --assume-yes install ubuntu-release-upgrader-core && \
-apt --assume-yes dist-upgrade && \
-do-release-upgrade && \
-apt-get install python3-pip && \
-pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
+#apt --assume-yes dist-upgrade && \
+#do-release-upgrade && \
+#apt-get install python3-pip && \
+#pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools && \
 
 chmod +x /data/project/AStorage/Anfisa-Annotations/entrypoint.sh && \
 ln -sf /data/project/AStorage/Anfisa-Annotations/entrypoint.sh /usr/bin/entrypoint.sh && \
