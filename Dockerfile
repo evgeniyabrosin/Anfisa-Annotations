@@ -27,7 +27,10 @@ cp apt_pkg.cpython-36m-x86_64-linux-gnu.so apt_pkg.so
 
 RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' upgrade
 RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' dist-upgrade
-RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' do-release-upgrade
+#RUN DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' do-release-upgrade
+
+RUN do-release-upgrade -f DistUpgradeViewNonInteractive
+
 
 RUN apt-get install python3-pip && \
 pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools
