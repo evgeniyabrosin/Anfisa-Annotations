@@ -1,5 +1,8 @@
 #!/bin/bash
 
+tar -xvf /data/forannotation/schema.tar -C /data/project/AStorage && chown vep:vep -R /data/project/AStorage/schema && \
+tar -xvf /data/forannotation/venv.tar -C /data/project/AStorage && chown vep:vep -R /data/project/AStorage/venv
+
 if [ "$1" = "astorage" ] ;
 then
     source /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env.sh
