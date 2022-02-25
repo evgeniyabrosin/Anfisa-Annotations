@@ -60,5 +60,5 @@ EXPOSE 8290
 EXPOSE 3141
 EXPOSE 3142
 
-ENTRYPOINT ["tail", "-f", "/dev/null"]
-#ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]
+ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
