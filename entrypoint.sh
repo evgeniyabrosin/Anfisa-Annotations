@@ -2,9 +2,9 @@
 
 if [ "$1" = "astorage" ] ;
 then
-    tail -f /dev/null
-    #source /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env.sh
-    #exec /data/project/AStorage/venv/bin/uwsgi --ini /data/project/AStorage/uwsgi.ini --virtualenv /data/project/AStorage/venv/
+
+    source /data/project/AStorage/Anfisa-Annotations/pipeline/projects/ensembl-vep/env.sh
+    exec /data/project/AStorage/venv/bin/uwsgi --ini /data/project/AStorage/uwsgi.ini --virtualenv /data/project/AStorage/venv/
 
 fi
 if [ "$1" = "configurevep" ] ;
